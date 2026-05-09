@@ -50,7 +50,7 @@ export function runCheck(options: CheckOptions): CheckResult {
   violations.push(...validateOwnership(sourceFiles, ownership));
   const observedDependencies = buildObservedDependencies(imports, ownership);
 
-  violations.push(...validateObservedDependencies(spec, observedDependencies));
+  violations.push(...validateObservedDependencies(spec, observedDependencies, root));
 
   return {
     root,

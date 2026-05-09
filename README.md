@@ -25,7 +25,9 @@ It currently supports:
 - `.axi` parser.
 - TypeScript/JavaScript relative import scanning.
 - Module path ownership.
+- Multiple source paths per module.
 - Declared vs observed dependency checks.
+- Module visibility checks with `exposes` and `hides`.
 - Layer direction checks.
 - Human-readable diagnostics.
 - JSON output for CI and agents.
@@ -42,6 +44,20 @@ Requirements:
 
 - Node.js 20+
 - npm
+
+For local CLI use from a checkout:
+
+```bash
+npm install -g .
+axi check --root fixtures/basic-ts-valid
+```
+
+When published as an npm package, the intended usage is:
+
+```bash
+npx <package-name> check --root .
+axi check --root .
+```
 
 ## Quickstart
 
@@ -60,9 +76,12 @@ layer UI
 
 module Simulation
 path "src/simulation/**"
+path "packages/simulation/src/**"
 layer Core
-depends Physics
+depends on Physics
 forbids module Rendering
+exposes "src/simulation/index.ts"
+hides "src/simulation/internal/**"
 purpose "deterministic physics simulation"
 ```
 
@@ -162,6 +181,8 @@ Exit codes:
       "paths": ["src/rendering/**"],
       "layer": "UI",
       "depends": [],
+      "exposes": [],
+      "hides": [],
       "forbidsModules": [],
       "location": {
         "filePath": "axiom/main.axi",
@@ -173,6 +194,8 @@ Exit codes:
       "paths": ["src/simulation/**"],
       "layer": "Core",
       "depends": ["Rendering"],
+      "exposes": [],
+      "hides": [],
       "forbidsModules": [],
       "location": {
         "filePath": "axiom/main.axi",
@@ -224,6 +247,8 @@ Axiom v0.1 can report:
 
 - `forbidden_dependency`
 - `undeclared_dependency`
+- `hidden_import`
+- `unexposed_import`
 - `layer_breach`
 - `ambiguous_module_owner`
 - `cycle_dependency`
@@ -235,6 +260,18 @@ Axiom v0.1 can report:
 - `parse_error`
 - `no_spec_files`
 
+## Import Resolution
+
+The current scanner resolves TypeScript/JavaScript relative imports, including:
+
+- `import ... from "../module"`
+- `export ... from "../module"`
+- `import("../module")`
+- `require("../module")`
+- directory barrel imports that resolve to `index.ts`, `index.tsx`, `index.js`, and related JS/TS extensions
+
+Path aliases from `tsconfig.json` are planned next because they need a project-aware resolver rather than a line-only scanner.
+
 ## Test Fixtures
 
 Useful fixtures:
@@ -244,6 +281,7 @@ Useful fixtures:
 - `fixtures/basic-ts-undeclared`
 - `fixtures/layer-valid`
 - `fixtures/layer-breach`
+- `fixtures/visibility-rules`
 - `fixtures/ambiguous-owner`
 - `fixtures/cycle`
 
@@ -260,6 +298,7 @@ node dist/cli.js check --root fixtures/layer-breach --json
 Near-term:
 
 - Strict mode for unowned source files.
+- TypeScript path alias resolution from `tsconfig.json`.
 - Better import scanner coverage for multiline imports.
 - GitHub Actions example.
 - `axi graph` command.

@@ -81,3 +81,10 @@ test("ambiguous owner fixture reports ambiguous module owner", () => {
 
   assert.ok(codes.includes("ambiguous_module_owner"));
 });
+
+test("visibility fixture reports hidden and unexposed imports", () => {
+  const result = runCheck({ root: path.join(repoRoot, "fixtures/visibility-rules") });
+  const codes = result.violations.map((violation) => violation.code);
+
+  assert.deepEqual(codes, ["unexposed_import", "hidden_import"]);
+});

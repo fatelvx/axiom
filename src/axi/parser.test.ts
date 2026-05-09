@@ -8,8 +8,11 @@ test("parses module path dependencies and forbidden modules", () => {
     `
 module Simulation
 path "src/simulation/**"
+path "packages/simulation/src/**"
 layer Core
-depends Physics
+depends on Physics
+exposes "src/simulation/index.ts"
+hides "src/simulation/internal/**"
 forbids module Rendering
 purpose "deterministic physics simulation"
 `
@@ -20,9 +23,11 @@ purpose "deterministic physics simulation"
 
   const simulation = result.modules[0];
   assert.equal(simulation?.name, "Simulation");
-  assert.deepEqual(simulation?.paths, ["src/simulation/**"]);
+  assert.deepEqual(simulation?.paths, ["src/simulation/**", "packages/simulation/src/**"]);
   assert.equal(simulation?.layer, "Core");
   assert.equal(simulation?.depends[0]?.name, "Physics");
+  assert.equal(simulation?.exposes[0]?.pattern, "src/simulation/index.ts");
+  assert.equal(simulation?.hides[0]?.pattern, "src/simulation/internal/**");
   assert.equal(simulation?.forbidsModules[0]?.name, "Rendering");
   assert.equal(simulation?.purpose, "deterministic physics simulation");
 });

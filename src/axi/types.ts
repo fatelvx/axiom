@@ -10,6 +10,8 @@ export type ViolationCode =
   | "cycle_dependency"
   | "layer_breach"
   | "undeclared_dependency"
+  | "hidden_import"
+  | "unexposed_import"
   | "forbidden_dependency";
 
 export interface SourceLocation {
@@ -23,6 +25,11 @@ export interface ModuleRef {
   location: SourceLocation;
 }
 
+export interface PathRef {
+  pattern: string;
+  location: SourceLocation;
+}
+
 export interface AxiomModule {
   name: string;
   location: SourceLocation;
@@ -32,6 +39,8 @@ export interface AxiomModule {
   layerLocation?: SourceLocation;
   depends: ModuleRef[];
   forbidsModules: ModuleRef[];
+  exposes: PathRef[];
+  hides: PathRef[];
   forbidsCapabilities: ModuleRef[];
   requires: ModuleRef[];
   purpose?: string;

@@ -61,6 +61,8 @@ function moduleOf(name: string, paths: string[]): AxiomModule {
     pathLocations: paths.map((_, index) => ({ filePath: "axiom/main.axi", line: index + 2 })),
     depends: [],
     forbidsModules: [],
+    exposes: [],
+    hides: [],
     forbidsCapabilities: [],
     requires: []
   };

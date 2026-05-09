@@ -47,6 +47,8 @@ export function parseAxiomText(filePath: string, text: string): ParseResult {
         pathLocations: [],
         depends: [],
         forbidsModules: [],
+        exposes: [],
+        hides: [],
         forbidsCapabilities: [],
         requires: []
       };
@@ -80,6 +82,18 @@ export function parseAxiomText(filePath: string, text: string): ParseResult {
       continue;
     }
 
+    const exposesMatch = line.match(/^exposes\s+"([^"]+)"$/);
+    if (exposesMatch) {
+      current.exposes.push({ pattern: exposesMatch[1] ?? "", location });
+      continue;
+    }
+
+    const hidesMatch = line.match(/^hides\s+"([^"]+)"$/);
+    if (hidesMatch) {
+      current.hides.push({ pattern: hidesMatch[1] ?? "", location });
+      continue;
+    }
+
     const purposeMatch = line.match(/^purpose\s+"([^"]*)"$/);
     if (purposeMatch) {
       current.purpose = purposeMatch[1] ?? "";
@@ -103,7 +117,7 @@ export function parseAxiomText(filePath: string, text: string): ParseResult {
       continue;
     }
 
-    const dependsMatch = line.match(/^depends\s+(.+)$/);
+    const dependsMatch = line.match(/^depends(?:\s+on)?\s+(.+)$/);
     if (dependsMatch) {
       addIdentifierRef(current.depends, dependsMatch[1]?.trim() ?? "", location, violations, "dependency");
       continue;

@@ -52,3 +52,14 @@ test("human diagnostics include ambiguous owner details", () => {
   assert.match(output, /owners: App, Simulation/);
   assert.match(output, /fix: Make module path declarations non-overlapping/);
 });
+
+test("human diagnostics include visibility rule details", () => {
+  const fixtureRoot = path.join(repoRoot, "fixtures/visibility-rules");
+  const result = runCheck({ root: fixtureRoot });
+  const output = formatCheckResult(result);
+
+  assert.match(output, /error unexposed_import src\/ui\/view\.ts:2/);
+  assert.match(output, /rule: Services exposes src\/services\/index\.ts \(axiom\/main\.axi:7\)/);
+  assert.match(output, /error hidden_import src\/ui\/view\.ts:3/);
+  assert.match(output, /rule: Services hides src\/services\/internal\/\*\* \(axiom\/main\.axi:8\)/);
+});

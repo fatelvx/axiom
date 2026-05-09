@@ -7,6 +7,9 @@
 - Added JSON schema-shape tests for successful and failing checks.
 - Documented the JSON output contract in the README.
 - Expanded default discovery ignores for generated, cache, build, dependency, and local runtime folders so real projects scan quickly.
+- Added `depends on` syntax sugar.
+- Added `exposes` and `hides` visibility rules with `unexposed_import` and `hidden_import` diagnostics.
+- Added tests for dynamic imports and barrel index import resolution.
 
 ## 0.1.0 - Architecture Firewall MVP
 

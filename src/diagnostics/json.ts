@@ -15,6 +15,8 @@ export interface CheckJsonModule {
   paths: string[];
   layer?: string;
   depends: string[];
+  exposes: string[];
+  hides: string[];
   forbidsModules: string[];
   location: CheckJsonLocation;
 }
@@ -98,6 +100,8 @@ function toJsonModule(root: string, module: AxiomModule): CheckJsonModule {
     paths: [...module.paths],
     ...(module.layer ? { layer: module.layer } : {}),
     depends: module.depends.map((dependency) => dependency.name),
+    exposes: module.exposes.map((rule) => rule.pattern),
+    hides: module.hides.map((rule) => rule.pattern),
     forbidsModules: module.forbidsModules.map((forbidden) => forbidden.name),
     location: toJsonLocation(root, module.location)
   };

@@ -1,4 +1,6 @@
-import type { AxiomModule, AxiomSpec, ImportRecord, ObservedDependency, Violation } from "../axi/types.js";
+import path from "node:path";
+import type { AxiomModule, AxiomSpec, ImportRecord, ObservedDependency, PathRef, Violation } from "../axi/types.js";
+import { globToRegExp, normalizePathForMatch } from "./glob.js";
 import type { OwnershipIndex } from "./ownership.js";
 
 export function validateSpec(spec: AxiomSpec): Violation[] {
@@ -100,7 +102,8 @@ export function buildObservedDependencies(
 
 export function validateObservedDependencies(
   spec: AxiomSpec,
-  observedDependencies: ObservedDependency[]
+  observedDependencies: ObservedDependency[],
+  root: string
 ): Violation[] {
   const violations: Violation[] = [];
   const byName = new Map(spec.modules.map((module) => [module.name, module]));
@@ -111,6 +114,10 @@ export function validateObservedDependencies(
     const fromModule = byName.get(dependency.fromModule);
     const toModule = byName.get(dependency.toModule);
     if (!fromModule || !toModule) {
+      continue;
+    }
+    const resolvedPath = dependency.importRecord.resolvedPath;
+    if (!resolvedPath) {
       continue;
     }
 
@@ -160,6 +167,51 @@ export function validateObservedDependencies(
       continue;
     }
 
+    const hiddenRule = findMatchingPathRule(root, resolvedPath, toModule.hides);
+    if (hiddenRule) {
+      violations.push({
+        code: "hidden_import",
+        message: `${dependency.fromModule} imports hidden path from ${dependency.toModule}.`,
+        location: {
+          filePath: dependency.importRecord.filePath,
+          line: dependency.importRecord.line
+        },
+        details: {
+          fromModule: dependency.fromModule,
+          toModule: dependency.toModule,
+          specifier: dependency.importRecord.specifier,
+          importedPath: relativePath(root, resolvedPath),
+          observed: `${dependency.fromModule} -> ${dependency.toModule}`,
+          rule: `${dependency.toModule} hides ${hiddenRule.pattern}`,
+          ruleLocation: hiddenRule.location,
+          suggestion: `Import an exposed entry point from ${dependency.toModule}, or move the shared code behind a public boundary.`
+        }
+      });
+      continue;
+    }
+
+    if (toModule.exposes.length > 0 && !matchesAnyPathRule(root, resolvedPath, toModule.exposes)) {
+      violations.push({
+        code: "unexposed_import",
+        message: `${dependency.fromModule} imports a non-exposed path from ${dependency.toModule}.`,
+        location: {
+          filePath: dependency.importRecord.filePath,
+          line: dependency.importRecord.line
+        },
+        details: {
+          fromModule: dependency.fromModule,
+          toModule: dependency.toModule,
+          specifier: dependency.importRecord.specifier,
+          importedPath: relativePath(root, resolvedPath),
+          observed: `${dependency.fromModule} -> ${dependency.toModule}`,
+          rule: `${dependency.toModule} exposes ${toModule.exposes.map((rule) => rule.pattern).join(", ")}`,
+          ruleLocation: toModule.exposes[0]?.location,
+          suggestion: `Import an exposed entry point from ${dependency.toModule}, or add an exposes rule for this public API.`
+        }
+      });
+      continue;
+    }
+
     if (!declaredDependencies.has(dependency.toModule)) {
       violations.push({
         code: "undeclared_dependency",
@@ -180,6 +232,30 @@ export function validateObservedDependencies(
   }
 
   return violations;
+}
+
+function findMatchingPathRule(root: string, filePath: string | undefined, rules: PathRef[]): PathRef | undefined {
+  if (!filePath) {
+    return undefined;
+  }
+
+  return rules.find((rule) => pathRuleMatches(root, filePath, rule));
+}
+
+function matchesAnyPathRule(root: string, filePath: string | undefined, rules: PathRef[]): boolean {
+  if (!filePath) {
+    return false;
+  }
+
+  return rules.some((rule) => pathRuleMatches(root, filePath, rule));
+}
+
+function pathRuleMatches(root: string, filePath: string, rule: PathRef): boolean {
+  return globToRegExp(rule.pattern).test(relativePath(root, filePath));
+}
+
+function relativePath(root: string, filePath: string): string {
+  return normalizePathForMatch(path.relative(root, filePath));
 }
 
 function buildLayerIndex(spec: AxiomSpec, violations: Violation[]): Map<string, number> {

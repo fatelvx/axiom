@@ -42,6 +42,8 @@ test("check JSON uses the stable v1 top-level shape", () => {
     paths: ["src/simulation/**"],
     layer: "Core",
     depends: ["Physics"],
+    exposes: [],
+    hides: [],
     forbidsModules: ["Rendering"],
     location: {
       filePath: "axiom/main.axi",

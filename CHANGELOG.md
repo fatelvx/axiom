@@ -6,6 +6,7 @@
 - Normalized JSON paths relative to the checked project root.
 - Added JSON schema-shape tests for successful and failing checks.
 - Documented the JSON output contract in the README.
+- Expanded default discovery ignores for generated, cache, build, dependency, and local runtime folders so real projects scan quickly.
 
 ## 0.1.0 - Architecture Firewall MVP
 

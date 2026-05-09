@@ -1,7 +1,27 @@
 import fs from "node:fs";
 import path from "node:path";
 
-const ignoredDirectories = new Set([".git", "dist", "node_modules", "coverage"]);
+const ignoredDirectories = new Set([
+  ".benchmark_tmp",
+  ".cache",
+  ".git",
+  ".lumina",
+  ".next",
+  ".nuxt",
+  ".svelte-kit",
+  ".turbo",
+  ".vite",
+  "build",
+  "coverage",
+  "dist",
+  "generated-projects",
+  "node_modules",
+  "out",
+  "src-tauri",
+  "target",
+  "temp",
+  "tmp"
+]);
 const sourceExtensions = new Set([".ts", ".tsx", ".js", ".jsx", ".mts", ".cts"]);
 
 export function findAxiomFiles(root: string): string[] {

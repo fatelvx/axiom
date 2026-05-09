@@ -108,6 +108,30 @@ node dist/cli.js check --root <project>
 node dist/cli.js check --root <project> --json
 ```
 
+Default discovery skips common dependency, build, cache, generated, and local runtime folders:
+
+```text
+.benchmark_tmp
+.cache
+.git
+.lumina
+.next
+.nuxt
+.svelte-kit
+.turbo
+.vite
+build
+coverage
+dist
+generated-projects
+node_modules
+out
+src-tauri
+target
+temp
+tmp
+```
+
 Exit codes:
 
 - `0`: no violations

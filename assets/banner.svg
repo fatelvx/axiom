@@ -1,0 +1,92 @@
+<svg width="1200" height="360" viewBox="0 0 1200 360" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
+  <title id="title">Axiom architecture firewall banner</title>
+  <desc id="desc">A banner explaining that Axiom compares .axi contracts with source imports and reports architecture breaches in CI.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1200" y2="360" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#101114"/>
+      <stop offset="0.52" stop-color="#171A20"/>
+      <stop offset="1" stop-color="#111215"/>
+    </linearGradient>
+    <linearGradient id="rule" x1="0" y1="0" x2="260" y2="0" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#42E8B4"/>
+      <stop offset="1" stop-color="#6EA8FF"/>
+    </linearGradient>
+    <linearGradient id="danger" x1="0" y1="0" x2="190" y2="0" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FFB454"/>
+      <stop offset="1" stop-color="#FF5D73"/>
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="14" stdDeviation="16" flood-color="#000000" flood-opacity="0.35"/>
+    </filter>
+    <filter id="glow" x="-35%" y="-35%" width="170%" height="170%">
+      <feGaussianBlur stdDeviation="4" result="blur"/>
+      <feColorMatrix in="blur" type="matrix" values="0 0 0 0 0.28 0 0 0 0 0.84 0 0 0 0 0.74 0 0 0 0.45 0"/>
+      <feBlend in="SourceGraphic" mode="screen"/>
+    </filter>
+    <pattern id="grid" width="36" height="36" patternUnits="userSpaceOnUse">
+      <path d="M36 0H0V36" stroke="#2C323B" stroke-width="1" opacity="0.5"/>
+    </pattern>
+  </defs>
+
+  <rect width="1200" height="360" fill="url(#bg)"/>
+  <rect width="1200" height="360" fill="url(#grid)" opacity="0.38"/>
+
+  <g font-family="Inter, Segoe UI, Arial, sans-serif">
+    <text x="72" y="96" fill="#F5F7FA" font-size="64" font-weight="850" letter-spacing="0">AXIOM</text>
+    <rect x="74" y="116" width="328" height="5" rx="2.5" fill="url(#rule)"/>
+    <text x="72" y="158" fill="#DDE4EC" font-size="25" font-weight="760">Architecture Firewall</text>
+    <text x="72" y="195" fill="#A8B2C0" font-size="18" font-weight="520">Compare architecture contracts with real code.</text>
+    <text x="72" y="224" fill="#A8B2C0" font-size="18" font-weight="520">Fail CI when imports break the rules.</text>
+
+    <g transform="translate(72 278)">
+      <rect x="0" y="0" width="132" height="34" rx="17" fill="#13201D" stroke="#42E8B4" stroke-width="1"/>
+      <text x="20" y="22" fill="#CFFCEF" font-size="14" font-weight="750">.axi rules</text>
+      <rect x="152" y="0" width="144" height="34" rx="17" fill="#171E2A" stroke="#6EA8FF" stroke-width="1"/>
+      <text x="172" y="22" fill="#DCE9FF" font-size="14" font-weight="750">code imports</text>
+      <rect x="316" y="0" width="114" height="34" rx="17" fill="#28191E" stroke="#FF5D73" stroke-width="1"/>
+      <text x="336" y="22" fill="#FFECEF" font-size="14" font-weight="750">CI fails</text>
+    </g>
+  </g>
+
+  <g transform="translate(518 60)" font-family="Inter, Segoe UI, Arial, sans-serif" filter="url(#shadow)">
+    <g>
+      <rect x="0" y="0" width="156" height="204" rx="12" fill="#141B1B" stroke="#2F7668" stroke-width="1.4"/>
+      <text x="18" y="33" fill="#8F9AAA" font-size="12" font-weight="850" letter-spacing="1">.AXI CONTRACT</text>
+      <rect x="18" y="57" width="120" height="33" rx="7" fill="#182522" stroke="#42E8B4" stroke-width="1.2"/>
+      <text x="38" y="79" fill="#EAFBF6" font-size="14" font-weight="760">Core</text>
+      <rect x="18" y="113" width="120" height="33" rx="7" fill="#1B2130" stroke="#6EA8FF" stroke-width="1.2"/>
+      <text x="38" y="135" fill="#EAF2FF" font-size="14" font-weight="760">UI</text>
+      <text x="18" y="176" fill="#C6D0DC" font-size="13" font-weight="760">allowed: UI -> Core</text>
+    </g>
+
+    <path d="M174 102H202" stroke="#566173" stroke-width="2"/>
+    <path d="M194 93L204 102L194 111" stroke="#566173" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+
+    <g transform="translate(220 0)">
+      <rect x="0" y="0" width="166" height="204" rx="12" fill="#171B22" stroke="#43516A" stroke-width="1.4"/>
+      <text x="18" y="33" fill="#8F9AAA" font-size="12" font-weight="850" letter-spacing="1">SOURCE IMPORTS</text>
+      <rect x="20" y="57" width="120" height="33" rx="7" fill="#251C20" stroke="#FFB454" stroke-width="1.2"/>
+      <text x="40" y="79" fill="#FFF4E4" font-size="14" font-weight="760">Core</text>
+      <rect x="20" y="113" width="120" height="33" rx="7" fill="#281A20" stroke="#FF5D73" stroke-width="1.2"/>
+      <text x="40" y="135" fill="#FFECEF" font-size="14" font-weight="760">UI</text>
+      <path d="M80 93V108" stroke="#FF5D73" stroke-width="2"/>
+      <path d="M73 102L80 110L87 102" stroke="#FF5D73" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      <text x="20" y="176" fill="#FFD1D8" font-size="13" font-weight="760">found: Core -> UI</text>
+    </g>
+
+    <path d="M404 102H432" stroke="#566173" stroke-width="2"/>
+    <path d="M424 93L434 102L424 111" stroke="#566173" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+
+    <g transform="translate(450 0)">
+      <rect x="0" y="0" width="160" height="204" rx="12" fill="#20181C" stroke="#72414B" stroke-width="1.4"/>
+      <text x="18" y="33" fill="#8F9AAA" font-size="12" font-weight="850" letter-spacing="1">BREACH REPORT</text>
+      <g filter="url(#glow)">
+        <circle cx="42" cy="76" r="17" fill="#FF5D73"/>
+        <path d="M35 76H49" stroke="#2B1015" stroke-width="3" stroke-linecap="round"/>
+      </g>
+      <text x="18" y="119" fill="#FFECEF" font-size="16" font-weight="820">layer_breach</text>
+      <rect x="18" y="141" width="108" height="29" rx="14.5" fill="#33191F" stroke="#FF5D73" stroke-width="1"/>
+      <text x="34" y="160" fill="#FFECEF" font-size="12" font-weight="800">step.ts:1</text>
+    </g>
+  </g>
+</svg>

@@ -1,0 +1,19 @@
+{
+  "name": "axiom",
+  "version": "0.1.0",
+  "description": "Architecture compiler for AI-era codebases.",
+  "type": "module",
+  "private": true,
+  "bin": {
+    "axi": "dist/cli.js"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "check:fixture": "npm run build && node dist/cli.js check --root fixtures/basic-ts-valid",
+    "test": "npm run build && node --test \"dist/**/*.test.js\""
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "typescript": "^5.9.0"
+  }
+}

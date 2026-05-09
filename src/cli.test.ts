@@ -16,8 +16,12 @@ test("cli --json returns parseable success output", () => {
   assert.equal(result.status, 0);
 
   const payload = JSON.parse(result.stdout);
+  assert.equal(payload.schemaVersion, "axiom.check.v1");
+  assert.equal(payload.ok, true);
+  assert.equal(payload.summary.violations, 0);
+  assert.equal(payload.summary.modules, 3);
   assert.equal(payload.violations.length, 0);
-  assert.equal(payload.spec.modules.length, 3);
+  assert.equal(payload.spec, undefined);
 });
 
 test("cli --json returns parseable violation output with non-zero exit", () => {
@@ -30,6 +34,13 @@ test("cli --json returns parseable violation output with non-zero exit", () => {
   assert.equal(result.status, 1);
 
   const payload = JSON.parse(result.stdout);
+  assert.equal(payload.schemaVersion, "axiom.check.v1");
+  assert.equal(payload.ok, false);
+  assert.equal(payload.summary.violations, 1);
   assert.equal(payload.violations[0].code, "forbidden_dependency");
   assert.equal(payload.violations[0].details.rule, "Simulation forbids module Rendering");
+  assert.deepEqual(payload.violations[0].location, {
+    filePath: "src/simulation/step.ts",
+    line: 2
+  });
 });

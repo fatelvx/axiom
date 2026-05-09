@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 import { formatCheckResult } from "./diagnostics/format.js";
+import { formatCheckJson } from "./diagnostics/json.js";
 import { runCheck } from "./validator/check.js";
 
 interface CliOptions {
@@ -25,7 +26,7 @@ const options = parseOptions(args.slice(1));
 const result = runCheck({ root: options.root });
 
 if (options.json) {
-  console.log(JSON.stringify(result, null, 2));
+  console.log(formatCheckJson(result));
 } else {
   console.log(formatCheckResult(result));
 }

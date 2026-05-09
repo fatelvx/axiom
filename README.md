@@ -113,6 +113,87 @@ Exit codes:
 - `0`: no violations
 - `1`: one or more violations
 
+## JSON Output
+
+`axi check --json` emits a stable v1 payload for CI and agent feedback loops:
+
+```json
+{
+  "schemaVersion": "axiom.check.v1",
+  "ok": false,
+  "root": "/absolute/project/root",
+  "summary": {
+    "modules": 2,
+    "specFiles": 1,
+    "sourceFiles": 2,
+    "importsScanned": 1,
+    "observedDependencies": 1,
+    "violations": 1
+  },
+  "specFiles": ["axiom/main.axi"],
+  "sourceFiles": ["src/rendering/draw.ts", "src/simulation/step.ts"],
+  "modules": [
+    {
+      "name": "Rendering",
+      "paths": ["src/rendering/**"],
+      "layer": "UI",
+      "depends": [],
+      "forbidsModules": [],
+      "location": {
+        "filePath": "axiom/main.axi",
+        "line": 3
+      }
+    },
+    {
+      "name": "Simulation",
+      "paths": ["src/simulation/**"],
+      "layer": "Core",
+      "depends": ["Rendering"],
+      "forbidsModules": [],
+      "location": {
+        "filePath": "axiom/main.axi",
+        "line": 7
+      }
+    }
+  ],
+  "observedDependencies": [
+    {
+      "fromModule": "Simulation",
+      "toModule": "Rendering",
+      "import": {
+        "filePath": "src/simulation/step.ts",
+        "line": 1,
+        "specifier": "../rendering/draw",
+        "resolvedPath": "src/rendering/draw.ts"
+      }
+    }
+  ],
+  "violations": [
+    {
+      "code": "layer_breach",
+      "message": "Simulation in layer Core imports Rendering in outer layer UI.",
+      "location": {
+        "filePath": "src/simulation/step.ts",
+        "line": 1
+      },
+      "details": {
+        "fromModule": "Simulation",
+        "toModule": "Rendering",
+        "observed": "Simulation -> Rendering",
+        "rule": "layers Core -> UI",
+        "ruleLocation": {
+          "filePath": "axiom/main.axi",
+          "line": 1
+        },
+        "suggestion": "Move the dependency inward, invert the dependency, or change the layer declarations."
+      }
+    }
+  ]
+}
+```
+
+Paths inside `specFiles`, `sourceFiles`, `modules`, `observedDependencies`, and `violations` are relative to `root`. Code-specific data lives under `violations[].details`; consumers should key primarily on `schemaVersion`, `ok`, `summary`, and `violations[].code`.
+
 ## Violation Types
 
 Axiom v0.1 can report:

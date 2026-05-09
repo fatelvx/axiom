@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased
+
+- Added a stable `axiom.check.v1` JSON envelope for `axi check --json`.
+- Normalized JSON paths relative to the checked project root.
+- Added JSON schema-shape tests for successful and failing checks.
+- Documented the JSON output contract in the README.
+
 ## 0.1.0 - Architecture Firewall MVP
 
 Initial GitHub-ready cut.

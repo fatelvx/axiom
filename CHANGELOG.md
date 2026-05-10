@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+## 0.3.0 - Adoption Modes
+
+- Added `--warn-unowned` and `--strict` adoption modes for unowned source files.
+- Added `unowned_source_file` diagnostics.
+- Added `warnings` to check and graph JSON output and bumped those schemas to `axiom.check.v2` and `axiom.graph.v2`.
+
 ## 0.2.1 - License and Scanner Hardening
 
 - Added Apache-2.0 licensing with package metadata.

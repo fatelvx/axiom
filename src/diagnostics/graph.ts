@@ -2,7 +2,7 @@ import path from "node:path";
 import type { ModuleRef, PathRef, SourceLocation, Violation, ViolationCode } from "../axi/types.js";
 import type { CheckResult } from "../validator/check.js";
 
-export const graphJsonSchemaVersion = "axiom.graph.v1";
+export const graphJsonSchemaVersion = "axiom.graph.v2";
 
 interface GraphJsonLocation {
   filePath: string;
@@ -61,6 +61,7 @@ export interface GraphJsonResult {
     hiddenPaths: number;
     observedDependencies: number;
     violations: number;
+    warnings: number;
   };
   modules: GraphJsonModule[];
   declaredDependencies: GraphJsonEdge[];
@@ -69,6 +70,7 @@ export interface GraphJsonResult {
   hiddenPaths: GraphJsonVisibilityRule[];
   observedDependencies: GraphJsonObservedDependency[];
   violations: GraphJsonViolation[];
+  warnings: GraphJsonViolation[];
 }
 
 export function formatGraphResult(result: CheckResult): string {
@@ -80,6 +82,7 @@ export function formatGraphResult(result: CheckResult): string {
     `forbidden dependencies: ${graph.summary.forbiddenDependencies}`,
     `observed dependencies: ${graph.summary.observedDependencies}`,
     `violations: ${graph.summary.violations}`,
+    `warnings: ${graph.summary.warnings}`,
     "",
     "declared dependencies:"
   ];
@@ -139,7 +142,8 @@ export function toGraphJson(result: CheckResult): GraphJsonResult {
       exposedPaths: exposedPaths.length,
       hiddenPaths: hiddenPaths.length,
       observedDependencies: result.observedDependencies.length,
-      violations: result.violations.length
+      violations: result.violations.length,
+      warnings: result.warnings.length
     },
     modules: result.spec.modules.map((module) => ({
       name: module.name,
@@ -171,6 +175,11 @@ export function toGraphJson(result: CheckResult): GraphJsonResult {
       code: violation.code,
       message: violation.message,
       ...(violation.location ? { location: toJsonLocation(result.root, violation.location) } : {})
+    })),
+    warnings: result.warnings.map((warning) => ({
+      code: warning.code,
+      message: warning.message,
+      ...(warning.location ? { location: toJsonLocation(result.root, warning.location) } : {})
     }))
   };
 }

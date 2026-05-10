@@ -2,7 +2,7 @@ import path from "node:path";
 import type { AxiomModule, SourceLocation, Violation, ViolationCode } from "../axi/types.js";
 import type { CheckResult } from "../validator/check.js";
 
-export const checkJsonSchemaVersion = "axiom.check.v1";
+export const checkJsonSchemaVersion = "axiom.check.v2";
 
 export interface CheckJsonLocation {
   filePath: string;
@@ -50,12 +50,14 @@ export interface CheckJsonResult {
     importsScanned: number;
     observedDependencies: number;
     violations: number;
+    warnings: number;
   };
   specFiles: string[];
   sourceFiles: string[];
   modules: CheckJsonModule[];
   observedDependencies: CheckJsonObservedDependency[];
   violations: CheckJsonViolation[];
+  warnings: CheckJsonViolation[];
 }
 
 export function toCheckJson(result: CheckResult): CheckJsonResult {
@@ -69,7 +71,8 @@ export function toCheckJson(result: CheckResult): CheckJsonResult {
       sourceFiles: result.sourceFiles.length,
       importsScanned: result.importCount,
       observedDependencies: result.observedDependencies.length,
-      violations: result.violations.length
+      violations: result.violations.length,
+      warnings: result.warnings.length
     },
     specFiles: result.specFiles.map((filePath) => relativePath(result.root, filePath)),
     sourceFiles: result.sourceFiles.map((filePath) => relativePath(result.root, filePath)),
@@ -86,7 +89,8 @@ export function toCheckJson(result: CheckResult): CheckJsonResult {
           : {})
       }
     })),
-    violations: result.violations.map((violation) => toJsonViolation(result.root, violation))
+    violations: result.violations.map((violation) => toJsonViolation(result.root, violation)),
+    warnings: result.warnings.map((warning) => toJsonViolation(result.root, warning))
   };
 }
 

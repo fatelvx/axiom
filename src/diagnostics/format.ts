@@ -3,33 +3,59 @@ import type { SourceLocation, Violation } from "../axi/types.js";
 import type { CheckResult } from "../validator/check.js";
 
 export function formatCheckResult(result: CheckResult): string {
+  if (result.violations.length === 0 && result.warnings.length === 0) {
+    return formatPassedSummary(result, "Axiom check passed.");
+  }
+
   if (result.violations.length === 0) {
     return [
-      "Axiom check passed.",
-      `modules: ${result.spec.modules.length}`,
-      `source files: ${result.sourceFiles.length}`,
-      `imports scanned: ${result.importCount}`,
-      `observed dependencies: ${result.observedDependencies.length}`
-    ].join("\n");
+      formatPassedSummary(result, "Axiom check passed with warnings."),
+      "",
+      ...formatDiagnostics(result.root, result.warnings, "warning")
+    ].join("\n").trimEnd();
   }
 
   const lines = [
     "Axiom check failed.",
     `violations: ${result.violations.length}`,
-    ""
+    ...(result.warnings.length > 0 ? [`warnings: ${result.warnings.length}`] : []),
+    "",
+    ...formatDiagnostics(result.root, result.violations, "error")
   ];
 
-  for (const violation of result.violations) {
-    lines.push(formatViolation(result.root, violation));
+  if (result.warnings.length > 0) {
     lines.push("");
+    lines.push(...formatDiagnostics(result.root, result.warnings, "warning"));
   }
 
   return lines.join("\n").trimEnd();
 }
 
-function formatViolation(root: string, violation: Violation): string {
+function formatPassedSummary(result: CheckResult, header: string): string {
+  return [
+    header,
+    `modules: ${result.spec.modules.length}`,
+    `source files: ${result.sourceFiles.length}`,
+    `imports scanned: ${result.importCount}`,
+    `observed dependencies: ${result.observedDependencies.length}`,
+    ...(result.warnings.length > 0 ? [`warnings: ${result.warnings.length}`] : [])
+  ].join("\n");
+}
+
+function formatDiagnostics(root: string, diagnostics: Violation[], severity: "error" | "warning"): string[] {
+  const lines: string[] = [];
+
+  for (const diagnostic of diagnostics) {
+    lines.push(formatDiagnostic(root, diagnostic, severity));
+    lines.push("");
+  }
+
+  return lines;
+}
+
+function formatDiagnostic(root: string, violation: Violation, severity: "error" | "warning"): string {
   const location = violation.location ? formatLocation(root, violation.location.filePath, violation.location.line) : "";
-  const header = location ? `error ${violation.code} ${location}` : `error ${violation.code}`;
+  const header = location ? `${severity} ${violation.code} ${location}` : `${severity} ${violation.code}`;
   const lines = [header, `  ${violation.message}`];
   lines.push(...formatDetails(root, violation));
   return lines.join("\n");

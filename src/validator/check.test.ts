@@ -122,3 +122,27 @@ test("check resolves TypeScript path aliases from tsconfig", () => {
     ]
   );
 });
+
+test("unowned source files are ignored by default for partial adoption", () => {
+  const result = runCheck({ root: path.join(repoRoot, "fixtures/unowned-source") });
+
+  assert.deepEqual(result.violations, []);
+  assert.deepEqual(result.warnings, []);
+});
+
+test("warn-unowned mode reports unowned source files without failing", () => {
+  const result = runCheck({ root: path.join(repoRoot, "fixtures/unowned-source"), adoptionMode: "warn-unowned" });
+
+  assert.deepEqual(result.violations, []);
+  assert.equal(result.warnings.length, 1);
+  assert.equal(result.warnings[0]?.code, "unowned_source_file");
+  assert.equal(path.relative(result.root, result.warnings[0]?.location?.filePath ?? "").replace(/\\/g, "/"), "src/loose/helper.ts");
+});
+
+test("strict mode reports unowned source files as violations", () => {
+  const result = runCheck({ root: path.join(repoRoot, "fixtures/unowned-source"), adoptionMode: "strict" });
+
+  assert.equal(result.violations.length, 1);
+  assert.equal(result.violations[0]?.code, "unowned_source_file");
+  assert.deepEqual(result.warnings, []);
+});

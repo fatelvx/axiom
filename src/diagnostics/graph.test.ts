@@ -20,7 +20,8 @@ test("graph JSON exposes declared, forbidden, visibility, and observed edges", (
     "exposedPaths",
     "hiddenPaths",
     "observedDependencies",
-    "violations"
+    "violations",
+    "warnings"
   ]);
   assert.equal(payload.schemaVersion, graphJsonSchemaVersion);
   assert.deepEqual(payload.summary, {
@@ -30,7 +31,8 @@ test("graph JSON exposes declared, forbidden, visibility, and observed edges", (
     exposedPaths: 1,
     hiddenPaths: 1,
     observedDependencies: 3,
-    violations: 2
+    violations: 2,
+    warnings: 0
   });
   assert.deepEqual(payload.declaredDependencies, [
     {

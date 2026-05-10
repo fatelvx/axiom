@@ -16,11 +16,13 @@ test("cli --json returns parseable success output", () => {
   assert.equal(result.status, 0);
 
   const payload = JSON.parse(result.stdout);
-  assert.equal(payload.schemaVersion, "axiom.check.v1");
+  assert.equal(payload.schemaVersion, "axiom.check.v2");
   assert.equal(payload.ok, true);
   assert.equal(payload.summary.violations, 0);
+  assert.equal(payload.summary.warnings, 0);
   assert.equal(payload.summary.modules, 3);
   assert.equal(payload.violations.length, 0);
+  assert.equal(payload.warnings.length, 0);
   assert.equal(payload.spec, undefined);
 });
 
@@ -34,7 +36,7 @@ test("cli --json returns parseable violation output with non-zero exit", () => {
   assert.equal(result.status, 1);
 
   const payload = JSON.parse(result.stdout);
-  assert.equal(payload.schemaVersion, "axiom.check.v1");
+  assert.equal(payload.schemaVersion, "axiom.check.v2");
   assert.equal(payload.ok, false);
   assert.equal(payload.summary.violations, 1);
   assert.equal(payload.violations[0].code, "forbidden_dependency");
@@ -43,6 +45,41 @@ test("cli --json returns parseable violation output with non-zero exit", () => {
     filePath: "src/simulation/step.ts",
     line: 2
   });
+});
+
+test("cli check --warn-unowned reports warnings without failing", () => {
+  const result = spawnSync(
+    process.execPath,
+    [cliPath, "check", "--root", "fixtures/unowned-source", "--warn-unowned", "--json"],
+    { cwd: repoRoot, encoding: "utf8" }
+  );
+
+  assert.equal(result.status, 0);
+
+  const payload = JSON.parse(result.stdout);
+  assert.equal(payload.ok, true);
+  assert.equal(payload.summary.violations, 0);
+  assert.equal(payload.summary.warnings, 1);
+  assert.equal(payload.warnings[0].code, "unowned_source_file");
+  assert.deepEqual(payload.warnings[0].location, {
+    filePath: "src/loose/helper.ts",
+    line: 1
+  });
+});
+
+test("cli check --strict reports unowned source files as violations", () => {
+  const result = spawnSync(
+    process.execPath,
+    [cliPath, "check", "--root", "fixtures/unowned-source", "--strict", "--json"],
+    { cwd: repoRoot, encoding: "utf8" }
+  );
+
+  assert.equal(result.status, 1);
+
+  const payload = JSON.parse(result.stdout);
+  assert.equal(payload.ok, false);
+  assert.equal(payload.summary.violations, 1);
+  assert.equal(payload.violations[0].code, "unowned_source_file");
 });
 
 test("cli graph returns graph output without acting as a validation gate", () => {
@@ -68,7 +105,7 @@ test("cli graph --json returns parseable graph output", () => {
   assert.equal(result.status, 0);
 
   const payload = JSON.parse(result.stdout);
-  assert.equal(payload.schemaVersion, "axiom.graph.v1");
+  assert.equal(payload.schemaVersion, "axiom.graph.v2");
   assert.equal(payload.summary.observedDependencies, 3);
   assert.equal(payload.violations[0].code, "unexposed_import");
 });

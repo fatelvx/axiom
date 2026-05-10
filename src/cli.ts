@@ -4,12 +4,13 @@ import { formatGraphJson, formatGraphResult } from "./diagnostics/graph.js";
 import { formatInferJson, formatInferResult } from "./diagnostics/infer.js";
 import { formatCheckJson } from "./diagnostics/json.js";
 import { runInfer } from "./infer/infer.js";
-import { runCheck } from "./validator/check.js";
+import { type AdoptionMode, runCheck } from "./validator/check.js";
 
 interface CliOptions {
   root: string;
   json: boolean;
   configPath?: string;
+  adoptionMode: AdoptionMode;
 }
 
 const args = process.argv.slice(2);
@@ -35,7 +36,7 @@ try {
     process.exit(0);
   }
 
-  const result = runCheck({ root: options.root, configPath: options.configPath });
+  const result = runCheck({ root: options.root, configPath: options.configPath, adoptionMode: options.adoptionMode });
 
   if (command === "check" && options.json) {
     console.log(formatCheckJson(result));
@@ -56,7 +57,8 @@ try {
 function parseOptions(values: string[]): CliOptions {
   const options: CliOptions = {
     root: process.cwd(),
-    json: false
+    json: false,
+    adoptionMode: "loose"
   };
 
   for (let index = 0; index < values.length; index += 1) {
@@ -75,6 +77,24 @@ function parseOptions(values: string[]): CliOptions {
 
     if (value === "--json") {
       options.json = true;
+      continue;
+    }
+
+    if (value === "--warn-unowned") {
+      if (options.adoptionMode === "strict") {
+        console.error("Use either --strict or --warn-unowned, not both.");
+        process.exit(1);
+      }
+      options.adoptionMode = "warn-unowned";
+      continue;
+    }
+
+    if (value === "--strict") {
+      if (options.adoptionMode === "warn-unowned") {
+        console.error("Use either --strict or --warn-unowned, not both.");
+        process.exit(1);
+      }
+      options.adoptionMode = "strict";
       continue;
     }
 
@@ -100,13 +120,18 @@ function printHelp(): void {
   console.log(`Axiom
 
 Usage:
-  axi check [--root <path>] [--config <path>] [--json]
-  axi graph [--root <path>] [--config <path>] [--json]
+  axi check [--root <path>] [--config <path>] [--json] [--warn-unowned] [--strict]
+  axi graph [--root <path>] [--config <path>] [--json] [--warn-unowned] [--strict]
   axi infer [--root <path>] [--config <path>] [--json]
 
 Commands:
   check   Validate source dependencies against .axi architecture specs.
   graph   Print declared and observed architecture graphs.
   infer   Print a starter .axi contract inferred from current imports.
+
+Adoption:
+  default          Ignore source files not owned by any module path.
+  --warn-unowned  Report unowned source files as warnings without failing check.
+  --strict        Report unowned source files as violations.
 `);
 }

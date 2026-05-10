@@ -4,6 +4,7 @@ export type ViolationCode =
   | "duplicate_module"
   | "duplicate_layer_order"
   | "ambiguous_module_owner"
+  | "unowned_source_file"
   | "unknown_layer"
   | "missing_module_path"
   | "unknown_module"

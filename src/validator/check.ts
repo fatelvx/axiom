@@ -9,9 +9,12 @@ import { scanImports } from "../scanner/importScanner.js";
 import { createOwnershipIndex, validateOwnership } from "./ownership.js";
 import { buildObservedDependencies, validateObservedDependencies, validateSpec } from "./validate.js";
 
+export type AdoptionMode = "loose" | "warn-unowned" | "strict";
+
 export interface CheckOptions {
   root: string;
   configPath?: string;
+  adoptionMode?: AdoptionMode;
 }
 
 export interface CheckResult {
@@ -22,15 +25,18 @@ export interface CheckResult {
   observedDependencies: ObservedDependency[];
   spec: AxiomSpec;
   violations: Violation[];
+  warnings: Violation[];
 }
 
 export function runCheck(options: CheckOptions): CheckResult {
   const root = path.resolve(options.root);
+  const adoptionMode = options.adoptionMode ?? "loose";
   const config = loadConfig(root, options.configPath);
   const specFiles = findAxiomFiles(root, config);
   const sourceFiles = findSourceFiles(root, config);
   const resolver = createImportResolver({ root, tsconfigPath: config.tsconfig });
   const violations: Violation[] = [];
+  const warnings: Violation[] = [];
   const spec: AxiomSpec = { modules: [], layerOrders: [] };
 
   if (specFiles.length === 0) {
@@ -53,6 +59,14 @@ export function runCheck(options: CheckOptions): CheckResult {
   const imports: ImportRecord[] = sourceFiles.flatMap((sourceFile) => scanImports(sourceFile, { resolver }));
   const ownership = createOwnershipIndex(root, spec.modules);
   violations.push(...validateOwnership(sourceFiles, ownership));
+  const unownedSourceFileDiagnostics = spec.modules.length > 0 ? findUnownedSourceFiles(sourceFiles, ownership) : [];
+
+  if (adoptionMode === "strict") {
+    violations.push(...unownedSourceFileDiagnostics);
+  } else if (adoptionMode === "warn-unowned") {
+    warnings.push(...unownedSourceFileDiagnostics);
+  }
+
   const observedDependencies = buildObservedDependencies(imports, ownership);
 
   violations.push(...validateObservedDependencies(spec, observedDependencies, root));
@@ -64,6 +78,23 @@ export function runCheck(options: CheckOptions): CheckResult {
     importCount: imports.length,
     observedDependencies,
     spec,
-    violations
+    violations,
+    warnings
   };
+}
+
+function findUnownedSourceFiles(sourceFiles: string[], ownership: ReturnType<typeof createOwnershipIndex>): Violation[] {
+  return sourceFiles
+    .filter((sourceFile) => ownership.findModules(sourceFile).length === 0)
+    .map((sourceFile) => ({
+      code: "unowned_source_file" as const,
+      message: "Source file is not owned by any module path.",
+      location: {
+        filePath: sourceFile,
+        line: 1
+      },
+      details: {
+        suggestion: "Add a module path that owns this file, or exclude it from Axiom source discovery."
+      }
+    }));
 }

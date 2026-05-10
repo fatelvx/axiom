@@ -18,7 +18,7 @@ Axiom is not an AI prompt wrapper. The first product is a real validator that ca
 
 ## Status
 
-`v0.2.1` is an architecture firewall MVP with onboarding and real-project discovery hardening.
+`v0.3.0` is an architecture firewall MVP with onboarding and adoption controls.
 
 It currently supports:
 
@@ -32,6 +32,7 @@ It currently supports:
 - Starter contract inference with `axi infer`.
 - Project config with source `include`/`exclude` and spec discovery patterns.
 - TypeScript `paths` alias resolution from `tsconfig.json`, honoring `baseUrl`.
+- Gradual adoption modes for unowned source files.
 - Human-readable diagnostics.
 - JSON output for CI and agents.
 - Non-zero exit code on violations.
@@ -128,6 +129,8 @@ error layer_breach src/simulation/step.ts:1
 ```bash
 node dist/cli.js check --root <project>
 node dist/cli.js check --root <project> --config axiom.config.json --json
+node dist/cli.js check --root <project> --warn-unowned
+node dist/cli.js check --root <project> --strict
 node dist/cli.js graph --root <project>
 node dist/cli.js graph --root <project> --json
 node dist/cli.js infer --root <project>
@@ -203,11 +206,11 @@ Config paths and patterns are relative to `--root`. Default ignored directories 
 
 ## JSON Output
 
-`axi check --json` emits a stable v1 payload for CI and agent feedback loops:
+`axi check --json` emits a stable v2 payload for CI and agent feedback loops:
 
 ```json
 {
-  "schemaVersion": "axiom.check.v1",
+  "schemaVersion": "axiom.check.v2",
   "ok": false,
   "root": "/absolute/project/root",
   "summary": {
@@ -216,7 +219,8 @@ Config paths and patterns are relative to `--root`. Default ignored directories 
     "sourceFiles": 2,
     "importsScanned": 1,
     "observedDependencies": 1,
-    "violations": 1
+    "violations": 1,
+    "warnings": 0
   },
   "specFiles": ["axiom/main.axi"],
   "sourceFiles": ["src/rendering/draw.ts", "src/simulation/step.ts"],
@@ -280,11 +284,28 @@ Config paths and patterns are relative to `--root`. Default ignored directories 
         "suggestion": "Move the dependency inward, invert the dependency, or change the layer declarations."
       }
     }
-  ]
+  ],
+  "warnings": []
 }
 ```
 
-Paths inside `specFiles`, `sourceFiles`, `modules`, `observedDependencies`, and `violations` are relative to `root`. Code-specific data lives under `violations[].details`; consumers should key primarily on `schemaVersion`, `ok`, `summary`, and `violations[].code`.
+## Adoption Modes
+
+By default, Axiom ignores source files that are not owned by any module `path`. This keeps partial adoption cheap.
+
+Use `--warn-unowned` to report unowned source files without failing the check:
+
+```bash
+axi check --root . --warn-unowned
+```
+
+Use `--strict` when the contract is mature enough that every discovered source file should be owned:
+
+```bash
+axi check --root . --strict
+```
+
+Paths inside `specFiles`, `sourceFiles`, `modules`, `observedDependencies`, `violations`, and `warnings` are relative to `root`. Code-specific data lives under `violations[].details` and `warnings[].details`; consumers should key primarily on `schemaVersion`, `ok`, `summary`, and diagnostic `code`.
 
 ## Graph Output
 
@@ -297,6 +318,7 @@ declared dependencies: 1
 forbidden dependencies: 0
 observed dependencies: 3
 violations: 2
+warnings: 0
 
 declared dependencies:
   UI -> Services (axiom/main.axi:3)
@@ -314,7 +336,7 @@ observed dependencies:
   UI -> Services via src/ui/view.ts:3 "../services/internal/secret"
 ```
 
-`axi graph --json` emits a stable `axiom.graph.v1` payload with `modules`, `declaredDependencies`, `forbiddenDependencies`, `exposedPaths`, `hiddenPaths`, `observedDependencies`, and a compact `violations` list.
+`axi graph --json` emits a stable `axiom.graph.v2` payload with `modules`, `declaredDependencies`, `forbiddenDependencies`, `exposedPaths`, `hiddenPaths`, `observedDependencies`, and compact `violations` and `warnings` lists.
 
 ## Infer Output
 
@@ -350,12 +372,13 @@ The text mode is intentionally valid `.axi` with comments, so it can be redirect
 
 ## Violation Types
 
-Axiom v0.2 can report:
+Axiom v0.3 can report:
 
 - `forbidden_dependency`
 - `undeclared_dependency`
 - `hidden_import`
 - `unexposed_import`
+- `unowned_source_file`
 - `layer_breach`
 - `ambiguous_module_owner`
 - `cycle_dependency`
@@ -412,7 +435,6 @@ Apache-2.0. See [LICENSE](LICENSE).
 
 Near-term:
 
-- Strict mode for unowned source files.
 - Better `axi infer` grouping and visibility-rule suggestions.
 - GitHub Actions example.
 - External package dependency modelling.

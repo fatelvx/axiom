@@ -6,7 +6,7 @@ import { runCheck } from "../validator/check.js";
 
 const repoRoot = process.cwd();
 
-test("check JSON uses the stable v1 top-level shape", () => {
+test("check JSON uses the stable v2 top-level shape", () => {
   const result = runCheck({ root: path.join(repoRoot, "fixtures/basic-ts-valid") });
   const payload = toCheckJson(result);
 
@@ -19,7 +19,8 @@ test("check JSON uses the stable v1 top-level shape", () => {
     "sourceFiles",
     "modules",
     "observedDependencies",
-    "violations"
+    "violations",
+    "warnings"
   ]);
   assert.equal(payload.schemaVersion, checkJsonSchemaVersion);
   assert.equal(payload.ok, true);
@@ -29,7 +30,8 @@ test("check JSON uses the stable v1 top-level shape", () => {
     sourceFiles: 3,
     importsScanned: 1,
     observedDependencies: 1,
-    violations: 0
+    violations: 0,
+    warnings: 0
   });
   assert.deepEqual(payload.specFiles, ["axiom/main.axi"]);
   assert.deepEqual(payload.sourceFiles, [

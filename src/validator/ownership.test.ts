@@ -63,6 +63,7 @@ function moduleOf(name: string, paths: string[]): AxiomModule {
     forbidsModules: [],
     exposes: [],
     hides: [],
+    suppressions: [],
     forbidsCapabilities: [],
     requires: []
   };

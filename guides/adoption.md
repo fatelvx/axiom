@@ -125,6 +125,19 @@ Use strict mode when every source file should be owned:
 axi check --root . --strict
 ```
 
+## Planned Suppressions
+
+Temporary exceptions belong in the architecture contract, with a date and a reason:
+
+```axi
+module UI
+path "src/ui/**"
+forbids module ServicesInternal
+suppresses forbidden_dependency to ServicesInternal until 2027-06-30 because "legacy import while the public service API is split out"
+```
+
+Active suppressions let `axi check` pass but remain visible in human output, JSON output, and focused graph output. Expired suppressions fail the check, so old exceptions do not become invisible architecture policy.
+
 ## Reading Failures
 
 Useful commands:

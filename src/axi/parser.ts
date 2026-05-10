@@ -49,6 +49,7 @@ export function parseAxiomText(filePath: string, text: string): ParseResult {
         forbidsModules: [],
         exposes: [],
         hides: [],
+        suppressions: [],
         forbidsCapabilities: [],
         requires: []
       };
@@ -91,6 +92,33 @@ export function parseAxiomText(filePath: string, text: string): ParseResult {
     const hidesMatch = line.match(/^hides\s+"([^"]+)"$/);
     if (hidesMatch) {
       current.hides.push({ pattern: hidesMatch[1] ?? "", location });
+      continue;
+    }
+
+    const suppressionMatch = line.match(
+      /^suppresses\s+([A-Za-z][A-Za-z0-9_]*)\s+to\s+([A-Za-z][A-Za-z0-9_]*)\s+until\s+(\d{4}-\d{2}-\d{2})\s+because\s+"([^"]*)"$/u
+    );
+    if (suppressionMatch) {
+      current.suppressions.push({
+        code: suppressionMatch[1] ?? "",
+        target: {
+          name: suppressionMatch[2] ?? "",
+          location
+        },
+        expiresOn: suppressionMatch[3] ?? "",
+        reason: suppressionMatch[4] ?? "",
+        location
+      });
+      continue;
+    }
+
+    if (line.startsWith("suppresses ")) {
+      violations.push({
+        code: "parse_error",
+        message:
+          'Invalid suppression statement. Use: suppresses <violation_code> to <Module> until <YYYY-MM-DD> because "<reason>".',
+        location
+      });
       continue;
     }
 

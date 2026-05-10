@@ -4,6 +4,8 @@
 
 - Linked the public architecture hallucination technical note from the README.
 - Updated GitHub Actions dependencies to current major versions while keeping CI on Node 20.
+- Added planned `.axi` suppressions with required expiration dates and reasons.
+- Bumped check JSON to `axiom.check.v3` and graph JSON to `axiom.graph.v4` for suppressed violation reporting.
 
 ## 0.5.8 - Monorepo Spec Discovery
 

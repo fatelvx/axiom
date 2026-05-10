@@ -3,6 +3,8 @@ export type ViolationCode =
   | "no_spec_files"
   | "duplicate_module"
   | "duplicate_layer_order"
+  | "invalid_suppression"
+  | "expired_suppression"
   | "ambiguous_module_owner"
   | "unowned_source_file"
   | "unknown_layer"
@@ -31,6 +33,14 @@ export interface PathRef {
   location: SourceLocation;
 }
 
+export interface SuppressionRule {
+  code: string;
+  target: ModuleRef;
+  expiresOn: string;
+  reason: string;
+  location: SourceLocation;
+}
+
 export interface AxiomModule {
   name: string;
   location: SourceLocation;
@@ -42,6 +52,7 @@ export interface AxiomModule {
   forbidsModules: ModuleRef[];
   exposes: PathRef[];
   hides: PathRef[];
+  suppressions: SuppressionRule[];
   forbidsCapabilities: ModuleRef[];
   requires: ModuleRef[];
   purpose?: string;
@@ -76,4 +87,18 @@ export interface ObservedDependency {
   fromModule: string;
   toModule: string;
   importRecord: ImportRecord;
+}
+
+export interface SuppressionInfo {
+  fromModule: string;
+  toModule: string;
+  code: ViolationCode;
+  expiresOn: string;
+  reason: string;
+  location: SourceLocation;
+}
+
+export interface SuppressedViolation {
+  violation: Violation;
+  suppression: SuppressionInfo;
 }

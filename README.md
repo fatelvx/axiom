@@ -100,6 +100,7 @@ Axiom v0.5.8 currently supports:
 - Package `imports` and workspace package `exports` for internal package-style imports.
 - Common monorepo contract discovery under `apps/*` and `packages/*`.
 - Gradual adoption with default loose mode, `--warn-unowned`, and `--strict`.
+- Planned suppressions that require an expiration date and reason.
 - Human output and stable JSON output for CI and agents.
 - Starter contract inference with `axi infer`.
 - Focused graph output with `axi graph --violations-only`.
@@ -311,13 +312,26 @@ Use strict mode once every discovered source file should be owned:
 axi check --root . --strict
 ```
 
+## Planned Suppressions
+
+When a real project needs a temporary exception, keep it visible in `.axi`:
+
+```axi
+module UI
+path "src/ui/**"
+forbids module ServicesInternal
+suppresses forbidden_dependency to ServicesInternal until 2027-06-30 because "legacy import while the public service API is split out"
+```
+
+Suppressions only apply to observed dependency and visibility violations. Expired suppressions fail the check, and invalid suppressions cannot hide violations.
+
 ## JSON Output
 
-`axi check --json` emits `axiom.check.v2`:
+`axi check --json` emits `axiom.check.v3`:
 
 ```json
 {
-  "schemaVersion": "axiom.check.v2",
+  "schemaVersion": "axiom.check.v3",
   "ok": false,
   "summary": {
     "modules": 2,
@@ -326,6 +340,7 @@ axi check --root . --strict
     "importsScanned": 1,
     "observedDependencies": 1,
     "violations": 1,
+    "suppressedViolations": 0,
     "warnings": 0
   },
   "violations": [
@@ -346,7 +361,7 @@ axi check --root . --strict
 }
 ```
 
-`axi graph --json` emits `axiom.graph.v3`. Each observed dependency includes a `violations` array. With `--violations-only`, `observedDependencies` is filtered to the edges that need attention, while `summary.observedDependencies` keeps the full count.
+`axi graph --json` emits `axiom.graph.v4`. Each observed dependency includes `violations` and `suppressedViolations` arrays. With `--violations-only`, `observedDependencies` is filtered to the edges that need attention or have active suppression debt, while `summary.observedDependencies` keeps the full count.
 
 ## CI
 

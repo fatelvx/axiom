@@ -6,7 +6,7 @@ import { runCheck } from "../validator/check.js";
 
 const repoRoot = process.cwd();
 
-test("check JSON uses the stable v2 top-level shape", () => {
+test("check JSON uses the stable v3 top-level shape", () => {
   const result = runCheck({ root: path.join(repoRoot, "fixtures/basic-ts-valid") });
   const payload = toCheckJson(result);
 
@@ -20,6 +20,7 @@ test("check JSON uses the stable v2 top-level shape", () => {
     "modules",
     "observedDependencies",
     "violations",
+    "suppressedViolations",
     "warnings"
   ]);
   assert.equal(payload.schemaVersion, checkJsonSchemaVersion);
@@ -31,6 +32,7 @@ test("check JSON uses the stable v2 top-level shape", () => {
     importsScanned: 1,
     observedDependencies: 1,
     violations: 0,
+    suppressedViolations: 0,
     warnings: 0
   });
   assert.deepEqual(payload.specFiles, ["axiom/main.axi"]);
@@ -47,6 +49,7 @@ test("check JSON uses the stable v2 top-level shape", () => {
     exposes: [],
     hides: [],
     forbidsModules: ["Rendering"],
+    suppressions: [],
     location: {
       filePath: "axiom/main.axi",
       line: 9
@@ -90,6 +93,59 @@ test("check JSON normalizes violations and nested locations", () => {
         line: 1
       },
       suggestion: "Move the dependency inward, invert the dependency, or change the layer declarations."
+    }
+  });
+});
+
+test("check JSON exposes planned suppressions and suppressed violations", () => {
+  const result = runCheck({ root: path.join(repoRoot, "fixtures/suppressed-dependency") });
+  const payload = toCheckJson(result);
+
+  assert.equal(payload.ok, true);
+  assert.equal(payload.summary.violations, 0);
+  assert.equal(payload.summary.suppressedViolations, 1);
+  assert.deepEqual(payload.modules[1]?.suppressions, [
+    {
+      code: "forbidden_dependency",
+      toModule: "Rendering",
+      expiresOn: "2099-01-01",
+      reason: "legacy renderer migration",
+      location: {
+        filePath: "axiom/main.axi",
+        line: 7
+      }
+    }
+  ]);
+  assert.deepEqual(payload.suppressedViolations[0], {
+    code: "forbidden_dependency",
+    message: "Simulation imports forbidden module Rendering.",
+    location: {
+      filePath: "src/simulation/step.ts",
+      line: 1
+    },
+    details: {
+      fromModule: "Simulation",
+      toModule: "Rendering",
+      specifier: "../rendering/draw",
+      observed: "Simulation -> Rendering",
+      rule: "Simulation forbids module Rendering",
+      ruleLocation: {
+        filePath: "axiom/main.axi",
+        line: 6
+      },
+      suggestion:
+        "Remove the import, move the shared code to an allowed module, or change the forbidden rule only if this dependency is intentional."
+    },
+    suppression: {
+      fromModule: "Simulation",
+      toModule: "Rendering",
+      code: "forbidden_dependency",
+      expiresOn: "2099-01-01",
+      reason: "legacy renderer migration",
+      location: {
+        filePath: "axiom/main.axi",
+        line: 7
+      }
     }
   });
 });

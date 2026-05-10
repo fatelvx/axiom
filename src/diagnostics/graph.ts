@@ -2,7 +2,7 @@ import path from "node:path";
 import type { ModuleRef, PathRef, SourceLocation, Violation, ViolationCode } from "../axi/types.js";
 import type { CheckResult } from "../validator/check.js";
 
-export const graphJsonSchemaVersion = "axiom.graph.v3";
+export const graphJsonSchemaVersion = "axiom.graph.v4";
 
 interface GraphJsonLocation {
   filePath: string;
@@ -43,6 +43,7 @@ interface GraphJsonObservedDependency {
     resolvedPath?: string;
   };
   violations: GraphJsonDependencyViolation[];
+  suppressedViolations: GraphJsonSuppressedDependencyViolation[];
 }
 
 interface GraphJsonViolation {
@@ -55,6 +56,14 @@ interface GraphJsonDependencyViolation {
   code: ViolationCode;
   message: string;
   suggestion?: string;
+}
+
+interface GraphJsonSuppressedDependencyViolation extends GraphJsonDependencyViolation {
+  suppression: {
+    expiresOn: string;
+    reason: string;
+    ruleLocation: GraphJsonLocation;
+  };
 }
 
 export interface GraphFormatOptions {
@@ -76,6 +85,7 @@ export interface GraphJsonResult {
     observedDependencies: number;
     shownObservedDependencies: number;
     violations: number;
+    suppressedViolations: number;
     warnings: number;
   };
   modules: GraphJsonModule[];
@@ -97,6 +107,7 @@ export function formatGraphResult(result: CheckResult, options: GraphFormatOptio
     `forbidden dependencies: ${graph.summary.forbiddenDependencies}`,
     `observed dependencies: ${formatObservedDependencyCount(graph)}`,
     `violations: ${graph.summary.violations}`,
+    `suppressed violations: ${graph.summary.suppressedViolations}`,
     `warnings: ${graph.summary.warnings}`,
   ];
 
@@ -129,8 +140,11 @@ export function formatGraphResult(result: CheckResult, options: GraphFormatOptio
   } else {
     for (const dependency of graph.observedDependencies) {
       const violationSuffix =
-        dependency.violations.length > 0
-          ? ` [${dependency.violations.map((violation) => violation.code).join(", ")}]`
+        dependency.violations.length > 0 || dependency.suppressedViolations.length > 0
+          ? ` [${[
+              ...dependency.violations.map((violation) => violation.code),
+              ...dependency.suppressedViolations.map((violation) => `${violation.code} suppressed`)
+            ].join(", ")}]`
           : "";
       lines.push(
         `  ${dependency.fromModule} -> ${dependency.toModule} via ${dependency.import.filePath}:${dependency.import.line} "${dependency.import.specifier}"${violationSuffix}`
@@ -159,10 +173,12 @@ export function toGraphJson(result: CheckResult, options: GraphFormatOptions = {
     module.hides.map((rule) => toVisibilityRule(result.root, module.name, rule))
   );
   const allObservedDependencies = result.observedDependencies.map((dependency) =>
-    toObservedDependency(result.root, dependency, result.violations)
+    toObservedDependency(result.root, dependency, result.violations, result.suppressedViolations)
   );
   const observedDependencies = options.violationsOnly
-    ? allObservedDependencies.filter((dependency) => dependency.violations.length > 0)
+    ? allObservedDependencies.filter(
+        (dependency) => dependency.violations.length > 0 || dependency.suppressedViolations.length > 0
+      )
     : allObservedDependencies;
 
   return {
@@ -180,6 +196,7 @@ export function toGraphJson(result: CheckResult, options: GraphFormatOptions = {
       observedDependencies: allObservedDependencies.length,
       shownObservedDependencies: observedDependencies.length,
       violations: result.violations.length,
+      suppressedViolations: result.suppressedViolations.length,
       warnings: result.warnings.length
     },
     modules: result.spec.modules.map((module) => ({
@@ -236,6 +253,14 @@ function formatViolatingDependencies(graph: GraphJsonResult): string[] {
       if (violation.suggestion) {
         lines.push(`    fix: ${violation.suggestion}`);
       }
+    }
+
+    for (const violation of dependency.suppressedViolations) {
+      lines.push(`    suppressed ${violation.code}: ${violation.message}`);
+      lines.push(
+        `    suppression: until ${violation.suppression.expiresOn} (${violation.suppression.ruleLocation.filePath}:${violation.suppression.ruleLocation.line})`
+      );
+      lines.push(`    reason: ${violation.suppression.reason}`);
     }
   }
 
@@ -304,7 +329,8 @@ function toVisibilityRule(root: string, module: string, rule: PathRef): GraphJso
 function toObservedDependency(
   root: string,
   dependency: CheckResult["observedDependencies"][number],
-  violations: Violation[]
+  violations: Violation[],
+  suppressedViolations: CheckResult["suppressedViolations"]
 ): GraphJsonObservedDependency {
   return {
     fromModule: dependency.fromModule,
@@ -323,6 +349,20 @@ function toObservedDependency(
         code: violation.code,
         message: violation.message,
         ...(readSuggestion(violation) ? { suggestion: readSuggestion(violation) } : {})
+      })),
+    suppressedViolations: suppressedViolations
+      .filter((suppressedViolation) => matchesObservedDependency(suppressedViolation.violation, dependency))
+      .map((suppressedViolation) => ({
+        code: suppressedViolation.violation.code,
+        message: suppressedViolation.violation.message,
+        ...(readSuggestion(suppressedViolation.violation)
+          ? { suggestion: readSuggestion(suppressedViolation.violation) }
+          : {}),
+        suppression: {
+          expiresOn: suppressedViolation.suppression.expiresOn,
+          reason: suppressedViolation.suppression.reason,
+          ruleLocation: toJsonLocation(root, suppressedViolation.suppression.location)
+        }
       }))
   };
 }

@@ -200,3 +200,39 @@ test("strict mode reports unowned source files as violations", () => {
   assert.equal(result.violations[0]?.code, "unowned_source_file");
   assert.deepEqual(result.warnings, []);
 });
+
+test("active planned suppressions keep matching observed violations from failing check", () => {
+  const result = runCheck({ root: path.join(repoRoot, "fixtures/suppressed-dependency") });
+
+  assert.deepEqual(result.violations, []);
+  assert.equal(result.suppressedViolations.length, 1);
+  assert.equal(result.suppressedViolations[0]?.violation.code, "forbidden_dependency");
+  assert.deepEqual(result.suppressedViolations[0]?.suppression, {
+    fromModule: "Simulation",
+    toModule: "Rendering",
+    code: "forbidden_dependency",
+    expiresOn: "2099-01-01",
+    reason: "legacy renderer migration",
+    location: {
+      filePath: path.join(repoRoot, "fixtures/suppressed-dependency/axiom/main.axi"),
+      line: 7
+    }
+  });
+});
+
+test("expired planned suppressions fail and leave the original violation visible", () => {
+  const result = runCheck({ root: path.join(repoRoot, "fixtures/expired-suppression") });
+  const codes = result.violations.map((violation) => violation.code);
+
+  assert.deepEqual(codes, ["expired_suppression", "forbidden_dependency"]);
+  assert.deepEqual(result.suppressedViolations, []);
+});
+
+test("invalid planned suppressions fail before they can hide violations", () => {
+  const result = runCheck({ root: path.join(repoRoot, "fixtures/invalid-suppression") });
+
+  assert.deepEqual(result.violations.map((violation) => violation.code), [
+    "invalid_suppression",
+    "invalid_suppression"
+  ]);
+});

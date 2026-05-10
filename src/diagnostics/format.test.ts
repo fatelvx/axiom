@@ -64,3 +64,17 @@ test("human diagnostics include visibility rule details", () => {
   assert.match(output, /error hidden_import src\/ui\/view\.ts:3/);
   assert.match(output, /rule: Services hides src\/services\/internal\/\*\* \(axiom\/main\.axi:8\)/);
 });
+
+test("human diagnostics report active planned suppressions", () => {
+  const fixtureRoot = path.join(repoRoot, "fixtures/suppressed-dependency");
+  const result = runCheck({ root: fixtureRoot });
+  const output = formatCheckResult(result);
+
+  assert.match(output, /Axiom check passed with suppressions\./);
+  assert.match(output, /suppressed forbidden_dependency src\/simulation\/step\.ts:1/);
+  assert.match(
+    output,
+    /suppression: Simulation suppresses forbidden_dependency to Rendering until 2099-01-01 \(axiom\/main\.axi:7\)/
+  );
+  assert.match(output, /reason: legacy renderer migration/);
+});

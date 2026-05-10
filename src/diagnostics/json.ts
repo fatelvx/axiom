@@ -1,8 +1,8 @@
 import path from "node:path";
-import type { AxiomModule, SourceLocation, Violation, ViolationCode } from "../axi/types.js";
+import type { AxiomModule, SourceLocation, SuppressedViolation, Violation, ViolationCode } from "../axi/types.js";
 import type { CheckResult } from "../validator/check.js";
 
-export const checkJsonSchemaVersion = "axiom.check.v2";
+export const checkJsonSchemaVersion = "axiom.check.v3";
 
 export interface CheckJsonLocation {
   filePath: string;
@@ -18,6 +18,15 @@ export interface CheckJsonModule {
   exposes: string[];
   hides: string[];
   forbidsModules: string[];
+  suppressions: CheckJsonSuppression[];
+  location: CheckJsonLocation;
+}
+
+export interface CheckJsonSuppression {
+  code: string;
+  toModule: string;
+  expiresOn: string;
+  reason: string;
   location: CheckJsonLocation;
 }
 
@@ -39,6 +48,17 @@ export interface CheckJsonViolation {
   details: Record<string, unknown>;
 }
 
+export interface CheckJsonSuppressedViolation extends CheckJsonViolation {
+  suppression: {
+    fromModule: string;
+    toModule: string;
+    code: ViolationCode;
+    expiresOn: string;
+    reason: string;
+    location: CheckJsonLocation;
+  };
+}
+
 export interface CheckJsonResult {
   schemaVersion: typeof checkJsonSchemaVersion;
   ok: boolean;
@@ -50,6 +70,7 @@ export interface CheckJsonResult {
     importsScanned: number;
     observedDependencies: number;
     violations: number;
+    suppressedViolations: number;
     warnings: number;
   };
   specFiles: string[];
@@ -57,6 +78,7 @@ export interface CheckJsonResult {
   modules: CheckJsonModule[];
   observedDependencies: CheckJsonObservedDependency[];
   violations: CheckJsonViolation[];
+  suppressedViolations: CheckJsonSuppressedViolation[];
   warnings: CheckJsonViolation[];
 }
 
@@ -72,6 +94,7 @@ export function toCheckJson(result: CheckResult): CheckJsonResult {
       importsScanned: result.importCount,
       observedDependencies: result.observedDependencies.length,
       violations: result.violations.length,
+      suppressedViolations: result.suppressedViolations.length,
       warnings: result.warnings.length
     },
     specFiles: result.specFiles.map((filePath) => relativePath(result.root, filePath)),
@@ -90,6 +113,9 @@ export function toCheckJson(result: CheckResult): CheckJsonResult {
       }
     })),
     violations: result.violations.map((violation) => toJsonViolation(result.root, violation)),
+    suppressedViolations: result.suppressedViolations.map((suppressedViolation) =>
+      toJsonSuppressedViolation(result.root, suppressedViolation)
+    ),
     warnings: result.warnings.map((warning) => toJsonViolation(result.root, warning))
   };
 }
@@ -107,6 +133,13 @@ function toJsonModule(root: string, module: AxiomModule): CheckJsonModule {
     exposes: module.exposes.map((rule) => rule.pattern),
     hides: module.hides.map((rule) => rule.pattern),
     forbidsModules: module.forbidsModules.map((forbidden) => forbidden.name),
+    suppressions: module.suppressions.map((suppression) => ({
+      code: suppression.code,
+      toModule: suppression.target.name,
+      expiresOn: suppression.expiresOn,
+      reason: suppression.reason,
+      location: toJsonLocation(root, suppression.location)
+    })),
     location: toJsonLocation(root, module.location)
   };
 }
@@ -117,6 +150,20 @@ function toJsonViolation(root: string, violation: Violation): CheckJsonViolation
     message: violation.message,
     ...(violation.location ? { location: toJsonLocation(root, violation.location) } : {}),
     details: normalizeDetails(root, violation.details ?? {})
+  };
+}
+
+function toJsonSuppressedViolation(root: string, suppressedViolation: SuppressedViolation): CheckJsonSuppressedViolation {
+  return {
+    ...toJsonViolation(root, suppressedViolation.violation),
+    suppression: {
+      fromModule: suppressedViolation.suppression.fromModule,
+      toModule: suppressedViolation.suppression.toModule,
+      code: suppressedViolation.suppression.code,
+      expiresOn: suppressedViolation.suppression.expiresOn,
+      reason: suppressedViolation.suppression.reason,
+      location: toJsonLocation(root, suppressedViolation.suppression.location)
+    }
   };
 }
 

@@ -1,13 +1,13 @@
 import fs from "node:fs";
 import path from "node:path";
-import type { AxiomSpec, ImportRecord, ObservedDependency, Violation } from "../axi/types.js";
+import type { AxiomSpec, ImportRecord, ObservedDependency, SuppressedViolation, Violation } from "../axi/types.js";
 import { parseAxiomText } from "../axi/parser.js";
 import { loadConfig } from "../config/config.js";
 import { findAxiomFiles, findSourceFiles } from "../fs/discover.js";
 import { createImportResolver } from "../scanner/importResolver.js";
 import { scanImports } from "../scanner/importScanner.js";
 import { createOwnershipIndex, validateOwnership } from "./ownership.js";
-import { buildObservedDependencies, validateObservedDependencies, validateSpec } from "./validate.js";
+import { applySuppressions, buildObservedDependencies, validateObservedDependencies, validateSpec } from "./validate.js";
 
 export type AdoptionMode = "loose" | "warn-unowned" | "strict";
 
@@ -26,6 +26,7 @@ export interface CheckResult {
   spec: AxiomSpec;
   violations: Violation[];
   warnings: Violation[];
+  suppressedViolations: SuppressedViolation[];
 }
 
 export function runCheck(options: CheckOptions): CheckResult {
@@ -37,6 +38,7 @@ export function runCheck(options: CheckOptions): CheckResult {
   const resolver = createImportResolver({ root, tsconfigPath: config.tsconfig });
   const violations: Violation[] = [];
   const warnings: Violation[] = [];
+  const suppressedViolations: SuppressedViolation[] = [];
   const spec: AxiomSpec = { modules: [], layerOrders: [] };
 
   if (specFiles.length === 0) {
@@ -69,7 +71,9 @@ export function runCheck(options: CheckOptions): CheckResult {
 
   const observedDependencies = buildObservedDependencies(imports, ownership);
 
-  violations.push(...validateObservedDependencies(spec, observedDependencies, root));
+  const observedValidation = applySuppressions(spec, validateObservedDependencies(spec, observedDependencies, root));
+  violations.push(...observedValidation.violations);
+  suppressedViolations.push(...observedValidation.suppressedViolations);
 
   return {
     root,
@@ -79,7 +83,8 @@ export function runCheck(options: CheckOptions): CheckResult {
     observedDependencies,
     spec,
     violations,
-    warnings
+    warnings,
+    suppressedViolations
   };
 }
 

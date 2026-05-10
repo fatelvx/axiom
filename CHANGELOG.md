@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+## 0.5.4 - CI Architecture Gate
+
+- Added a GitHub Actions workflow that runs the test suite and Axiom self-contract check.
+- Added `npm run ci` as the shared local and CI validation command.
+- Documented the repository's CI gate in the README.
+
 ## 0.5.3 - Workspace Inference Grouping
 
 - Added `axi infer --group-by workspace` for package-aware starter contracts.

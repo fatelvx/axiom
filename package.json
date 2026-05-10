@@ -1,6 +1,6 @@
 {
   "name": "axiom",
-  "version": "0.5.3",
+  "version": "0.5.4",
   "description": "Architecture compiler for AI-era codebases.",
   "license": "Apache-2.0",
   "type": "module",
@@ -12,6 +12,7 @@
     "build": "tsc -p tsconfig.json",
     "axiom:self": "npm run build && node dist/cli.js check --root . --strict",
     "check:fixture": "npm run build && node dist/cli.js check --root fixtures/basic-ts-valid",
+    "ci": "npm test && npm run axiom:self",
     "test": "npm run build && node --test \"dist/**/*.test.js\""
   },
   "dependencies": {

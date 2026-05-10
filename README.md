@@ -18,7 +18,7 @@ Axiom is not an AI prompt wrapper. The first product is a real validator that ca
 
 ## Status
 
-`v0.5.3` is an architecture firewall MVP with stronger resolver coverage, workspace-aware onboarding, adoption controls, and a self-hosted Axiom contract.
+`v0.5.4` is an architecture firewall MVP with stronger resolver coverage, workspace-aware onboarding, adoption controls, and a CI-backed self-hosted Axiom contract.
 
 It currently supports:
 
@@ -41,6 +41,7 @@ It currently supports:
 - JSON output for CI and agents.
 - Non-zero exit code on violations.
 - Axiom self-checking through this repository's own `axiom/main.axi` contract.
+- GitHub Actions validation for tests plus the Axiom self-contract.
 
 ## Install
 
@@ -446,11 +447,23 @@ Useful fixtures:
 ## Development
 
 ```bash
+npm run ci
 npm test
 npm run axiom:self
 npm run check:fixture
 node dist/cli.js check --root fixtures/layer-breach --json
 ```
+
+## CI
+
+This repository dogfoods Axiom as a CI gate. GitHub Actions runs:
+
+```bash
+npm ci
+npm run ci
+```
+
+`npm run ci` runs the Node test suite and then checks this repository against `axiom/main.axi` with strict source ownership.
 
 ## License
 

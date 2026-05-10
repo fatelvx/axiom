@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+## 0.5.0 - Inference Group Depth
+
+- Added `axi infer --group-depth <n>` for more detailed starter contracts.
+- Kept default inference grouping at one source directory for low-noise onboarding.
+- Added CLI and inference tests for deeper grouping.
+
 ## 0.4.1 - Discovery Traversal Pruning
 
 - Added conservative source traversal pruning from static `include` prefixes.

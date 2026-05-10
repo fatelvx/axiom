@@ -138,6 +138,22 @@ test("cli infer --json returns parseable inferred output", () => {
   assert.match(payload.axi, /module Physics/);
 });
 
+test("cli infer supports group depth", () => {
+  const result = spawnSync(
+    process.execPath,
+    [cliPath, "infer", "--root", "fixtures/infer-group-depth", "--group-depth", "2", "--json"],
+    { cwd: repoRoot, encoding: "utf8" }
+  );
+
+  assert.equal(result.status, 0);
+
+  const payload = JSON.parse(result.stdout);
+  assert.deepEqual(
+    payload.modules.map((module: { name: string }) => module.name),
+    ["ServicesAgent", "ServicesTools", "Ui"]
+  );
+});
+
 test("cli check uses project config discovery settings", () => {
   const result = spawnSync(
     process.execPath,

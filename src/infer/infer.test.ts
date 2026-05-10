@@ -77,3 +77,18 @@ test("infer suggests visibility rules as comments", () => {
   assert.match(output, /# suggestion: exposes "src\/services\/index\.ts"/);
   assert.match(output, /# suggestion: hides "src\/services\/internal\/\*\*"/);
 });
+
+test("infer supports deeper source grouping", () => {
+  const shallow = runInfer({ root: path.join(repoRoot, "fixtures/infer-group-depth") });
+  const deep = runInfer({ root: path.join(repoRoot, "fixtures/infer-group-depth"), groupDepth: 2 });
+
+  assert.deepEqual(
+    shallow.modules.map((module) => module.name),
+    ["Services", "Ui"]
+  );
+  assert.deepEqual(
+    deep.modules.map((module) => module.name),
+    ["ServicesAgent", "ServicesTools", "Ui"]
+  );
+  assert.deepEqual(deep.modules.find((module) => module.name === "Ui")?.depends, ["ServicesAgent", "ServicesTools"]);
+});

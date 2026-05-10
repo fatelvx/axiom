@@ -9,6 +9,7 @@ import { normalizePathForMatch } from "../validator/glob.js";
 export interface InferOptions {
   root: string;
   configPath?: string;
+  groupDepth?: number;
 }
 
 export interface InferredModule {
@@ -77,7 +78,7 @@ export function runInfer(options: InferOptions): InferResult {
   const allSourceFiles = findSourceFiles(root, config);
   const sourceFiles = chooseInferenceFiles(root, allSourceFiles);
   const resolver = createImportResolver({ root, tsconfigPath: config.tsconfig });
-  const candidateGroups = buildCandidateGroups(root, sourceFiles);
+  const candidateGroups = buildCandidateGroups(root, sourceFiles, normalizeGroupDepth(options.groupDepth));
   const fileOwners = buildFileOwners(candidateGroups);
   const imports = sourceFiles.flatMap((sourceFile) => scanImports(sourceFile, { resolver }));
   const candidateEdges = buildCandidateEdges(root, imports, fileOwners);
@@ -107,12 +108,12 @@ function chooseInferenceFiles(root: string, sourceFiles: string[]): string[] {
   return srcFiles.length > 0 ? srcFiles : sourceFiles;
 }
 
-function buildCandidateGroups(root: string, sourceFiles: string[]): CandidateGroup[] {
+function buildCandidateGroups(root: string, sourceFiles: string[], groupDepth: number): CandidateGroup[] {
   const groups = new Map<string, CandidateGroup>();
 
   for (const sourceFile of sourceFiles) {
     const relative = relativePath(root, sourceFile);
-    const classification = classifySourceFile(relative);
+    const classification = classifySourceFile(relative, groupDepth);
     const group = groups.get(classification.key) ?? {
       key: classification.key,
       name: classification.name,
@@ -128,16 +129,18 @@ function buildCandidateGroups(root: string, sourceFiles: string[]): CandidateGro
   return [...groups.values()].sort((left, right) => left.name.localeCompare(right.name));
 }
 
-function classifySourceFile(relativePath: string): { key: string; name: string; pathPattern: string } {
+function classifySourceFile(relativePath: string, groupDepth: number): { key: string; name: string; pathPattern: string } {
   const segments = relativePath.split("/");
 
   if (segments[0] === "src") {
-    const second = segments[1];
-    if (segments.length >= 3 && second) {
+    const sourceDirectories = segments.slice(1, -1);
+    if (sourceDirectories.length > 0) {
+      const selected = sourceDirectories.slice(0, Math.min(groupDepth, sourceDirectories.length));
+      const groupPath = `src/${selected.join("/")}`;
       return {
-        key: `src/${second}`,
-        name: toIdentifier(second),
-        pathPattern: `src/${second}/**`
+        key: groupPath,
+        name: toIdentifier(selected.join("-")),
+        pathPattern: `${groupPath}/**`
       };
     }
 
@@ -148,12 +151,14 @@ function classifySourceFile(relativePath: string): { key: string; name: string; 
     };
   }
 
-  const first = segments[0];
-  if (segments.length >= 2 && first) {
+  const sourceDirectories = segments.slice(0, -1);
+  if (sourceDirectories.length > 0) {
+    const selected = sourceDirectories.slice(0, Math.min(groupDepth, sourceDirectories.length));
+    const groupPath = selected.join("/");
     return {
-      key: first,
-      name: toIdentifier(first),
-      pathPattern: `${first}/**`
+      key: groupPath,
+      name: toIdentifier(selected.join("-")),
+      pathPattern: `${groupPath}/**`
     };
   }
 
@@ -470,4 +475,12 @@ function edgeSortKey(edge: CandidateEdge): string {
 
 function readIndex(map: Map<string, number>, key: string): number {
   return map.get(key) ?? Number.POSITIVE_INFINITY;
+}
+
+function normalizeGroupDepth(value: number | undefined): number {
+  if (value === undefined || !Number.isFinite(value)) {
+    return 1;
+  }
+
+  return Math.max(1, Math.floor(value));
 }

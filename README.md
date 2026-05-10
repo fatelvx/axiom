@@ -18,7 +18,7 @@ Axiom is not an AI prompt wrapper. The first product is a real validator that ca
 
 ## Status
 
-`v0.4.1` is an architecture firewall MVP with onboarding and adoption controls.
+`v0.5.0` is an architecture firewall MVP with onboarding and adoption controls.
 
 It currently supports:
 
@@ -30,6 +30,7 @@ It currently supports:
 - Module visibility checks with `exposes` and `hides`.
 - Layer direction checks.
 - Starter contract inference with `axi infer`.
+- Configurable inference grouping depth.
 - Visibility suggestions in inferred starter contracts.
 - Project config with source `include`/`exclude`, traversal pruning, and spec discovery patterns.
 - TypeScript `paths` alias resolution from `tsconfig.json`, honoring `baseUrl`.
@@ -136,6 +137,7 @@ node dist/cli.js graph --root <project>
 node dist/cli.js graph --root <project> --json
 node dist/cli.js infer --root <project>
 node dist/cli.js infer --root <project> --json
+node dist/cli.js infer --root <project> --group-depth 2
 ```
 
 Default discovery skips common dependency, build, and cache folders:
@@ -339,6 +341,12 @@ observed dependencies:
 ## Infer Output
 
 `axi infer --json` emits a draft-oriented `axiom.infer.v2` payload:
+
+By default, inference groups source files one directory below `src`. Use `--group-depth 2` or higher when a project needs a more detailed starter draft:
+
+```bash
+axi infer --root . --group-depth 2
+```
 
 ```json
 {

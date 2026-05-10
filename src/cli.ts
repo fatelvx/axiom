@@ -11,6 +11,7 @@ interface CliOptions {
   json: boolean;
   configPath?: string;
   adoptionMode: AdoptionMode;
+  groupDepth?: number;
 }
 
 const args = process.argv.slice(2);
@@ -27,11 +28,11 @@ if (command !== "check" && command !== "graph" && command !== "infer") {
   process.exit(1);
 }
 
-const options = parseOptions(args.slice(1));
+const options = parseOptions(args.slice(1), command);
 
 try {
   if (command === "infer") {
-    const result = runInfer({ root: options.root, configPath: options.configPath });
+    const result = runInfer({ root: options.root, configPath: options.configPath, groupDepth: options.groupDepth });
     console.log(options.json ? formatInferJson(result) : formatInferResult(result));
     process.exit(0);
   }
@@ -54,7 +55,7 @@ try {
   process.exit(1);
 }
 
-function parseOptions(values: string[]): CliOptions {
+function parseOptions(values: string[], command: "check" | "graph" | "infer"): CliOptions {
   const options: CliOptions = {
     root: process.cwd(),
     json: false,
@@ -109,6 +110,29 @@ function parseOptions(values: string[]): CliOptions {
       continue;
     }
 
+    if (value === "--group-depth") {
+      if (command !== "infer") {
+        console.error("--group-depth is only supported by infer.");
+        process.exit(1);
+      }
+
+      const rawGroupDepth = values[index + 1];
+      if (!rawGroupDepth) {
+        console.error("Missing value for --group-depth.");
+        process.exit(1);
+      }
+
+      const groupDepth = Number(rawGroupDepth);
+      if (!Number.isInteger(groupDepth) || groupDepth < 1) {
+        console.error("--group-depth must be a positive integer.");
+        process.exit(1);
+      }
+
+      options.groupDepth = groupDepth;
+      index += 1;
+      continue;
+    }
+
     console.error(`Unknown option '${value}'.`);
     process.exit(1);
   }
@@ -122,7 +146,7 @@ function printHelp(): void {
 Usage:
   axi check [--root <path>] [--config <path>] [--json] [--warn-unowned] [--strict]
   axi graph [--root <path>] [--config <path>] [--json] [--warn-unowned] [--strict]
-  axi infer [--root <path>] [--config <path>] [--json]
+  axi infer [--root <path>] [--config <path>] [--json] [--group-depth <n>]
 
 Commands:
   check   Validate source dependencies against .axi architecture specs.

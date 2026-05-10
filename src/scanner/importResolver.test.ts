@@ -94,6 +94,88 @@ test("resolver maps JavaScript ESM specifiers back to TypeScript source files", 
   }
 });
 
+test("resolver supports package imports from package.json", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "axi-resolver-imports-"));
+
+  try {
+    writeFile(
+      root,
+      "package.json",
+      JSON.stringify({
+        name: "@demo/app",
+        imports: {
+          "#runtime/*": "./src/runtime/*.ts",
+          "#config": {
+            import: "./src/config.js",
+            types: "./src/config.d.ts"
+          }
+        }
+      })
+    );
+    writeFile(root, "src/app/main.ts", "export const app = true;\n");
+    writeFile(root, "src/runtime/clock.ts", "export const clock = true;\n");
+    writeFile(root, "src/config.ts", "export const config = true;\n");
+    writeFile(root, "src/config.d.ts", "export interface Config {}\n");
+
+    const resolver = createImportResolver({ root });
+    const fromFile = path.join(root, "src/app/main.ts");
+
+    assert.equal(normalize(root, resolver.resolve(fromFile, "#runtime/clock")), "src/runtime/clock.ts");
+    assert.equal(normalize(root, resolver.resolve(fromFile, "#config")), "src/config.ts");
+  } finally {
+    fs.rmSync(root, { force: true, recursive: true });
+  }
+});
+
+test("resolver supports package exports and workspace package subpaths", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "axi-resolver-workspace-"));
+
+  try {
+    writeFile(
+      root,
+      "package.json",
+      JSON.stringify({
+        name: "@demo/root",
+        exports: {
+          ".": "./src/index.ts",
+          "./feature": {
+            import: "./src/feature.js",
+            types: "./src/feature.d.ts"
+          }
+        },
+        workspaces: ["packages/*"]
+      })
+    );
+    writeFile(
+      root,
+      "packages/shared/package.json",
+      JSON.stringify({
+        name: "@demo/shared",
+        exports: {
+          ".": "./src/index.ts",
+          "./tools/*": "./src/tools/*.js"
+        }
+      })
+    );
+    writeFile(root, "src/app/main.ts", "export const app = true;\n");
+    writeFile(root, "src/index.ts", "export const root = true;\n");
+    writeFile(root, "src/feature.ts", "export const feature = true;\n");
+    writeFile(root, "src/feature.d.ts", "export interface Feature {}\n");
+    writeFile(root, "packages/shared/src/index.ts", "export const shared = true;\n");
+    writeFile(root, "packages/shared/src/tools/button.ts", "export const button = true;\n");
+
+    const resolver = createImportResolver({ root });
+    const fromFile = path.join(root, "src/app/main.ts");
+
+    assert.equal(normalize(root, resolver.resolve(fromFile, "@demo/root")), "src/index.ts");
+    assert.equal(normalize(root, resolver.resolve(fromFile, "@demo/root/feature")), "src/feature.ts");
+    assert.equal(normalize(root, resolver.resolve(fromFile, "@demo/shared")), "packages/shared/src/index.ts");
+    assert.equal(normalize(root, resolver.resolve(fromFile, "@demo/shared/tools/button")), "packages/shared/src/tools/button.ts");
+  } finally {
+    fs.rmSync(root, { force: true, recursive: true });
+  }
+});
+
 function writeFile(root: string, relativePath: string, contents: string): void {
   const filePath = path.join(root, relativePath);
   fs.mkdirSync(path.dirname(filePath), { recursive: true });

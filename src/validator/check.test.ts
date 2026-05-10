@@ -123,6 +123,28 @@ test("check resolves TypeScript path aliases from tsconfig", () => {
   );
 });
 
+test("check resolves workspace package exports", () => {
+  const result = runCheck({ root: path.join(repoRoot, "fixtures/package-exports") });
+
+  assert.deepEqual(result.violations, []);
+  assert.deepEqual(
+    result.observedDependencies.map((dependency) => ({
+      fromModule: dependency.fromModule,
+      toModule: dependency.toModule,
+      specifier: dependency.importRecord.specifier,
+      resolvedPath: path.relative(result.root, dependency.importRecord.resolvedPath ?? "").replace(/\\/g, "/")
+    })),
+    [
+      {
+        fromModule: "App",
+        toModule: "Shared",
+        specifier: "@fixture/shared/feature",
+        resolvedPath: "packages/shared/src/feature.ts"
+      }
+    ]
+  );
+});
+
 test("unowned source files are ignored by default for partial adoption", () => {
   const result = runCheck({ root: path.join(repoRoot, "fixtures/unowned-source") });
 

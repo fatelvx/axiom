@@ -1,0 +1,6 @@
+{
+  "name": "@fixture/shared",
+  "exports": {
+    "./feature": "./src/feature.js"
+  }
+}

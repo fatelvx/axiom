@@ -18,7 +18,7 @@ Axiom is not an AI prompt wrapper. The first product is a real validator that ca
 
 ## Status
 
-`v0.5.1` is an architecture firewall MVP with onboarding, adoption controls, and a self-hosted Axiom contract.
+`v0.5.2` is an architecture firewall MVP with stronger resolver coverage, onboarding, adoption controls, and a self-hosted Axiom contract.
 
 It currently supports:
 
@@ -34,6 +34,7 @@ It currently supports:
 - Visibility suggestions in inferred starter contracts.
 - Project config with source `include`/`exclude`, traversal pruning, and spec discovery patterns.
 - TypeScript `paths` alias resolution from `tsconfig.json`, honoring `baseUrl`.
+- Package `imports` and workspace package `exports` resolution for internal package-style imports.
 - Gradual adoption modes for unowned source files.
 - Human-readable diagnostics.
 - JSON output for CI and agents.
@@ -413,6 +414,8 @@ The current scanner resolves TypeScript/JavaScript relative imports, including:
 - TypeScript source files that use emitted ESM specifiers such as `./module.js` for local `module.ts`
 - directory barrel imports that resolve to `index.ts`, `index.tsx`, `index.js`, and related JS/TS extensions
 - TypeScript `paths` aliases from `tsconfig.json` or a configured `tsconfig` path, honoring `baseUrl`
+- package `imports` entries such as `#internal/*`
+- package `exports` entries for the root package and `package.json` workspaces such as `@scope/pkg/subpath`
 
 The scanner uses the TypeScript parser for syntax discovery, then Axiom's resolver maps internal imports to source files. Full TypeScript package-style `extends` resolution from `node_modules` and full TypeScript module resolution remain planned hardening work.
 
@@ -426,6 +429,7 @@ Useful fixtures:
 - `fixtures/layer-valid`
 - `fixtures/layer-breach`
 - `fixtures/visibility-rules`
+- `fixtures/package-exports`
 - `fixtures/ambiguous-owner`
 - `fixtures/cycle`
 
@@ -446,9 +450,9 @@ Apache-2.0. See [LICENSE](LICENSE).
 
 Near-term:
 
-- Better `axi infer` grouping and visibility-rule suggestions.
+- Better `axi infer` grouping presets.
 - GitHub Actions example.
-- External package dependency modelling.
+- Full TypeScript module resolution hardening.
 
 Later:
 

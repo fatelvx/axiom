@@ -22,6 +22,25 @@ interface PathMapping {
   prefixLength: number;
 }
 
+interface PackageResolver {
+  packagesByName: Map<string, PackageMetadata>;
+  packagesByDirectory: PackageMetadata[];
+}
+
+interface PackageMetadata {
+  directory: string;
+  name?: string;
+  exports: PackageSubpathMapping[];
+  imports: PackageSubpathMapping[];
+}
+
+interface PackageSubpathMapping {
+  pattern: string;
+  targets: string[];
+  regexp: RegExp;
+  prefixLength: number;
+}
+
 const extensionCandidates = [".ts", ".tsx", ".js", ".jsx", ".mts", ".cts"];
 const sourceExtensionAlternates = new Map([
   [".js", [".ts", ".tsx"]],
@@ -29,14 +48,19 @@ const sourceExtensionAlternates = new Map([
   [".mjs", [".mts"]],
   [".cjs", [".cts"]]
 ]);
+const packageConditionPreference = ["source", "development", "import", "module", "default", "require", "node", "browser", "types"];
+const workspaceIgnoredDirectories = new Set([".git", "node_modules", "dist", "build", "coverage"]);
 
 export function createImportResolver(options: ImportResolverOptions): ImportResolver {
   const root = path.resolve(options.root);
   const tsconfig = loadTsconfigResolver(root, options.tsconfigPath);
+  const packageResolver = loadPackageResolver(root);
 
   return {
     resolve(fromFile: string, specifier: string): string | undefined {
-      return resolveRelativeImport(fromFile, specifier) ?? resolveTsconfigPath(tsconfig, specifier);
+      return resolveRelativeImport(fromFile, specifier)
+        ?? resolveTsconfigPath(tsconfig, specifier)
+        ?? resolvePackageSpecifier(packageResolver, fromFile, specifier);
     }
   };
 }
@@ -73,6 +97,25 @@ function resolveTsconfigPath(tsconfig: TsconfigResolver | undefined, specifier: 
   return undefined;
 }
 
+function resolvePackageSpecifier(
+  packageResolver: PackageResolver,
+  fromFile: string,
+  specifier: string
+): string | undefined {
+  if (specifier.startsWith("#")) {
+    const owner = findNearestPackage(packageResolver, fromFile);
+    return owner ? resolvePackageSubpath(owner.directory, owner.imports, specifier) : undefined;
+  }
+
+  const parsed = parsePackageSpecifier(specifier);
+  if (!parsed) {
+    return undefined;
+  }
+
+  const packageMetadata = packageResolver.packagesByName.get(parsed.packageName);
+  return packageMetadata ? resolvePackageSubpath(packageMetadata.directory, packageMetadata.exports, parsed.subpath) : undefined;
+}
+
 function loadTsconfigResolver(root: string, configuredPath: string | undefined): TsconfigResolver | undefined {
   const tsconfigPath = configuredPath ? resolveConfigPath(root, configuredPath) : path.join(root, "tsconfig.json");
   if (!fs.existsSync(tsconfigPath)) {
@@ -105,6 +148,55 @@ function loadTsconfigResolver(root: string, configuredPath: string | undefined):
     baseUrl,
     paths
   };
+}
+
+function loadPackageResolver(root: string): PackageResolver {
+  const packagesByDirectory = new Map<string, PackageMetadata>();
+  const rootPackageJson = readJsonFile(path.join(root, "package.json"));
+
+  if (rootPackageJson) {
+    addPackage(root, rootPackageJson);
+  }
+
+  for (const workspacePattern of readWorkspacePatterns(rootPackageJson?.workspaces)) {
+    for (const workspaceDirectory of expandWorkspacePattern(root, workspacePattern)) {
+      const packageJson = readJsonFile(path.join(workspaceDirectory, "package.json"));
+      if (packageJson) {
+        addPackage(workspaceDirectory, packageJson);
+      }
+    }
+  }
+
+  const packages = [...packagesByDirectory.values()];
+  const packagesByName = new Map<string, PackageMetadata>();
+  for (const packageMetadata of packages) {
+    if (packageMetadata.name && !packagesByName.has(packageMetadata.name)) {
+      packagesByName.set(packageMetadata.name, packageMetadata);
+    }
+  }
+
+  return {
+    packagesByName,
+    packagesByDirectory: packages.sort((left, right) => right.directory.length - left.directory.length)
+  };
+
+  function addPackage(directory: string, packageJson: Record<string, unknown>): void {
+    const resolvedDirectory = path.resolve(directory);
+    if (packagesByDirectory.has(resolvedDirectory)) {
+      return;
+    }
+
+    const metadata: PackageMetadata = {
+      directory: resolvedDirectory,
+      name: typeof packageJson.name === "string" ? packageJson.name : undefined,
+      exports: compilePackageExports(packageJson.exports),
+      imports: compilePackageImports(packageJson.imports)
+    };
+
+    if (metadata.name || metadata.exports.length > 0 || metadata.imports.length > 0) {
+      packagesByDirectory.set(resolvedDirectory, metadata);
+    }
+  }
 }
 
 function loadTsconfigFile(filePath: string): Record<string, unknown> {
@@ -155,6 +247,18 @@ function parseJsoncFile(filePath: string): Record<string, unknown> {
   const json = stripTrailingCommas(stripJsonComments(text));
   const parsed = JSON.parse(json) as unknown;
   return parsed && typeof parsed === "object" && !Array.isArray(parsed) ? parsed as Record<string, unknown> : {};
+}
+
+function readJsonFile(filePath: string): Record<string, unknown> | undefined {
+  if (!fs.existsSync(filePath)) {
+    return undefined;
+  }
+
+  try {
+    return parseJsoncFile(filePath);
+  } catch {
+    return undefined;
+  }
 }
 
 function stripJsonComments(text: string): string {
@@ -237,9 +341,194 @@ function substituteCaptures(target: string, captures: string[]): string {
   return target.replace(/\*/g, () => captures[index++] ?? "");
 }
 
+function compilePackageExports(value: unknown): PackageSubpathMapping[] {
+  if (typeof value === "string" || Array.isArray(value)) {
+    return compileSubpathMappings([[".", value]]);
+  }
+
+  const object = readObject(value);
+  const entries = Object.entries(object);
+  if (entries.length === 0) {
+    return [];
+  }
+
+  const hasSubpathKeys = entries.some(([key]) => key === "." || key.startsWith("./"));
+  if (!hasSubpathKeys) {
+    return compileSubpathMappings([[".", value]]);
+  }
+
+  return compileSubpathMappings(entries.filter(([key]) => key === "." || key.startsWith("./")));
+}
+
+function compilePackageImports(value: unknown): PackageSubpathMapping[] {
+  return compileSubpathMappings(Object.entries(readObject(value)).filter(([key]) => key.startsWith("#")));
+}
+
+function compileSubpathMappings(entries: [string, unknown][]): PackageSubpathMapping[] {
+  return entries
+    .map(([pattern, target]) => {
+      const targets = collectPackageTargets(target);
+      return targets.length > 0
+        ? {
+            pattern,
+            targets,
+            regexp: pathPatternToRegExp(pattern),
+            prefixLength: pattern.split("*", 1)[0]?.length ?? pattern.length
+          }
+        : undefined;
+    })
+    .filter((mapping): mapping is PackageSubpathMapping => Boolean(mapping))
+    .sort((left, right) => right.prefixLength - left.prefixLength || left.pattern.localeCompare(right.pattern));
+}
+
+function collectPackageTargets(value: unknown): string[] {
+  if (typeof value === "string") {
+    return value.startsWith("./") ? [value] : [];
+  }
+
+  if (Array.isArray(value)) {
+    return value.flatMap((item) => collectPackageTargets(item));
+  }
+
+  const object = readObject(value);
+  const keys = Object.keys(object);
+  if (keys.length === 0) {
+    return [];
+  }
+
+  return orderConditionKeys(keys).flatMap((key) => collectPackageTargets(object[key]));
+}
+
+function orderConditionKeys(keys: string[]): string[] {
+  const preferred = packageConditionPreference.filter((condition) => keys.includes(condition));
+  const rest = keys.filter((key) => !packageConditionPreference.includes(key)).sort();
+  return [...preferred, ...rest];
+}
+
+function resolvePackageSubpath(directory: string, mappings: PackageSubpathMapping[], subpath: string): string | undefined {
+  for (const mapping of mappings) {
+    const match = subpath.match(mapping.regexp);
+    if (!match) {
+      continue;
+    }
+
+    const captures = match.slice(1);
+    for (const target of mapping.targets) {
+      const substituted = substituteCaptures(target, captures);
+      const basePath = path.resolve(directory, substituted);
+      if (!isInsideDirectory(basePath, directory)) {
+        continue;
+      }
+
+      const resolved = resolveFileCandidate(basePath);
+      if (resolved) {
+        return resolved;
+      }
+    }
+  }
+
+  return undefined;
+}
+
+function parsePackageSpecifier(specifier: string): { packageName: string; subpath: string } | undefined {
+  if (specifier.startsWith(".") || specifier.startsWith("#") || path.isAbsolute(specifier)) {
+    return undefined;
+  }
+
+  const segments = specifier.split("/");
+  const first = segments[0];
+  if (!first) {
+    return undefined;
+  }
+
+  if (first.startsWith("@")) {
+    const second = segments[1];
+    if (!second) {
+      return undefined;
+    }
+
+    const rest = segments.slice(2);
+    return {
+      packageName: `${first}/${second}`,
+      subpath: rest.length > 0 ? `./${rest.join("/")}` : "."
+    };
+  }
+
+  const rest = segments.slice(1);
+  return {
+    packageName: first,
+    subpath: rest.length > 0 ? `./${rest.join("/")}` : "."
+  };
+}
+
+function findNearestPackage(packageResolver: PackageResolver, filePath: string): PackageMetadata | undefined {
+  const resolvedFilePath = path.resolve(filePath);
+  return packageResolver.packagesByDirectory.find((packageMetadata) =>
+    isInsideDirectory(resolvedFilePath, packageMetadata.directory)
+  );
+}
+
+function readWorkspacePatterns(value: unknown): string[] {
+  if (Array.isArray(value)) {
+    return value.filter((item): item is string => typeof item === "string" && !item.startsWith("!"));
+  }
+
+  const packages = readObject(value).packages;
+  return Array.isArray(packages)
+    ? packages.filter((item): item is string => typeof item === "string" && !item.startsWith("!"))
+    : [];
+}
+
+function expandWorkspacePattern(root: string, pattern: string): string[] {
+  const normalized = pattern.replace(/\\/g, "/").replace(/\/package\.json$/, "").replace(/\/$/, "");
+  if (!normalized) {
+    return [];
+  }
+
+  return expandWorkspaceSegments(root, normalized.split("/").filter(Boolean), 0).filter((directory) =>
+    fs.existsSync(path.join(directory, "package.json"))
+  );
+}
+
+function expandWorkspaceSegments(currentDirectory: string, segments: string[], index: number): string[] {
+  if (index >= segments.length) {
+    return [currentDirectory];
+  }
+
+  const segment = segments[index] ?? "";
+  if (segment === "**") {
+    return [
+      ...expandWorkspaceSegments(currentDirectory, segments, index + 1),
+      ...readChildDirectories(currentDirectory).flatMap((directory) => expandWorkspaceSegments(directory, segments, index))
+    ];
+  }
+
+  if (segment.includes("*")) {
+    const regexp = new RegExp(`^${segment.split("*").map((part) => escapeRegExp(part)).join("[^/]+")}$`);
+    return readChildDirectories(currentDirectory)
+      .filter((directory) => regexp.test(path.basename(directory)))
+      .flatMap((directory) => expandWorkspaceSegments(directory, segments, index + 1));
+  }
+
+  const nextDirectory = path.join(currentDirectory, segment);
+  return fs.existsSync(nextDirectory) && fs.statSync(nextDirectory).isDirectory()
+    ? expandWorkspaceSegments(nextDirectory, segments, index + 1)
+    : [];
+}
+
+function readChildDirectories(directory: string): string[] {
+  if (!fs.existsSync(directory)) {
+    return [];
+  }
+
+  return fs.readdirSync(directory, { withFileTypes: true })
+    .filter((entry) => entry.isDirectory() && !workspaceIgnoredDirectories.has(entry.name))
+    .map((entry) => path.join(directory, entry.name));
+}
+
 function resolveFileCandidate(basePath: string): string | undefined {
   for (const candidate of buildCandidates(basePath)) {
-    if (fs.existsSync(candidate) && fs.statSync(candidate).isFile()) {
+    if (!isDeclarationFile(candidate) && fs.existsSync(candidate) && fs.statSync(candidate).isFile()) {
       return candidate;
     }
   }
@@ -265,6 +554,15 @@ function buildCandidates(basePath: string): string[] {
   }
 
   return [...candidates];
+}
+
+function isDeclarationFile(filePath: string): boolean {
+  return /\.d\.[cm]?ts$/.test(filePath);
+}
+
+function isInsideDirectory(filePath: string, directory: string): boolean {
+  const relative = path.relative(directory, filePath);
+  return relative === "" || Boolean(relative && !relative.startsWith("..") && !path.isAbsolute(relative));
 }
 
 function escapeRegExp(value: string): string {

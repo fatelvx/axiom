@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+## 0.5.2 - Package Export Resolution
+
+- Added resolver support for package `imports` aliases such as `#internal/*`.
+- Added resolver support for root and workspace package `exports` subpaths.
+- Added a fixture proving workspace package exports create real observed module edges.
+
 ## 0.5.1 - Self Contract
 
 - Added an Axiom contract for Axiom's own production source boundaries.

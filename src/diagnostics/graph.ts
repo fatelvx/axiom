@@ -2,7 +2,7 @@ import path from "node:path";
 import type { ModuleRef, PathRef, SourceLocation, Violation, ViolationCode } from "../axi/types.js";
 import type { CheckResult } from "../validator/check.js";
 
-export const graphJsonSchemaVersion = "axiom.graph.v2";
+export const graphJsonSchemaVersion = "axiom.graph.v3";
 
 interface GraphJsonLocation {
   filePath: string;
@@ -42,6 +42,7 @@ interface GraphJsonObservedDependency {
     specifier: string;
     resolvedPath?: string;
   };
+  violations: GraphJsonDependencyViolation[];
 }
 
 interface GraphJsonViolation {
@@ -50,9 +51,22 @@ interface GraphJsonViolation {
   location?: GraphJsonLocation;
 }
 
+interface GraphJsonDependencyViolation {
+  code: ViolationCode;
+  message: string;
+  suggestion?: string;
+}
+
+export interface GraphFormatOptions {
+  violationsOnly?: boolean;
+}
+
 export interface GraphJsonResult {
   schemaVersion: typeof graphJsonSchemaVersion;
   root: string;
+  filters: {
+    violationsOnly: boolean;
+  };
   summary: {
     modules: number;
     declaredDependencies: number;
@@ -60,6 +74,7 @@ export interface GraphJsonResult {
     exposedPaths: number;
     hiddenPaths: number;
     observedDependencies: number;
+    shownObservedDependencies: number;
     violations: number;
     warnings: number;
   };
@@ -73,20 +88,28 @@ export interface GraphJsonResult {
   warnings: GraphJsonViolation[];
 }
 
-export function formatGraphResult(result: CheckResult): string {
-  const graph = toGraphJson(result);
+export function formatGraphResult(result: CheckResult, options: GraphFormatOptions = {}): string {
+  const graph = toGraphJson(result, options);
   const lines = [
-    "Axiom graph.",
+    options.violationsOnly ? "Axiom graph (violations only)." : "Axiom graph.",
     `modules: ${graph.summary.modules}`,
     `declared dependencies: ${graph.summary.declaredDependencies}`,
     `forbidden dependencies: ${graph.summary.forbiddenDependencies}`,
-    `observed dependencies: ${graph.summary.observedDependencies}`,
+    `observed dependencies: ${formatObservedDependencyCount(graph)}`,
     `violations: ${graph.summary.violations}`,
     `warnings: ${graph.summary.warnings}`,
-    "",
-    "declared dependencies:"
   ];
 
+  if (options.violationsOnly) {
+    lines.push("");
+    lines.push(...formatViolatingDependencies(graph));
+    lines.push("");
+    lines.push(...formatOtherViolations(graph));
+    return lines.join("\n");
+  }
+
+  lines.push("");
+  lines.push("declared dependencies:");
   lines.push(...formatEdges(graph.declaredDependencies, "  ", "->"));
   lines.push("");
   lines.push("forbidden dependencies:");
@@ -105,8 +128,12 @@ export function formatGraphResult(result: CheckResult): string {
     lines.push("  none");
   } else {
     for (const dependency of graph.observedDependencies) {
+      const violationSuffix =
+        dependency.violations.length > 0
+          ? ` [${dependency.violations.map((violation) => violation.code).join(", ")}]`
+          : "";
       lines.push(
-        `  ${dependency.fromModule} -> ${dependency.toModule} via ${dependency.import.filePath}:${dependency.import.line} "${dependency.import.specifier}"`
+        `  ${dependency.fromModule} -> ${dependency.toModule} via ${dependency.import.filePath}:${dependency.import.line} "${dependency.import.specifier}"${violationSuffix}`
       );
     }
   }
@@ -114,11 +141,11 @@ export function formatGraphResult(result: CheckResult): string {
   return lines.join("\n");
 }
 
-export function formatGraphJson(result: CheckResult): string {
-  return JSON.stringify(toGraphJson(result), null, 2);
+export function formatGraphJson(result: CheckResult, options: GraphFormatOptions = {}): string {
+  return JSON.stringify(toGraphJson(result, options), null, 2);
 }
 
-export function toGraphJson(result: CheckResult): GraphJsonResult {
+export function toGraphJson(result: CheckResult, options: GraphFormatOptions = {}): GraphJsonResult {
   const declaredDependencies = result.spec.modules.flatMap((module) =>
     module.depends.map((dependency) => toEdge(result.root, module.name, dependency))
   );
@@ -131,17 +158,27 @@ export function toGraphJson(result: CheckResult): GraphJsonResult {
   const hiddenPaths = result.spec.modules.flatMap((module) =>
     module.hides.map((rule) => toVisibilityRule(result.root, module.name, rule))
   );
+  const allObservedDependencies = result.observedDependencies.map((dependency) =>
+    toObservedDependency(result.root, dependency, result.violations)
+  );
+  const observedDependencies = options.violationsOnly
+    ? allObservedDependencies.filter((dependency) => dependency.violations.length > 0)
+    : allObservedDependencies;
 
   return {
     schemaVersion: graphJsonSchemaVersion,
     root: normalizePath(result.root),
+    filters: {
+      violationsOnly: options.violationsOnly === true
+    },
     summary: {
       modules: result.spec.modules.length,
       declaredDependencies: declaredDependencies.length,
       forbiddenDependencies: forbiddenDependencies.length,
       exposedPaths: exposedPaths.length,
       hiddenPaths: hiddenPaths.length,
-      observedDependencies: result.observedDependencies.length,
+      observedDependencies: allObservedDependencies.length,
+      shownObservedDependencies: observedDependencies.length,
       violations: result.violations.length,
       warnings: result.warnings.length
     },
@@ -159,18 +196,7 @@ export function toGraphJson(result: CheckResult): GraphJsonResult {
     forbiddenDependencies,
     exposedPaths,
     hiddenPaths,
-    observedDependencies: result.observedDependencies.map((dependency) => ({
-      fromModule: dependency.fromModule,
-      toModule: dependency.toModule,
-      import: {
-        filePath: relativePath(result.root, dependency.importRecord.filePath),
-        line: dependency.importRecord.line,
-        specifier: dependency.importRecord.specifier,
-        ...(dependency.importRecord.resolvedPath
-          ? { resolvedPath: relativePath(result.root, dependency.importRecord.resolvedPath) }
-          : {})
-      }
-    })),
+    observedDependencies,
     violations: result.violations.map((violation) => ({
       code: violation.code,
       message: violation.message,
@@ -182,6 +208,66 @@ export function toGraphJson(result: CheckResult): GraphJsonResult {
       ...(warning.location ? { location: toJsonLocation(result.root, warning.location) } : {})
     }))
   };
+}
+
+function formatObservedDependencyCount(graph: GraphJsonResult): string {
+  if (!graph.filters.violationsOnly) {
+    return String(graph.summary.observedDependencies);
+  }
+
+  return `${graph.summary.shownObservedDependencies} of ${graph.summary.observedDependencies}`;
+}
+
+function formatViolatingDependencies(graph: GraphJsonResult): string[] {
+  const lines = ["violating dependencies:"];
+
+  if (graph.observedDependencies.length === 0) {
+    lines.push("  none");
+    return lines;
+  }
+
+  for (const dependency of graph.observedDependencies) {
+    lines.push(
+      `  ${dependency.fromModule} -> ${dependency.toModule} via ${dependency.import.filePath}:${dependency.import.line} "${dependency.import.specifier}"`
+    );
+
+    for (const violation of dependency.violations) {
+      lines.push(`    ${violation.code}: ${violation.message}`);
+      if (violation.suggestion) {
+        lines.push(`    fix: ${violation.suggestion}`);
+      }
+    }
+  }
+
+  return lines;
+}
+
+function formatOtherViolations(graph: GraphJsonResult): string[] {
+  const dependencyViolationKeys = new Set(
+    graph.observedDependencies.flatMap((dependency) =>
+      dependency.violations.map((violation) => `${dependency.import.filePath}:${dependency.import.line}:${violation.code}`)
+    )
+  );
+  const otherViolations = graph.violations.filter((violation) => {
+    if (!violation.location) {
+      return true;
+    }
+
+    return !dependencyViolationKeys.has(`${violation.location.filePath}:${violation.location.line}:${violation.code}`);
+  });
+  const lines = ["other violations:"];
+
+  if (otherViolations.length === 0) {
+    lines.push("  none");
+    return lines;
+  }
+
+  for (const violation of otherViolations) {
+    const location = violation.location ? ` ${violation.location.filePath}:${violation.location.line}` : "";
+    lines.push(`  ${violation.code}${location}: ${violation.message}`);
+  }
+
+  return lines;
 }
 
 function formatEdges(edges: GraphJsonEdge[], prefix: string, arrow: string): string[] {
@@ -213,6 +299,66 @@ function toVisibilityRule(root: string, module: string, rule: PathRef): GraphJso
     pattern: rule.pattern,
     ruleLocation: toJsonLocation(root, rule.location)
   };
+}
+
+function toObservedDependency(
+  root: string,
+  dependency: CheckResult["observedDependencies"][number],
+  violations: Violation[]
+): GraphJsonObservedDependency {
+  return {
+    fromModule: dependency.fromModule,
+    toModule: dependency.toModule,
+    import: {
+      filePath: relativePath(root, dependency.importRecord.filePath),
+      line: dependency.importRecord.line,
+      specifier: dependency.importRecord.specifier,
+      ...(dependency.importRecord.resolvedPath
+        ? { resolvedPath: relativePath(root, dependency.importRecord.resolvedPath) }
+        : {})
+    },
+    violations: violations
+      .filter((violation) => matchesObservedDependency(violation, dependency))
+      .map((violation) => ({
+        code: violation.code,
+        message: violation.message,
+        ...(readSuggestion(violation) ? { suggestion: readSuggestion(violation) } : {})
+      }))
+  };
+}
+
+function matchesObservedDependency(
+  violation: Violation,
+  dependency: CheckResult["observedDependencies"][number]
+): boolean {
+  if (!violation.location) {
+    return false;
+  }
+
+  if (
+    path.resolve(violation.location.filePath) !== path.resolve(dependency.importRecord.filePath) ||
+    violation.location.line !== dependency.importRecord.line
+  ) {
+    return false;
+  }
+
+  const fromModule = readString(violation.details?.fromModule);
+  const toModule = readString(violation.details?.toModule);
+  const specifier = readString(violation.details?.specifier);
+
+  return (
+    (!fromModule || fromModule === dependency.fromModule) &&
+    (!toModule || toModule === dependency.toModule) &&
+    (!specifier || specifier === dependency.importRecord.specifier)
+  );
+}
+
+function readSuggestion(violation: Violation): string | undefined {
+  return readString(violation.details?.suggestion);
+}
+
+function readString(value: unknown): string | undefined {
+  return typeof value === "string" && value.length > 0 ? value : undefined;
 }
 
 function toJsonLocation(root: string, location: SourceLocation): GraphJsonLocation {

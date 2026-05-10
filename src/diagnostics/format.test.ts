@@ -13,6 +13,7 @@ test("human diagnostics include forbidden rule details", () => {
 
   assert.match(output, /observed: Simulation -> Rendering via "\.\.\/rendering\/draw"/);
   assert.match(output, /rule: Simulation forbids module Rendering \(axiom\/main\.axi:13\)/);
+  assert.match(output, /fix: Remove the import, move the shared code to an allowed module/);
 });
 
 test("human diagnostics include undeclared dependency fix", () => {

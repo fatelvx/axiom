@@ -138,7 +138,8 @@ export function validateObservedDependencies(
           specifier: dependency.importRecord.specifier,
           observed: `${dependency.fromModule} -> ${dependency.toModule}`,
           rule: `${dependency.fromModule} forbids module ${dependency.toModule}`,
-          ruleLocation: forbiddenRule.location
+          ruleLocation: forbiddenRule.location,
+          suggestion: `Remove the import, move the shared code to an allowed module, or change the forbidden rule only if this dependency is intentional.`
         }
       });
       continue;

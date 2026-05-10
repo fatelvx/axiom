@@ -13,6 +13,7 @@ interface CliOptions {
   adoptionMode: AdoptionMode;
   groupDepth?: number;
   groupBy?: InferGroupBy;
+  graphViolationsOnly: boolean;
 }
 
 const args = process.argv.slice(2);
@@ -50,9 +51,9 @@ try {
   } else if (command === "check") {
     console.log(formatCheckResult(result));
   } else if (options.json) {
-    console.log(formatGraphJson(result));
+    console.log(formatGraphJson(result, { violationsOnly: options.graphViolationsOnly }));
   } else {
-    console.log(formatGraphResult(result));
+    console.log(formatGraphResult(result, { violationsOnly: options.graphViolationsOnly }));
   }
 
   process.exit(command === "check" && result.violations.length > 0 ? 1 : 0);
@@ -65,7 +66,8 @@ function parseOptions(values: string[], command: "check" | "graph" | "infer"): C
   const options: CliOptions = {
     root: process.cwd(),
     json: false,
-    adoptionMode: "loose"
+    adoptionMode: "loose",
+    graphViolationsOnly: false
   };
 
   for (let index = 0; index < values.length; index += 1) {
@@ -113,6 +115,16 @@ function parseOptions(values: string[], command: "check" | "graph" | "infer"): C
       }
       options.configPath = configPath;
       index += 1;
+      continue;
+    }
+
+    if (value === "--violations-only") {
+      if (command !== "graph") {
+        console.error("--violations-only is only supported by graph.");
+        process.exit(1);
+      }
+
+      options.graphViolationsOnly = true;
       continue;
     }
 
@@ -168,13 +180,16 @@ function printHelp(): void {
 
 Usage:
   axi check [--root <path>] [--config <path>] [--json] [--warn-unowned] [--strict]
-  axi graph [--root <path>] [--config <path>] [--json] [--warn-unowned] [--strict]
+  axi graph [--root <path>] [--config <path>] [--json] [--warn-unowned] [--strict] [--violations-only]
   axi infer [--root <path>] [--config <path>] [--json] [--group-depth <n>] [--group-by folder|workspace]
 
 Commands:
   check   Validate source dependencies against .axi architecture specs.
   graph   Print declared and observed architecture graphs.
   infer   Print a starter .axi contract inferred from current imports.
+
+Graph:
+  --violations-only  Show only observed dependency edges that have violations.
 
 Adoption:
   default          Ignore source files not owned by any module path.

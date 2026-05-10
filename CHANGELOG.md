@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+## 0.5.6 - Focused Graph Diagnostics
+
+- Added `axi graph --violations-only` to show only observed dependency edges that currently have violations.
+- Added violation annotations to graph JSON observed dependency entries and bumped graph JSON to `axiom.graph.v3`.
+- Added a fix suggestion for `forbidden_dependency` diagnostics.
+
 ## 0.5.5 - Cross-Platform Test Runner
 
 - Replaced the quoted test glob with a small Node test runner script.

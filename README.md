@@ -18,7 +18,7 @@ Axiom is not an AI prompt wrapper. The first product is a real validator that ca
 
 ## Status
 
-`v0.5.4` is an architecture firewall MVP with stronger resolver coverage, workspace-aware onboarding, adoption controls, and a CI-backed self-hosted Axiom contract.
+`v0.5.6` is an architecture firewall MVP with stronger resolver coverage, workspace-aware onboarding, adoption controls, focused graph diagnostics, and a CI-backed self-hosted Axiom contract.
 
 It currently supports:
 
@@ -39,6 +39,7 @@ It currently supports:
 - Gradual adoption modes for unowned source files.
 - Human-readable diagnostics.
 - JSON output for CI and agents.
+- Focused graph output for violating dependency edges.
 - Non-zero exit code on violations.
 - Axiom self-checking through this repository's own `axiom/main.axi` contract.
 - GitHub Actions validation for tests plus the Axiom self-contract.
@@ -139,6 +140,7 @@ node dist/cli.js check --root <project> --warn-unowned
 node dist/cli.js check --root <project> --strict
 node dist/cli.js graph --root <project>
 node dist/cli.js graph --root <project> --json
+node dist/cli.js graph --root <project> --violations-only
 node dist/cli.js infer --root <project>
 node dist/cli.js infer --root <project> --json
 node dist/cli.js infer --root <project> --group-depth 2
@@ -170,7 +172,7 @@ Exit codes:
 - `0`: no violations
 - `1`: one or more violations
 
-`axi graph` is for inspection and exits `0` even when the graph contains violations. Use `axi check` as the CI gate.
+`axi graph` is for inspection and exits `0` even when the graph contains violations. Use `axi graph --violations-only` when a large project graph is too noisy and you only want the observed dependency edges that need attention. Use `axi check` as the CI gate.
 
 `axi infer` is for onboarding. It scans the current relative import graph and prints a starter `.axi` contract to stdout without writing files:
 
@@ -341,7 +343,24 @@ observed dependencies:
   UI -> Services via src/ui/view.ts:3 "../services/internal/secret"
 ```
 
-`axi graph --json` emits a stable `axiom.graph.v2` payload with `modules`, `declaredDependencies`, `forbiddenDependencies`, `exposedPaths`, `hiddenPaths`, `observedDependencies`, and compact `violations` and `warnings` lists.
+Use `--violations-only` to focus the graph on broken observed dependency edges:
+
+```text
+Axiom graph (violations only).
+modules: 2
+declared dependencies: 1
+forbidden dependencies: 0
+observed dependencies: 2 of 3
+violations: 2
+warnings: 0
+
+violating dependencies:
+  UI -> Services via src/ui/view.ts:2 "../services/feature"
+    unexposed_import: UI imports a non-exposed path from Services.
+    fix: Import an exposed entry point from Services, or add an exposes rule for this public API.
+```
+
+`axi graph --json` emits a stable `axiom.graph.v3` payload with `modules`, `declaredDependencies`, `forbiddenDependencies`, `exposedPaths`, `hiddenPaths`, `observedDependencies`, and compact `violations` and `warnings` lists. Each observed dependency includes a `violations` array. When `--violations-only` is passed, `observedDependencies` contains only the observed edges that have violations while `summary.observedDependencies` keeps the total count and `summary.shownObservedDependencies` reports the filtered count.
 
 ## Infer Output
 
@@ -393,7 +412,7 @@ The text mode is intentionally valid `.axi` with comments, so it can be redirect
 
 ## Violation Types
 
-Axiom v0.4 can report:
+Axiom v0.5.6 can report:
 
 - `forbidden_dependency`
 - `undeclared_dependency`

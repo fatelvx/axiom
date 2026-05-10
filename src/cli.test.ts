@@ -105,9 +105,45 @@ test("cli graph --json returns parseable graph output", () => {
   assert.equal(result.status, 0);
 
   const payload = JSON.parse(result.stdout);
-  assert.equal(payload.schemaVersion, "axiom.graph.v2");
+  assert.equal(payload.schemaVersion, "axiom.graph.v3");
   assert.equal(payload.summary.observedDependencies, 3);
+  assert.equal(payload.summary.shownObservedDependencies, 3);
   assert.equal(payload.violations[0].code, "unexposed_import");
+});
+
+test("cli graph --violations-only filters observed dependency output", () => {
+  const result = spawnSync(
+    process.execPath,
+    [cliPath, "graph", "--root", "fixtures/visibility-rules", "--violations-only"],
+    { cwd: repoRoot, encoding: "utf8" }
+  );
+
+  assert.equal(result.status, 0);
+  assert.match(result.stdout, /Axiom graph \(violations only\)\./);
+  assert.match(result.stdout, /observed dependencies: 2 of 3/);
+  assert.doesNotMatch(result.stdout, /src\/ui\/view\.ts:1 "\.\.\/services"/);
+  assert.match(result.stdout, /src\/ui\/view\.ts:2 "\.\.\/services\/feature"/);
+  assert.match(result.stdout, /src\/ui\/view\.ts:3 "\.\.\/services\/internal\/secret"/);
+});
+
+test("cli graph --violations-only --json returns filtered graph output", () => {
+  const result = spawnSync(
+    process.execPath,
+    [cliPath, "graph", "--root", "fixtures/visibility-rules", "--violations-only", "--json"],
+    { cwd: repoRoot, encoding: "utf8" }
+  );
+
+  assert.equal(result.status, 0);
+
+  const payload = JSON.parse(result.stdout);
+  assert.equal(payload.schemaVersion, "axiom.graph.v3");
+  assert.deepEqual(payload.filters, { violationsOnly: true });
+  assert.equal(payload.summary.observedDependencies, 3);
+  assert.equal(payload.summary.shownObservedDependencies, 2);
+  assert.deepEqual(
+    payload.observedDependencies.map((edge: { violations: Array<{ code: string }> }) => edge.violations[0]?.code),
+    ["unexposed_import", "hidden_import"]
+  );
 });
 
 test("cli infer prints a starter .axi contract", () => {

@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+## 0.3.1 - Generic Discovery Defaults
+
+- Narrowed built-in ignored directories to common dependency, build, cache, and temporary output folders.
+- Kept project-specific generated or runtime folders out of public defaults; use `axiom.config.json` `exclude` for those.
+
 ## 0.3.0 - Adoption Modes
 
 - Added `--warn-unowned` and `--strict` adoption modes for unowned source files.

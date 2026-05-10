@@ -18,7 +18,7 @@ Axiom is not an AI prompt wrapper. The first product is a real validator that ca
 
 ## Status
 
-`v0.3.0` is an architecture firewall MVP with onboarding and adoption controls.
+`v0.3.1` is an architecture firewall MVP with onboarding and adoption controls.
 
 It currently supports:
 
@@ -137,10 +137,9 @@ node dist/cli.js infer --root <project>
 node dist/cli.js infer --root <project> --json
 ```
 
-Default discovery skips common dependency, build, cache, generated, and local runtime folders:
+Default discovery skips common dependency, build, and cache folders:
 
 ```text
-.benchmark_tmp
 .cache
 .git
 .next
@@ -151,10 +150,8 @@ Default discovery skips common dependency, build, cache, generated, and local ru
 build
 coverage
 dist
-generated-projects
 node_modules
 out
-src-tauri
 target
 temp
 tmp
@@ -202,7 +199,7 @@ Fields:
 - `specs`: `.axi` spec files to read. Defaults to `axiom/**/*.axi` and `*.axi`.
 - `tsconfig`: TypeScript config path used for `paths` import alias resolution, honoring `baseUrl`. Defaults to `tsconfig.json` when present.
 
-Config paths and patterns are relative to `--root`. Default ignored directories such as `node_modules`, `dist`, `.git`, and `src-tauri` are still skipped.
+Config paths and patterns are relative to `--root`. Default ignored directories such as `node_modules`, `dist`, and `.git` are still skipped. Project-specific generated or runtime folders should be excluded explicitly with `exclude`.
 
 ## JSON Output
 

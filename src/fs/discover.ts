@@ -10,7 +10,6 @@ export interface DiscoveryOptions {
 }
 
 const ignoredDirectories = new Set([
-  ".benchmark_tmp",
   ".cache",
   ".git",
   ".next",
@@ -21,10 +20,8 @@ const ignoredDirectories = new Set([
   "build",
   "coverage",
   "dist",
-  "generated-projects",
   "node_modules",
   "out",
-  "src-tauri",
   "target",
   "temp",
   "tmp"

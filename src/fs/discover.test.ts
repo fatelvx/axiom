@@ -5,7 +5,7 @@ import path from "node:path";
 import test from "node:test";
 import { findAxiomFiles, findSourceFiles } from "./discover.js";
 
-test("source discovery skips generated and runtime directories by default", () => {
+test("source discovery skips dependency, build, and cache directories by default", () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "axi-discover-"));
 
   try {
@@ -13,7 +13,6 @@ test("source discovery skips generated and runtime directories by default", () =
     writeFile(root, "axiom/main.axi", "module App\npath \"src/**\"\n");
 
     for (const directory of [
-      ".benchmark_tmp",
       ".cache",
       ".git",
       ".next",
@@ -24,10 +23,8 @@ test("source discovery skips generated and runtime directories by default", () =
       "build",
       "coverage",
       "dist",
-      "generated-projects",
       "node_modules",
       "out",
-      "src-tauri",
       "target",
       "temp",
       "tmp"
@@ -38,6 +35,25 @@ test("source discovery skips generated and runtime directories by default", () =
 
     assert.deepEqual(findSourceFiles(root).map((filePath) => normalize(root, filePath)), ["src/app.ts"]);
     assert.deepEqual(findAxiomFiles(root).map((filePath) => normalize(root, filePath)), ["axiom/main.axi"]);
+  } finally {
+    fs.rmSync(root, { force: true, recursive: true });
+  }
+});
+
+test("project-specific generated folders are controlled by exclude config", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "axi-discover-generated-"));
+
+  try {
+    writeFile(root, "src/app.ts", "export const app = true;\n");
+    writeFile(root, "project-artifacts/output.ts", "export const generated = true;\n");
+
+    assert.deepEqual(findSourceFiles(root).map((filePath) => normalize(root, filePath)), [
+      "project-artifacts/output.ts",
+      "src/app.ts"
+    ]);
+    assert.deepEqual(findSourceFiles(root, { exclude: ["project-artifacts/**"] }).map((filePath) => normalize(root, filePath)), [
+      "src/app.ts"
+    ]);
   } finally {
     fs.rmSync(root, { force: true, recursive: true });
   }

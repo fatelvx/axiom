@@ -6,6 +6,7 @@
 - Updated GitHub Actions dependencies to current major versions while keeping CI on Node 20.
 - Added planned `.axi` suppressions with required expiration dates and reasons.
 - Added unused suppression warnings so stale temporary exceptions remain visible after code cleanup.
+- Included warning guardrails in focused graph output so `axi graph --violations-only` acts more like an architecture attention view.
 - Bumped check JSON to `axiom.check.v3` and graph JSON to `axiom.graph.v4` for suppressed violation reporting.
 
 ## 0.5.8 - Monorepo Spec Discovery

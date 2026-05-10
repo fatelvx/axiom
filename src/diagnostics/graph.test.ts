@@ -105,6 +105,7 @@ test("violations-only graph output focuses observed edges with diagnostics", () 
   assert.match(output, /src\/ui\/view\.ts:3 "\.\.\/services\/internal\/secret"/);
   assert.match(output, /hidden_import: UI imports hidden path from Services\./);
   assert.match(output, /other violations:\n  none/);
+  assert.match(output, /warnings:\n  none/);
 });
 
 test("violations-only graph JSON filters observed dependencies but keeps total counts", () => {
@@ -130,4 +131,15 @@ test("violations-only graph output includes active suppressed dependency debt", 
   assert.match(output, /suppressed forbidden_dependency: Simulation imports forbidden module Rendering\./);
   assert.match(output, /suppression: until 2099-01-01 \(axiom\/main\.axi:7\)/);
   assert.match(output, /reason: legacy renderer migration/);
+});
+
+test("violations-only graph output includes warning guardrails", () => {
+  const result = runCheck({ root: path.join(repoRoot, "fixtures/unused-suppression") });
+  const output = formatGraphResult(result, { violationsOnly: true });
+
+  assert.match(output, /violations: 0/);
+  assert.match(output, /warnings: 1/);
+  assert.match(output, /violating dependencies:\n  none/);
+  assert.match(output, /warnings:\n  unused_suppression axiom\/main\.axi:7: Simulation has an unused suppression for Rendering\./);
+  assert.match(output, /fix: Remove the suppression if the architecture debt is gone/);
 });

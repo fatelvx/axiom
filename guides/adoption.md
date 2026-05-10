@@ -150,6 +150,8 @@ axi check --root . --json
 
 Use human output while developing. Use JSON output for CI annotations, agent feedback, and custom reporting.
 
+`axi graph --root . --violations-only` is also useful as an architecture attention view: it keeps failing edges, active suppression debt, and warning guardrails in one focused output.
+
 ## When To Tighten
 
 Start loose:

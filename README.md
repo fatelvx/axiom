@@ -361,7 +361,7 @@ Suppressions only apply to observed dependency and visibility violations. Expire
 }
 ```
 
-`axi graph --json` emits `axiom.graph.v4`. Each observed dependency includes `violations` and `suppressedViolations` arrays. With `--violations-only`, `observedDependencies` is filtered to the edges that need attention or have active suppression debt, while `summary.observedDependencies` keeps the full count.
+`axi graph --json` emits `axiom.graph.v4`. Each observed dependency includes `violations` and `suppressedViolations` arrays. With `--violations-only`, `observedDependencies` is filtered to the edges that need attention or have active suppression debt, warning guardrails are still shown, and `summary.observedDependencies` keeps the full count.
 
 ## CI
 

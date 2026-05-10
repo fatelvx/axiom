@@ -50,6 +50,7 @@ interface GraphJsonViolation {
   code: ViolationCode;
   message: string;
   location?: GraphJsonLocation;
+  suggestion?: string;
 }
 
 interface GraphJsonDependencyViolation {
@@ -116,6 +117,8 @@ export function formatGraphResult(result: CheckResult, options: GraphFormatOptio
     lines.push(...formatViolatingDependencies(graph));
     lines.push("");
     lines.push(...formatOtherViolations(graph));
+    lines.push("");
+    lines.push(...formatWarnings(graph));
     return lines.join("\n");
   }
 
@@ -217,12 +220,14 @@ export function toGraphJson(result: CheckResult, options: GraphFormatOptions = {
     violations: result.violations.map((violation) => ({
       code: violation.code,
       message: violation.message,
-      ...(violation.location ? { location: toJsonLocation(result.root, violation.location) } : {})
+      ...(violation.location ? { location: toJsonLocation(result.root, violation.location) } : {}),
+      ...(readSuggestion(violation) ? { suggestion: readSuggestion(violation) } : {})
     })),
     warnings: result.warnings.map((warning) => ({
       code: warning.code,
       message: warning.message,
-      ...(warning.location ? { location: toJsonLocation(result.root, warning.location) } : {})
+      ...(warning.location ? { location: toJsonLocation(result.root, warning.location) } : {}),
+      ...(readSuggestion(warning) ? { suggestion: readSuggestion(warning) } : {})
     }))
   };
 }
@@ -290,6 +295,25 @@ function formatOtherViolations(graph: GraphJsonResult): string[] {
   for (const violation of otherViolations) {
     const location = violation.location ? ` ${violation.location.filePath}:${violation.location.line}` : "";
     lines.push(`  ${violation.code}${location}: ${violation.message}`);
+  }
+
+  return lines;
+}
+
+function formatWarnings(graph: GraphJsonResult): string[] {
+  const lines = ["warnings:"];
+
+  if (graph.warnings.length === 0) {
+    lines.push("  none");
+    return lines;
+  }
+
+  for (const warning of graph.warnings) {
+    const location = warning.location ? ` ${warning.location.filePath}:${warning.location.line}` : "";
+    lines.push(`  ${warning.code}${location}: ${warning.message}`);
+    if (warning.suggestion) {
+      lines.push(`  fix: ${warning.suggestion}`);
+    }
   }
 
   return lines;

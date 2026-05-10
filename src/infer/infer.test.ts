@@ -54,3 +54,12 @@ test("infer JSON includes the generated .axi draft", () => {
   assert.equal(payload.summary.modules, 3);
   assert.match(payload.axi, /module Physics/);
 });
+
+test("infer uses TypeScript path aliases from tsconfig", () => {
+  const result = runInfer({ root: path.join(repoRoot, "fixtures/tsconfig-paths") });
+
+  assert.deepEqual(result.observedDependencies.map((dependency) => `${dependency.fromModule}->${dependency.toModule}`), [
+    "App->Shared"
+  ]);
+  assert.deepEqual(result.modules.find((module) => module.name === "App")?.depends, ["Shared"]);
+});

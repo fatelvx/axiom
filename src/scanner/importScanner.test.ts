@@ -3,6 +3,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import test from "node:test";
+import { createImportResolver } from "./importResolver.js";
 import { scanImports } from "./importScanner.js";
 
 test("scanner resolves relative dynamic imports and barrel index imports", () => {
@@ -55,6 +56,35 @@ test("scanner resolves relative dynamic imports and barrel index imports", () =>
         }
       ]
     );
+  } finally {
+    fs.rmSync(root, { force: true, recursive: true });
+  }
+});
+
+test("scanner resolves aliases through an injected resolver", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "axi-imports-alias-"));
+
+  try {
+    writeFile(
+      root,
+      "tsconfig.json",
+      JSON.stringify({
+        compilerOptions: {
+          baseUrl: ".",
+          paths: {
+            "@shared": ["src/shared/index.ts"]
+          }
+        }
+      })
+    );
+    writeFile(root, "src/app.ts", 'import { shared } from "@shared";\n');
+    writeFile(root, "src/shared/index.ts", "export const shared = true;\n");
+
+    const imports = scanImports(path.join(root, "src/app.ts"), {
+      resolver: createImportResolver({ root })
+    });
+
+    assert.deepEqual(imports.map((record) => normalize(root, record.resolvedPath)), ["src/shared/index.ts"]);
   } finally {
     fs.rmSync(root, { force: true, recursive: true });
   }

@@ -1,6 +1,10 @@
 import fs from "node:fs";
-import path from "node:path";
 import type { ImportRecord } from "../axi/types.js";
+import { resolveRelativeImport, type ImportResolver } from "./importResolver.js";
+
+export interface ScanImportsOptions {
+  resolver?: ImportResolver;
+}
 
 const importPatterns = [
   /\bimport\s+(?:type\s+)?(?:[^'"]*?\s+from\s*)?["']([^"']+)["']/,
@@ -9,12 +13,11 @@ const importPatterns = [
   /\brequire\s*\(\s*["']([^"']+)["']\s*\)/
 ];
 
-const extensionCandidates = [".ts", ".tsx", ".js", ".jsx", ".mts", ".cts"];
-
-export function scanImports(filePath: string): ImportRecord[] {
+export function scanImports(filePath: string, options: ScanImportsOptions = {}): ImportRecord[] {
   const text = fs.readFileSync(filePath, "utf8");
   const lines = text.split(/\r?\n/);
   const imports: ImportRecord[] = [];
+  const resolver = options.resolver ?? { resolve: resolveRelativeImport };
 
   for (let index = 0; index < lines.length; index += 1) {
     const line = lines[index] ?? "";
@@ -30,42 +33,11 @@ export function scanImports(filePath: string): ImportRecord[] {
         filePath,
         line: index + 1,
         specifier,
-        resolvedPath: resolveImport(filePath, specifier)
+        resolvedPath: resolver.resolve(filePath, specifier)
       });
       break;
     }
   }
 
   return imports;
-}
-
-function resolveImport(fromFile: string, specifier: string): string | undefined {
-  if (!specifier.startsWith(".")) {
-    return undefined;
-  }
-
-  const basePath = path.resolve(path.dirname(fromFile), specifier);
-  const candidates = buildCandidates(basePath);
-
-  for (const candidate of candidates) {
-    if (fs.existsSync(candidate) && fs.statSync(candidate).isFile()) {
-      return candidate;
-    }
-  }
-
-  return undefined;
-}
-
-function buildCandidates(basePath: string): string[] {
-  const candidates: string[] = [basePath];
-
-  for (const extension of extensionCandidates) {
-    candidates.push(`${basePath}${extension}`);
-  }
-
-  for (const extension of extensionCandidates) {
-    candidates.push(path.join(basePath, `index${extension}`));
-  }
-
-  return candidates;
 }

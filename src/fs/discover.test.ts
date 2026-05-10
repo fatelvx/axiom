@@ -62,6 +62,9 @@ test("source and spec discovery respect include, exclude, and specs config", () 
 
     assert.deepEqual(findSourceFiles(root, options).map((filePath) => normalize(root, filePath)), ["src/app.ts"]);
     assert.deepEqual(findAxiomFiles(root, options).map((filePath) => normalize(root, filePath)), ["architecture/main.axi"]);
+    assert.deepEqual(findAxiomFiles(root, { ...options, exclude: ["architecture/**"] }).map((filePath) => normalize(root, filePath)), [
+      "architecture/main.axi"
+    ]);
   } finally {
     fs.rmSync(root, { force: true, recursive: true });
   }

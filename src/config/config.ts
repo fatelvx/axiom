@@ -5,6 +5,7 @@ export interface AxiomConfig {
   include?: string[];
   exclude?: string[];
   specs?: string[];
+  tsconfig?: string;
 }
 
 export interface LoadedAxiomConfig {
@@ -12,6 +13,7 @@ export interface LoadedAxiomConfig {
   include: string[];
   exclude: string[];
   specs: string[];
+  tsconfig?: string;
 }
 
 export const defaultSpecPatterns = ["axiom/**/*.axi", "*.axi"];
@@ -34,7 +36,8 @@ export function loadConfig(root: string, configPath?: string): LoadedAxiomConfig
     filePath: resolvedConfigPath,
     include: config.include ?? [],
     exclude: config.exclude ?? [],
-    specs: config.specs ?? [...defaultSpecPatterns]
+    specs: config.specs ?? [...defaultSpecPatterns],
+    ...(config.tsconfig ? { tsconfig: config.tsconfig } : {})
   };
 }
 
@@ -69,7 +72,8 @@ function parseConfigFile(filePath: string): AxiomConfig {
   return {
     include: readOptionalStringArray(filePath, rawConfig, "include"),
     exclude: readOptionalStringArray(filePath, rawConfig, "exclude"),
-    specs: readOptionalStringArray(filePath, rawConfig, "specs")
+    specs: readOptionalStringArray(filePath, rawConfig, "specs"),
+    tsconfig: readOptionalString(filePath, rawConfig, "tsconfig")
   };
 }
 
@@ -81,6 +85,19 @@ function readOptionalStringArray(filePath: string, config: Record<string, unknow
 
   if (!Array.isArray(value) || value.some((item) => typeof item !== "string")) {
     throw new Error(`Axiom config '${key}' must be an array of strings: ${filePath}`);
+  }
+
+  return value;
+}
+
+function readOptionalString(filePath: string, config: Record<string, unknown>, key: keyof AxiomConfig): string | undefined {
+  const value = config[key];
+  if (value === undefined) {
+    return undefined;
+  }
+
+  if (typeof value !== "string") {
+    throw new Error(`Axiom config '${key}' must be a string: ${filePath}`);
   }
 
   return value;

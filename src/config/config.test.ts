@@ -28,7 +28,8 @@ test("loadConfig reads axiom.config.json from the project root", () => {
       JSON.stringify({
         include: ["src/**"],
         exclude: ["src/generated/**"],
-        specs: ["architecture/**/*.axi"]
+        specs: ["architecture/**/*.axi"],
+        tsconfig: "tsconfig.app.json"
       })
     );
 
@@ -37,6 +38,7 @@ test("loadConfig reads axiom.config.json from the project root", () => {
     assert.deepEqual(config.include, ["src/**"]);
     assert.deepEqual(config.exclude, ["src/generated/**"]);
     assert.deepEqual(config.specs, ["architecture/**/*.axi"]);
+    assert.equal(config.tsconfig, "tsconfig.app.json");
     assert.equal(config.filePath, path.join(root, "axiom.config.json"));
   } finally {
     fs.rmSync(root, { force: true, recursive: true });

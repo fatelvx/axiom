@@ -4,6 +4,7 @@ import type { AxiomSpec, ImportRecord, ObservedDependency, Violation } from "../
 import { parseAxiomText } from "../axi/parser.js";
 import { loadConfig } from "../config/config.js";
 import { findAxiomFiles, findSourceFiles } from "../fs/discover.js";
+import { createImportResolver } from "../scanner/importResolver.js";
 import { scanImports } from "../scanner/importScanner.js";
 import { createOwnershipIndex, validateOwnership } from "./ownership.js";
 import { buildObservedDependencies, validateObservedDependencies, validateSpec } from "./validate.js";
@@ -28,6 +29,7 @@ export function runCheck(options: CheckOptions): CheckResult {
   const config = loadConfig(root, options.configPath);
   const specFiles = findAxiomFiles(root, config);
   const sourceFiles = findSourceFiles(root, config);
+  const resolver = createImportResolver({ root, tsconfigPath: config.tsconfig });
   const violations: Violation[] = [];
   const spec: AxiomSpec = { modules: [], layerOrders: [] };
 
@@ -48,7 +50,7 @@ export function runCheck(options: CheckOptions): CheckResult {
 
   violations.push(...validateSpec(spec));
 
-  const imports: ImportRecord[] = sourceFiles.flatMap((sourceFile) => scanImports(sourceFile));
+  const imports: ImportRecord[] = sourceFiles.flatMap((sourceFile) => scanImports(sourceFile, { resolver }));
   const ownership = createOwnershipIndex(root, spec.modules);
   violations.push(...validateOwnership(sourceFiles, ownership));
   const observedDependencies = buildObservedDependencies(imports, ownership);

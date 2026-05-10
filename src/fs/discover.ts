@@ -34,7 +34,7 @@ const sourceExtensions = new Set([".ts", ".tsx", ".js", ".jsx", ".mts", ".cts"])
 
 export function findAxiomFiles(root: string, options: DiscoveryOptions = {}): string[] {
   const specPatterns = compilePatterns(options.specs ?? defaultSpecPatterns);
-  return walkFiles(root, options).filter((filePath) => filePath.endsWith(".axi") && matchesAny(root, filePath, specPatterns));
+  return walkFiles(root, {}).filter((filePath) => filePath.endsWith(".axi") && matchesAny(root, filePath, specPatterns));
 }
 
 export function findSourceFiles(root: string, options: DiscoveryOptions = {}): string[] {

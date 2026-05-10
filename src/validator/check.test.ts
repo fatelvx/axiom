@@ -100,3 +100,25 @@ test("check uses axiom.config.json discovery settings", () => {
     "src/app.ts"
   ]);
 });
+
+test("check resolves TypeScript path aliases from tsconfig", () => {
+  const result = runCheck({ root: path.join(repoRoot, "fixtures/tsconfig-paths") });
+
+  assert.deepEqual(result.violations, []);
+  assert.deepEqual(
+    result.observedDependencies.map((dependency) => ({
+      fromModule: dependency.fromModule,
+      toModule: dependency.toModule,
+      specifier: dependency.importRecord.specifier,
+      resolvedPath: path.relative(result.root, dependency.importRecord.resolvedPath ?? "").replace(/\\/g, "/")
+    })),
+    [
+      {
+        fromModule: "App",
+        toModule: "Shared",
+        specifier: "@shared",
+        resolvedPath: "src/shared/index.ts"
+      }
+    ]
+  );
+});

@@ -15,6 +15,8 @@
 - Inference groups source folders into candidate modules and collapses cyclic candidate groups into one starter module so drafts can mirror existing code.
 - Added `axiom.config.json` support with source `include`, source `exclude`, and `.axi` `specs` discovery patterns.
 - Added `--config <path>` support for `check`, `graph`, and `infer`.
+- Added TypeScript `paths` alias resolution from `tsconfig.json` or a configured `tsconfig` path, honoring `baseUrl`.
+- Clarified that source `exclude` does not control `.axi` spec discovery; use `specs` for spec discovery.
 
 ## 0.1.0 - Architecture Firewall MVP
 

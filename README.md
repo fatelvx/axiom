@@ -31,6 +31,7 @@ It currently supports:
 - Layer direction checks.
 - Starter contract inference with `axi infer`.
 - Project config with source `include`/`exclude` and spec discovery patterns.
+- TypeScript `paths` alias resolution from `tsconfig.json`, honoring `baseUrl`.
 - Human-readable diagnostics.
 - JSON output for CI and agents.
 - Non-zero exit code on violations.
@@ -187,7 +188,8 @@ Minimal config:
 {
   "include": ["src/**"],
   "exclude": ["src/**/*.test.ts", "src/generated/**"],
-  "specs": ["architecture/**/*.axi", "*.axi"]
+  "specs": ["architecture/**/*.axi", "*.axi"],
+  "tsconfig": "tsconfig.app.json"
 }
 ```
 
@@ -196,8 +198,9 @@ Fields:
 - `include`: source files to scan. If omitted, Axiom scans all supported source files outside default ignored directories.
 - `exclude`: source files or directories to skip, in addition to default ignored directories.
 - `specs`: `.axi` spec files to read. Defaults to `axiom/**/*.axi` and `*.axi`.
+- `tsconfig`: TypeScript config path used for `paths` import alias resolution, honoring `baseUrl`. Defaults to `tsconfig.json` when present.
 
-Config patterns are relative to `--root`. Default ignored directories such as `node_modules`, `dist`, `.git`, `.lumina`, and `src-tauri` are still skipped.
+Config paths and patterns are relative to `--root`. Default ignored directories such as `node_modules`, `dist`, `.git`, `.lumina`, and `src-tauri` are still skipped.
 
 ## JSON Output
 
@@ -374,8 +377,9 @@ The current scanner resolves TypeScript/JavaScript relative imports, including:
 - `import("../module")`
 - `require("../module")`
 - directory barrel imports that resolve to `index.ts`, `index.tsx`, `index.js`, and related JS/TS extensions
+- TypeScript `paths` aliases from `tsconfig.json` or a configured `tsconfig` path, honoring `baseUrl`
 
-Path aliases from `tsconfig.json` are planned next because they need a project-aware resolver rather than a line-only scanner.
+The scanner is still line-oriented, so multiline imports and more complex language syntax remain planned hardening work.
 
 ## Test Fixtures
 
@@ -403,7 +407,6 @@ node dist/cli.js check --root fixtures/layer-breach --json
 Near-term:
 
 - Strict mode for unowned source files.
-- TypeScript path alias resolution from `tsconfig.json`.
 - Better import scanner coverage for multiline imports.
 - GitHub Actions example.
 - External package dependency modelling.

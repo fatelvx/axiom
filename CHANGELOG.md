@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Reworked the README to make the project easier to understand and try from the GitHub landing page.
+- Added public getting-started and adoption guides.
+- Added an intentionally failing `examples/basic-app` project that demonstrates visibility violations and focused graph output.
+
 ## 0.5.6 - Focused Graph Diagnostics
 
 - Added `axi graph --violations-only` to show only observed dependency edges that currently have violations.

@@ -2,152 +2,237 @@
 
 ![Axiom architecture firewall banner](assets/banner.svg)
 
-Axiom is an architecture compiler for AI-era codebases.
+**Architecture contracts for AI-era codebases.**
 
-It reads `.axi` architecture contracts, scans real TypeScript/JavaScript source imports, builds declared and observed dependency graphs, and fails when the code breaks the declared architecture.
-
-The core idea:
+Axiom reads `.axi` contracts, scans real TypeScript and JavaScript imports, and fails when code drifts outside the architecture you declared.
 
 ```text
-.axi spec -> declared graph
-source code -> observed graph
-declared graph vs observed graph -> architecture breach report
+.axi contract -> declared graph
+source imports -> observed graph
+Axiom compares both -> architecture violations with file, line, rule, and fix
 ```
 
-Axiom is not an AI prompt wrapper. The first product is a real validator that can fail CI.
+Axiom is not a prompt wrapper and not a style linter. It is an architecture compiler: it turns boundaries that usually live in docs, reviews, and memory into checks that can fail locally or in CI.
 
-## Status
+## Why It Exists
 
-`v0.5.6` is an architecture firewall MVP with stronger resolver coverage, workspace-aware onboarding, adoption controls, focused graph diagnostics, and a CI-backed self-hosted Axiom contract.
+AI coding agents are fast, but they often guess architecture from nearby files. Humans do this too. If your boundary is "UI may use Services, but only through the public Services entry point", that rule needs to be machine-checkable.
 
-It currently supports:
+Axiom lets you write:
 
-- `.axi` parser.
-- TypeScript/JavaScript import scanning through the TypeScript parser.
-- Module path ownership.
-- Multiple source paths per module.
-- Declared vs observed dependency checks.
-- Module visibility checks with `exposes` and `hides`.
-- Layer direction checks.
-- Starter contract inference with `axi infer`.
-- Configurable inference grouping depth.
-- Workspace/package-aware inference grouping.
-- Visibility suggestions in inferred starter contracts.
-- Project config with source `include`/`exclude`, traversal pruning, and spec discovery patterns.
-- TypeScript `paths` alias resolution from `tsconfig.json`, honoring `baseUrl`.
-- Package `imports` and workspace package `exports` resolution for internal package-style imports.
-- Gradual adoption modes for unowned source files.
-- Human-readable diagnostics.
-- JSON output for CI and agents.
-- Focused graph output for violating dependency edges.
-- Non-zero exit code on violations.
-- Axiom self-checking through this repository's own `axiom/main.axi` contract.
-- GitHub Actions validation for tests plus the Axiom self-contract.
+```axi
+module Services
+path "src/services/**"
+exposes "src/services/index.ts"
+hides "src/services/internal/**"
 
-## Install
+module UI
+path "src/ui/**"
+depends on Services
+```
+
+Then this is allowed:
+
+```ts
+import { getDashboardTitle } from "../services";
+```
+
+And this is reported:
+
+```ts
+import { issueServiceToken } from "../services/internal/token";
+```
+
+## Try It In 60 Seconds
+
+From this repository:
 
 ```bash
 npm install
 npm run build
+node dist/cli.js check --root examples/basic-app
 ```
+
+The example intentionally fails:
+
+```text
+Axiom check failed.
+violations: 2
+
+error unexposed_import src/ui/view.ts:2
+  UI imports a non-exposed path from Services.
+  observed: UI -> Services via "../services/feature"
+  rule: Services exposes src/services/index.ts (axiom/main.axi:13)
+  fix: Import an exposed entry point from Services, or add an exposes rule for this public API.
+
+error hidden_import src/ui/view.ts:3
+  UI imports hidden path from Services.
+  observed: UI -> Services via "../services/internal/token"
+  rule: Services hides src/services/internal/** (axiom/main.axi:14)
+  fix: Import an exposed entry point from Services, or move the shared code behind a public boundary.
+```
+
+For a smaller graph view:
+
+```bash
+node dist/cli.js graph --root examples/basic-app --violations-only
+```
+
+## What It Checks
+
+Axiom v0.5.6 currently supports:
+
+- Module ownership with `path`.
+- Multiple source paths per module.
+- Allowed dependencies with `depends on`.
+- Forbidden module edges with `forbids module`.
+- Layer direction with `layers Core -> UI`.
+- Public/private module surfaces with `exposes` and `hides`.
+- TypeScript/JavaScript import scanning through the TypeScript parser.
+- Relative imports, barrel `index.*` files, dynamic imports, `require`, and multiline imports.
+- TypeScript `paths` aliases from `tsconfig.json`.
+- Package `imports` and workspace package `exports` for internal package-style imports.
+- Gradual adoption with default loose mode, `--warn-unowned`, and `--strict`.
+- Human output and stable JSON output for CI and agents.
+- Starter contract inference with `axi infer`.
+- Focused graph output with `axi graph --violations-only`.
+
+## Install
 
 Requirements:
 
 - Node.js 20+
 - npm
 
-For local CLI use from a checkout:
+Local checkout:
+
+```bash
+npm install
+npm run build
+```
+
+Optional global install from this checkout:
 
 ```bash
 npm install -g .
-axi check --root fixtures/basic-ts-valid
+axi check --root examples/basic-app
 ```
 
-When published as an npm package, the intended usage is:
+Axiom is not published to npm yet. When it is published, the intended workflow is:
 
 ```bash
 npx <package-name> check --root .
 axi check --root .
 ```
 
-## Quickstart
+## Core Commands
 
-Create an architecture contract:
+```bash
+axi check --root <project>
+axi graph --root <project>
+axi infer --root <project>
+```
+
+Use them like this:
+
+- `axi check`: validate code against `.axi`; exits `1` on violations.
+- `axi graph`: inspect declared and observed graphs; exits `0` even with violations.
+- `axi graph --violations-only`: show only observed dependency edges with violations.
+- `axi infer`: print a starter `.axi` draft from existing imports.
+
+Useful flags:
+
+```bash
+axi check --root . --json
+axi check --root . --warn-unowned
+axi check --root . --strict
+axi graph --root . --json
+axi infer --root . --group-depth 2
+axi infer --root . --group-by workspace
+```
+
+## First Contract
+
+Create `axiom/main.axi`:
 
 ```axi
-layers Core -> UI
+layers Domain -> App -> UI
 
-module Physics
-path "src/physics/**"
-layer Core
+module Domain
+path "src/domain/**"
+layer Domain
+exposes "src/domain/index.ts"
 
-module Rendering
-path "src/rendering/**"
+module Services
+path "src/services/**"
+layer App
+depends on Domain
+exposes "src/services/index.ts"
+hides "src/services/internal/**"
+
+module UI
+path "src/ui/**"
 layer UI
-
-module Simulation
-path "src/simulation/**"
-path "packages/simulation/src/**"
-layer Core
-depends on Physics
-forbids module Rendering
-exposes "src/simulation/index.ts"
-hides "src/simulation/internal/**"
-purpose "deterministic physics simulation"
+depends on Services
 ```
 
-Run the validator:
+Run:
 
 ```bash
-node dist/cli.js check --root fixtures/basic-ts-valid
+axi check --root .
 ```
 
-Expected output:
+This contract says:
 
-```text
-Axiom check passed.
-modules: 3
-source files: 3
-imports scanned: 1
-observed dependencies: 1
-```
+- UI can depend on Services.
+- Services can depend on Domain.
+- Domain cannot depend outward on App or UI.
+- Other modules should import Services through `src/services/index.ts`.
+- `src/services/internal/**` is private.
 
-Try a failing example:
+## Existing Projects
+
+For an existing codebase, start with inference:
 
 ```bash
-node dist/cli.js check --root fixtures/layer-breach
+axi infer --root .
 ```
 
-Expected output:
-
-```text
-Axiom check failed.
-violations: 1
-
-error layer_breach src/simulation/step.ts:1
-  Simulation in layer Core imports Rendering in outer layer UI.
-  observed: Simulation -> Rendering via "../rendering/draw"
-  rule: layers Core -> UI (axiom/main.axi:1)
-  fix: Move the dependency inward, invert the dependency, or change the layer declarations.
-```
-
-## CLI
+For deeper folder grouping:
 
 ```bash
-node dist/cli.js check --root <project>
-node dist/cli.js check --root <project> --config axiom.config.json --json
-node dist/cli.js check --root <project> --warn-unowned
-node dist/cli.js check --root <project> --strict
-node dist/cli.js graph --root <project>
-node dist/cli.js graph --root <project> --json
-node dist/cli.js graph --root <project> --violations-only
-node dist/cli.js infer --root <project>
-node dist/cli.js infer --root <project> --json
-node dist/cli.js infer --root <project> --group-depth 2
-node dist/cli.js infer --root <project> --group-by workspace
+axi infer --root . --group-depth 2
 ```
 
-Default discovery skips common dependency, build, and cache folders:
+For monorepos:
+
+```bash
+axi infer --root . --group-by workspace
+```
+
+Inference prints a draft to stdout and does not write files. Treat it as a starting point: rename modules, add layers, tighten `depends on`, and add `exposes` or `hides` after review.
+
+## Project Config
+
+Axiom reads `axiom.config.json` from the project root when present:
+
+```json
+{
+  "include": ["src/**"],
+  "exclude": ["src/**/*.test.ts", "src/generated/**"],
+  "specs": ["axiom/**/*.axi"],
+  "tsconfig": "tsconfig.json"
+}
+```
+
+Fields:
+
+- `include`: source files to scan. If omitted, Axiom scans supported source files outside default ignored directories.
+- `exclude`: source files or directories to skip in addition to default ignored directories.
+- `specs`: `.axi` files to read. Defaults to `axiom/**/*.axi` and `*.axi`.
+- `tsconfig`: TypeScript config path used for `paths` alias resolution. Defaults to `tsconfig.json` when present.
+
+Default discovery skips common dependency, build, cache, and temporary output folders:
 
 ```text
 .cache
@@ -167,59 +252,32 @@ temp
 tmp
 ```
 
-Exit codes:
+Project-specific generated or runtime folders should go in your own `exclude` config.
 
-- `0`: no violations
-- `1`: one or more violations
+## Adoption Modes
 
-`axi graph` is for inspection and exits `0` even when the graph contains violations. Use `axi graph --violations-only` when a large project graph is too noisy and you only want the observed dependency edges that need attention. Use `axi check` as the CI gate.
+By default, Axiom ignores source files that are not owned by any module `path`. This keeps partial adoption cheap.
 
-`axi infer` is for onboarding. It scans the current relative import graph and prints a starter `.axi` contract to stdout without writing files:
-
-```bash
-node dist/cli.js infer --root .
-```
-
-The inferred contract groups source files by source folders, declares the dependencies that already exist, and collapses cyclic candidate groups into one module so the starter spec mirrors today's code. Treat the output as a draft: rename modules, split broad groups, and add `forbids module`, `exposes`, `hides`, and `layers` rules as the architecture settles.
-
-## Project Config
-
-Axiom reads `axiom.config.json` from the project root when it exists. You can also pass a root-relative config path:
+Use warning mode to measure coverage:
 
 ```bash
-axi check --root . --config axiom.config.json
-axi infer --root . --config axiom.config.json
+axi check --root . --warn-unowned
 ```
 
-Minimal config:
+Use strict mode once every discovered source file should be owned:
 
-```json
-{
-  "include": ["src/**"],
-  "exclude": ["src/**/*.test.ts", "src/generated/**"],
-  "specs": ["architecture/**/*.axi", "*.axi"],
-  "tsconfig": "tsconfig.app.json"
-}
+```bash
+axi check --root . --strict
 ```
-
-Fields:
-
-- `include`: source files to scan. If omitted, Axiom scans all supported source files outside default ignored directories.
-- `exclude`: source files or directories to skip, in addition to default ignored directories.
-- `specs`: `.axi` spec files to read. Defaults to `axiom/**/*.axi` and `*.axi`.
-- `tsconfig`: TypeScript config path used for `paths` import alias resolution, honoring `baseUrl`. Defaults to `tsconfig.json` when present.
-
-Config paths and patterns are relative to `--root`. Static `include` and directory-shaped `exclude` patterns are used to prune traversal before filtering files. Default ignored directories such as `node_modules`, `dist`, and `.git` are still skipped. Project-specific generated or runtime folders should be excluded explicitly with `exclude`.
 
 ## JSON Output
 
-`axi check --json` emits a stable v2 payload for CI and agent feedback loops:
+`axi check --json` emits `axiom.check.v2`:
 
 ```json
 {
   "schemaVersion": "axiom.check.v2",
   "ok": false,
-  "root": "/absolute/project/root",
   "summary": {
     "modules": 2,
     "specFiles": 1,
@@ -229,190 +287,56 @@ Config paths and patterns are relative to `--root`. Static `include` and directo
     "violations": 1,
     "warnings": 0
   },
-  "specFiles": ["axiom/main.axi"],
-  "sourceFiles": ["src/rendering/draw.ts", "src/simulation/step.ts"],
-  "modules": [
-    {
-      "name": "Rendering",
-      "paths": ["src/rendering/**"],
-      "layer": "UI",
-      "depends": [],
-      "exposes": [],
-      "hides": [],
-      "forbidsModules": [],
-      "location": {
-        "filePath": "axiom/main.axi",
-        "line": 3
-      }
-    },
-    {
-      "name": "Simulation",
-      "paths": ["src/simulation/**"],
-      "layer": "Core",
-      "depends": ["Rendering"],
-      "exposes": [],
-      "hides": [],
-      "forbidsModules": [],
-      "location": {
-        "filePath": "axiom/main.axi",
-        "line": 7
-      }
-    }
-  ],
-  "observedDependencies": [
-    {
-      "fromModule": "Simulation",
-      "toModule": "Rendering",
-      "import": {
-        "filePath": "src/simulation/step.ts",
-        "line": 1,
-        "specifier": "../rendering/draw",
-        "resolvedPath": "src/rendering/draw.ts"
-      }
-    }
-  ],
   "violations": [
     {
-      "code": "layer_breach",
-      "message": "Simulation in layer Core imports Rendering in outer layer UI.",
+      "code": "hidden_import",
+      "message": "UI imports hidden path from Services.",
       "location": {
-        "filePath": "src/simulation/step.ts",
-        "line": 1
+        "filePath": "src/ui/view.ts",
+        "line": 3
       },
       "details": {
-        "fromModule": "Simulation",
-        "toModule": "Rendering",
-        "observed": "Simulation -> Rendering",
-        "rule": "layers Core -> UI",
-        "ruleLocation": {
-          "filePath": "axiom/main.axi",
-          "line": 1
-        },
-        "suggestion": "Move the dependency inward, invert the dependency, or change the layer declarations."
+        "observed": "UI -> Services",
+        "rule": "Services hides src/services/internal/**",
+        "suggestion": "Import an exposed entry point from Services, or move the shared code behind a public boundary."
       }
     }
-  ],
-  "warnings": []
+  ]
 }
 ```
 
-## Adoption Modes
+`axi graph --json` emits `axiom.graph.v3`. Each observed dependency includes a `violations` array. With `--violations-only`, `observedDependencies` is filtered to the edges that need attention, while `summary.observedDependencies` keeps the full count.
 
-By default, Axiom ignores source files that are not owned by any module `path`. This keeps partial adoption cheap.
+## CI
 
-Use `--warn-unowned` to report unowned source files without failing the check:
-
-```bash
-axi check --root . --warn-unowned
-```
-
-Use `--strict` when the contract is mature enough that every discovered source file should be owned:
+This repository dogfoods Axiom in GitHub Actions:
 
 ```bash
-axi check --root . --strict
+npm ci
+npm run ci
 ```
 
-Paths inside `specFiles`, `sourceFiles`, `modules`, `observedDependencies`, `violations`, and `warnings` are relative to `root`. Code-specific data lives under `violations[].details` and `warnings[].details`; consumers should key primarily on `schemaVersion`, `ok`, `summary`, and diagnostic `code`.
-
-## Graph Output
-
-`axi graph` prints the declared graph, forbidden edges, visibility rules, and observed graph:
-
-```text
-Axiom graph.
-modules: 2
-declared dependencies: 1
-forbidden dependencies: 0
-observed dependencies: 3
-violations: 2
-warnings: 0
-
-declared dependencies:
-  UI -> Services (axiom/main.axi:3)
-
-forbidden dependencies:
-  none
-
-visibility:
-  Services exposes src/services/index.ts (axiom/main.axi:7)
-  Services hides src/services/internal/** (axiom/main.axi:8)
-
-observed dependencies:
-  UI -> Services via src/ui/view.ts:1 "../services"
-  UI -> Services via src/ui/view.ts:2 "../services/feature"
-  UI -> Services via src/ui/view.ts:3 "../services/internal/secret"
-```
-
-Use `--violations-only` to focus the graph on broken observed dependency edges:
-
-```text
-Axiom graph (violations only).
-modules: 2
-declared dependencies: 1
-forbidden dependencies: 0
-observed dependencies: 2 of 3
-violations: 2
-warnings: 0
-
-violating dependencies:
-  UI -> Services via src/ui/view.ts:2 "../services/feature"
-    unexposed_import: UI imports a non-exposed path from Services.
-    fix: Import an exposed entry point from Services, or add an exposes rule for this public API.
-```
-
-`axi graph --json` emits a stable `axiom.graph.v3` payload with `modules`, `declaredDependencies`, `forbiddenDependencies`, `exposedPaths`, `hiddenPaths`, `observedDependencies`, and compact `violations` and `warnings` lists. Each observed dependency includes a `violations` array. When `--violations-only` is passed, `observedDependencies` contains only the observed edges that have violations while `summary.observedDependencies` keeps the total count and `summary.shownObservedDependencies` reports the filtered count.
-
-## Infer Output
-
-`axi infer --json` emits a draft-oriented `axiom.infer.v2` payload:
-
-By default, inference groups source files one directory below `src`. Use `--group-depth 2` or higher when a project needs a more detailed starter draft:
-
-```bash
-axi infer --root . --group-depth 2
-```
-
-For monorepos, use workspace grouping to start from package boundaries:
-
-```bash
-axi infer --root . --group-by workspace
-```
-
-Workspace grouping reads the root `package.json` workspaces and groups package source files by package name when possible. Files outside package boundaries fall back to folder grouping.
+For your own project, add a script:
 
 ```json
 {
-  "schemaVersion": "axiom.infer.v2",
-  "root": "/absolute/project/root",
-  "summary": {
-    "sourceFiles": 3,
-    "importsScanned": 1,
-    "candidateModules": 3,
-    "modules": 3,
-    "observedDependencies": 1,
-    "collapsedCycles": 0
-  },
-  "modules": [
-    {
-      "name": "Simulation",
-      "paths": ["src/simulation/**"],
-      "suggestedExposes": [],
-      "suggestedHides": [],
-      "depends": ["Physics"],
-      "sourceGroups": ["Simulation"]
-    }
-  ],
-  "observedDependencies": [],
-  "collapsedCycles": [],
-  "axi": "# Generated by axi infer.\\n..."
+  "scripts": {
+    "axiom": "axi check --root ."
+  }
 }
 ```
 
-The text mode is intentionally valid `.axi` with comments, so it can be redirected into a file when the draft looks right. Inferred visibility suggestions are emitted as comments such as `# suggestion: exposes "src/services/index.ts"` so they do not make the starter contract stricter until a developer intentionally enables them.
+Then run that script in CI after installing dependencies.
+
+## Guides
+
+- [Getting Started](guides/getting-started.md)
+- [Adopting Axiom In A Real Project](guides/adoption.md)
+- [Basic App Example](examples/basic-app)
 
 ## Violation Types
 
-Axiom v0.5.6 can report:
+Axiom can currently report:
 
 - `forbidden_dependency`
 - `undeclared_dependency`
@@ -430,39 +354,6 @@ Axiom v0.5.6 can report:
 - `parse_error`
 - `no_spec_files`
 
-## Import Resolution
-
-The current scanner resolves TypeScript/JavaScript relative imports, including:
-
-- `import ... from "../module"`
-- `export ... from "../module"`
-- side-effect imports such as `import "../setup"`
-- multiline import/export declarations
-- `import("../module")`
-- `require("../module")`
-- TypeScript `import type` and `import foo = require("../module")`
-- TypeScript source files that use emitted ESM specifiers such as `./module.js` for local `module.ts`
-- directory barrel imports that resolve to `index.ts`, `index.tsx`, `index.js`, and related JS/TS extensions
-- TypeScript `paths` aliases from `tsconfig.json` or a configured `tsconfig` path, honoring `baseUrl`
-- package `imports` entries such as `#internal/*`
-- package `exports` entries for the root package and `package.json` workspaces such as `@scope/pkg/subpath`
-
-The scanner uses the TypeScript parser for syntax discovery, then Axiom's resolver maps internal imports to source files. Full TypeScript package-style `extends` resolution from `node_modules` and full TypeScript module resolution remain planned hardening work.
-
-## Test Fixtures
-
-Useful fixtures:
-
-- `fixtures/basic-ts-valid`
-- `fixtures/basic-ts-invalid`
-- `fixtures/basic-ts-undeclared`
-- `fixtures/layer-valid`
-- `fixtures/layer-breach`
-- `fixtures/visibility-rules`
-- `fixtures/package-exports`
-- `fixtures/ambiguous-owner`
-- `fixtures/cycle`
-
 ## Development
 
 ```bash
@@ -470,34 +361,24 @@ npm run ci
 npm test
 npm run axiom:self
 npm run check:fixture
-node dist/cli.js check --root fixtures/layer-breach --json
+node dist/cli.js check --root examples/basic-app
 ```
-
-## CI
-
-This repository dogfoods Axiom as a CI gate. GitHub Actions runs:
-
-```bash
-npm ci
-npm run ci
-```
-
-`npm run ci` runs the Node test suite and then checks this repository against `axiom/main.axi` with strict source ownership.
-
-## License
-
-Apache-2.0. See [LICENSE](LICENSE).
 
 ## Roadmap
 
 Near-term:
 
-- Better `axi infer` grouping presets.
-- GitHub Actions example.
-- Full TypeScript module resolution hardening.
+- Smoother first-week adoption controls.
+- Better monorepo spec discovery ergonomics.
+- Downstream project CI recipes.
+- More TypeScript module resolution hardening.
 
 Later:
 
 - Capability rules such as wall clock, network, filesystem, and random.
 - AI context compiler as a derived output.
 - Agent repair loop.
+
+## License
+
+Apache-2.0. See [LICENSE](LICENSE).

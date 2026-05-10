@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+## 0.5.7 - Public Alpha Packaging
+
+- Renamed the npm package target to `@fatelvx/axiom` because the unscoped `axiom` package name is already taken.
+- Removed the private package guard and added npm publish metadata, package files, Node engine metadata, and public scoped publish config.
+- Added both `axi` and `axiom` CLI bin entries for installed package usage.
+- Added `npm run pack:dry-run` and `npm run alpha:check` for release readiness checks.
 - Reworked the README to make the project easier to understand and try from the GitHub landing page.
 - Added public getting-started and adoption guides.
 - Added an intentionally failing `examples/basic-app` project that demonstrates visibility violations and focused graph output.

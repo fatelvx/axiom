@@ -10,9 +10,11 @@ source imports -> observed graph
 Axiom compares both and reports architecture drift
 ```
 
-## 1. Install From This Repository
+## 1. Install
 
-Axiom is not published to npm yet. From a checkout:
+Axiom's npm package target is `@fatelvx/axiom`. The unscoped `axiom` package name is already used by another package, so the first alpha release uses a scoped package.
+
+Until the first npm publish, install from this repository checkout:
 
 ```bash
 npm install
@@ -30,6 +32,14 @@ You can also use the local build without global install:
 
 ```bash
 node dist/cli.js check --root examples/basic-app
+```
+
+After the first npm publish:
+
+```bash
+npm install -D @fatelvx/axiom
+npx axi check --root .
+npx @fatelvx/axiom check --root .
 ```
 
 ## 2. Run The Example

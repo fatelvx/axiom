@@ -1,5 +1,7 @@
 # Axiom
 
+[![CI](https://github.com/fatelvx/axiom/actions/workflows/ci.yml/badge.svg)](https://github.com/fatelvx/axiom/actions/workflows/ci.yml)
+
 ![Axiom architecture firewall banner](assets/banner.svg)
 
 **Architecture contracts for AI-era codebases.**
@@ -13,6 +15,8 @@ Axiom compares both -> architecture violations with file, line, rule, and fix
 ```
 
 Axiom is not a prompt wrapper and not a style linter. It is an architecture compiler: it turns boundaries that usually live in docs, reviews, and memory into checks that can fail locally or in CI.
+
+Status: public alpha / developer preview. The validator is usable today, but the `.axi` language and JSON schemas may still evolve before a stable 1.0.
 
 ## Why It Exists
 
@@ -80,7 +84,7 @@ node dist/cli.js graph --root examples/basic-app --violations-only
 
 ## What It Checks
 
-Axiom v0.5.6 currently supports:
+Axiom v0.5.7 currently supports:
 
 - Module ownership with `path`.
 - Multiple source paths per module.
@@ -118,11 +122,14 @@ npm install -g .
 axi check --root examples/basic-app
 ```
 
-Axiom is not published to npm yet. When it is published, the intended workflow is:
+Axiom's npm package target is `@fatelvx/axiom`. The unscoped `axiom` package name is already used by another package, so the first alpha release uses a scoped package.
+
+Until the first npm publish, use this repository checkout. After publishing:
 
 ```bash
-npx <package-name> check --root .
-axi check --root .
+npm install -D @fatelvx/axiom
+npx axi check --root .
+npx @fatelvx/axiom check --root .
 ```
 
 ## Core Commands
@@ -332,6 +339,7 @@ Then run that script in CI after installing dependencies.
 
 - [Getting Started](guides/getting-started.md)
 - [Adopting Axiom In A Real Project](guides/adoption.md)
+- [Publishing The Public Alpha](guides/publishing-alpha.md)
 - [Basic App Example](examples/basic-app)
 
 ## Violation Types
@@ -360,6 +368,7 @@ Axiom can currently report:
 npm run ci
 npm test
 npm run axiom:self
+npm run alpha:check
 npm run check:fixture
 node dist/cli.js check --root examples/basic-app
 ```

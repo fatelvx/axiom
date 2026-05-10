@@ -36,7 +36,13 @@ Use `axiom.config.json` to keep source discovery focused:
 
 ## CI
 
-Add a script:
+After the first npm publish, install the scoped package:
+
+```bash
+npm install -D @fatelvx/axiom
+```
+
+Then add a script:
 
 ```json
 {

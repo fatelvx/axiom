@@ -1,18 +1,53 @@
 {
-  "name": "axiom",
-  "version": "0.5.6",
+  "name": "@fatelvx/axiom",
+  "version": "0.5.7",
   "description": "Architecture compiler for AI-era codebases.",
   "license": "Apache-2.0",
   "type": "module",
-  "private": true,
+  "homepage": "https://github.com/fatelvx/axiom#readme",
+  "bugs": {
+    "url": "https://github.com/fatelvx/axiom/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/fatelvx/axiom.git"
+  },
+  "keywords": [
+    "architecture",
+    "static-analysis",
+    "ai",
+    "cli",
+    "typescript",
+    "architecture-contracts"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "files": [
+    "dist/**/*.js",
+    "!dist/**/*.test.js",
+    "README.md",
+    "LICENSE",
+    "CHANGELOG.md",
+    "assets/banner.svg",
+    "guides/",
+    "examples/basic-app/"
+  ],
   "bin": {
-    "axi": "dist/cli.js"
+    "axi": "dist/cli.js",
+    "axiom": "dist/cli.js"
+  },
+  "publishConfig": {
+    "access": "public"
   },
   "scripts": {
+    "alpha:check": "npm run ci && npm run pack:dry-run",
     "build": "tsc -p tsconfig.json",
     "axiom:self": "npm run build && node dist/cli.js check --root . --strict",
     "check:fixture": "npm run build && node dist/cli.js check --root fixtures/basic-ts-valid",
     "ci": "npm test && npm run axiom:self",
+    "pack:dry-run": "npm pack --dry-run",
+    "prepare": "npm run build",
     "test": "npm run build && node scripts/run-tests.mjs"
   },
   "dependencies": {

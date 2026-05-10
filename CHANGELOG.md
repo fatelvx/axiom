@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Linked the public architecture hallucination technical note from the README.
+- Updated GitHub Actions dependencies to current major versions while keeping CI on Node 20.
 
 ## 0.5.8 - Monorepo Spec Discovery
 

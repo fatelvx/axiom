@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Linked the public architecture hallucination technical note from the README.
+
 ## 0.5.8 - Monorepo Spec Discovery
 
 - Added default `.axi` discovery for common `apps/*` and `packages/*` monorepo contract locations.

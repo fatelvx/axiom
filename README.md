@@ -8,6 +8,8 @@
 
 Axiom reads `.axi` contracts, scans real TypeScript and JavaScript imports, and fails when code drifts outside the architecture you declared.
 
+> Axiom is part of an ongoing experiment to make architecture hallucinations in AI-generated code observable and enforceable. Read the technical note: [Architecture Hallucinations in LLM-Generated Code](https://gist.github.com/fatelvx/99fadeae8014a1ddc1e8b67727481ee5).
+
 ```text
 .axi contract -> declared graph
 source imports -> observed graph

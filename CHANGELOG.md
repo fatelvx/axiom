@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 0.2.0 - Onboarding and Resolver Hardening
+
 - Added a stable `axiom.check.v1` JSON envelope for `axi check --json`.
 - Normalized JSON paths relative to the checked project root.
 - Added JSON schema-shape tests for successful and failing checks.

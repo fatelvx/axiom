@@ -18,7 +18,7 @@ Axiom is not an AI prompt wrapper. The first product is a real validator that ca
 
 ## Status
 
-`v0.1` is an architecture firewall MVP.
+`v0.2` is an architecture firewall MVP with onboarding and real-project discovery hardening.
 
 It currently supports:
 
@@ -351,7 +351,7 @@ The text mode is intentionally valid `.axi` with comments, so it can be redirect
 
 ## Violation Types
 
-Axiom v0.1 can report:
+Axiom v0.2 can report:
 
 - `forbidden_dependency`
 - `undeclared_dependency`

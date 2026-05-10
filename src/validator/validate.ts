@@ -181,6 +181,46 @@ export function applySuppressions(
   };
 }
 
+export function findUnusedSuppressions(
+  spec: AxiomSpec,
+  suppressedViolations: SuppressedViolation[]
+): Violation[] {
+  const usedSuppressionLocations = new Set(
+    suppressedViolations.map((suppressedViolation) => locationKey(suppressedViolation.suppression.location))
+  );
+  const knownModules = new Set(spec.modules.map((module) => module.name));
+  const warnings: Violation[] = [];
+
+  for (const module of spec.modules) {
+    for (const suppression of module.suppressions) {
+      if (
+        !isActiveValidSuppression(suppression, knownModules) ||
+        usedSuppressionLocations.has(locationKey(suppression.location))
+      ) {
+        continue;
+      }
+
+      warnings.push({
+        code: "unused_suppression",
+        message: `${module.name} has an unused suppression for ${suppression.target.name}.`,
+        location: suppression.location,
+        details: {
+          module: module.name,
+          target: suppression.target.name,
+          suppressedCode: suppression.code,
+          expiresOn: suppression.expiresOn,
+          reason: suppression.reason,
+          rule: `${module.name} suppresses ${suppression.code} to ${suppression.target.name} until ${suppression.expiresOn}`,
+          ruleLocation: suppression.location,
+          suggestion: "Remove the suppression if the architecture debt is gone, or keep it only while a matching violation is expected."
+        }
+      });
+    }
+  }
+
+  return warnings;
+}
+
 export function buildObservedDependencies(
   imports: ImportRecord[],
   ownership: OwnershipIndex
@@ -421,6 +461,20 @@ function toSuppressionInfo(
 
 function readString(value: unknown): string | undefined {
   return typeof value === "string" && value.length > 0 ? value : undefined;
+}
+
+function isActiveValidSuppression(suppression: SuppressionRule, knownModules: Set<string>): boolean {
+  return (
+    suppressibleCodes.has(suppression.code as ViolationCode) &&
+    knownModules.has(suppression.target.name) &&
+    suppression.reason.trim().length > 0 &&
+    isValidIsoDate(suppression.expiresOn) &&
+    !isExpiredDate(suppression.expiresOn)
+  );
+}
+
+function locationKey(location: { filePath: string; line: number }): string {
+  return `${path.resolve(location.filePath)}:${location.line}`;
 }
 
 function isValidIsoDate(value: string): boolean {

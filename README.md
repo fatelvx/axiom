@@ -323,7 +323,7 @@ forbids module ServicesInternal
 suppresses forbidden_dependency to ServicesInternal until 2027-06-30 because "legacy import while the public service API is split out"
 ```
 
-Suppressions only apply to observed dependency and visibility violations. Expired suppressions fail the check, and invalid suppressions cannot hide violations.
+Suppressions only apply to observed dependency and visibility violations. Expired suppressions fail the check, invalid suppressions cannot hide violations, and unused suppressions are warnings so old exceptions stay visible after the code is cleaned up.
 
 ## JSON Output
 

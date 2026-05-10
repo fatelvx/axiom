@@ -149,3 +149,34 @@ test("check JSON exposes planned suppressions and suppressed violations", () => 
     }
   });
 });
+
+test("check JSON exposes unused suppressions as warnings", () => {
+  const result = runCheck({ root: path.join(repoRoot, "fixtures/unused-suppression") });
+  const payload = toCheckJson(result);
+
+  assert.equal(payload.ok, true);
+  assert.equal(payload.summary.violations, 0);
+  assert.equal(payload.summary.warnings, 1);
+  assert.deepEqual(payload.warnings[0], {
+    code: "unused_suppression",
+    message: "Simulation has an unused suppression for Rendering.",
+    location: {
+      filePath: "axiom/main.axi",
+      line: 7
+    },
+    details: {
+      module: "Simulation",
+      target: "Rendering",
+      suppressedCode: "forbidden_dependency",
+      expiresOn: "2099-01-01",
+      reason: "legacy renderer migration",
+      rule: "Simulation suppresses forbidden_dependency to Rendering until 2099-01-01",
+      ruleLocation: {
+        filePath: "axiom/main.axi",
+        line: 7
+      },
+      suggestion:
+        "Remove the suppression if the architecture debt is gone, or keep it only while a matching violation is expected."
+    }
+  });
+});

@@ -7,7 +7,13 @@ import { findAxiomFiles, findSourceFiles } from "../fs/discover.js";
 import { createImportResolver } from "../scanner/importResolver.js";
 import { scanImports } from "../scanner/importScanner.js";
 import { createOwnershipIndex, validateOwnership } from "./ownership.js";
-import { applySuppressions, buildObservedDependencies, validateObservedDependencies, validateSpec } from "./validate.js";
+import {
+  applySuppressions,
+  buildObservedDependencies,
+  findUnusedSuppressions,
+  validateObservedDependencies,
+  validateSpec
+} from "./validate.js";
 
 export type AdoptionMode = "loose" | "warn-unowned" | "strict";
 
@@ -74,6 +80,7 @@ export function runCheck(options: CheckOptions): CheckResult {
   const observedValidation = applySuppressions(spec, validateObservedDependencies(spec, observedDependencies, root));
   violations.push(...observedValidation.violations);
   suppressedViolations.push(...observedValidation.suppressedViolations);
+  warnings.push(...findUnusedSuppressions(spec, suppressedViolations));
 
   return {
     root,

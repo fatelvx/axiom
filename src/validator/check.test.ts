@@ -236,3 +236,13 @@ test("invalid planned suppressions fail before they can hide violations", () => 
     "invalid_suppression"
   ]);
 });
+
+test("unused planned suppressions are reported as warnings", () => {
+  const result = runCheck({ root: path.join(repoRoot, "fixtures/unused-suppression") });
+
+  assert.deepEqual(result.violations, []);
+  assert.deepEqual(result.suppressedViolations, []);
+  assert.equal(result.warnings.length, 1);
+  assert.equal(result.warnings[0]?.code, "unused_suppression");
+  assert.equal(result.warnings[0]?.message, "Simulation has an unused suppression for Rendering.");
+});

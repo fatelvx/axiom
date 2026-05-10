@@ -5,6 +5,7 @@ export type ViolationCode =
   | "duplicate_layer_order"
   | "invalid_suppression"
   | "expired_suppression"
+  | "unused_suppression"
   | "ambiguous_module_owner"
   | "unowned_source_file"
   | "unknown_layer"

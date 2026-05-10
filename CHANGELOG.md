@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+## 0.5.1 - Self Contract
+
+- Added an Axiom contract for Axiom's own production source boundaries.
+- Added `npm run axiom:self` to build and run `axi check --strict` against the repository.
+- Added root project config for self-check source and spec discovery.
+- Resolved TypeScript source files from emitted ESM specifiers such as `./module.js` -> `module.ts`.
+
 ## 0.5.0 - Inference Group Depth
 
 - Added `axi infer --group-depth <n>` for more detailed starter contracts.

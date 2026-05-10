@@ -23,6 +23,12 @@ interface PathMapping {
 }
 
 const extensionCandidates = [".ts", ".tsx", ".js", ".jsx", ".mts", ".cts"];
+const sourceExtensionAlternates = new Map([
+  [".js", [".ts", ".tsx"]],
+  [".jsx", [".tsx"]],
+  [".mjs", [".mts"]],
+  [".cjs", [".cts"]]
+]);
 
 export function createImportResolver(options: ImportResolverOptions): ImportResolver {
   const root = path.resolve(options.root);
@@ -242,17 +248,23 @@ function resolveFileCandidate(basePath: string): string | undefined {
 }
 
 function buildCandidates(basePath: string): string[] {
-  const candidates: string[] = [basePath];
+  const candidates = new Set<string>([basePath]);
+  const parsed = path.parse(basePath);
+  const sourceAlternates = sourceExtensionAlternates.get(parsed.ext);
 
-  for (const extension of extensionCandidates) {
-    candidates.push(`${basePath}${extension}`);
+  for (const alternateExtension of sourceAlternates ?? []) {
+    candidates.add(path.join(parsed.dir, `${parsed.name}${alternateExtension}`));
   }
 
   for (const extension of extensionCandidates) {
-    candidates.push(path.join(basePath, `index${extension}`));
+    candidates.add(`${basePath}${extension}`);
   }
 
-  return candidates;
+  for (const extension of extensionCandidates) {
+    candidates.add(path.join(basePath, `index${extension}`));
+  }
+
+  return [...candidates];
 }
 
 function escapeRegExp(value: string): string {

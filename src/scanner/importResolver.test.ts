@@ -72,6 +72,28 @@ test("resolver supports a configured tsconfig path", () => {
   }
 });
 
+test("resolver maps JavaScript ESM specifiers back to TypeScript source files", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "axi-resolver-esm-"));
+
+  try {
+    writeFile(root, "src/app/main.ts", "export const app = true;\n");
+    writeFile(root, "src/app/local.ts", "export const local = true;\n");
+    writeFile(root, "src/app/view.tsx", "export const view = true;\n");
+    writeFile(root, "src/app/module.mts", "export const module = true;\n");
+    writeFile(root, "src/app/common.cts", "export const common = true;\n");
+
+    const resolver = createImportResolver({ root });
+    const fromFile = path.join(root, "src/app/main.ts");
+
+    assert.equal(normalize(root, resolver.resolve(fromFile, "./local.js")), "src/app/local.ts");
+    assert.equal(normalize(root, resolver.resolve(fromFile, "./view.js")), "src/app/view.tsx");
+    assert.equal(normalize(root, resolver.resolve(fromFile, "./module.mjs")), "src/app/module.mts");
+    assert.equal(normalize(root, resolver.resolve(fromFile, "./common.cjs")), "src/app/common.cts");
+  } finally {
+    fs.rmSync(root, { force: true, recursive: true });
+  }
+});
+
 function writeFile(root: string, relativePath: string, contents: string): void {
   const filePath = path.join(root, relativePath);
   fs.mkdirSync(path.dirname(filePath), { recursive: true });

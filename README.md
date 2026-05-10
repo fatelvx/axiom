@@ -18,7 +18,7 @@ Axiom is not an AI prompt wrapper. The first product is a real validator that ca
 
 ## Status
 
-`v0.5.0` is an architecture firewall MVP with onboarding and adoption controls.
+`v0.5.1` is an architecture firewall MVP with onboarding, adoption controls, and a self-hosted Axiom contract.
 
 It currently supports:
 
@@ -38,6 +38,7 @@ It currently supports:
 - Human-readable diagnostics.
 - JSON output for CI and agents.
 - Non-zero exit code on violations.
+- Axiom self-checking through this repository's own `axiom/main.axi` contract.
 
 ## Install
 
@@ -409,6 +410,7 @@ The current scanner resolves TypeScript/JavaScript relative imports, including:
 - `import("../module")`
 - `require("../module")`
 - TypeScript `import type` and `import foo = require("../module")`
+- TypeScript source files that use emitted ESM specifiers such as `./module.js` for local `module.ts`
 - directory barrel imports that resolve to `index.ts`, `index.tsx`, `index.js`, and related JS/TS extensions
 - TypeScript `paths` aliases from `tsconfig.json` or a configured `tsconfig` path, honoring `baseUrl`
 
@@ -431,6 +433,7 @@ Useful fixtures:
 
 ```bash
 npm test
+npm run axiom:self
 npm run check:fixture
 node dist/cli.js check --root fixtures/layer-breach --json
 ```

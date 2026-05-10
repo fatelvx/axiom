@@ -9,6 +9,11 @@ export interface DiscoveryOptions {
   specs?: string[];
 }
 
+interface CompiledPattern {
+  regexp: RegExp;
+  fixedPrefix: string;
+}
+
 const ignoredDirectories = new Set([
   ".cache",
   ".git",
@@ -57,6 +62,7 @@ export function findSourceFiles(root: string, options: DiscoveryOptions = {}): s
 function walkFiles(root: string, options: DiscoveryOptions): string[] {
   const files: string[] = [];
   const excludePatterns = compilePatterns(options.exclude ?? []);
+  const includePatterns = compilePatterns(options.include ?? []);
 
   if (!fs.existsSync(root)) {
     return files;
@@ -72,7 +78,11 @@ function walkFiles(root: string, options: DiscoveryOptions): string[] {
       const entryPath = path.join(currentPath, entry.name);
 
       if (entry.isDirectory()) {
-        if (!ignoredDirectories.has(entry.name) && !matchesDirectory(root, entryPath, excludePatterns)) {
+        if (
+          !ignoredDirectories.has(entry.name) &&
+          !matchesDirectory(root, entryPath, excludePatterns) &&
+          canDirectoryContainIncludedPath(root, entryPath, includePatterns)
+        ) {
           visit(entryPath);
         }
         continue;
@@ -85,25 +95,51 @@ function walkFiles(root: string, options: DiscoveryOptions): string[] {
   }
 }
 
-function compilePatterns(patterns: string[]): RegExp[] {
-  return patterns.map((pattern) => globToRegExp(pattern));
+function compilePatterns(patterns: string[]): CompiledPattern[] {
+  return patterns.map((pattern) => ({
+    regexp: globToRegExp(pattern),
+    fixedPrefix: fixedPrefixFromGlob(pattern)
+  }));
 }
 
-function matchesAny(root: string, filePath: string, patterns: RegExp[]): boolean {
+function matchesAny(root: string, filePath: string, patterns: CompiledPattern[]): boolean {
   if (patterns.length === 0) {
     return false;
   }
 
   const relative = normalizePathForMatch(path.relative(root, filePath));
-  return patterns.some((pattern) => pattern.test(relative));
+  return patterns.some((pattern) => pattern.regexp.test(relative));
 }
 
-function matchesDirectory(root: string, directoryPath: string, patterns: RegExp[]): boolean {
+function matchesDirectory(root: string, directoryPath: string, patterns: CompiledPattern[]): boolean {
   if (patterns.length === 0) {
     return false;
   }
 
   const relative = normalizePathForMatch(path.relative(root, directoryPath));
   const directoryRelative = relative.endsWith("/") ? relative : `${relative}/`;
-  return patterns.some((pattern) => pattern.test(relative) || pattern.test(directoryRelative));
+  return patterns.some((pattern) => pattern.regexp.test(relative) || pattern.regexp.test(directoryRelative));
+}
+
+function canDirectoryContainIncludedPath(root: string, directoryPath: string, includePatterns: CompiledPattern[]): boolean {
+  if (includePatterns.length === 0) {
+    return true;
+  }
+
+  const relative = normalizePathForMatch(path.relative(root, directoryPath));
+  const directoryPrefix = relative.length === 0 ? "" : `${relative}/`;
+
+  return includePatterns.some((pattern) => {
+    if (pattern.fixedPrefix.length === 0) {
+      return true;
+    }
+
+    return pattern.fixedPrefix.startsWith(directoryPrefix) || directoryPrefix.startsWith(pattern.fixedPrefix);
+  });
+}
+
+function fixedPrefixFromGlob(pattern: string): string {
+  const normalized = normalizePathForMatch(pattern.trim());
+  const wildcardIndex = normalized.search(/[*]/);
+  return wildcardIndex === -1 ? normalized : normalized.slice(0, wildcardIndex);
 }

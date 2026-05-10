@@ -18,7 +18,7 @@ Axiom is not an AI prompt wrapper. The first product is a real validator that ca
 
 ## Status
 
-`v0.4.0` is an architecture firewall MVP with onboarding and adoption controls.
+`v0.4.1` is an architecture firewall MVP with onboarding and adoption controls.
 
 It currently supports:
 
@@ -31,7 +31,7 @@ It currently supports:
 - Layer direction checks.
 - Starter contract inference with `axi infer`.
 - Visibility suggestions in inferred starter contracts.
-- Project config with source `include`/`exclude` and spec discovery patterns.
+- Project config with source `include`/`exclude`, traversal pruning, and spec discovery patterns.
 - TypeScript `paths` alias resolution from `tsconfig.json`, honoring `baseUrl`.
 - Gradual adoption modes for unowned source files.
 - Human-readable diagnostics.
@@ -200,7 +200,7 @@ Fields:
 - `specs`: `.axi` spec files to read. Defaults to `axiom/**/*.axi` and `*.axi`.
 - `tsconfig`: TypeScript config path used for `paths` import alias resolution, honoring `baseUrl`. Defaults to `tsconfig.json` when present.
 
-Config paths and patterns are relative to `--root`. Default ignored directories such as `node_modules`, `dist`, and `.git` are still skipped. Project-specific generated or runtime folders should be excluded explicitly with `exclude`.
+Config paths and patterns are relative to `--root`. Static `include` and directory-shaped `exclude` patterns are used to prune traversal before filtering files. Default ignored directories such as `node_modules`, `dist`, and `.git` are still skipped. Project-specific generated or runtime folders should be excluded explicitly with `exclude`.
 
 ## JSON Output
 

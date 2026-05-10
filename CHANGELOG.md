@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+## 0.4.1 - Discovery Traversal Pruning
+
+- Added conservative source traversal pruning from static `include` prefixes.
+- Kept directory-shaped `exclude` patterns as traversal pruning rules.
+- Added tests for wildcard include pruning across nested project layouts.
+
 ## 0.4.0 - Infer Visibility Suggestions
 
 - Added commented `exposes` suggestions for inferred module `index.*` entry points.

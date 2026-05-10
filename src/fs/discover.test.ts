@@ -85,6 +85,24 @@ test("source and spec discovery respect include, exclude, and specs config", () 
   }
 });
 
+test("source discovery keeps include pruning conservative for wildcard directories", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "axi-discover-include-"));
+
+  try {
+    writeFile(root, "src/app.ts", "export const app = true;\n");
+    writeFile(root, "packages/core/src/index.ts", "export const core = true;\n");
+    writeFile(root, "packages/core/test/helper.ts", "export const helper = true;\n");
+    writeFile(root, "other/side.ts", "export const side = true;\n");
+
+    assert.deepEqual(findSourceFiles(root, { include: ["src/**", "packages/*/src/**"] }).map((filePath) => normalize(root, filePath)), [
+      "packages/core/src/index.ts",
+      "src/app.ts"
+    ]);
+  } finally {
+    fs.rmSync(root, { force: true, recursive: true });
+  }
+});
+
 function writeFile(root: string, relativePath: string, contents: string): void {
   const filePath = path.join(root, relativePath);
   fs.mkdirSync(path.dirname(filePath), { recursive: true });

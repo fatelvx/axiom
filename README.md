@@ -101,6 +101,7 @@ Axiom v0.5.8 currently supports:
 - Common monorepo contract discovery under `apps/*` and `packages/*`.
 - Gradual adoption with default loose mode, `--warn-unowned`, and `--strict`.
 - Planned suppressions that require an expiration date and reason.
+- Module `purpose` text surfaced in graph and JSON output for lightweight intent awareness.
 - Human output and stable JSON output for CI and agents.
 - Starter contract inference with `axi infer`.
 - Focused graph output with `axi graph --violations-only`.

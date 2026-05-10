@@ -14,6 +14,7 @@ interface GraphJsonModule {
   name: string;
   paths: string[];
   layer?: string;
+  purpose?: string;
   depends: string[];
   forbidsModules: string[];
   exposes: string[];
@@ -123,6 +124,9 @@ export function formatGraphResult(result: CheckResult, options: GraphFormatOptio
   }
 
   lines.push("");
+  lines.push("modules:");
+  lines.push(...formatModules(graph.modules));
+  lines.push("");
   lines.push("declared dependencies:");
   lines.push(...formatEdges(graph.declaredDependencies, "  ", "->"));
   lines.push("");
@@ -206,6 +210,7 @@ export function toGraphJson(result: CheckResult, options: GraphFormatOptions = {
       name: module.name,
       paths: [...module.paths],
       ...(module.layer ? { layer: module.layer } : {}),
+      ...(module.purpose ? { purpose: module.purpose } : {}),
       depends: module.depends.map((dependency) => dependency.name),
       forbidsModules: module.forbidsModules.map((forbidden) => forbidden.name),
       exposes: module.exposes.map((rule) => rule.pattern),
@@ -317,6 +322,18 @@ function formatWarnings(graph: GraphJsonResult): string[] {
   }
 
   return lines;
+}
+
+function formatModules(modules: GraphJsonModule[]): string[] {
+  if (modules.length === 0) {
+    return ["  none"];
+  }
+
+  return modules.map((module) => {
+    const layer = module.layer ? ` layer ${module.layer}` : "";
+    const purpose = module.purpose ? ` - ${module.purpose}` : "";
+    return `  ${module.name}${layer}${purpose}`;
+  });
 }
 
 function formatEdges(edges: GraphJsonEdge[], prefix: string, arrow: string): string[] {

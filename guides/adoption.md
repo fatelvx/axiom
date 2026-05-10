@@ -157,6 +157,7 @@ Use human output while developing. Use JSON output for CI annotations, agent fee
 Start loose:
 
 - Model the important modules.
+- Add `purpose` text so graph output carries human-readable intent.
 - Add only the dependencies the code already uses.
 - Add one or two `forbids module`, `exposes`, or `hides` rules.
 

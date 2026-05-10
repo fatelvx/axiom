@@ -45,6 +45,7 @@ test("check JSON uses the stable v3 top-level shape", () => {
     name: "Simulation",
     paths: ["src/simulation/**"],
     layer: "Core",
+    purpose: "deterministic physics simulation",
     depends: ["Physics"],
     exposes: [],
     hides: [],

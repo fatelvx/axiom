@@ -82,9 +82,12 @@ test("graph JSON exposes declared, forbidden, visibility, and observed edges", (
 
 test("human graph output includes readable sections", () => {
   const result = runCheck({ root: path.join(repoRoot, "fixtures/basic-ts-invalid") });
+  const payload = toGraphJson(result);
   const output = formatGraphResult(result);
 
+  assert.equal(payload.modules.find((module) => module.name === "Simulation")?.purpose, "deterministic physics simulation");
   assert.match(output, /Axiom graph\./);
+  assert.match(output, /modules:\n  Physics layer Core\n  Rendering layer UI\n  Simulation layer Core - deterministic physics simulation/);
   assert.match(output, /declared dependencies:\n  Simulation -> Physics \(axiom\/main\.axi:12\)/);
   assert.match(output, /forbidden dependencies:\n  Simulation -X-> Rendering \(axiom\/main\.axi:13\)/);
   assert.match(output, /observed dependencies:/);

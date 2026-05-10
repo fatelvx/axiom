@@ -125,6 +125,8 @@ error layer_breach src/simulation/step.ts:1
 ```bash
 node dist/cli.js check --root <project>
 node dist/cli.js check --root <project> --json
+node dist/cli.js graph --root <project>
+node dist/cli.js graph --root <project> --json
 ```
 
 Default discovery skips common dependency, build, cache, generated, and local runtime folders:
@@ -155,6 +157,8 @@ Exit codes:
 
 - `0`: no violations
 - `1`: one or more violations
+
+`axi graph` is for inspection and exits `0` even when the graph contains violations. Use `axi check` as the CI gate.
 
 ## JSON Output
 
@@ -240,6 +244,36 @@ Exit codes:
 ```
 
 Paths inside `specFiles`, `sourceFiles`, `modules`, `observedDependencies`, and `violations` are relative to `root`. Code-specific data lives under `violations[].details`; consumers should key primarily on `schemaVersion`, `ok`, `summary`, and `violations[].code`.
+
+## Graph Output
+
+`axi graph` prints the declared graph, forbidden edges, visibility rules, and observed graph:
+
+```text
+Axiom graph.
+modules: 2
+declared dependencies: 1
+forbidden dependencies: 0
+observed dependencies: 3
+violations: 2
+
+declared dependencies:
+  UI -> Services (axiom/main.axi:3)
+
+forbidden dependencies:
+  none
+
+visibility:
+  Services exposes src/services/index.ts (axiom/main.axi:7)
+  Services hides src/services/internal/** (axiom/main.axi:8)
+
+observed dependencies:
+  UI -> Services via src/ui/view.ts:1 "../services"
+  UI -> Services via src/ui/view.ts:2 "../services/feature"
+  UI -> Services via src/ui/view.ts:3 "../services/internal/secret"
+```
+
+`axi graph --json` emits a stable `axiom.graph.v1` payload with `modules`, `declaredDependencies`, `forbiddenDependencies`, `exposedPaths`, `hiddenPaths`, `observedDependencies`, and a compact `violations` list.
 
 ## Violation Types
 

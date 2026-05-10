@@ -10,6 +10,7 @@
 - Added `depends on` syntax sugar.
 - Added `exposes` and `hides` visibility rules with `unexposed_import` and `hidden_import` diagnostics.
 - Added tests for dynamic imports and barrel index import resolution.
+- Added `axi graph` and `axi graph --json` for declared, forbidden, visibility, and observed graph inspection.
 
 ## 0.1.0 - Architecture Firewall MVP
 

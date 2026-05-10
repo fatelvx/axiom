@@ -44,3 +44,31 @@ test("cli --json returns parseable violation output with non-zero exit", () => {
     line: 2
   });
 });
+
+test("cli graph returns graph output without acting as a validation gate", () => {
+  const result = spawnSync(
+    process.execPath,
+    [cliPath, "graph", "--root", "fixtures/visibility-rules"],
+    { cwd: repoRoot, encoding: "utf8" }
+  );
+
+  assert.equal(result.status, 0);
+  assert.match(result.stdout, /Axiom graph\./);
+  assert.match(result.stdout, /violations: 2/);
+  assert.match(result.stdout, /UI -> Services via src\/ui\/view\.ts:1 "\.\.\/services"/);
+});
+
+test("cli graph --json returns parseable graph output", () => {
+  const result = spawnSync(
+    process.execPath,
+    [cliPath, "graph", "--root", "fixtures/visibility-rules", "--json"],
+    { cwd: repoRoot, encoding: "utf8" }
+  );
+
+  assert.equal(result.status, 0);
+
+  const payload = JSON.parse(result.stdout);
+  assert.equal(payload.schemaVersion, "axiom.graph.v1");
+  assert.equal(payload.summary.observedDependencies, 3);
+  assert.equal(payload.violations[0].code, "unexposed_import");
+});

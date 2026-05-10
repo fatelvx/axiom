@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 import { formatCheckResult } from "./diagnostics/format.js";
+import { formatGraphJson, formatGraphResult } from "./diagnostics/graph.js";
 import { formatCheckJson } from "./diagnostics/json.js";
 import { runCheck } from "./validator/check.js";
 
@@ -16,7 +17,7 @@ if (!command || command === "--help" || command === "-h") {
   process.exit(0);
 }
 
-if (command !== "check") {
+if (command !== "check" && command !== "graph") {
   console.error(`Unknown command '${command}'.`);
   printHelp();
   process.exit(1);
@@ -25,13 +26,17 @@ if (command !== "check") {
 const options = parseOptions(args.slice(1));
 const result = runCheck({ root: options.root });
 
-if (options.json) {
+if (command === "check" && options.json) {
   console.log(formatCheckJson(result));
-} else {
+} else if (command === "check") {
   console.log(formatCheckResult(result));
+} else if (options.json) {
+  console.log(formatGraphJson(result));
+} else {
+  console.log(formatGraphResult(result));
 }
 
-process.exit(result.violations.length === 0 ? 0 : 1);
+process.exit(command === "check" && result.violations.length > 0 ? 1 : 0);
 
 function parseOptions(values: string[]): CliOptions {
   const options: CliOptions = {
@@ -70,8 +75,10 @@ function printHelp(): void {
 
 Usage:
   axi check [--root <path>] [--json]
+  axi graph [--root <path>] [--json]
 
 Commands:
   check   Validate source dependencies against .axi architecture specs.
+  graph   Print declared and observed architecture graphs.
 `);
 }

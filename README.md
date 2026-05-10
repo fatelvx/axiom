@@ -18,7 +18,7 @@ Axiom is not an AI prompt wrapper. The first product is a real validator that ca
 
 ## Status
 
-`v0.5.2` is an architecture firewall MVP with stronger resolver coverage, onboarding, adoption controls, and a self-hosted Axiom contract.
+`v0.5.3` is an architecture firewall MVP with stronger resolver coverage, workspace-aware onboarding, adoption controls, and a self-hosted Axiom contract.
 
 It currently supports:
 
@@ -31,6 +31,7 @@ It currently supports:
 - Layer direction checks.
 - Starter contract inference with `axi infer`.
 - Configurable inference grouping depth.
+- Workspace/package-aware inference grouping.
 - Visibility suggestions in inferred starter contracts.
 - Project config with source `include`/`exclude`, traversal pruning, and spec discovery patterns.
 - TypeScript `paths` alias resolution from `tsconfig.json`, honoring `baseUrl`.
@@ -140,6 +141,7 @@ node dist/cli.js graph --root <project> --json
 node dist/cli.js infer --root <project>
 node dist/cli.js infer --root <project> --json
 node dist/cli.js infer --root <project> --group-depth 2
+node dist/cli.js infer --root <project> --group-by workspace
 ```
 
 Default discovery skips common dependency, build, and cache folders:
@@ -349,6 +351,14 @@ By default, inference groups source files one directory below `src`. Use `--grou
 ```bash
 axi infer --root . --group-depth 2
 ```
+
+For monorepos, use workspace grouping to start from package boundaries:
+
+```bash
+axi infer --root . --group-by workspace
+```
+
+Workspace grouping reads the root `package.json` workspaces and groups package source files by package name when possible. Files outside package boundaries fall back to folder grouping.
 
 ```json
 {

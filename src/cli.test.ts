@@ -154,6 +154,23 @@ test("cli infer supports group depth", () => {
   );
 });
 
+test("cli infer supports workspace grouping", () => {
+  const result = spawnSync(
+    process.execPath,
+    [cliPath, "infer", "--root", "fixtures/package-exports", "--group-by", "workspace", "--json"],
+    { cwd: repoRoot, encoding: "utf8" }
+  );
+
+  assert.equal(result.status, 0);
+
+  const payload = JSON.parse(result.stdout);
+  assert.deepEqual(
+    payload.modules.map((module: { name: string }) => module.name),
+    ["Shared", "Web"]
+  );
+  assert.deepEqual(payload.modules.find((module: { name: string }) => module.name === "Web")?.depends, ["Shared"]);
+});
+
 test("cli check uses project config discovery settings", () => {
   const result = spawnSync(
     process.execPath,

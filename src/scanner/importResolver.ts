@@ -22,12 +22,12 @@ interface PathMapping {
   prefixLength: number;
 }
 
-interface PackageResolver {
+export interface PackageResolver {
   packagesByName: Map<string, PackageMetadata>;
   packagesByDirectory: PackageMetadata[];
 }
 
-interface PackageMetadata {
+export interface PackageMetadata {
   directory: string;
   name?: string;
   exports: PackageSubpathMapping[];
@@ -150,7 +150,7 @@ function loadTsconfigResolver(root: string, configuredPath: string | undefined):
   };
 }
 
-function loadPackageResolver(root: string): PackageResolver {
+export function loadPackageResolver(root: string): PackageResolver {
   const packagesByDirectory = new Map<string, PackageMetadata>();
   const rootPackageJson = readJsonFile(path.join(root, "package.json"));
 

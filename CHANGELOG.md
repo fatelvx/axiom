@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+## 0.5.3 - Workspace Inference Grouping
+
+- Added `axi infer --group-by workspace` for package-aware starter contracts.
+- Reused workspace package metadata from the resolver so inference grouping stays aligned with observed graph resolution.
+- Added CLI and inference tests for workspace grouping.
+
 ## 0.5.2 - Package Export Resolution
 
 - Added resolver support for package `imports` aliases such as `#internal/*`.

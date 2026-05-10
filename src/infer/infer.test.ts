@@ -92,3 +92,28 @@ test("infer supports deeper source grouping", () => {
   );
   assert.deepEqual(deep.modules.find((module) => module.name === "Ui")?.depends, ["ServicesAgent", "ServicesTools"]);
 });
+
+test("infer supports workspace package grouping", () => {
+  const result = runInfer({ root: path.join(repoRoot, "fixtures/package-exports"), groupBy: "workspace" });
+
+  assert.equal(result.candidateModules, 2);
+  assert.deepEqual(
+    result.modules.map((module) => ({
+      name: module.name,
+      paths: module.paths,
+      depends: module.depends
+    })),
+    [
+      {
+        name: "Shared",
+        paths: ["packages/shared/src/**"],
+        depends: []
+      },
+      {
+        name: "Web",
+        paths: ["apps/web/src/**"],
+        depends: ["Shared"]
+      }
+    ]
+  );
+});

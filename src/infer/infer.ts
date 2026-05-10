@@ -2,14 +2,17 @@ import path from "node:path";
 import type { ImportRecord } from "../axi/types.js";
 import { loadConfig } from "../config/config.js";
 import { findSourceFiles } from "../fs/discover.js";
-import { createImportResolver } from "../scanner/importResolver.js";
+import { createImportResolver, loadPackageResolver, type PackageMetadata } from "../scanner/importResolver.js";
 import { scanImports } from "../scanner/importScanner.js";
 import { normalizePathForMatch } from "../validator/glob.js";
+
+export type InferGroupBy = "folder" | "workspace";
 
 export interface InferOptions {
   root: string;
   configPath?: string;
   groupDepth?: number;
+  groupBy?: InferGroupBy;
 }
 
 export interface InferredModule {
@@ -75,10 +78,12 @@ const sampleLimit = 5;
 export function runInfer(options: InferOptions): InferResult {
   const root = path.resolve(options.root);
   const config = loadConfig(root, options.configPath);
+  const groupBy = options.groupBy ?? "folder";
+  const packages = groupBy === "workspace" ? loadPackageResolver(root).packagesByDirectory : [];
   const allSourceFiles = findSourceFiles(root, config);
-  const sourceFiles = chooseInferenceFiles(root, allSourceFiles);
+  const sourceFiles = chooseInferenceFiles(root, allSourceFiles, groupBy);
   const resolver = createImportResolver({ root, tsconfigPath: config.tsconfig });
-  const candidateGroups = buildCandidateGroups(root, sourceFiles, normalizeGroupDepth(options.groupDepth));
+  const candidateGroups = buildCandidateGroups(root, sourceFiles, normalizeGroupDepth(options.groupDepth), groupBy, packages);
   const fileOwners = buildFileOwners(candidateGroups);
   const imports = sourceFiles.flatMap((sourceFile) => scanImports(sourceFile, { resolver }));
   const candidateEdges = buildCandidateEdges(root, imports, fileOwners);
@@ -103,17 +108,29 @@ export function runInfer(options: InferOptions): InferResult {
   };
 }
 
-function chooseInferenceFiles(root: string, sourceFiles: string[]): string[] {
+function chooseInferenceFiles(root: string, sourceFiles: string[], groupBy: InferGroupBy): string[] {
+  if (groupBy === "workspace") {
+    return sourceFiles;
+  }
+
   const srcFiles = sourceFiles.filter((sourceFile) => relativePath(root, sourceFile).startsWith("src/"));
   return srcFiles.length > 0 ? srcFiles : sourceFiles;
 }
 
-function buildCandidateGroups(root: string, sourceFiles: string[], groupDepth: number): CandidateGroup[] {
+function buildCandidateGroups(
+  root: string,
+  sourceFiles: string[],
+  groupDepth: number,
+  groupBy: InferGroupBy,
+  packages: PackageMetadata[]
+): CandidateGroup[] {
   const groups = new Map<string, CandidateGroup>();
 
   for (const sourceFile of sourceFiles) {
     const relative = relativePath(root, sourceFile);
-    const classification = classifySourceFile(relative, groupDepth);
+    const classification = groupBy === "workspace"
+      ? classifyWorkspaceSourceFile(root, sourceFile, relative, groupDepth, packages)
+      : classifySourceFile(relative, groupDepth);
     const group = groups.get(classification.key) ?? {
       key: classification.key,
       name: classification.name,
@@ -127,6 +144,37 @@ function buildCandidateGroups(root: string, sourceFiles: string[], groupDepth: n
   }
 
   return [...groups.values()].sort((left, right) => left.name.localeCompare(right.name));
+}
+
+function classifyWorkspaceSourceFile(
+  root: string,
+  sourceFile: string,
+  relativePath: string,
+  groupDepth: number,
+  packages: PackageMetadata[]
+): { key: string; name: string; pathPattern: string } {
+  const ownerPackage = findNearestPackage(packages, sourceFile);
+  if (!ownerPackage) {
+    return classifySourceFile(relativePath, groupDepth);
+  }
+
+  const packageRoot = relativePathFrom(root, ownerPackage.directory);
+  const packageRelative = relativePathFrom(ownerPackage.directory, sourceFile);
+  const isRootPackage = packageRoot.length === 0;
+
+  if (isRootPackage && !packageRelative.startsWith("src/")) {
+    return classifySourceFile(relativePath, groupDepth);
+  }
+
+  const sourceRoot = packageRelative.startsWith("src/") ? "src" : "";
+  const key = [packageRoot, sourceRoot].filter(Boolean).join("/") || "src";
+  const pathPattern = key === "src" ? "src/**" : `${key}/**`;
+
+  return {
+    key,
+    name: packageNameToIdentifier(ownerPackage.name, packageRoot),
+    pathPattern
+  };
 }
 
 function classifySourceFile(relativePath: string, groupDepth: number): { key: string; name: string; pathPattern: string } {
@@ -469,6 +517,10 @@ function relativePath(root: string, filePath: string): string {
   return normalizePathForMatch(path.relative(root, filePath));
 }
 
+function relativePathFrom(root: string, filePath: string): string {
+  return normalizePathForMatch(path.relative(root, filePath));
+}
+
 function edgeSortKey(edge: CandidateEdge): string {
   return `${edge.from}\0${edge.to}`;
 }
@@ -483,4 +535,23 @@ function normalizeGroupDepth(value: number | undefined): number {
   }
 
   return Math.max(1, Math.floor(value));
+}
+
+function findNearestPackage(packages: PackageMetadata[], sourceFile: string): PackageMetadata | undefined {
+  const resolvedSourceFile = path.resolve(sourceFile);
+  return packages.find((packageMetadata) => isInsideDirectory(resolvedSourceFile, packageMetadata.directory));
+}
+
+function packageNameToIdentifier(packageName: string | undefined, packageRoot: string): string {
+  if (packageName) {
+    const unscopedName = packageName.startsWith("@") ? packageName.split("/").at(-1) : packageName;
+    return toIdentifier(unscopedName ?? packageName);
+  }
+
+  return toIdentifier(packageRoot.split("/").at(-1) ?? "Module");
+}
+
+function isInsideDirectory(filePath: string, directory: string): boolean {
+  const relative = path.relative(directory, filePath);
+  return relative === "" || Boolean(relative && !relative.startsWith("..") && !path.isAbsolute(relative));
 }

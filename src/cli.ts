@@ -3,7 +3,7 @@ import { formatCheckResult } from "./diagnostics/format.js";
 import { formatGraphJson, formatGraphResult } from "./diagnostics/graph.js";
 import { formatInferJson, formatInferResult } from "./diagnostics/infer.js";
 import { formatCheckJson } from "./diagnostics/json.js";
-import { runInfer } from "./infer/infer.js";
+import { type InferGroupBy, runInfer } from "./infer/infer.js";
 import { type AdoptionMode, runCheck } from "./validator/check.js";
 
 interface CliOptions {
@@ -12,6 +12,7 @@ interface CliOptions {
   configPath?: string;
   adoptionMode: AdoptionMode;
   groupDepth?: number;
+  groupBy?: InferGroupBy;
 }
 
 const args = process.argv.slice(2);
@@ -32,7 +33,12 @@ const options = parseOptions(args.slice(1), command);
 
 try {
   if (command === "infer") {
-    const result = runInfer({ root: options.root, configPath: options.configPath, groupDepth: options.groupDepth });
+    const result = runInfer({
+      root: options.root,
+      configPath: options.configPath,
+      groupDepth: options.groupDepth,
+      groupBy: options.groupBy
+    });
     console.log(options.json ? formatInferJson(result) : formatInferResult(result));
     process.exit(0);
   }
@@ -133,6 +139,23 @@ function parseOptions(values: string[], command: "check" | "graph" | "infer"): C
       continue;
     }
 
+    if (value === "--group-by") {
+      if (command !== "infer") {
+        console.error("--group-by is only supported by infer.");
+        process.exit(1);
+      }
+
+      const groupBy = values[index + 1];
+      if (groupBy !== "folder" && groupBy !== "workspace") {
+        console.error("--group-by must be either 'folder' or 'workspace'.");
+        process.exit(1);
+      }
+
+      options.groupBy = groupBy;
+      index += 1;
+      continue;
+    }
+
     console.error(`Unknown option '${value}'.`);
     process.exit(1);
   }
@@ -146,7 +169,7 @@ function printHelp(): void {
 Usage:
   axi check [--root <path>] [--config <path>] [--json] [--warn-unowned] [--strict]
   axi graph [--root <path>] [--config <path>] [--json] [--warn-unowned] [--strict]
-  axi infer [--root <path>] [--config <path>] [--json] [--group-depth <n>]
+  axi infer [--root <path>] [--config <path>] [--json] [--group-depth <n>] [--group-by folder|workspace]
 
 Commands:
   check   Validate source dependencies against .axi architecture specs.

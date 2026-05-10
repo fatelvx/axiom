@@ -88,3 +88,15 @@ test("visibility fixture reports hidden and unexposed imports", () => {
 
   assert.deepEqual(codes, ["unexposed_import", "hidden_import"]);
 });
+
+test("check uses axiom.config.json discovery settings", () => {
+  const result = runCheck({ root: path.join(repoRoot, "fixtures/config-filter") });
+
+  assert.deepEqual(result.violations, []);
+  assert.deepEqual(result.specFiles.map((filePath) => path.relative(result.root, filePath).replace(/\\/g, "/")), [
+    "architecture/main.axi"
+  ]);
+  assert.deepEqual(result.sourceFiles.map((filePath) => path.relative(result.root, filePath).replace(/\\/g, "/")), [
+    "src/app.ts"
+  ]);
+});

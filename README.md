@@ -30,6 +30,7 @@ It currently supports:
 - Module visibility checks with `exposes` and `hides`.
 - Layer direction checks.
 - Starter contract inference with `axi infer`.
+- Project config with source `include`/`exclude` and spec discovery patterns.
 - Human-readable diagnostics.
 - JSON output for CI and agents.
 - Non-zero exit code on violations.
@@ -125,7 +126,7 @@ error layer_breach src/simulation/step.ts:1
 
 ```bash
 node dist/cli.js check --root <project>
-node dist/cli.js check --root <project> --json
+node dist/cli.js check --root <project> --config axiom.config.json --json
 node dist/cli.js graph --root <project>
 node dist/cli.js graph --root <project> --json
 node dist/cli.js infer --root <project>
@@ -170,6 +171,33 @@ node dist/cli.js infer --root .
 ```
 
 The inferred contract groups source files by source folders, declares the dependencies that already exist, and collapses cyclic candidate groups into one module so the starter spec mirrors today's code. Treat the output as a draft: rename modules, split broad groups, and add `forbids module`, `exposes`, `hides`, and `layers` rules as the architecture settles.
+
+## Project Config
+
+Axiom reads `axiom.config.json` from the project root when it exists. You can also pass a root-relative config path:
+
+```bash
+axi check --root . --config axiom.config.json
+axi infer --root . --config axiom.config.json
+```
+
+Minimal config:
+
+```json
+{
+  "include": ["src/**"],
+  "exclude": ["src/**/*.test.ts", "src/generated/**"],
+  "specs": ["architecture/**/*.axi", "*.axi"]
+}
+```
+
+Fields:
+
+- `include`: source files to scan. If omitted, Axiom scans all supported source files outside default ignored directories.
+- `exclude`: source files or directories to skip, in addition to default ignored directories.
+- `specs`: `.axi` spec files to read. Defaults to `axiom/**/*.axi` and `*.axi`.
+
+Config patterns are relative to `--root`. Default ignored directories such as `node_modules`, `dist`, `.git`, `.lumina`, and `src-tauri` are still skipped.
 
 ## JSON Output
 

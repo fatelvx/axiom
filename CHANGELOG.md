@@ -13,6 +13,8 @@
 - Added `axi graph` and `axi graph --json` for declared, forbidden, visibility, and observed graph inspection.
 - Added `axi infer` and `axi infer --json` for starter `.axi` contract generation from current source imports.
 - Inference groups source folders into candidate modules and collapses cyclic candidate groups into one starter module so drafts can mirror existing code.
+- Added `axiom.config.json` support with source `include`, source `exclude`, and `.axi` `specs` discovery patterns.
+- Added `--config <path>` support for `check`, `graph`, and `infer`.
 
 ## 0.1.0 - Architecture Firewall MVP
 

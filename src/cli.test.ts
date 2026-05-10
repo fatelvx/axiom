@@ -100,3 +100,19 @@ test("cli infer --json returns parseable inferred output", () => {
   assert.equal(payload.summary.modules, 3);
   assert.match(payload.axi, /module Physics/);
 });
+
+test("cli check uses project config discovery settings", () => {
+  const result = spawnSync(
+    process.execPath,
+    [cliPath, "check", "--root", "fixtures/config-filter", "--json"],
+    { cwd: repoRoot, encoding: "utf8" }
+  );
+
+  assert.equal(result.status, 0);
+
+  const payload = JSON.parse(result.stdout);
+  assert.equal(payload.summary.specFiles, 1);
+  assert.equal(payload.summary.sourceFiles, 1);
+  assert.deepEqual(payload.specFiles, ["architecture/main.axi"]);
+  assert.deepEqual(payload.sourceFiles, ["src/app.ts"]);
+});

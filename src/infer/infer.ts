@@ -1,11 +1,13 @@
 import path from "node:path";
 import type { ImportRecord } from "../axi/types.js";
+import { loadConfig } from "../config/config.js";
 import { findSourceFiles } from "../fs/discover.js";
 import { scanImports } from "../scanner/importScanner.js";
 import { normalizePathForMatch } from "../validator/glob.js";
 
 export interface InferOptions {
   root: string;
+  configPath?: string;
 }
 
 export interface InferredModule {
@@ -68,7 +70,8 @@ const sampleLimit = 5;
 
 export function runInfer(options: InferOptions): InferResult {
   const root = path.resolve(options.root);
-  const allSourceFiles = findSourceFiles(root);
+  const config = loadConfig(root, options.configPath);
+  const allSourceFiles = findSourceFiles(root, config);
   const sourceFiles = chooseInferenceFiles(root, allSourceFiles);
   const candidateGroups = buildCandidateGroups(root, sourceFiles);
   const fileOwners = buildFileOwners(candidateGroups);

@@ -9,6 +9,7 @@ import { runCheck } from "./validator/check.js";
 interface CliOptions {
   root: string;
   json: boolean;
+  configPath?: string;
 }
 
 const args = process.argv.slice(2);
@@ -27,25 +28,30 @@ if (command !== "check" && command !== "graph" && command !== "infer") {
 
 const options = parseOptions(args.slice(1));
 
-if (command === "infer") {
-  const result = runInfer({ root: options.root });
-  console.log(options.json ? formatInferJson(result) : formatInferResult(result));
-  process.exit(0);
+try {
+  if (command === "infer") {
+    const result = runInfer({ root: options.root, configPath: options.configPath });
+    console.log(options.json ? formatInferJson(result) : formatInferResult(result));
+    process.exit(0);
+  }
+
+  const result = runCheck({ root: options.root, configPath: options.configPath });
+
+  if (command === "check" && options.json) {
+    console.log(formatCheckJson(result));
+  } else if (command === "check") {
+    console.log(formatCheckResult(result));
+  } else if (options.json) {
+    console.log(formatGraphJson(result));
+  } else {
+    console.log(formatGraphResult(result));
+  }
+
+  process.exit(command === "check" && result.violations.length > 0 ? 1 : 0);
+} catch (error) {
+  console.error(error instanceof Error ? error.message : String(error));
+  process.exit(1);
 }
-
-const result = runCheck({ root: options.root });
-
-if (command === "check" && options.json) {
-  console.log(formatCheckJson(result));
-} else if (command === "check") {
-  console.log(formatCheckResult(result));
-} else if (options.json) {
-  console.log(formatGraphJson(result));
-} else {
-  console.log(formatGraphResult(result));
-}
-
-process.exit(command === "check" && result.violations.length > 0 ? 1 : 0);
 
 function parseOptions(values: string[]): CliOptions {
   const options: CliOptions = {
@@ -72,6 +78,17 @@ function parseOptions(values: string[]): CliOptions {
       continue;
     }
 
+    if (value === "--config") {
+      const configPath = values[index + 1];
+      if (!configPath) {
+        console.error("Missing value for --config.");
+        process.exit(1);
+      }
+      options.configPath = configPath;
+      index += 1;
+      continue;
+    }
+
     console.error(`Unknown option '${value}'.`);
     process.exit(1);
   }
@@ -83,9 +100,9 @@ function printHelp(): void {
   console.log(`Axiom
 
 Usage:
-  axi check [--root <path>] [--json]
-  axi graph [--root <path>] [--json]
-  axi infer [--root <path>] [--json]
+  axi check [--root <path>] [--config <path>] [--json]
+  axi graph [--root <path>] [--config <path>] [--json]
+  axi infer [--root <path>] [--config <path>] [--json]
 
 Commands:
   check   Validate source dependencies against .axi architecture specs.

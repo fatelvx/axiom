@@ -2,6 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 import type { AxiomSpec, ImportRecord, ObservedDependency, Violation } from "../axi/types.js";
 import { parseAxiomText } from "../axi/parser.js";
+import { loadConfig } from "../config/config.js";
 import { findAxiomFiles, findSourceFiles } from "../fs/discover.js";
 import { scanImports } from "../scanner/importScanner.js";
 import { createOwnershipIndex, validateOwnership } from "./ownership.js";
@@ -9,6 +10,7 @@ import { buildObservedDependencies, validateObservedDependencies, validateSpec }
 
 export interface CheckOptions {
   root: string;
+  configPath?: string;
 }
 
 export interface CheckResult {
@@ -23,8 +25,9 @@ export interface CheckResult {
 
 export function runCheck(options: CheckOptions): CheckResult {
   const root = path.resolve(options.root);
-  const specFiles = findAxiomFiles(root);
-  const sourceFiles = findSourceFiles(root);
+  const config = loadConfig(root, options.configPath);
+  const specFiles = findAxiomFiles(root, config);
+  const sourceFiles = findSourceFiles(root, config);
   const violations: Violation[] = [];
   const spec: AxiomSpec = { modules: [], layerOrders: [] };
 

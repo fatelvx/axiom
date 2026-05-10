@@ -1,5 +1,13 @@
 import fs from "node:fs";
 import path from "node:path";
+import { defaultSpecPatterns } from "../config/config.js";
+import { globToRegExp, normalizePathForMatch } from "../validator/glob.js";
+
+export interface DiscoveryOptions {
+  include?: string[];
+  exclude?: string[];
+  specs?: string[];
+}
 
 const ignoredDirectories = new Set([
   ".benchmark_tmp",
@@ -24,22 +32,35 @@ const ignoredDirectories = new Set([
 ]);
 const sourceExtensions = new Set([".ts", ".tsx", ".js", ".jsx", ".mts", ".cts"]);
 
-export function findAxiomFiles(root: string): string[] {
-  return walkFiles(root).filter((filePath) => filePath.endsWith(".axi"));
+export function findAxiomFiles(root: string, options: DiscoveryOptions = {}): string[] {
+  const specPatterns = compilePatterns(options.specs ?? defaultSpecPatterns);
+  return walkFiles(root, options).filter((filePath) => filePath.endsWith(".axi") && matchesAny(root, filePath, specPatterns));
 }
 
-export function findSourceFiles(root: string): string[] {
-  return walkFiles(root).filter((filePath) => {
+export function findSourceFiles(root: string, options: DiscoveryOptions = {}): string[] {
+  const includePatterns = compilePatterns(options.include ?? []);
+  const excludePatterns = compilePatterns(options.exclude ?? []);
+
+  return walkFiles(root, options).filter((filePath) => {
     if (filePath.endsWith(".d.ts")) {
       return false;
     }
 
-    return sourceExtensions.has(path.extname(filePath));
+    if (!sourceExtensions.has(path.extname(filePath))) {
+      return false;
+    }
+
+    if (matchesAny(root, filePath, excludePatterns)) {
+      return false;
+    }
+
+    return includePatterns.length === 0 || matchesAny(root, filePath, includePatterns);
   });
 }
 
-function walkFiles(root: string): string[] {
+function walkFiles(root: string, options: DiscoveryOptions): string[] {
   const files: string[] = [];
+  const excludePatterns = compilePatterns(options.exclude ?? []);
 
   if (!fs.existsSync(root)) {
     return files;
@@ -55,7 +76,7 @@ function walkFiles(root: string): string[] {
       const entryPath = path.join(currentPath, entry.name);
 
       if (entry.isDirectory()) {
-        if (!ignoredDirectories.has(entry.name)) {
+        if (!ignoredDirectories.has(entry.name) && !matchesDirectory(root, entryPath, excludePatterns)) {
           visit(entryPath);
         }
         continue;
@@ -66,4 +87,27 @@ function walkFiles(root: string): string[] {
       }
     }
   }
+}
+
+function compilePatterns(patterns: string[]): RegExp[] {
+  return patterns.map((pattern) => globToRegExp(pattern));
+}
+
+function matchesAny(root: string, filePath: string, patterns: RegExp[]): boolean {
+  if (patterns.length === 0) {
+    return false;
+  }
+
+  const relative = normalizePathForMatch(path.relative(root, filePath));
+  return patterns.some((pattern) => pattern.test(relative));
+}
+
+function matchesDirectory(root: string, directoryPath: string, patterns: RegExp[]): boolean {
+  if (patterns.length === 0) {
+    return false;
+  }
+
+  const relative = normalizePathForMatch(path.relative(root, directoryPath));
+  const directoryRelative = relative.endsWith("/") ? relative : `${relative}/`;
+  return patterns.some((pattern) => pattern.test(relative) || pattern.test(directoryRelative));
 }

@@ -11,6 +11,8 @@
 - Added `exposes` and `hides` visibility rules with `unexposed_import` and `hidden_import` diagnostics.
 - Added tests for dynamic imports and barrel index import resolution.
 - Added `axi graph` and `axi graph --json` for declared, forbidden, visibility, and observed graph inspection.
+- Added `axi infer` and `axi infer --json` for starter `.axi` contract generation from current source imports.
+- Inference groups source folders into candidate modules and collapses cyclic candidate groups into one starter module so drafts can mirror existing code.
 
 ## 0.1.0 - Architecture Firewall MVP
 

@@ -1,7 +1,9 @@
 #!/usr/bin/env node
 import { formatCheckResult } from "./diagnostics/format.js";
 import { formatGraphJson, formatGraphResult } from "./diagnostics/graph.js";
+import { formatInferJson, formatInferResult } from "./diagnostics/infer.js";
 import { formatCheckJson } from "./diagnostics/json.js";
+import { runInfer } from "./infer/infer.js";
 import { runCheck } from "./validator/check.js";
 
 interface CliOptions {
@@ -17,13 +19,20 @@ if (!command || command === "--help" || command === "-h") {
   process.exit(0);
 }
 
-if (command !== "check" && command !== "graph") {
+if (command !== "check" && command !== "graph" && command !== "infer") {
   console.error(`Unknown command '${command}'.`);
   printHelp();
   process.exit(1);
 }
 
 const options = parseOptions(args.slice(1));
+
+if (command === "infer") {
+  const result = runInfer({ root: options.root });
+  console.log(options.json ? formatInferJson(result) : formatInferResult(result));
+  process.exit(0);
+}
+
 const result = runCheck({ root: options.root });
 
 if (command === "check" && options.json) {
@@ -76,9 +85,11 @@ function printHelp(): void {
 Usage:
   axi check [--root <path>] [--json]
   axi graph [--root <path>] [--json]
+  axi infer [--root <path>] [--json]
 
 Commands:
   check   Validate source dependencies against .axi architecture specs.
   graph   Print declared and observed architecture graphs.
+  infer   Print a starter .axi contract inferred from current imports.
 `);
 }

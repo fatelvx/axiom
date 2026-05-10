@@ -18,12 +18,12 @@ Axiom is not an AI prompt wrapper. The first product is a real validator that ca
 
 ## Status
 
-`v0.2` is an architecture firewall MVP with onboarding and real-project discovery hardening.
+`v0.2.1` is an architecture firewall MVP with onboarding and real-project discovery hardening.
 
 It currently supports:
 
 - `.axi` parser.
-- TypeScript/JavaScript relative import scanning.
+- TypeScript/JavaScript import scanning through the TypeScript parser.
 - Module path ownership.
 - Multiple source paths per module.
 - Declared vs observed dependency checks.
@@ -140,7 +140,6 @@ Default discovery skips common dependency, build, cache, generated, and local ru
 .benchmark_tmp
 .cache
 .git
-.lumina
 .next
 .nuxt
 .svelte-kit
@@ -200,7 +199,7 @@ Fields:
 - `specs`: `.axi` spec files to read. Defaults to `axiom/**/*.axi` and `*.axi`.
 - `tsconfig`: TypeScript config path used for `paths` import alias resolution, honoring `baseUrl`. Defaults to `tsconfig.json` when present.
 
-Config paths and patterns are relative to `--root`. Default ignored directories such as `node_modules`, `dist`, `.git`, `.lumina`, and `src-tauri` are still skipped.
+Config paths and patterns are relative to `--root`. Default ignored directories such as `node_modules`, `dist`, `.git`, and `src-tauri` are still skipped.
 
 ## JSON Output
 
@@ -374,12 +373,15 @@ The current scanner resolves TypeScript/JavaScript relative imports, including:
 
 - `import ... from "../module"`
 - `export ... from "../module"`
+- side-effect imports such as `import "../setup"`
+- multiline import/export declarations
 - `import("../module")`
 - `require("../module")`
+- TypeScript `import type` and `import foo = require("../module")`
 - directory barrel imports that resolve to `index.ts`, `index.tsx`, `index.js`, and related JS/TS extensions
 - TypeScript `paths` aliases from `tsconfig.json` or a configured `tsconfig` path, honoring `baseUrl`
 
-The scanner is still line-oriented, so multiline imports and more complex language syntax remain planned hardening work.
+The scanner uses the TypeScript parser for syntax discovery, then Axiom's resolver maps internal imports to source files. Full TypeScript package-style `extends` resolution from `node_modules` and full TypeScript module resolution remain planned hardening work.
 
 ## Test Fixtures
 
@@ -402,12 +404,16 @@ npm run check:fixture
 node dist/cli.js check --root fixtures/layer-breach --json
 ```
 
+## License
+
+Apache-2.0. See [LICENSE](LICENSE).
+
 ## Roadmap
 
 Near-term:
 
 - Strict mode for unowned source files.
-- Better import scanner coverage for multiline imports.
+- Better `axi infer` grouping and visibility-rule suggestions.
 - GitHub Actions example.
 - External package dependency modelling.
 

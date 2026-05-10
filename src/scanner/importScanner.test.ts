@@ -61,6 +61,96 @@ test("scanner resolves relative dynamic imports and barrel index imports", () =>
   }
 });
 
+test("scanner reads imports from TypeScript syntax instead of line regexes", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "axi-imports-ast-"));
+
+  try {
+    writeFile(
+      root,
+      "src/app.ts",
+      [
+        '// import { ignored } from "./ignored";',
+        'const text = "require(\\"./not-real\\")";',
+        "import {",
+        "  value",
+        '} from "./feature";',
+        'import type { TypeThing } from "./types";',
+        'import "./setup";',
+        'export { publicApi } from "./barrel";',
+        'export type { TypeThing as OtherThing } from "./types";',
+        "const lazy = () => import(",
+        "  `./lazy`",
+        ");",
+        'import legacy = require("./legacy");',
+        "const common = require(",
+        '  "./common"',
+        ");"
+      ].join("\n")
+    );
+    writeFile(root, "src/feature.ts", "export const value = true;\n");
+    writeFile(root, "src/types.ts", "export interface TypeThing { ok: boolean }\n");
+    writeFile(root, "src/setup.ts", "export const setup = true;\n");
+    writeFile(root, "src/barrel/index.ts", "export const publicApi = true;\n");
+    writeFile(root, "src/lazy.ts", "export const lazy = true;\n");
+    writeFile(root, "src/legacy.ts", "export const legacy = true;\n");
+    writeFile(root, "src/common.js", "exports.common = true;\n");
+
+    const imports = scanImports(path.join(root, "src/app.ts"));
+
+    assert.deepEqual(
+      imports.map((record) => ({
+        line: record.line,
+        specifier: record.specifier,
+        resolvedPath: normalize(root, record.resolvedPath)
+      })),
+      [
+        {
+          line: 3,
+          specifier: "./feature",
+          resolvedPath: "src/feature.ts"
+        },
+        {
+          line: 6,
+          specifier: "./types",
+          resolvedPath: "src/types.ts"
+        },
+        {
+          line: 7,
+          specifier: "./setup",
+          resolvedPath: "src/setup.ts"
+        },
+        {
+          line: 8,
+          specifier: "./barrel",
+          resolvedPath: "src/barrel/index.ts"
+        },
+        {
+          line: 9,
+          specifier: "./types",
+          resolvedPath: "src/types.ts"
+        },
+        {
+          line: 10,
+          specifier: "./lazy",
+          resolvedPath: "src/lazy.ts"
+        },
+        {
+          line: 13,
+          specifier: "./legacy",
+          resolvedPath: "src/legacy.ts"
+        },
+        {
+          line: 14,
+          specifier: "./common",
+          resolvedPath: "src/common.js"
+        }
+      ]
+    );
+  } finally {
+    fs.rmSync(root, { force: true, recursive: true });
+  }
+});
+
 test("scanner resolves aliases through an injected resolver", () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "axi-imports-alias-"));
 

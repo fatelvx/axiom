@@ -1,7 +1,8 @@
 {
   "name": "axiom",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Architecture compiler for AI-era codebases.",
+  "license": "Apache-2.0",
   "type": "module",
   "private": true,
   "bin": {
@@ -12,8 +13,10 @@
     "check:fixture": "npm run build && node dist/cli.js check --root fixtures/basic-ts-valid",
     "test": "npm run build && node --test \"dist/**/*.test.js\""
   },
-  "devDependencies": {
-    "@types/node": "^24.0.0",
+  "dependencies": {
     "typescript": "^5.9.0"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0"
   }
 }

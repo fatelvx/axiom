@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+## 0.2.1 - License and Scanner Hardening
+
+- Added Apache-2.0 licensing with package metadata.
+- Replaced the line-based import scanner with TypeScript parser-based import discovery.
+- Added scanner coverage for multiline imports, side-effect imports, TypeScript `import type`, `import = require`, template-literal dynamic imports, and multiline `require` calls.
+- Moved `typescript` to runtime dependencies because the scanner now uses the TypeScript parser at runtime.
+- Kept public default ignores generic; project-specific runtime folders should be excluded through project config.
+
 ## 0.2.0 - Onboarding and Resolver Hardening
 
 - Added a stable `axiom.check.v1` JSON envelope for `axi check --json`.

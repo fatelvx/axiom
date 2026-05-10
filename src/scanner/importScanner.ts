@@ -1,4 +1,6 @@
 import fs from "node:fs";
+import path from "node:path";
+import ts from "typescript";
 import type { ImportRecord } from "../axi/types.js";
 import { resolveRelativeImport, type ImportResolver } from "./importResolver.js";
 
@@ -6,38 +8,117 @@ export interface ScanImportsOptions {
   resolver?: ImportResolver;
 }
 
-const importPatterns = [
-  /\bimport\s+(?:type\s+)?(?:[^'"]*?\s+from\s*)?["']([^"']+)["']/,
-  /\bexport\s+(?:type\s+)?(?:[^'"]*?\s+from\s*)["']([^"']+)["']/,
-  /\bimport\s*\(\s*["']([^"']+)["']\s*\)/,
-  /\brequire\s*\(\s*["']([^"']+)["']\s*\)/
-];
-
 export function scanImports(filePath: string, options: ScanImportsOptions = {}): ImportRecord[] {
   const text = fs.readFileSync(filePath, "utf8");
-  const lines = text.split(/\r?\n/);
+  const sourceFile = ts.createSourceFile(filePath, text, ts.ScriptTarget.Latest, true, getScriptKind(filePath));
   const imports: ImportRecord[] = [];
   const resolver = options.resolver ?? { resolve: resolveRelativeImport };
 
-  for (let index = 0; index < lines.length; index += 1) {
-    const line = lines[index] ?? "";
+  function recordImport(node: ts.Node, specifier: string): void {
+    const line = sourceFile.getLineAndCharacterOfPosition(node.getStart(sourceFile)).line + 1;
 
-    for (const pattern of importPatterns) {
-      const match = line.match(pattern);
-      if (!match) {
-        continue;
-      }
-
-      const specifier = match[1] ?? "";
-      imports.push({
-        filePath,
-        line: index + 1,
-        specifier,
-        resolvedPath: resolver.resolve(filePath, specifier)
-      });
-      break;
-    }
+    imports.push({
+      filePath,
+      line,
+      specifier,
+      resolvedPath: resolver.resolve(filePath, specifier)
+    });
   }
 
+  function visit(node: ts.Node): void {
+    if (ts.isImportDeclaration(node)) {
+      const specifier = readStringLiteral(node.moduleSpecifier);
+      if (specifier) {
+        recordImport(node, specifier);
+      }
+    } else if (ts.isExportDeclaration(node)) {
+      const specifier = readStringLiteral(node.moduleSpecifier);
+      if (specifier) {
+        recordImport(node, specifier);
+      }
+    } else if (ts.isImportEqualsDeclaration(node)) {
+      const specifier = readImportEqualsSpecifier(node);
+      if (specifier) {
+        recordImport(node, specifier);
+      }
+    } else if (ts.isCallExpression(node)) {
+      const specifier = readCallSpecifier(node);
+      if (specifier) {
+        recordImport(node, specifier);
+      }
+    } else if (ts.isImportTypeNode(node)) {
+      const specifier = readImportTypeSpecifier(node);
+      if (specifier) {
+        recordImport(node, specifier);
+      }
+    }
+
+    ts.forEachChild(node, visit);
+  }
+
+  visit(sourceFile);
+
   return imports;
+}
+
+function readStringLiteral(node: ts.Node | undefined): string | undefined {
+  if (!node) {
+    return undefined;
+  }
+
+  if (ts.isStringLiteral(node) || ts.isNoSubstitutionTemplateLiteral(node)) {
+    return node.text;
+  }
+
+  return undefined;
+}
+
+function readImportEqualsSpecifier(node: ts.ImportEqualsDeclaration): string | undefined {
+  if (!ts.isExternalModuleReference(node.moduleReference)) {
+    return undefined;
+  }
+
+  return readStringLiteral(node.moduleReference.expression);
+}
+
+function readCallSpecifier(node: ts.CallExpression): string | undefined {
+  const firstArgument = node.arguments[0];
+  if (!firstArgument) {
+    return undefined;
+  }
+
+  if (node.expression.kind === ts.SyntaxKind.ImportKeyword) {
+    return readStringLiteral(firstArgument);
+  }
+
+  if (ts.isIdentifier(node.expression) && node.expression.text === "require") {
+    return readStringLiteral(firstArgument);
+  }
+
+  return undefined;
+}
+
+function readImportTypeSpecifier(node: ts.ImportTypeNode): string | undefined {
+  if (!ts.isLiteralTypeNode(node.argument)) {
+    return undefined;
+  }
+
+  return readStringLiteral(node.argument.literal);
+}
+
+function getScriptKind(filePath: string): ts.ScriptKind {
+  switch (path.extname(filePath).toLowerCase()) {
+    case ".js":
+      return ts.ScriptKind.JS;
+    case ".jsx":
+      return ts.ScriptKind.JSX;
+    case ".tsx":
+      return ts.ScriptKind.TSX;
+    case ".mts":
+      return ts.ScriptKind.TS;
+    case ".cts":
+      return ts.ScriptKind.TS;
+    default:
+      return ts.ScriptKind.TS;
+  }
 }

@@ -16,7 +16,6 @@ test("source discovery skips generated and runtime directories by default", () =
       ".benchmark_tmp",
       ".cache",
       ".git",
-      ".lumina",
       ".next",
       ".nuxt",
       ".svelte-kit",

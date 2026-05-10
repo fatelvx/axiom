@@ -13,7 +13,6 @@ const ignoredDirectories = new Set([
   ".benchmark_tmp",
   ".cache",
   ".git",
-  ".lumina",
   ".next",
   ".nuxt",
   ".svelte-kit",

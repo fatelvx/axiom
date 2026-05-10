@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+## 0.5.5 - Cross-Platform Test Runner
+
+- Replaced the quoted test glob with a small Node test runner script.
+- Fixed GitHub Actions on Linux where Node 20 treated `dist/**/*.test.js` as a literal path.
+
 ## 0.5.4 - CI Architecture Gate
 
 - Added a GitHub Actions workflow that runs the test suite and Axiom self-contract check.

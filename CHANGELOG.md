@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+## 0.4.0 - Infer Visibility Suggestions
+
+- Added commented `exposes` suggestions for inferred module `index.*` entry points.
+- Added commented `hides` suggestions for inferred `internal` and `private` folders.
+- Added `suggestedExposes` and `suggestedHides` to `axi infer --json` and bumped infer JSON to `axiom.infer.v2`.
+
 ## 0.3.1 - Generic Discovery Defaults
 
 - Narrowed built-in ignored directories to common dependency, build, cache, and temporary output folders.

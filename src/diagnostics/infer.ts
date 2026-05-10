@@ -1,6 +1,6 @@
 import type { InferResult, InferredDependency, InferredModule } from "../infer/infer.js";
 
-export const inferJsonSchemaVersion = "axiom.infer.v1";
+export const inferJsonSchemaVersion = "axiom.infer.v2";
 
 export interface InferJsonResult {
   schemaVersion: typeof inferJsonSchemaVersion;
@@ -39,6 +39,12 @@ export function formatInferResult(result: InferResult): string {
     lines.push(`module ${module.name}`);
     for (const pathPattern of module.paths) {
       lines.push(`path "${pathPattern}"`);
+    }
+    for (const expose of module.suggestedExposes) {
+      lines.push(`# suggestion: exposes "${expose}"`);
+    }
+    for (const hide of module.suggestedHides) {
+      lines.push(`# suggestion: hides "${hide}"`);
     }
     for (const dependency of module.depends) {
       lines.push(`depends on ${dependency}`);

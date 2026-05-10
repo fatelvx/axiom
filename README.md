@@ -18,7 +18,7 @@ Axiom is not an AI prompt wrapper. The first product is a real validator that ca
 
 ## Status
 
-`v0.3.1` is an architecture firewall MVP with onboarding and adoption controls.
+`v0.4.0` is an architecture firewall MVP with onboarding and adoption controls.
 
 It currently supports:
 
@@ -30,6 +30,7 @@ It currently supports:
 - Module visibility checks with `exposes` and `hides`.
 - Layer direction checks.
 - Starter contract inference with `axi infer`.
+- Visibility suggestions in inferred starter contracts.
 - Project config with source `include`/`exclude` and spec discovery patterns.
 - TypeScript `paths` alias resolution from `tsconfig.json`, honoring `baseUrl`.
 - Gradual adoption modes for unowned source files.
@@ -337,11 +338,11 @@ observed dependencies:
 
 ## Infer Output
 
-`axi infer --json` emits a draft-oriented `axiom.infer.v1` payload:
+`axi infer --json` emits a draft-oriented `axiom.infer.v2` payload:
 
 ```json
 {
-  "schemaVersion": "axiom.infer.v1",
+  "schemaVersion": "axiom.infer.v2",
   "root": "/absolute/project/root",
   "summary": {
     "sourceFiles": 3,
@@ -355,6 +356,8 @@ observed dependencies:
     {
       "name": "Simulation",
       "paths": ["src/simulation/**"],
+      "suggestedExposes": [],
+      "suggestedHides": [],
       "depends": ["Physics"],
       "sourceGroups": ["Simulation"]
     }
@@ -365,11 +368,11 @@ observed dependencies:
 }
 ```
 
-The text mode is intentionally valid `.axi` with comments, so it can be redirected into a file when the draft looks right.
+The text mode is intentionally valid `.axi` with comments, so it can be redirected into a file when the draft looks right. Inferred visibility suggestions are emitted as comments such as `# suggestion: exposes "src/services/index.ts"` so they do not make the starter contract stricter until a developer intentionally enables them.
 
 ## Violation Types
 
-Axiom v0.3 can report:
+Axiom v0.4 can report:
 
 - `forbidden_dependency`
 - `undeclared_dependency`

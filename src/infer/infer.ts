@@ -14,6 +14,8 @@ export interface InferOptions {
 export interface InferredModule {
   name: string;
   paths: string[];
+  suggestedExposes: string[];
+  suggestedHides: string[];
   depends: string[];
   sourceGroups: string[];
 }
@@ -81,7 +83,7 @@ export function runInfer(options: InferOptions): InferResult {
   const candidateEdges = buildCandidateEdges(root, imports, fileOwners);
   const components = collapseCycles(candidateGroups, candidateEdges);
   const keyToComponent = mapKeysToComponents(components);
-  const modules = buildInferredModules(candidateGroups, candidateEdges, components, keyToComponent);
+  const modules = buildInferredModules(root, candidateGroups, candidateEdges, components, keyToComponent);
   const observedDependencies = buildObservedDependencies(root, candidateEdges, keyToComponent, components);
 
   return {
@@ -297,6 +299,7 @@ function mapKeysToComponents(components: Component[]): Map<string, Component> {
 }
 
 function buildInferredModules(
+  root: string,
   candidateGroups: CandidateGroup[],
   candidateEdges: CandidateEdge[],
   components: Component[],
@@ -317,21 +320,56 @@ function buildInferredModules(
       }
 
       const paths = new Set<string>();
+      const files: string[] = [];
       for (const key of component.keys) {
         const group = groupsByKey.get(key);
         for (const pattern of group?.paths ?? []) {
           paths.add(pattern);
         }
+        files.push(...(group?.files ?? []));
       }
 
+      const visibility = inferVisibilitySuggestions(root, files);
       return {
         name: component.name,
         paths: [...paths].sort(),
+        suggestedExposes: visibility.suggestedExposes,
+        suggestedHides: visibility.suggestedHides,
         depends: [...depends].sort(),
         sourceGroups: component.keys.map((key) => candidateName(candidateGroups, key)).sort()
       };
     })
     .sort((left, right) => left.name.localeCompare(right.name));
+}
+
+function inferVisibilitySuggestions(root: string, files: string[]): Pick<InferredModule, "suggestedExposes" | "suggestedHides"> {
+  const suggestedExposes = new Set<string>();
+  const suggestedHides = new Set<string>();
+
+  for (const file of files) {
+    const relative = relativePath(root, file);
+    const segments = relative.split("/");
+    const directorySegments = segments.slice(0, -1);
+    const hiddenSegmentIndex = directorySegments.findIndex(isHiddenDirectoryName);
+
+    if (hiddenSegmentIndex >= 0) {
+      suggestedHides.add(`${directorySegments.slice(0, hiddenSegmentIndex + 1).join("/")}/**`);
+    }
+
+    if (stripExtension(segments.at(-1) ?? "") === "index" && hiddenSegmentIndex < 0) {
+      suggestedExposes.add(relative);
+    }
+  }
+
+  return {
+    suggestedExposes: [...suggestedExposes].sort(),
+    suggestedHides: [...suggestedHides].sort()
+  };
+}
+
+function isHiddenDirectoryName(segment: string): boolean {
+  const normalized = segment.toLowerCase();
+  return normalized === "internal" || normalized === "private";
 }
 
 function buildObservedDependencies(

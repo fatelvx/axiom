@@ -39,6 +39,8 @@ test("infer collapses cyclic candidate groups into one starter module", () => {
     {
       name: "AB",
       paths: ["src/a/**", "src/b/**"],
+      suggestedExposes: ["src/a/index.ts", "src/b/index.ts"],
+      suggestedHides: [],
       depends: [],
       sourceGroups: ["A", "B"]
     }
@@ -49,7 +51,7 @@ test("infer JSON includes the generated .axi draft", () => {
   const result = runInfer({ root: path.join(repoRoot, "fixtures/basic-ts-valid") });
   const payload = toInferJson(result);
 
-  assert.equal(payload.schemaVersion, "axiom.infer.v1");
+  assert.equal(payload.schemaVersion, "axiom.infer.v2");
   assert.equal(payload.summary.sourceFiles, 3);
   assert.equal(payload.summary.modules, 3);
   assert.match(payload.axi, /module Physics/);
@@ -62,4 +64,16 @@ test("infer uses TypeScript path aliases from tsconfig", () => {
     "App->Shared"
   ]);
   assert.deepEqual(result.modules.find((module) => module.name === "App")?.depends, ["Shared"]);
+});
+
+test("infer suggests visibility rules as comments", () => {
+  const result = runInfer({ root: path.join(repoRoot, "fixtures/infer-visibility") });
+  const services = result.modules.find((module) => module.name === "Services");
+
+  assert.deepEqual(services?.suggestedExposes, ["src/services/index.ts"]);
+  assert.deepEqual(services?.suggestedHides, ["src/services/internal/**"]);
+
+  const output = formatInferResult(result);
+  assert.match(output, /# suggestion: exposes "src\/services\/index\.ts"/);
+  assert.match(output, /# suggestion: hides "src\/services\/internal\/\*\*"/);
 });

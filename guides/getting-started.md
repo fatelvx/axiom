@@ -143,3 +143,23 @@ axi infer --root . --group-by workspace
 ```
 
 The inferred contract is a starting point, not a final architecture. Rename modules, add layers, tighten `depends on`, and add `exposes` or `hides` after review.
+
+## 7. Try A Monorepo
+
+Axiom discovers common workspace contract locations by default:
+
+```text
+apps/*/axiom/**/*.axi
+apps/*/*.axi
+packages/*/axiom/**/*.axi
+packages/*/*.axi
+```
+
+Run the workspace example:
+
+```bash
+node dist/cli.js check --root examples/monorepo-workspace
+node dist/cli.js graph --root examples/monorepo-workspace --violations-only
+```
+
+The example shows `apps/web` importing a hidden internal file from `packages/shared`.

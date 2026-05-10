@@ -1,0 +1,7 @@
+{
+  "name": "@example/shared",
+  "exports": {
+    ".": "./src/index.ts",
+    "./internal/*": "./src/internal/*.ts"
+  }
+}

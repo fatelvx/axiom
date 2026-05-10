@@ -145,6 +145,38 @@ test("check resolves workspace package exports", () => {
   );
 });
 
+test("check discovers common monorepo package specs by default", () => {
+  const result = runCheck({ root: path.join(repoRoot, "examples/monorepo-workspace") });
+
+  assert.deepEqual(result.specFiles.map((filePath) => path.relative(result.root, filePath).replace(/\\/g, "/")), [
+    "apps/web/axiom/main.axi",
+    "packages/shared/.axi"
+  ]);
+  assert.deepEqual(result.violations.map((violation) => violation.code), ["hidden_import"]);
+  assert.deepEqual(
+    result.observedDependencies.map((dependency) => ({
+      fromModule: dependency.fromModule,
+      toModule: dependency.toModule,
+      specifier: dependency.importRecord.specifier,
+      resolvedPath: path.relative(result.root, dependency.importRecord.resolvedPath ?? "").replace(/\\/g, "/")
+    })),
+    [
+      {
+        fromModule: "Web",
+        toModule: "Shared",
+        specifier: "@example/shared",
+        resolvedPath: "packages/shared/src/index.ts"
+      },
+      {
+        fromModule: "Web",
+        toModule: "Shared",
+        specifier: "@example/shared/internal/normalize",
+        resolvedPath: "packages/shared/src/internal/normalize.ts"
+      }
+    ]
+  );
+});
+
 test("unowned source files are ignored by default for partial adoption", () => {
   const result = runCheck({ root: path.join(repoRoot, "fixtures/unowned-source") });
 

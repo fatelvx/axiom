@@ -34,6 +34,39 @@ Use `axiom.config.json` to keep source discovery focused:
 
 `include` and `exclude` control source scanning. `specs` controls `.axi` discovery.
 
+## Monorepos
+
+Axiom discovers specs from common workspace locations by default:
+
+```text
+apps/*/axiom/**/*.axi
+apps/*/*.axi
+packages/*/axiom/**/*.axi
+packages/*/*.axi
+```
+
+This works well for Turborepo and many pnpm workspace repos:
+
+```text
+apps/web/axiom/main.axi
+packages/shared/.axi
+```
+
+If your repo uses a different shape, set `specs` explicitly:
+
+```json
+{
+  "include": ["apps/*/src/**", "packages/*/src/**"],
+  "specs": ["services/*/axiom/**/*.axi", "libs/*/.axi"]
+}
+```
+
+Use workspace-aware inference when drafting the first contract:
+
+```bash
+axi infer --root . --group-by workspace
+```
+
 ## CI
 
 After the first npm publish, install the scoped package:

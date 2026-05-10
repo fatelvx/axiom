@@ -84,7 +84,7 @@ node dist/cli.js graph --root examples/basic-app --violations-only
 
 ## What It Checks
 
-Axiom v0.5.7 currently supports:
+Axiom v0.5.8 currently supports:
 
 - Module ownership with `path`.
 - Multiple source paths per module.
@@ -96,6 +96,7 @@ Axiom v0.5.7 currently supports:
 - Relative imports, barrel `index.*` files, dynamic imports, `require`, and multiline imports.
 - TypeScript `paths` aliases from `tsconfig.json`.
 - Package `imports` and workspace package `exports` for internal package-style imports.
+- Common monorepo contract discovery under `apps/*` and `packages/*`.
 - Gradual adoption with default loose mode, `--warn-unowned`, and `--strict`.
 - Human output and stable JSON output for CI and agents.
 - Starter contract inference with `axi infer`.
@@ -219,6 +220,37 @@ axi infer --root . --group-by workspace
 
 Inference prints a draft to stdout and does not write files. Treat it as a starting point: rename modules, add layers, tighten `depends on`, and add `exposes` or `hides` after review.
 
+## Monorepos
+
+Axiom understands common npm, pnpm, and Turborepo-style workspace layouts.
+
+By default it discovers `.axi` specs from:
+
+```text
+axiom/**/*.axi
+*.axi
+apps/*/axiom/**/*.axi
+apps/*/*.axi
+packages/*/axiom/**/*.axi
+packages/*/*.axi
+```
+
+This lets a repo keep package-level contracts near the package:
+
+```text
+apps/web/axiom/main.axi
+packages/shared/.axi
+```
+
+Try the monorepo example:
+
+```bash
+node dist/cli.js check --root examples/monorepo-workspace
+node dist/cli.js graph --root examples/monorepo-workspace --violations-only
+```
+
+Use `axiom.config.json` `specs` when your workspace layout is different.
+
 ## Project Config
 
 Axiom reads `axiom.config.json` from the project root when present:
@@ -341,6 +373,7 @@ Then run that script in CI after installing dependencies.
 - [Adopting Axiom In A Real Project](guides/adoption.md)
 - [Publishing The Public Alpha](guides/publishing-alpha.md)
 - [Basic App Example](examples/basic-app)
+- [Monorepo Workspace Example](examples/monorepo-workspace)
 
 ## Violation Types
 

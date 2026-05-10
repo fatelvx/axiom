@@ -1,0 +1,5 @@
+{
+  "name": "axiom-monorepo-example",
+  "private": true,
+  "workspaces": ["apps/*", "packages/*"]
+}

@@ -1,6 +1,6 @@
 {
   "name": "@fatelvx/axiom",
-  "version": "0.5.7",
+  "version": "0.5.8",
   "description": "Architecture compiler for AI-era codebases.",
   "license": "Apache-2.0",
   "type": "module",
@@ -31,7 +31,8 @@
     "CHANGELOG.md",
     "assets/banner.svg",
     "guides/",
-    "examples/basic-app/"
+    "examples/basic-app/",
+    "examples/monorepo-workspace/"
   ],
   "bin": {
     "axi": "dist/cli.js",

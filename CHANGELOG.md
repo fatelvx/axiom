@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+## 0.5.8 - Monorepo Spec Discovery
+
+- Added default `.axi` discovery for common `apps/*` and `packages/*` monorepo contract locations.
+- Added a runnable `examples/monorepo-workspace` project that demonstrates package-level contracts and workspace package export resolution.
+- Documented monorepo, pnpm workspace, and Turborepo adoption paths.
+
 ## 0.5.7 - Public Alpha Packaging
 
 - Renamed the npm package target to `@fatelvx/axiom` because the unscoped `axiom` package name is already taken.

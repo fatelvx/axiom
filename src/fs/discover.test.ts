@@ -85,6 +85,29 @@ test("source and spec discovery respect include, exclude, and specs config", () 
   }
 });
 
+test("default spec discovery includes common monorepo package contract locations", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "axi-discover-monorepo-specs-"));
+
+  try {
+    writeFile(root, "axiom/main.axi", "module Root\npath \"src/**\"\n");
+    writeFile(root, "apps/web/axiom/main.axi", "module Web\npath \"apps/web/src/**\"\n");
+    writeFile(root, "apps/admin/.axi", "module Admin\npath \"apps/admin/src/**\"\n");
+    writeFile(root, "packages/shared/axiom/main.axi", "module Shared\npath \"packages/shared/src/**\"\n");
+    writeFile(root, "packages/core/.axi", "module Core\npath \"packages/core/src/**\"\n");
+    writeFile(root, "examples/demo/axiom/main.axi", "module Demo\npath \"examples/demo/src/**\"\n");
+
+    assert.deepEqual(findAxiomFiles(root).map((filePath) => normalize(root, filePath)), [
+      "apps/admin/.axi",
+      "apps/web/axiom/main.axi",
+      "axiom/main.axi",
+      "packages/core/.axi",
+      "packages/shared/axiom/main.axi"
+    ]);
+  } finally {
+    fs.rmSync(root, { force: true, recursive: true });
+  }
+});
+
 test("source discovery keeps include pruning conservative for wildcard directories", () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "axi-discover-include-"));
 

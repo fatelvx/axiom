@@ -16,7 +16,14 @@ export interface LoadedAxiomConfig {
   tsconfig?: string;
 }
 
-export const defaultSpecPatterns = ["axiom/**/*.axi", "*.axi"];
+export const defaultSpecPatterns = [
+  "axiom/**/*.axi",
+  "*.axi",
+  "apps/*/axiom/**/*.axi",
+  "apps/*/*.axi",
+  "packages/*/axiom/**/*.axi",
+  "packages/*/*.axi"
+];
 
 export function loadConfig(root: string, configPath?: string): LoadedAxiomConfig {
   const resolvedRoot = path.resolve(root);

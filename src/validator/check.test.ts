@@ -1,4 +1,6 @@
 import assert from "node:assert/strict";
+import fs from "node:fs";
+import os from "node:os";
 import path from "node:path";
 import test from "node:test";
 import { runCheck } from "./check.js";
@@ -231,6 +233,39 @@ test("active planned suppressions near expiration are reported as warnings", () 
     result.warnings[0]?.message,
     "Simulation has an intentional violation to Rendering that expires in 17 days."
   );
+});
+
+test("intentional violation expiration warning window can be configured", () => {
+  const configRoot = fs.mkdtempSync(path.join(os.tmpdir(), "axi-expiry-window-config-"));
+  const configPath = path.join(configRoot, "axiom.config.json");
+
+  try {
+    fs.writeFileSync(configPath, JSON.stringify({ intentionalViolationExpiryWarningDays: 10 }));
+
+    const result = runCheck({
+      root: path.join(repoRoot, "fixtures/suppressed-dependency"),
+      configPath,
+      today: "2098-12-15"
+    });
+
+    assert.deepEqual(result.violations, []);
+    assert.equal(result.suppressedViolations.length, 1);
+    assert.deepEqual(result.warnings, []);
+  } finally {
+    fs.rmSync(configRoot, { force: true, recursive: true });
+  }
+});
+
+test("intentional violation expiration warning window can be overridden per check", () => {
+  const result = runCheck({
+    root: path.join(repoRoot, "fixtures/suppressed-dependency"),
+    today: "2098-12-15",
+    intentionalViolationExpiryWarningDays: 10
+  });
+
+  assert.deepEqual(result.violations, []);
+  assert.equal(result.suppressedViolations.length, 1);
+  assert.deepEqual(result.warnings, []);
 });
 
 test("expired planned suppressions fail and leave the original violation visible", () => {

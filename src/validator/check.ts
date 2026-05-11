@@ -23,6 +23,7 @@ export interface CheckOptions {
   configPath?: string;
   adoptionMode?: AdoptionMode;
   today?: string;
+  intentionalViolationExpiryWarningDays?: number;
 }
 
 export interface CheckResult {
@@ -41,6 +42,8 @@ export function runCheck(options: CheckOptions): CheckResult {
   const root = path.resolve(options.root);
   const adoptionMode = options.adoptionMode ?? "loose";
   const config = loadConfig(root, options.configPath);
+  const intentionalViolationExpiryWarningDays =
+    options.intentionalViolationExpiryWarningDays ?? config.intentionalViolationExpiryWarningDays;
   const specFiles = findAxiomFiles(root, config);
   const sourceFiles = findSourceFiles(root, config);
   const resolver = createImportResolver({ root, tsconfigPath: config.tsconfig });
@@ -84,7 +87,12 @@ export function runCheck(options: CheckOptions): CheckResult {
   });
   violations.push(...observedValidation.violations);
   suppressedViolations.push(...observedValidation.suppressedViolations);
-  warnings.push(...findExpiringSuppressions(suppressedViolations, { today: options.today }));
+  warnings.push(
+    ...findExpiringSuppressions(suppressedViolations, {
+      today: options.today,
+      intentionalViolationExpiryWarningDays
+    })
+  );
   warnings.push(...findUnusedSuppressions(spec, suppressedViolations, { today: options.today }));
 
   return {

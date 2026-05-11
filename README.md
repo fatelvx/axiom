@@ -291,7 +291,8 @@ Axiom reads `axiom.config.json` from the project root when present:
   "include": ["src/**"],
   "exclude": ["src/**/*.test.ts", "src/generated/**"],
   "specs": ["axiom/**/*.axi"],
-  "tsconfig": "tsconfig.json"
+  "tsconfig": "tsconfig.json",
+  "intentionalViolationExpiryWarningDays": 30
 }
 ```
 
@@ -301,6 +302,7 @@ Fields:
 - `exclude`: source files or directories to skip in addition to default ignored directories.
 - `specs`: `.axi` files to read. Defaults to `axiom/**/*.axi` and `*.axi`.
 - `tsconfig`: TypeScript config path used for `paths` alias resolution. Defaults to `tsconfig.json` when present.
+- `intentionalViolationExpiryWarningDays`: warn when accepted intentional violations expire within this many days. Defaults to `30`.
 
 Default discovery skips common dependency, build, cache, and temporary output folders:
 
@@ -352,6 +354,8 @@ suppresses forbidden_dependency to ServicesInternal until 2027-06-30 because "le
 ```
 
 Intentional violations only apply to observed dependency and visibility violations. Expired intentional violations fail the check, invalid entries cannot hide violations, entries expiring within 30 days become warnings, and unused entries are warnings so old architecture debt stays visible after the code is cleaned up.
+
+Tune the warning window per project with `intentionalViolationExpiryWarningDays` in `axiom.config.json`, or for one command with `--intentional-violation-warning-days <n>`.
 
 ## JSON Output
 

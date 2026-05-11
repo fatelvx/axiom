@@ -6,6 +6,7 @@ export interface AxiomConfig {
   exclude?: string[];
   specs?: string[];
   tsconfig?: string;
+  intentionalViolationExpiryWarningDays?: number;
 }
 
 export interface LoadedAxiomConfig {
@@ -14,6 +15,7 @@ export interface LoadedAxiomConfig {
   exclude: string[];
   specs: string[];
   tsconfig?: string;
+  intentionalViolationExpiryWarningDays?: number;
 }
 
 export const defaultSpecPatterns = [
@@ -44,7 +46,10 @@ export function loadConfig(root: string, configPath?: string): LoadedAxiomConfig
     include: config.include ?? [],
     exclude: config.exclude ?? [],
     specs: config.specs ?? [...defaultSpecPatterns],
-    ...(config.tsconfig ? { tsconfig: config.tsconfig } : {})
+    ...(config.tsconfig ? { tsconfig: config.tsconfig } : {}),
+    ...(config.intentionalViolationExpiryWarningDays === undefined
+      ? {}
+      : { intentionalViolationExpiryWarningDays: config.intentionalViolationExpiryWarningDays })
   };
 }
 
@@ -80,7 +85,12 @@ function parseConfigFile(filePath: string): AxiomConfig {
     include: readOptionalStringArray(filePath, rawConfig, "include"),
     exclude: readOptionalStringArray(filePath, rawConfig, "exclude"),
     specs: readOptionalStringArray(filePath, rawConfig, "specs"),
-    tsconfig: readOptionalString(filePath, rawConfig, "tsconfig")
+    tsconfig: readOptionalString(filePath, rawConfig, "tsconfig"),
+    intentionalViolationExpiryWarningDays: readOptionalNonNegativeInteger(
+      filePath,
+      rawConfig,
+      "intentionalViolationExpiryWarningDays"
+    )
   };
 }
 
@@ -105,6 +115,23 @@ function readOptionalString(filePath: string, config: Record<string, unknown>, k
 
   if (typeof value !== "string") {
     throw new Error(`Axiom config '${key}' must be a string: ${filePath}`);
+  }
+
+  return value;
+}
+
+function readOptionalNonNegativeInteger(
+  filePath: string,
+  config: Record<string, unknown>,
+  key: keyof AxiomConfig
+): number | undefined {
+  const value = config[key];
+  if (value === undefined) {
+    return undefined;
+  }
+
+  if (typeof value !== "number" || !Number.isInteger(value) || value < 0) {
+    throw new Error(`Axiom config '${key}' must be a non-negative integer: ${filePath}`);
   }
 
   return value;

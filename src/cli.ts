@@ -14,6 +14,7 @@ interface CliOptions {
   groupDepth?: number;
   groupBy?: InferGroupBy;
   graphViolationsOnly: boolean;
+  intentionalViolationExpiryWarningDays?: number;
 }
 
 const args = process.argv.slice(2);
@@ -44,7 +45,12 @@ try {
     process.exit(0);
   }
 
-  const result = runCheck({ root: options.root, configPath: options.configPath, adoptionMode: options.adoptionMode });
+  const result = runCheck({
+    root: options.root,
+    configPath: options.configPath,
+    adoptionMode: options.adoptionMode,
+    intentionalViolationExpiryWarningDays: options.intentionalViolationExpiryWarningDays
+  });
 
   if (command === "check" && options.json) {
     console.log(formatCheckJson(result));
@@ -118,6 +124,29 @@ function parseOptions(values: string[], command: "check" | "graph" | "infer"): C
       continue;
     }
 
+    if (value === "--intentional-violation-warning-days") {
+      if (command === "infer") {
+        console.error("--intentional-violation-warning-days is only supported by check and graph.");
+        process.exit(1);
+      }
+
+      const rawWarningDays = values[index + 1];
+      if (!rawWarningDays) {
+        console.error("Missing value for --intentional-violation-warning-days.");
+        process.exit(1);
+      }
+
+      const warningDays = Number(rawWarningDays);
+      if (!Number.isInteger(warningDays) || warningDays < 0) {
+        console.error("--intentional-violation-warning-days must be a non-negative integer.");
+        process.exit(1);
+      }
+
+      options.intentionalViolationExpiryWarningDays = warningDays;
+      index += 1;
+      continue;
+    }
+
     if (value === "--violations-only") {
       if (command !== "graph") {
         console.error("--violations-only is only supported by graph.");
@@ -179,8 +208,8 @@ function printHelp(): void {
   console.log(`Axiom
 
 Usage:
-  axi check [--root <path>] [--config <path>] [--json] [--warn-unowned] [--strict]
-  axi graph [--root <path>] [--config <path>] [--json] [--warn-unowned] [--strict] [--violations-only]
+  axi check [--root <path>] [--config <path>] [--json] [--warn-unowned] [--strict] [--intentional-violation-warning-days <n>]
+  axi graph [--root <path>] [--config <path>] [--json] [--warn-unowned] [--strict] [--violations-only] [--intentional-violation-warning-days <n>]
   axi infer [--root <path>] [--config <path>] [--json] [--group-depth <n>] [--group-by folder|workspace]
 
 Commands:
@@ -195,5 +224,7 @@ Adoption:
   default          Ignore source files not owned by any module path.
   --warn-unowned  Report unowned source files as warnings without failing check.
   --strict        Report unowned source files as violations.
+  --intentional-violation-warning-days <n>
+                   Warn when an intentional violation expires within n days. Defaults to 30.
 `);
 }

@@ -30,11 +30,13 @@ Use `axiom.config.json` to keep source discovery focused:
   "include": ["src/**"],
   "exclude": ["src/**/*.test.ts", "src/generated/**"],
   "specs": ["axiom/**/*.axi"],
-  "tsconfig": "tsconfig.json"
+  "tsconfig": "tsconfig.json",
+  "intentionalViolationExpiryWarningDays": 30
 }
 ```
 
 `include` and `exclude` control source scanning. `specs` controls `.axi` discovery.
+`intentionalViolationExpiryWarningDays` controls how early active intentional violations become warnings before their expiration date.
 
 ## Monorepos
 
@@ -147,6 +149,12 @@ suppresses forbidden_dependency to ServicesInternal until 2027-06-30 because "le
 ```
 
 Active intentional violations let `axi check` pass but remain visible in human output, JSON output, and focused graph output. Entries expiring within 30 days are warnings, expired intentional violations fail the check, and unused entries are warnings, so old architecture debt does not become invisible policy.
+
+Use a shorter or longer warning window if your team reviews architecture debt on a different cadence:
+
+```bash
+axi check --root . --intentional-violation-warning-days 14
+```
 
 ## Reading Failures
 

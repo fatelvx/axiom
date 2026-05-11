@@ -222,3 +222,14 @@ test("cli check uses project config discovery settings", () => {
   assert.deepEqual(payload.specFiles, ["architecture/main.axi"]);
   assert.deepEqual(payload.sourceFiles, ["src/app.ts"]);
 });
+
+test("cli rejects invalid intentional violation warning day windows", () => {
+  const result = spawnSync(
+    process.execPath,
+    [cliPath, "check", "--root", "fixtures/basic-ts-valid", "--intentional-violation-warning-days", "soon"],
+    { cwd: repoRoot, encoding: "utf8" }
+  );
+
+  assert.equal(result.status, 1);
+  assert.match(result.stderr, /--intentional-violation-warning-days must be a non-negative integer/);
+});

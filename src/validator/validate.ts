@@ -25,6 +25,7 @@ const expiringSuppressionWarningDays = 30;
 
 interface DateValidationOptions {
   today?: string;
+  intentionalViolationExpiryWarningDays?: number;
 }
 
 export function validateSpec(spec: AxiomSpec, options: DateValidationOptions = {}): Violation[] {
@@ -247,7 +248,7 @@ export function findExpiringSuppressions(
     if (
       daysUntilExpiration === undefined ||
       daysUntilExpiration < 0 ||
-      daysUntilExpiration > expiringSuppressionWarningDays
+      daysUntilExpiration > (options.intentionalViolationExpiryWarningDays ?? expiringSuppressionWarningDays)
     ) {
       continue;
     }

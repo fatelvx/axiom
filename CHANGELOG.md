@@ -21,6 +21,7 @@
 - Added a sanitized MiroFish live-forecast result and Chinese generated-output/process excerpt.
 - Aligned public docs around the forecast-tested guardrail position: visible accepted debt, honest static-analysis limits, and `symbol-level API health` as a named gap.
 - Added opt-in `--warn-public-api-surface` advisory warnings for broad exposed barrels such as `export *`.
+- Documented the forecast discipline: use MiroFish-style runs as risk maps and backtests, not as direct product scripts.
 - Bumped check JSON to `axiom.check.v4` and graph JSON to `axiom.graph.v6` for intentional violation reporting and warning details.
 
 ## 0.5.8 - Monorepo Spec Discovery

@@ -39,6 +39,8 @@ This matters more in AI-era repositories because agents can change many files qu
 
 A live MiroFish forecast was run on 2026-05-11 against Axiom's current product seed. It used synthetic stakeholder profiles and simulated social reactions, so it is not market proof or a replacement for real users. Its value is product-risk discovery.
 
+Treat forecast output as a risk map, not an action script. Axiom should absorb the problems it surfaces, then decide changes through the product's own filter: is the signal reliably checkable, does the change help real adopters instead of only quieting skeptics, and does it preserve Axiom's core difference as an architecture contract validator rather than a broad semantic oracle?
+
 The sharpest finding was `symbol-level API health`: Axiom can validate import and visibility intent, and it can catch direct hidden-path re-exports, but it cannot prove that broad public API surfaces are semantically healthy.
 
 The forecast also predicted rejection if Axiom looks like:

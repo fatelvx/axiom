@@ -17,6 +17,18 @@ The comfortable adoption path is a ladder, not a switch:
 
 This keeps Axiom useful for humans and agents without turning every advisory signal into a blocker.
 
+## Guardrail Discipline
+
+When deciding whether to tighten a rule, treat forecasts, reviews, and agent failures as risk signals rather than direct marching orders.
+
+Ask three questions first:
+
+1. Is this a reliable, machine-checkable fact, or only an advisory architecture signal?
+2. Will surfacing it help real adopters act sooner, or only quiet a theoretical objection?
+3. Does the change preserve Axiom's core difference: explicit architecture intent, visible accepted debt, and high-confidence gates?
+
+If the answer is uncertain, prefer a warning, graph view, or documented limitation before adding a CI failure. Axiom should admit blind spots, make them visible, and then tighten only where the signal proves useful.
+
 ## Good First Rules
 
 Choose one or two rules that would catch real mistakes:

@@ -13,7 +13,8 @@ test("loadConfig returns defaults when no config file exists", () => {
       include: [],
       exclude: [],
       specs: defaultSpecPatterns,
-      warnPublicApiSurface: false
+      warnPublicApiSurface: false,
+      warnCouplingConcentration: false
     });
   } finally {
     fs.rmSync(root, { force: true, recursive: true });
@@ -32,7 +33,8 @@ test("loadConfig reads axiom.config.json from the project root", () => {
         specs: ["architecture/**/*.axi"],
         tsconfig: "tsconfig.app.json",
         intentionalViolationExpiryWarningDays: 14,
-        warnPublicApiSurface: true
+        warnPublicApiSurface: true,
+        warnCouplingConcentration: true
       })
     );
 
@@ -44,6 +46,7 @@ test("loadConfig reads axiom.config.json from the project root", () => {
     assert.equal(config.tsconfig, "tsconfig.app.json");
     assert.equal(config.intentionalViolationExpiryWarningDays, 14);
     assert.equal(config.warnPublicApiSurface, true);
+    assert.equal(config.warnCouplingConcentration, true);
     assert.equal(config.filePath, path.join(root, "axiom.config.json"));
   } finally {
     fs.rmSync(root, { force: true, recursive: true });
@@ -81,6 +84,18 @@ test("loadConfig rejects invalid public API surface warning setting", () => {
     fs.writeFileSync(path.join(root, "axiom.config.json"), JSON.stringify({ warnPublicApiSurface: "yes" }));
 
     assert.throws(() => loadConfig(root), /warnPublicApiSurface/);
+  } finally {
+    fs.rmSync(root, { force: true, recursive: true });
+  }
+});
+
+test("loadConfig rejects invalid coupling concentration warning setting", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "axi-config-invalid-coupling-concentration-"));
+
+  try {
+    fs.writeFileSync(path.join(root, "axiom.config.json"), JSON.stringify({ warnCouplingConcentration: "yes" }));
+
+    assert.throws(() => loadConfig(root), /warnCouplingConcentration/);
   } finally {
     fs.rmSync(root, { force: true, recursive: true });
   }

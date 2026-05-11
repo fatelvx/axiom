@@ -23,10 +23,18 @@ const suppressibleCodes = new Set<ViolationCode>([
   "unexposed_import"
 ]);
 const expiringSuppressionWarningDays = 30;
+const couplingConcentrationModuleThreshold = 4;
 
 interface DateValidationOptions {
   today?: string;
   intentionalViolationExpiryWarningDays?: number;
+}
+
+interface CouplingStats {
+  incomingModules: Set<string>;
+  outgoingModules: Set<string>;
+  incomingImportSites: number;
+  outgoingImportSites: number;
 }
 
 export function validateSpec(spec: AxiomSpec, options: DateValidationOptions = {}): Violation[] {
@@ -551,6 +559,120 @@ export function findPublicApiSurfaceWarnings(
   }
 
   return warnings;
+}
+
+export function findCouplingConcentrationWarnings(observedDependencies: ObservedDependency[]): Violation[] {
+  const statsByModule = new Map<string, CouplingStats>();
+
+  for (const dependency of observedDependencies) {
+    if (dependency.fromModule === dependency.toModule) {
+      continue;
+    }
+
+    const fromStats = ensureCouplingStats(statsByModule, dependency.fromModule);
+    const toStats = ensureCouplingStats(statsByModule, dependency.toModule);
+
+    fromStats.outgoingModules.add(dependency.toModule);
+    fromStats.outgoingImportSites += 1;
+    toStats.incomingModules.add(dependency.fromModule);
+    toStats.incomingImportSites += 1;
+  }
+
+  return [...statsByModule.entries()]
+    .sort(([left], [right]) => left.localeCompare(right))
+    .flatMap(([moduleName, stats]) => {
+      const incomingModules = [...stats.incomingModules].sort();
+      const outgoingModules = [...stats.outgoingModules].sort();
+      const fanInModules = incomingModules.length;
+      const fanOutModules = outgoingModules.length;
+      const hasConcentratedFanIn = fanInModules >= couplingConcentrationModuleThreshold;
+      const hasConcentratedFanOut = fanOutModules >= couplingConcentrationModuleThreshold;
+
+      if (!hasConcentratedFanIn && !hasConcentratedFanOut) {
+        return [];
+      }
+
+      return [
+        {
+          code: "coupling_concentration" as const,
+          message: formatCouplingConcentrationMessage(moduleName, fanInModules, fanOutModules),
+          details: {
+            module: moduleName,
+            direction: formatCouplingConcentrationDirection(hasConcentratedFanIn, hasConcentratedFanOut),
+            fanInModules,
+            fanOutModules,
+            incomingModules,
+            outgoingModules,
+            incomingImportSites: stats.incomingImportSites,
+            outgoingImportSites: stats.outgoingImportSites,
+            threshold: {
+              fanInModules: couplingConcentrationModuleThreshold,
+              fanOutModules: couplingConcentrationModuleThreshold
+            },
+            observed: formatCouplingConcentrationObserved(moduleName, fanInModules, fanOutModules),
+            suggestion:
+              "Review whether this module is becoming a coordination hub; split responsibilities, narrow public surfaces, or make the boundary explicit before considering enforcement."
+          }
+        }
+      ];
+    });
+}
+
+function ensureCouplingStats(
+  statsByModule: Map<string, CouplingStats>,
+  moduleName: string
+): CouplingStats {
+  const existing = statsByModule.get(moduleName);
+  if (existing) {
+    return existing;
+  }
+
+  const created = {
+    incomingModules: new Set<string>(),
+    outgoingModules: new Set<string>(),
+    incomingImportSites: 0,
+    outgoingImportSites: 0
+  };
+  statsByModule.set(moduleName, created);
+  return created;
+}
+
+function formatCouplingConcentrationMessage(moduleName: string, fanInModules: number, fanOutModules: number): string {
+  const hasConcentratedFanIn = fanInModules >= couplingConcentrationModuleThreshold;
+  const hasConcentratedFanOut = fanOutModules >= couplingConcentrationModuleThreshold;
+
+  if (hasConcentratedFanIn && hasConcentratedFanOut) {
+    return `${moduleName} has concentrated fan-in from ${fanInModules} modules and fan-out to ${fanOutModules} modules.`;
+  }
+
+  if (hasConcentratedFanIn) {
+    return `${moduleName} has concentrated fan-in from ${fanInModules} modules.`;
+  }
+
+  return `${moduleName} has concentrated fan-out to ${fanOutModules} modules.`;
+}
+
+function formatCouplingConcentrationDirection(hasConcentratedFanIn: boolean, hasConcentratedFanOut: boolean): string {
+  if (hasConcentratedFanIn && hasConcentratedFanOut) {
+    return "fan_in_and_fan_out";
+  }
+
+  return hasConcentratedFanIn ? "fan_in" : "fan_out";
+}
+
+function formatCouplingConcentrationObserved(moduleName: string, fanInModules: number, fanOutModules: number): string {
+  const hasConcentratedFanIn = fanInModules >= couplingConcentrationModuleThreshold;
+  const hasConcentratedFanOut = fanOutModules >= couplingConcentrationModuleThreshold;
+
+  if (hasConcentratedFanIn && hasConcentratedFanOut) {
+    return `${moduleName} fan-in ${fanInModules}, fan-out ${fanOutModules}`;
+  }
+
+  if (hasConcentratedFanIn) {
+    return `${moduleName} fan-in from ${fanInModules} modules`;
+  }
+
+  return `${moduleName} fan-out to ${fanOutModules} modules`;
 }
 
 function formatExportKind(importRecord: ImportRecord): string {

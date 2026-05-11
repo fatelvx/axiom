@@ -12,8 +12,9 @@ The comfortable adoption path is a ladder, not a switch:
 2. Measure coverage with `axi check --root . --warn-unowned`.
 3. Keep temporary architecture debt visible with `accepts ... until ... because ...`.
 4. Inspect broad public surfaces with `axi observe --root . --warn-public-api-surface`.
-5. Move only clear, high-confidence rules into CI with `axi check --root .`.
-6. Use `--strict` after whole-repo ownership is intentional.
+5. Inspect concentrated coupling with `axi observe --root . --warn-coupling-concentration`.
+6. Move only clear, high-confidence rules into CI with `axi check --root .`.
+7. Use `--strict` after whole-repo ownership is intentional.
 
 This keeps Axiom useful for humans and agents without turning every advisory signal into a blocker.
 
@@ -56,12 +57,14 @@ Use `axiom.config.json` to keep source discovery focused:
   "exclude": ["src/**/*.test.ts", "src/generated/**"],
   "specs": ["axiom/**/*.axi"],
   "tsconfig": "tsconfig.json",
-  "intentionalViolationExpiryWarningDays": 30
+  "intentionalViolationExpiryWarningDays": 30,
+  "warnPublicApiSurface": false,
+  "warnCouplingConcentration": false
 }
 ```
 
 `include` and `exclude` control source scanning. `specs` controls `.axi` discovery.
-`intentionalViolationExpiryWarningDays` controls how early active intentional violations become warnings before their expiration date.
+`intentionalViolationExpiryWarningDays` controls how early active intentional violations become warnings before their expiration date. `warnPublicApiSurface` and `warnCouplingConcentration` enable advisory signals without turning them into gates.
 
 ## Monorepos
 
@@ -105,6 +108,8 @@ Axiom is a static architecture validator, not a full runtime oracle.
 Expect blind spots around dependency injection strings, plugin registries, generated imports, `eval`, and other runtime-only paths. If those patterns matter in your project, model the stable source-level boundary first and keep the runtime convention visible in review or future custom checks.
 
 Also watch for "compliant but unhealthy" architecture. For example, a giant `index.ts` can make imports pass while concentrating too much coupling in one public surface. Axiom now catches direct `export ... from` leaks from hidden paths through exposed entry points, and `--warn-public-api-surface` can flag exposed `export *` barrels as advisory warnings, but it still cannot prove every symbol-level API decision is healthy. Prefer small exposed entry points, explicit `hides` rules for internals, and intentional violations with expiration dates when migration needs time.
+
+`--warn-coupling-concentration` is another pressure signal, not a verdict. It reports modules with high observed fan-in or fan-out so teams can review whether a module is becoming a coordination hub, facade, or hidden dependency magnet. Some hubs are legitimate; the value is making them visible before the shape becomes accidental.
 
 If your team sees a public surface growing too broad, treat that as an architecture review signal even when `axi check` passes. Symbol-level public API health is a future advisory analysis area, not a v0 guarantee.
 
@@ -195,6 +200,7 @@ axi check --root .
 axi graph --root . --violations-only
 axi graph --root . --attention
 axi check --root . --json
+axi observe --root . --warn-public-api-surface --warn-coupling-concentration
 ```
 
 Use human output while developing. Use JSON output for CI annotations, agent feedback, and custom reporting.
@@ -213,6 +219,7 @@ Start loose:
 Then tighten:
 
 - Turn on `--warn-unowned`.
+- Turn on `--warn-public-api-surface` and `--warn-coupling-concentration` during architecture review.
 - Add missing module paths.
 - Move mature contracts to `--strict`.
 - Add visibility rules for public package or service boundaries.

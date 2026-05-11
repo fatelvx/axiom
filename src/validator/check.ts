@@ -10,6 +10,7 @@ import { createOwnershipIndex, validateOwnership } from "./ownership.js";
 import {
   applySuppressions,
   buildObservedDependencies,
+  findCouplingConcentrationWarnings,
   findExpiringSuppressions,
   findPublicApiSurfaceWarnings,
   validateModuleSurfaceConsistency,
@@ -27,6 +28,7 @@ export interface CheckOptions {
   today?: string;
   intentionalViolationExpiryWarningDays?: number;
   warnPublicApiSurface?: boolean;
+  warnCouplingConcentration?: boolean;
 }
 
 export interface CheckResult {
@@ -48,6 +50,7 @@ export function runCheck(options: CheckOptions): CheckResult {
   const intentionalViolationExpiryWarningDays =
     options.intentionalViolationExpiryWarningDays ?? config.intentionalViolationExpiryWarningDays;
   const warnPublicApiSurface = options.warnPublicApiSurface ?? config.warnPublicApiSurface;
+  const warnCouplingConcentration = options.warnCouplingConcentration ?? config.warnCouplingConcentration;
   const specFiles = findAxiomFiles(root, config);
   const sourceFiles = findSourceFiles(root, config);
   const resolver = createImportResolver({ root, tsconfigPath: config.tsconfig });
@@ -104,6 +107,9 @@ export function runCheck(options: CheckOptions): CheckResult {
   warnings.push(...findUnusedSuppressions(spec, suppressedViolations, { today: options.today }));
   if (warnPublicApiSurface) {
     warnings.push(...findPublicApiSurfaceWarnings(spec, imports, ownership, root));
+  }
+  if (warnCouplingConcentration) {
+    warnings.push(...findCouplingConcentrationWarnings(observedDependencies));
   }
 
   return {

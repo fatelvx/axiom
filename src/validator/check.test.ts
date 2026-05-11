@@ -155,6 +155,40 @@ test("public API surface warnings are opt-in advisory diagnostics", () => {
   });
 });
 
+test("coupling concentration warnings are opt-in advisory diagnostics", () => {
+  const root = path.join(repoRoot, "fixtures/coupling-concentration");
+  const quietResult = runCheck({ root });
+
+  assert.deepEqual(quietResult.violations, []);
+  assert.deepEqual(quietResult.warnings, []);
+
+  const result = runCheck({ root, warnCouplingConcentration: true });
+
+  assert.deepEqual(result.violations, []);
+  assert.equal(result.warnings.length, 1);
+  assert.deepEqual(result.warnings[0], {
+    code: "coupling_concentration",
+    message: "Hub has concentrated fan-in from 4 modules.",
+    details: {
+      module: "Hub",
+      direction: "fan_in",
+      fanInModules: 4,
+      fanOutModules: 0,
+      incomingModules: ["FeatureA", "FeatureB", "FeatureC", "FeatureD"],
+      outgoingModules: [],
+      incomingImportSites: 4,
+      outgoingImportSites: 0,
+      threshold: {
+        fanInModules: 4,
+        fanOutModules: 4
+      },
+      observed: "Hub fan-in from 4 modules",
+      suggestion:
+        "Review whether this module is becoming a coordination hub; split responsibilities, narrow public surfaces, or make the boundary explicit before considering enforcement."
+    }
+  });
+});
+
 test("check uses axiom.config.json discovery settings", () => {
   const result = runCheck({ root: path.join(repoRoot, "fixtures/config-filter") });
 

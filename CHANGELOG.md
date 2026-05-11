@@ -24,7 +24,8 @@
 - Documented the forecast discipline: use MiroFish-style runs as risk maps and backtests, not as direct product scripts.
 - Added `axi observe` as a product-facing architecture attention command for violations, visible debt, and advisory warnings.
 - Reframed the public product language around architecture observability with enforceable contracts.
-- Bumped check JSON to `axiom.check.v4` and graph JSON to `axiom.graph.v6` for intentional violation reporting and warning details.
+- Added opt-in `--warn-coupling-concentration` advisory warnings for high observed module fan-in or fan-out.
+- Bumped check JSON to `axiom.check.v4` and graph JSON to `axiom.graph.v7` for intentional violation reporting, warning details, and attention filter metadata.
 
 ## 0.5.8 - Monorepo Spec Discovery
 

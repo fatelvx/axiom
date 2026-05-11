@@ -132,6 +132,13 @@ axi observe --root . --warn-public-api-surface
 axi check --root . --warn-public-api-surface
 ```
 
+Use this when you want advisory review prompts for modules that may be turning into coupling hubs:
+
+```bash
+axi observe --root . --warn-coupling-concentration
+axi check --root . --warn-coupling-concentration
+```
+
 ## 6. Generate A Starter Draft
 
 For an existing project:

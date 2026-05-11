@@ -29,6 +29,7 @@ The near-term product is:
 - architecture drift awareness
 - dependency direction tracking
 - module boundary warnings
+- module fan-in/fan-out concentration warnings
 - semantic ownership mapping through `.axi`
 - intentional violations that stay visible instead of being hidden
 - hard failures only for explicit, high-confidence contracts
@@ -44,6 +45,8 @@ A live MiroFish forecast was run on 2026-05-11 against Axiom's current product s
 Treat forecast output as a risk map, not an action script. Axiom should absorb the problems it surfaces, then decide changes through the product's own filter: is the signal reliably checkable, does the change help real adopters instead of only quieting skeptics, and does it preserve Axiom's core difference as an architecture contract validator rather than a broad semantic oracle?
 
 The sharpest finding was `symbol-level API health`: Axiom can validate import and visibility intent, and it can catch direct hidden-path re-exports, but it cannot prove that broad public API surfaces are semantically healthy.
+
+A later targeted backtest of `axi observe` accepted the observability direction and picked module fan-in/fan-out concentration as the next low-noise signal to try. That signal is now opt-in because high coupling is an architecture pressure point, not automatic proof of bad design.
 
 The forecast also predicted rejection if Axiom looks like:
 
@@ -132,6 +135,7 @@ Axiom v0.5.8 currently supports:
 - Public/private module surfaces with `exposes` and `hides`.
 - Direct hidden-path re-exports from exposed entry points.
 - Opt-in public API surface warnings for broad exposed barrels with `--warn-public-api-surface`.
+- Opt-in coupling concentration warnings for modules with high observed fan-in or fan-out with `--warn-coupling-concentration`.
 - TypeScript/JavaScript import scanning through the TypeScript parser.
 - Relative imports, barrel `index.*` files, dynamic imports, `require`, and multiline imports.
 - TypeScript `paths` aliases from `tsconfig.json`.
@@ -153,6 +157,7 @@ Axiom v0 is intentionally honest about its blind spots:
 
 - It does not fully observe runtime-only dependency paths such as string-based dependency injection, plugin registries, generated imports, or `eval`.
 - It does not prove that a module is semantically well-designed. Axiom can catch direct hidden-path re-exports, and `--warn-public-api-surface` can flag broad `export *` barrels, but code can still become too coupled through overly large public entry points. This is the `symbol-level API health` gap.
+- It does not prove that concentrated fan-in or fan-out is wrong. `--warn-coupling-concentration` surfaces modules that may be turning into coordination hubs so humans and agents can review the pressure before it becomes hidden debt.
 - It does not replace ESLint, TypeScript, tests, or review. Axiom focuses on architecture intent: declared graph, observed graph, drift, warnings, intentional violations, and CI gates for clear contracts.
 - It does not make `.axi` maintenance free. Use `axi infer` to start from the current graph, then tighten only the boundaries that matter.
 - It does not promise whole-monorepo speed without scope control. Use `include`, `exclude`, and focused contract locations to keep large repositories comfortable in CI.
@@ -213,8 +218,10 @@ Useful flags:
 axi check --root . --json
 axi observe --root .
 axi observe --root . --warn-public-api-surface
+axi observe --root . --warn-coupling-concentration
 axi check --root . --warn-unowned
 axi check --root . --warn-public-api-surface
+axi check --root . --warn-coupling-concentration
 axi check --root . --strict
 axi graph --root . --json
 axi infer --root . --group-depth 2
@@ -324,7 +331,8 @@ Axiom reads `axiom.config.json` from the project root when present:
   "specs": ["axiom/**/*.axi"],
   "tsconfig": "tsconfig.json",
   "intentionalViolationExpiryWarningDays": 30,
-  "warnPublicApiSurface": false
+  "warnPublicApiSurface": false,
+  "warnCouplingConcentration": false
 }
 ```
 
@@ -336,6 +344,7 @@ Fields:
 - `tsconfig`: TypeScript config path used for `paths` alias resolution. Defaults to `tsconfig.json` when present.
 - `intentionalViolationExpiryWarningDays`: warn when accepted intentional violations expire within this many days. Defaults to `30`.
 - `warnPublicApiSurface`: opt into advisory warnings for broad exposed barrels such as `export *`.
+- `warnCouplingConcentration`: opt into advisory warnings for modules with high observed fan-in or fan-out.
 
 Default discovery skips common dependency, build, cache, and temporary output folders:
 
@@ -401,6 +410,18 @@ axi graph --root . --attention --warn-public-api-surface
 ```
 
 Today this flags broad exposed barrels such as `export * from "./feature"` or `export * as feature from "./feature"`. It is advisory: the check still exits `0` unless there are real violations. Treat it as a review prompt when an exposed entry point starts hiding coupling behind one public surface.
+
+## Coupling Concentration Warnings
+
+To inspect architecture pressure without turning it into a hard gate, opt into coupling concentration warnings:
+
+```bash
+axi observe --root . --warn-coupling-concentration
+axi check --root . --warn-coupling-concentration
+axi graph --root . --attention --warn-coupling-concentration
+```
+
+Today this flags a module when the observed graph shows fan-in from at least four distinct modules or fan-out to at least four distinct modules. It is advisory: the check still exits `0` unless there are real violations. Treat it as a review prompt for modules that may be becoming coordination hubs, broad facades, or hidden dependency magnets.
 
 ## JSON Output
 
@@ -478,6 +499,7 @@ Axiom can currently report:
 - `hidden_import`
 - `hidden_reexport`
 - `broad_public_surface`
+- `coupling_concentration`
 - `unexposed_import`
 - `unowned_source_file`
 - `invalid_suppression`
@@ -516,6 +538,7 @@ Near-term:
 - More TypeScript module resolution hardening.
 - Drift and architecture health surfaces that start advisory, not as hard gates.
 - Evolution graph views for visible architecture change over time.
+- Baseline-aware new observed edge drift after the baseline format is designed.
 - Public comparison and evidence for how Axiom differs from ESLint architecture rules, Dependency Cruiser, Nx boundaries, and custom CI scripts.
 - Symbol-level public API surface analysis as an advisory research area, not a v0 hard gate.
 

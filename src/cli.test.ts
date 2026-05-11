@@ -99,6 +99,26 @@ test("cli check --warn-public-api-surface reports advisory broad surface warning
   assert.equal(payload.warnings[0].details.exportKind, "star");
 });
 
+test("cli observe --warn-coupling-concentration reports advisory coupling warnings", () => {
+  const result = spawnSync(
+    process.execPath,
+    [cliPath, "observe", "--root", "fixtures/coupling-concentration", "--warn-coupling-concentration", "--json"],
+    { cwd: repoRoot, encoding: "utf8" }
+  );
+
+  assert.equal(result.status, 0);
+
+  const payload = JSON.parse(result.stdout);
+  assert.equal(payload.schemaVersion, "axiom.graph.v7");
+  assert.deepEqual(payload.filters, { violationsOnly: true, attention: true });
+  assert.equal(payload.summary.violations, 0);
+  assert.equal(payload.summary.warnings, 1);
+  assert.equal(payload.warnings[0].code, "coupling_concentration");
+  assert.equal(payload.warnings[0].details.module, "Hub");
+  assert.equal(payload.warnings[0].details.fanInModules, 4);
+  assert.deepEqual(payload.warnings[0].details.incomingModules, ["FeatureA", "FeatureB", "FeatureC", "FeatureD"]);
+});
+
 test("cli graph returns graph output without acting as a validation gate", () => {
   const result = spawnSync(
     process.execPath,

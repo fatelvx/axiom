@@ -10,6 +10,7 @@ export type ViolationCode =
   | "ambiguous_module_owner"
   | "unowned_source_file"
   | "broad_public_surface"
+  | "coupling_concentration"
   | "unknown_layer"
   | "missing_module_path"
   | "unknown_module"

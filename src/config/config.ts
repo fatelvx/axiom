@@ -8,6 +8,7 @@ export interface AxiomConfig {
   tsconfig?: string;
   intentionalViolationExpiryWarningDays?: number;
   warnPublicApiSurface?: boolean;
+  warnCouplingConcentration?: boolean;
 }
 
 export interface LoadedAxiomConfig {
@@ -18,6 +19,7 @@ export interface LoadedAxiomConfig {
   tsconfig?: string;
   intentionalViolationExpiryWarningDays?: number;
   warnPublicApiSurface: boolean;
+  warnCouplingConcentration: boolean;
 }
 
 export const defaultSpecPatterns = [
@@ -49,6 +51,7 @@ export function loadConfig(root: string, configPath?: string): LoadedAxiomConfig
     exclude: config.exclude ?? [],
     specs: config.specs ?? [...defaultSpecPatterns],
     warnPublicApiSurface: config.warnPublicApiSurface ?? false,
+    warnCouplingConcentration: config.warnCouplingConcentration ?? false,
     ...(config.tsconfig ? { tsconfig: config.tsconfig } : {}),
     ...(config.intentionalViolationExpiryWarningDays === undefined
       ? {}
@@ -61,7 +64,8 @@ function defaultConfig(): LoadedAxiomConfig {
     include: [],
     exclude: [],
     specs: [...defaultSpecPatterns],
-    warnPublicApiSurface: false
+    warnPublicApiSurface: false,
+    warnCouplingConcentration: false
   };
 }
 
@@ -95,7 +99,8 @@ function parseConfigFile(filePath: string): AxiomConfig {
       rawConfig,
       "intentionalViolationExpiryWarningDays"
     ),
-    warnPublicApiSurface: readOptionalBoolean(filePath, rawConfig, "warnPublicApiSurface")
+    warnPublicApiSurface: readOptionalBoolean(filePath, rawConfig, "warnPublicApiSurface"),
+    warnCouplingConcentration: readOptionalBoolean(filePath, rawConfig, "warnCouplingConcentration")
   };
 }
 

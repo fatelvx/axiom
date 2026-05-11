@@ -17,6 +17,7 @@ interface CliOptions {
   graphAttention: boolean;
   intentionalViolationExpiryWarningDays?: number;
   warnPublicApiSurface: boolean;
+  warnCouplingConcentration: boolean;
 }
 
 type CliCommand = "check" | "graph" | "infer" | "observe";
@@ -55,7 +56,8 @@ try {
     configPath: options.configPath,
     adoptionMode: options.adoptionMode,
     intentionalViolationExpiryWarningDays: options.intentionalViolationExpiryWarningDays,
-    warnPublicApiSurface: options.warnPublicApiSurface
+    warnPublicApiSurface: options.warnPublicApiSurface,
+    warnCouplingConcentration: options.warnCouplingConcentration
   });
 
   if (command === "check" && options.json) {
@@ -97,7 +99,8 @@ function parseOptions(values: string[], command: CliCommand): CliOptions {
     adoptionMode: "loose",
     graphViolationsOnly: command === "observe",
     graphAttention: command === "observe",
-    warnPublicApiSurface: false
+    warnPublicApiSurface: false,
+    warnCouplingConcentration: false
   };
 
   for (let index = 0; index < values.length; index += 1) {
@@ -181,6 +184,16 @@ function parseOptions(values: string[], command: CliCommand): CliOptions {
       continue;
     }
 
+    if (value === "--warn-coupling-concentration") {
+      if (command === "infer") {
+        console.error("--warn-coupling-concentration is only supported by check, graph, and observe.");
+        process.exit(1);
+      }
+
+      options.warnCouplingConcentration = true;
+      continue;
+    }
+
     if (value === "--violations-only") {
       if (command !== "graph" && command !== "observe") {
         console.error("--violations-only is only supported by graph and observe.");
@@ -253,9 +266,9 @@ function printHelp(): void {
   console.log(`Axiom
 
 Usage:
-  axi check [--root <path>] [--config <path>] [--json] [--warn-unowned] [--strict] [--intentional-violation-warning-days <n>] [--warn-public-api-surface]
-  axi graph [--root <path>] [--config <path>] [--json] [--warn-unowned] [--strict] [--violations-only|--attention] [--intentional-violation-warning-days <n>] [--warn-public-api-surface]
-  axi observe [--root <path>] [--config <path>] [--json] [--warn-unowned] [--strict] [--intentional-violation-warning-days <n>] [--warn-public-api-surface]
+  axi check [--root <path>] [--config <path>] [--json] [--warn-unowned] [--strict] [--intentional-violation-warning-days <n>] [--warn-public-api-surface] [--warn-coupling-concentration]
+  axi graph [--root <path>] [--config <path>] [--json] [--warn-unowned] [--strict] [--violations-only|--attention] [--intentional-violation-warning-days <n>] [--warn-public-api-surface] [--warn-coupling-concentration]
+  axi observe [--root <path>] [--config <path>] [--json] [--warn-unowned] [--strict] [--intentional-violation-warning-days <n>] [--warn-public-api-surface] [--warn-coupling-concentration]
   axi infer [--root <path>] [--config <path>] [--json] [--group-depth <n>] [--group-by folder|workspace]
 
 Commands:
@@ -277,5 +290,7 @@ Adoption:
                    Warn when an intentional violation expires within n days. Defaults to 30.
   --warn-public-api-surface
                    Warn about broad exposed barrels such as export * without failing the check.
+  --warn-coupling-concentration
+                   Warn when one module has high observed fan-in or fan-out without failing the check.
 `);
 }

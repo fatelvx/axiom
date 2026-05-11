@@ -4,6 +4,18 @@ Axiom is most useful when it starts small, makes drift visible, and protects a b
 
 It should not feel like a fully automatic architecture guardian on day one. Treat it as an architecture attention layer first, then tighten mature contracts into CI gates.
 
+## Guardrail Ladder
+
+The comfortable adoption path is a ladder, not a switch:
+
+1. Observe the graph with `axi graph --root .` or `axi graph --root . --attention`.
+2. Measure coverage with `axi check --root . --warn-unowned`.
+3. Keep temporary architecture debt visible with `accepts ... until ... because ...`.
+4. Move only clear, high-confidence rules into CI with `axi check --root .`.
+5. Use `--strict` after whole-repo ownership is intentional.
+
+This keeps Axiom useful for humans and agents without turning every advisory signal into a blocker.
+
 ## Good First Rules
 
 Choose one or two rules that would catch real mistakes:
@@ -80,6 +92,8 @@ Axiom is a static architecture validator, not a full runtime oracle.
 Expect blind spots around dependency injection strings, plugin registries, generated imports, `eval`, and other runtime-only paths. If those patterns matter in your project, model the stable source-level boundary first and keep the runtime convention visible in review or future custom checks.
 
 Also watch for "compliant but unhealthy" architecture. For example, a giant `index.ts` can make imports pass while concentrating too much coupling in one public surface. Axiom now catches direct `export ... from` leaks from hidden paths through exposed entry points, but it still cannot prove every symbol-level API decision is healthy. Prefer small exposed entry points, explicit `hides` rules for internals, and intentional violations with expiration dates when migration needs time.
+
+If your team sees a public surface growing too broad, treat that as an architecture review signal even when `axi check` passes. Symbol-level public API health is a future advisory analysis area, not a v0 guarantee.
 
 ## CI
 

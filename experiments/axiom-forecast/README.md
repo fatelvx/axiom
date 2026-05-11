@@ -12,16 +12,24 @@ Files:
 - `protocol.md`: simulation roles, questions, phases, and expected output.
 - `run-log.md`: concrete run notes from this workspace.
 - `results/dry-run-forecast.md`: a local dry-run forecast produced before a full MiroFish simulation is available.
+- `results/mirofish-live-run-2026-05-11.md`: sanitized English summary of the live compact run.
+- `results/mirofish-live-run-2026-05-11.zh.md`: Chinese process log and actual generated-output excerpts.
 - `tools/write-mirofish-env.ps1`: local helper for writing MiroFish credentials to `.env` without pasting secrets into chat.
 
-Current public repo snapshot:
+Live run input snapshot:
 
 ```text
 https://github.com/fatelvx/axiom
-commit ae71046 Mark attention graph JSON filter
+commit 5211298 Add MiroFish credential entry helper
 ```
 
 Use this experiment as forecast input, not as a replacement for real users. A useful forecast should produce falsifiable adoption risks, concrete messaging changes, and roadmap tradeoffs.
+
+Public sharing rule:
+
+- Publish the sanitized summaries, not raw `.env`, local paths, or full runtime dumps.
+- Label the result as a synthetic forecast, not real user research or demand proof.
+- Keep the limitations attached: partial OASIS completion, one empty report section, and simulated profiles.
 
 ## Local Credential Entry
 

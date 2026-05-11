@@ -17,6 +17,8 @@ If quoted publicly, keep these caveats attached:
 - One report section was empty after interview-tool calls timed out against a stopped simulation environment.
 - The output is a product-risk signal, not proof of demand.
 
+A Chinese process log and actual generated-output excerpts are available in `mirofish-live-run-2026-05-11.zh.md`.
+
 ## Input
 
 The run used the current public Axiom product seed at:

@@ -4,7 +4,7 @@
 
 ![Axiom architecture awareness banner](assets/banner.svg)
 
-**Lightweight architecture awareness and enforceable contracts for AI-era codebases.**
+**Architecture awareness, visible debt, and enforceable contracts for AI-era codebases.**
 
 Axiom reads `.axi` contracts, scans real TypeScript and JavaScript imports, and shows where the observed code graph drifts from declared architecture intent. It can fail CI for high-confidence boundaries, but its first job is to make architecture drift visible enough for humans and agents to act on.
 
@@ -34,6 +34,21 @@ The near-term product is:
 - hard failures only for explicit, high-confidence contracts
 
 This matters more in AI-era repositories because agents can change many files quickly. Axiom should let agents communicate with the architecture contract, while the tool mediates what is a hard violation, what is accepted debt, and what is advisory drift.
+
+## Forecast Signal
+
+A live MiroFish forecast was run on 2026-05-11 against Axiom's current product seed. It used synthetic stakeholder profiles and simulated social reactions, so it is not market proof or a replacement for real users. Its value is product-risk discovery.
+
+The sharpest finding was `symbol-level API health`: Axiom can validate import and visibility intent, and it can catch direct hidden-path re-exports, but it cannot prove that broad public API surfaces are semantically healthy.
+
+The forecast also predicted rejection if Axiom looks like:
+
+- Dependency Cruiser with a new syntax
+- another noisy linter
+- a slow CI step
+- a false architecture firewall
+
+So the public product promise is deliberately narrower: make drift visible, keep accepted debt reviewable, and fail CI only for explicit high-confidence rules. Read the summarized forecast in [MiroFish Live Forecast: Axiom Reception](experiments/axiom-forecast/results/mirofish-live-run-2026-05-11.md), or the Chinese process/output excerpt in [MiroFish Live Forecast 中文過程與輸出摘錄](experiments/axiom-forecast/results/mirofish-live-run-2026-05-11.zh.md).
 
 ## Why It Exists
 
@@ -123,13 +138,14 @@ Axiom v0.5.8 currently supports:
 - Human output and stable JSON output for CI and agents.
 - Starter contract inference with `axi infer`.
 - Focused graph output with `axi graph --violations-only`.
+- Scan summaries with module, source-file, import, and observed-dependency counts.
 
 ## What It Does Not Prove
 
 Axiom v0 is intentionally honest about its blind spots:
 
 - It does not fully observe runtime-only dependency paths such as string-based dependency injection, plugin registries, generated imports, or `eval`.
-- It does not prove that a module is semantically well-designed. Axiom can catch direct hidden-path re-exports, but code can still become too coupled through broad barrel exports or overly large public entry points.
+- It does not prove that a module is semantically well-designed. Axiom can catch direct hidden-path re-exports, but code can still become too coupled through broad barrel exports or overly large public entry points. This is the `symbol-level API health` gap.
 - It does not replace ESLint, TypeScript, tests, or review. Axiom focuses on architecture intent: declared graph, observed graph, drift, warnings, intentional violations, and CI gates for clear contracts.
 - It does not make `.axi` maintenance free. Use `axi infer` to start from the current graph, then tighten only the boundaries that matter.
 - It does not promise whole-monorepo speed without scope control. Use `include`, `exclude`, and focused contract locations to keep large repositories comfortable in CI.
@@ -472,6 +488,8 @@ Near-term:
 - Downstream project CI recipes.
 - More TypeScript module resolution hardening.
 - Drift scoring that starts advisory, not as a hard gate.
+- Public comparison and evidence for how Axiom differs from ESLint architecture rules, Dependency Cruiser, Nx boundaries, and custom CI scripts.
+- Symbol-level public API surface analysis as an advisory research area, not a v0 hard gate.
 
 Later:
 

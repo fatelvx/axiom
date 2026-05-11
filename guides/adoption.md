@@ -129,7 +129,7 @@ axi check --root . --strict
 
 ## Intentional Violations
 
-Temporary exceptions belong in the architecture contract, with a date and a reason:
+Temporary intentional violations belong in the architecture contract, with a date and a reason:
 
 ```axi
 module UI
@@ -138,7 +138,7 @@ forbids module ServicesInternal
 suppresses forbidden_dependency to ServicesInternal until 2027-06-30 because "legacy import while the public service API is split out"
 ```
 
-Active intentional violations let `axi check` pass but remain visible in human output, JSON output, and focused graph output. Expired exceptions fail the check, and unused exceptions are warnings, so old architecture debt does not become invisible policy.
+Active intentional violations let `axi check` pass but remain visible in human output, JSON output, and focused graph output. Expired intentional violations fail the check, and unused entries are warnings, so old architecture debt does not become invisible policy.
 
 ## Reading Failures
 

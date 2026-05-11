@@ -2,7 +2,7 @@
 
 [![CI](https://github.com/fatelvx/axiom/actions/workflows/ci.yml/badge.svg)](https://github.com/fatelvx/axiom/actions/workflows/ci.yml)
 
-![Axiom architecture firewall banner](assets/banner.svg)
+![Axiom architecture awareness banner](assets/banner.svg)
 
 **Lightweight architecture awareness and enforceable contracts for AI-era codebases.**
 
@@ -330,7 +330,7 @@ axi check --root . --strict
 
 ## Intentional Violations
 
-When a real project needs a temporary exception, keep it visible in `.axi`:
+When a real project needs a temporary intentional violation, keep it visible in `.axi`:
 
 ```axi
 module UI
@@ -339,7 +339,7 @@ forbids module ServicesInternal
 suppresses forbidden_dependency to ServicesInternal until 2027-06-30 because "legacy import while the public service API is split out"
 ```
 
-Intentional violations only apply to observed dependency and visibility violations. Expired exceptions fail the check, invalid exceptions cannot hide violations, and unused exceptions are warnings so old architecture debt stays visible after the code is cleaned up.
+Intentional violations only apply to observed dependency and visibility violations. Expired intentional violations fail the check, invalid entries cannot hide violations, and unused entries are warnings so old architecture debt stays visible after the code is cleaned up.
 
 ## JSON Output
 

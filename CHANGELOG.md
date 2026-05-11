@@ -4,12 +4,12 @@
 
 - Linked the public architecture hallucination technical note from the README.
 - Updated GitHub Actions dependencies to current major versions while keeping CI on Node 20.
-- Added planned `.axi` suppressions with required expiration dates and reasons.
-- Added unused suppression warnings so stale temporary exceptions remain visible after code cleanup.
+- Added time-bounded `.axi` intentional violation rules with required expiration dates and reasons.
+- Added unused intentional violation warnings so stale temporary debt remains visible after code cleanup.
 - Included warning guardrails in focused graph output so `axi graph --violations-only` acts more like an architecture attention view.
 - Surfaced module `purpose` text in graph and check JSON output.
 - Reframed accepted dependency debt as intentional violations in human and JSON output.
-- Updated README positioning toward architecture awareness plus high-confidence contracts.
+- Updated README positioning and banner language toward architecture awareness plus high-confidence contracts.
 - Bumped check JSON to `axiom.check.v4` and graph JSON to `axiom.graph.v5` for intentional violation reporting.
 
 ## 0.5.8 - Monorepo Spec Discovery
@@ -119,7 +119,7 @@
 - Added TypeScript `paths` alias resolution from `tsconfig.json` or a configured `tsconfig` path, honoring `baseUrl`.
 - Clarified that source `exclude` does not control `.axi` spec discovery; use `specs` for spec discovery.
 
-## 0.1.0 - Architecture Firewall MVP
+## 0.1.0 - Architecture Validator MVP
 
 Initial GitHub-ready cut.
 

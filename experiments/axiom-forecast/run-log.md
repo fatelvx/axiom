@@ -148,3 +148,42 @@ Detailed result:
 ```text
 experiments/axiom-forecast/results/mirofish-live-run-2026-05-11.md
 ```
+
+### Observe Backtest After Product Change
+
+Before rerunning MiroFish, Axiom was actually changed and pushed:
+
+```text
+commit ba24b7d Add architecture observe surface
+```
+
+Implemented product change:
+
+- Added `axi observe`.
+- Reframed public docs and banner around architecture observability with enforceable contracts.
+- Updated the MiroFish forecast seed and prompt to include `axi observe`, visible debt, drift observability, and the "observe first, negotiate accepted tradeoffs, enforce high-confidence intent" boundary.
+
+Full ontology rerun attempt:
+
+```text
+project_id=proj_00cf8a0752a5
+input_text_length=8605
+result=timed out after 180 seconds while backend log stayed at "调用 LLM 生成本体定义..."
+```
+
+Fallback:
+
+Used the existing MiroFish forecast graph and ReportAgent to run a targeted backtest with the updated product details.
+
+Primary result:
+
+- `axi observe` is directionally correct as the product-facing attention surface.
+- It lowers immediate enforcement resistance, but does not by itself overcome the "Dependency Cruiser with nicer framing" objection.
+- `symbol-level API health` remains the major credibility gap.
+- Under validator-first and low-noise constraints, the best next proxy signal is module fan-in/fan-out concentration warning, followed by new observed edge since baseline.
+
+Detailed result:
+
+```text
+experiments/axiom-forecast/results/mirofish-observe-backtest-2026-05-11.md
+```

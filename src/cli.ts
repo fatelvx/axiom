@@ -58,7 +58,12 @@ try {
   } else if (command === "check") {
     console.log(formatCheckResult(result));
   } else if (options.json) {
-    console.log(formatGraphJson(result, { violationsOnly: options.graphViolationsOnly }));
+    console.log(
+      formatGraphJson(result, {
+        violationsOnly: options.graphViolationsOnly,
+        attention: options.graphAttention
+      })
+    );
   } else {
     console.log(
       formatGraphResult(result, {

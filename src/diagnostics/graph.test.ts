@@ -25,7 +25,7 @@ test("graph JSON exposes declared, forbidden, visibility, and observed edges", (
     "warnings"
   ]);
   assert.equal(payload.schemaVersion, graphJsonSchemaVersion);
-  assert.deepEqual(payload.filters, { violationsOnly: false });
+  assert.deepEqual(payload.filters, { violationsOnly: false, attention: false });
   assert.deepEqual(payload.summary, {
     modules: 2,
     declaredDependencies: 1,
@@ -123,13 +123,21 @@ test("violations-only graph JSON filters observed dependencies but keeps total c
   const result = runCheck({ root: path.join(repoRoot, "fixtures/visibility-rules") });
   const payload = toGraphJson(result, { violationsOnly: true });
 
-  assert.deepEqual(payload.filters, { violationsOnly: true });
+  assert.deepEqual(payload.filters, { violationsOnly: true, attention: false });
   assert.equal(payload.summary.observedDependencies, 3);
   assert.equal(payload.summary.shownObservedDependencies, 2);
   assert.deepEqual(
     payload.observedDependencies.map((edge) => `${edge.import.line}:${edge.violations[0]?.code}`),
     ["2:unexposed_import", "3:hidden_import"]
   );
+});
+
+test("attention graph JSON marks the attention filter", () => {
+  const result = runCheck({ root: path.join(repoRoot, "fixtures/visibility-rules") });
+  const payload = toGraphJson(result, { violationsOnly: true, attention: true });
+
+  assert.deepEqual(payload.filters, { violationsOnly: true, attention: true });
+  assert.equal(payload.summary.shownObservedDependencies, 2);
 });
 
 test("violations-only graph output includes intentional dependency debt", () => {

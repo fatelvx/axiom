@@ -2,7 +2,7 @@ import path from "node:path";
 import type { ModuleRef, PathRef, SourceLocation, Violation, ViolationCode } from "../axi/types.js";
 import type { CheckResult } from "../validator/check.js";
 
-export const graphJsonSchemaVersion = "axiom.graph.v6";
+export const graphJsonSchemaVersion = "axiom.graph.v7";
 
 interface GraphJsonLocation {
   filePath: string;
@@ -80,6 +80,7 @@ export interface GraphJsonResult {
   root: string;
   filters: {
     violationsOnly: boolean;
+    attention: boolean;
   };
   summary: {
     modules: number;
@@ -207,7 +208,8 @@ export function toGraphJson(result: CheckResult, options: GraphFormatOptions = {
     schemaVersion: graphJsonSchemaVersion,
     root: normalizePath(result.root),
     filters: {
-      violationsOnly: options.violationsOnly === true
+      violationsOnly: options.violationsOnly === true,
+      attention: options.attention === true
     },
     summary: {
       modules: result.spec.modules.length,

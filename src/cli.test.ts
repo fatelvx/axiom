@@ -105,7 +105,7 @@ test("cli graph --json returns parseable graph output", () => {
   assert.equal(result.status, 0);
 
   const payload = JSON.parse(result.stdout);
-  assert.equal(payload.schemaVersion, "axiom.graph.v6");
+  assert.equal(payload.schemaVersion, "axiom.graph.v7");
   assert.equal(payload.summary.observedDependencies, 3);
   assert.equal(payload.summary.shownObservedDependencies, 3);
   assert.equal(payload.violations[0].code, "unexposed_import");
@@ -149,14 +149,29 @@ test("cli graph --violations-only --json returns filtered graph output", () => {
   assert.equal(result.status, 0);
 
   const payload = JSON.parse(result.stdout);
-  assert.equal(payload.schemaVersion, "axiom.graph.v6");
-  assert.deepEqual(payload.filters, { violationsOnly: true });
+  assert.equal(payload.schemaVersion, "axiom.graph.v7");
+  assert.deepEqual(payload.filters, { violationsOnly: true, attention: false });
   assert.equal(payload.summary.observedDependencies, 3);
   assert.equal(payload.summary.shownObservedDependencies, 2);
   assert.deepEqual(
     payload.observedDependencies.map((edge: { violations: Array<{ code: string }> }) => edge.violations[0]?.code),
     ["unexposed_import", "hidden_import"]
   );
+});
+
+test("cli graph --attention --json marks the attention filter", () => {
+  const result = spawnSync(
+    process.execPath,
+    [cliPath, "graph", "--root", "fixtures/visibility-rules", "--attention", "--json"],
+    { cwd: repoRoot, encoding: "utf8" }
+  );
+
+  assert.equal(result.status, 0);
+
+  const payload = JSON.parse(result.stdout);
+  assert.equal(payload.schemaVersion, "axiom.graph.v7");
+  assert.deepEqual(payload.filters, { violationsOnly: true, attention: true });
+  assert.equal(payload.summary.shownObservedDependencies, 2);
 });
 
 test("cli infer prints a starter .axi contract", () => {

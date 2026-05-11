@@ -8,7 +8,7 @@ Pushed current Axiom `master` to GitHub before preparing the forecast seed.
 
 ```text
 origin https://github.com/fatelvx/axiom.git
-commit ae71046 Mark attention graph JSON filter
+commit 5211298 Add MiroFish credential entry helper
 ```
 
 Reason:
@@ -92,5 +92,59 @@ Forecast package prepared:
 Full MiroFish execution status:
 
 ```text
-blocked pending LLM_API_KEY, LLM_BASE_URL, LLM_MODEL_NAME, and ZEP_API_KEY
+credentials entered; live compact run completed with partial OASIS limitations
+```
+
+### Live MiroFish Run
+
+Credentials were entered locally by the user. The `.env` was not committed.
+
+Model/service configuration:
+
+```text
+LLM_BASE_URL=https://api.deepseek.com
+LLM_MODEL_NAME=deepseek-v4-pro
+Zep Cloud=used with a local-only key
+optional boost model=not used
+```
+
+The first large ontology attempt failed because DeepSeek Pro returned empty final `content` after spending the response budget on reasoning. A local temp-clone-only patch retried empty length-limited responses with a larger token budget, then the run was retried with compact forecast inputs.
+
+Successful compact artifacts:
+
+```text
+project_id=proj_fa05f3b31ca1
+graph_id=mirofish_2a0d62ee48ed43be
+simulation_id=sim_0744c54e88e4
+report_id=report_66544626df45
+graph_chunks=22
+graph_nodes=127
+graph_edges=199
+profiles=10
+initial_reddit_posts=7
+```
+
+Limitations:
+
+- The Reddit-only OASIS run generated initial posts, but `run-status` stayed at round `0`.
+- The runner was stopped to avoid an indefinite background process.
+- Report generation completed, but section 1 was empty because the report agent later attempted interview-tool calls against the stopped simulation environment.
+- MiroFish/Zep search exposed a `query cannot be longer than 400 characters` limit; the report agent fell back to local graph search.
+
+Primary live-run result:
+
+The forecast reinforced the current product pivot. Axiom should avoid firewall overclaiming, keep hard gates for high-confidence contract intent, and make static-analysis limitations, intentional violations, scan performance, and contract-maintenance cost highly visible.
+
+The sharpest new phrase from the live report is:
+
+```text
+symbol-level API health
+```
+
+This names the "compliant but bad" problem: Axiom can detect direct hidden re-exports, but it still cannot prove that broad public API surfaces, barrels, shared types, enums, utilities, or exported facades are semantically healthy.
+
+Detailed result:
+
+```text
+experiments/axiom-forecast/results/mirofish-live-run-2026-05-11.md
 ```

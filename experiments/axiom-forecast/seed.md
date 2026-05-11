@@ -20,7 +20,7 @@ Public repo:
 
 ```text
 https://github.com/fatelvx/axiom
-commit ae71046 Mark attention graph JSON filter
+commit 5211298 Add MiroFish credential entry helper
 ```
 
 ## Current CLI

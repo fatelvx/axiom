@@ -37,6 +37,7 @@ current master after the axi observe / observability positioning update
 axi check --root .
 axi observe --root .
 axi observe --root . --warn-public-api-surface
+axi observe --root . --warn-coupling-concentration
 axi graph --root .
 axi graph --root . --attention
 axi infer --root .
@@ -54,6 +55,8 @@ Current supported checks include:
 - intentional violations with `accepts ... until ... because ...`
 - warning guardrails for expiring and unused intentional violations
 - `axi observe` as the product-facing architecture attention surface
+- opt-in public API surface warnings for broad exposed barrels
+- opt-in coupling concentration warnings for high observed module fan-in or fan-out
 - JSON output for CI and agents
 - starter contract inference with `axi infer`
 

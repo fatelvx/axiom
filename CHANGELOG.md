@@ -25,6 +25,7 @@
 - Added `axi observe` as a product-facing architecture attention command for violations, visible debt, and advisory warnings.
 - Reframed the public product language around architecture observability with enforceable contracts.
 - Added opt-in `--warn-coupling-concentration` advisory warnings for high observed module fan-in or fan-out.
+- Explained coupling concentration warnings in focused graph and observe output with observed trigger, thresholds, and involved modules.
 - Bumped check JSON to `axiom.check.v4` and graph JSON to `axiom.graph.v7` for intentional violation reporting, warning details, and attention filter metadata.
 
 ## 0.5.8 - Monorepo Spec Discovery

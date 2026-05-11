@@ -166,6 +166,20 @@ test("violations-only graph output includes warning guardrails", () => {
   assert.match(output, /fix: Remove the intentional violation if the architecture debt is gone/);
 });
 
+test("attention graph output explains coupling concentration warnings", () => {
+  const result = runCheck({
+    root: path.join(repoRoot, "fixtures/coupling-concentration"),
+    warnCouplingConcentration: true
+  });
+  const output = formatGraphResult(result, { violationsOnly: true, attention: true });
+
+  assert.match(output, /warnings: 1/);
+  assert.match(output, /coupling_concentration: Hub has concentrated fan-in from 4 modules\./);
+  assert.match(output, /observed: Hub fan-in from 4 modules/);
+  assert.match(output, /threshold: fan-in >= 4 or fan-out >= 4/);
+  assert.match(output, /fan-in modules: FeatureA, FeatureB, FeatureC, FeatureD/);
+});
+
 test("violations-only graph output includes non-edge surface violations", () => {
   const result = runCheck({ root: path.join(repoRoot, "fixtures/hidden-reexport") });
   const output = formatGraphResult(result, { violationsOnly: true });

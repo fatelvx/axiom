@@ -187,3 +187,33 @@ Detailed result:
 ```text
 experiments/axiom-forecast/results/mirofish-observe-backtest-2026-05-11.md
 ```
+
+### Coupling Warning Backtest
+
+Before this small backtest, Axiom was actually changed and pushed:
+
+```text
+commit c9f3460 Add coupling concentration warnings
+```
+
+Implemented product change:
+
+- Added opt-in `--warn-coupling-concentration` and `warnCouplingConcentration`.
+- Added `coupling_concentration` as an advisory warning when a module has high observed fan-in or fan-out.
+- Kept the warning non-failing because it is an architecture pressure signal, not a proof of bad architecture.
+
+Method:
+
+Used the existing MiroFish forecast graph and ReportAgent with the same local model configuration. The prompt asked for a targeted risk-map review of the new coupling warning rather than a full ontology/simulation rerun.
+
+Primary result:
+
+- The warning is directionally aligned with the previous backtest.
+- The biggest risk is not the idea itself, but explainability: skeptics may call a numeric fan-in/fan-out threshold arbitrary or noisy.
+- The next smallest repair should improve CLI output so advisory warnings show the observed trigger, threshold, and involved modules.
+
+Detailed result:
+
+```text
+experiments/axiom-forecast/results/mirofish-coupling-backtest-2026-05-11.md
+```

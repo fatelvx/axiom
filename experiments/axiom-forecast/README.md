@@ -21,6 +21,7 @@ Files:
 - `results/mirofish-live-run-2026-05-11.md`: sanitized English summary of the live compact run.
 - `results/mirofish-live-run-2026-05-11.zh.md`: Chinese process log and actual generated-output excerpts.
 - `results/mirofish-observe-backtest-2026-05-11.md`: targeted backtest after adding `axi observe` and reframing the product around architecture observability.
+- `results/mirofish-coupling-backtest-2026-05-11.md`: targeted backtest after adding opt-in coupling concentration warnings.
 - `tools/write-mirofish-env.ps1`: local helper for writing MiroFish credentials to `.env` without pasting secrets into chat.
 
 Live run input snapshot:

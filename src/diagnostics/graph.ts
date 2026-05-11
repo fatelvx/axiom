@@ -328,11 +328,40 @@ function formatWarnings(graph: GraphJsonResult): string[] {
   for (const warning of graph.warnings) {
     const location = warning.location ? ` ${warning.location.filePath}:${warning.location.line}` : "";
     lines.push(`  ${warning.code}${location}: ${warning.message}`);
+    const observed = readString(warning.details?.observed);
+    if (observed) {
+      lines.push(`  observed: ${observed}`);
+    }
+
     const rule = readString(warning.details?.rule);
     const ruleLocation = readLocation(warning.details?.ruleLocation);
     if (rule) {
       const suffix = ruleLocation ? ` (${ruleLocation.filePath}:${ruleLocation.line})` : "";
       lines.push(`  rule: ${rule}${suffix}`);
+    }
+
+    const threshold = readRecord(warning.details?.threshold);
+    const fanInThreshold = readNumber(threshold?.fanInModules);
+    const fanOutThreshold = readNumber(threshold?.fanOutModules);
+    if (fanInThreshold !== undefined || fanOutThreshold !== undefined) {
+      lines.push(
+        `  threshold: ${[
+          fanInThreshold === undefined ? undefined : `fan-in >= ${fanInThreshold}`,
+          fanOutThreshold === undefined ? undefined : `fan-out >= ${fanOutThreshold}`
+        ]
+          .filter((item): item is string => item !== undefined)
+          .join(" or ")}`
+      );
+    }
+
+    const incomingModules = readStringArray(warning.details?.incomingModules);
+    if (incomingModules.length > 0) {
+      lines.push(`  fan-in modules: ${incomingModules.join(", ")}`);
+    }
+
+    const outgoingModules = readStringArray(warning.details?.outgoingModules);
+    if (outgoingModules.length > 0) {
+      lines.push(`  fan-out modules: ${outgoingModules.join(", ")}`);
     }
 
     const expiresOn = readString(warning.details?.expiresOn);
@@ -486,6 +515,14 @@ function readString(value: unknown): string | undefined {
 
 function readNumber(value: unknown): number | undefined {
   return typeof value === "number" && Number.isFinite(value) ? value : undefined;
+}
+
+function readStringArray(value: unknown): string[] {
+  return Array.isArray(value) ? value.filter((item): item is string => typeof item === "string") : [];
+}
+
+function readRecord(value: unknown): Record<string, unknown> | undefined {
+  return value && typeof value === "object" && !Array.isArray(value) ? (value as Record<string, unknown>) : undefined;
 }
 
 function readLocation(value: unknown): GraphJsonLocation | undefined {

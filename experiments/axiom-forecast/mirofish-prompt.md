@@ -14,6 +14,7 @@ Current CLI surface:
 axi check --root .
 axi observe --root .
 axi observe --root . --warn-public-api-surface
+axi observe --root . --warn-coupling-concentration
 axi graph --root . --attention
 axi infer --root .
 ```
@@ -90,3 +91,4 @@ Important constraints:
 - Treat static-analysis blind spots and `.axi` maintenance cost as serious adoption risks.
 - Treat visible intentional violations as a product hypothesis to test, not as automatically correct.
 - Treat `axi observe` as the updated product surface to evaluate after the implementation change.
+- Treat `--warn-coupling-concentration` as an opt-in pressure signal, not as proof of bad architecture.

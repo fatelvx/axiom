@@ -2,11 +2,11 @@
 
 [![CI](https://github.com/fatelvx/axiom/actions/workflows/ci.yml/badge.svg)](https://github.com/fatelvx/axiom/actions/workflows/ci.yml)
 
-![Axiom architecture awareness banner](assets/banner.svg)
+![Axiom architecture observability banner](assets/banner.svg)
 
-**Architecture awareness, visible debt, and enforceable contracts for AI-era codebases.**
+**Architecture observability, visible debt, and enforceable contracts for AI-era codebases.**
 
-Axiom reads `.axi` contracts, scans real TypeScript and JavaScript imports, and shows where the observed code graph drifts from declared architecture intent. It can fail CI for high-confidence boundaries, but its first job is to make architecture drift visible enough for humans and agents to act on.
+Axiom reads `.axi` contracts, scans real TypeScript and JavaScript imports, and shows where the observed code graph drifts from declared architecture intent. It can fail CI for high-confidence boundaries, but its first job is to make architecture drift and accepted debt observable enough for humans and agents to act on.
 
 > Axiom is part of an ongoing experiment to make architecture hallucinations in AI-generated code observable and enforceable. Read the technical note: [Architecture Hallucinations in LLM-Generated Code](https://gist.github.com/fatelvx/99fadeae8014a1ddc1e8b67727481ee5).
 
@@ -16,7 +16,7 @@ source imports -> observed graph
 Axiom compares both -> architecture violations with file, line, rule, and fix
 ```
 
-Axiom is not a prompt wrapper and not a style linter. It is an architecture awareness layer with compiler-style checks: it turns boundaries that usually live in docs, reviews, and memory into visible graph feedback, warnings, intentional violations, and CI gates where the contract is clear enough.
+Axiom is not a prompt wrapper and not a style linter. It is an architecture observability layer with enforceable contracts: it turns boundaries that usually live in docs, reviews, and memory into visible graph feedback, warnings, intentional violations, and CI gates where the contract is clear enough.
 
 Status: public alpha / developer preview. The validator is usable today, but the `.axi` language and JSON schemas may still evolve before a stable 1.0.
 
@@ -32,6 +32,8 @@ The near-term product is:
 - semantic ownership mapping through `.axi`
 - intentional violations that stay visible instead of being hidden
 - hard failures only for explicit, high-confidence contracts
+
+Code can be locally correct while globally collapsing. Axiom's job is to make that collapse visible before it becomes normal, then enforce only the parts of the contract that are clear enough to trust.
 
 This matters more in AI-era repositories because agents can change many files quickly. Axiom should let agents communicate with the architecture contract, while the tool mediates what is a hard violation, what is accepted debt, and what is advisory drift.
 
@@ -113,6 +115,7 @@ error hidden_import src/ui/view.ts:3
 For a smaller graph view:
 
 ```bash
+node dist/cli.js observe --root examples/basic-app
 node dist/cli.js graph --root examples/basic-app --violations-only
 node dist/cli.js graph --root examples/basic-app --attention
 ```
@@ -140,6 +143,7 @@ Axiom v0.5.8 currently supports:
 - Module `purpose` text surfaced in graph and JSON output for lightweight intent awareness.
 - Human output and stable JSON output for CI and agents.
 - Starter contract inference with `axi infer`.
+- Architecture attention output with `axi observe`.
 - Focused graph output with `axi graph --violations-only`.
 - Scan summaries with module, source-file, import, and observed-dependency counts.
 
@@ -153,7 +157,7 @@ Axiom v0 is intentionally honest about its blind spots:
 - It does not make `.axi` maintenance free. Use `axi infer` to start from the current graph, then tighten only the boundaries that matter.
 - It does not promise whole-monorepo speed without scope control. Use `include`, `exclude`, and focused contract locations to keep large repositories comfortable in CI.
 
-The product goal is not perfect automatic architecture governance. The goal is a shared, machine-checkable awareness layer where humans and agents can see drift early, accept temporary debt visibly, and enforce high-confidence boundaries.
+The product goal is not perfect automatic architecture governance. The goal is a shared, machine-checkable observability layer where humans and agents can see drift early, accept temporary debt visibly, and enforce high-confidence boundaries.
 
 ## Install
 
@@ -190,6 +194,7 @@ npx @fatelvx/axiom check --root .
 
 ```bash
 axi check --root <project>
+axi observe --root <project>
 axi graph --root <project>
 axi infer --root <project>
 ```
@@ -197,6 +202,7 @@ axi infer --root <project>
 Use them like this:
 
 - `axi check`: validate code against `.axi`; exits `1` on violations.
+- `axi observe`: show the architecture attention surface; exits `0` and focuses violations, visible debt, and warnings.
 - `axi graph`: inspect declared and observed graphs; exits `0` even with violations.
 - `axi graph --violations-only` or `axi graph --attention`: show failing edges, intentional violations, and warning guardrails.
 - `axi infer`: print a starter `.axi` draft from existing imports.
@@ -205,6 +211,8 @@ Useful flags:
 
 ```bash
 axi check --root . --json
+axi observe --root .
+axi observe --root . --warn-public-api-surface
 axi check --root . --warn-unowned
 axi check --root . --warn-public-api-surface
 axi check --root . --strict
@@ -388,6 +396,7 @@ To inspect the `symbol-level API health` pressure point without turning it into 
 
 ```bash
 axi check --root . --warn-public-api-surface
+axi observe --root . --warn-public-api-surface
 axi graph --root . --attention --warn-public-api-surface
 ```
 
@@ -429,7 +438,7 @@ Today this flags broad exposed barrels such as `export * from "./feature"` or `e
 }
 ```
 
-`axi graph --json` emits `axiom.graph.v7`. Each observed dependency includes `violations` and `intentionalViolations` arrays. With `--violations-only` or `--attention`, `observedDependencies` is filtered to the edges that need attention or have accepted architecture debt, warning guardrails are still shown with details, and `summary.observedDependencies` keeps the full count. The JSON `filters` object marks whether the focused output came from the product-facing `--attention` alias.
+`axi graph --json` and `axi observe --json` emit `axiom.graph.v7`. Each observed dependency includes `violations` and `intentionalViolations` arrays. With `--violations-only`, `--attention`, or `observe`, `observedDependencies` is filtered to the edges that need attention or have accepted architecture debt, warning guardrails are still shown with details, and `summary.observedDependencies` keeps the full count. The JSON `filters` object marks focused attention output.
 
 ## CI
 
@@ -505,7 +514,8 @@ Near-term:
 - Better monorepo performance and resolver caching.
 - Downstream project CI recipes.
 - More TypeScript module resolution hardening.
-- Drift scoring that starts advisory, not as a hard gate.
+- Drift and architecture health surfaces that start advisory, not as hard gates.
+- Evolution graph views for visible architecture change over time.
 - Public comparison and evidence for how Axiom differs from ESLint architecture rules, Dependency Cruiser, Nx boundaries, and custom CI scripts.
 - Symbol-level public API surface analysis as an advisory research area, not a v0 hard gate.
 

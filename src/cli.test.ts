@@ -156,6 +156,20 @@ test("cli graph --attention aliases the focused architecture attention view", ()
   assert.doesNotMatch(result.stdout, /src\/ui\/view\.ts:1 "\.\.\/services"/);
 });
 
+test("cli observe shows the architecture attention surface", () => {
+  const result = spawnSync(
+    process.execPath,
+    [cliPath, "observe", "--root", "fixtures/visibility-rules"],
+    { cwd: repoRoot, encoding: "utf8" }
+  );
+
+  assert.equal(result.status, 0);
+  assert.match(result.stdout, /Axiom observe\./);
+  assert.match(result.stdout, /observed dependencies: 2 of 3/);
+  assert.match(result.stdout, /violating dependencies:/);
+  assert.doesNotMatch(result.stdout, /src\/ui\/view\.ts:1 "\.\.\/services"/);
+});
+
 test("cli graph --violations-only --json returns filtered graph output", () => {
   const result = spawnSync(
     process.execPath,
@@ -180,6 +194,21 @@ test("cli graph --attention --json marks the attention filter", () => {
   const result = spawnSync(
     process.execPath,
     [cliPath, "graph", "--root", "fixtures/visibility-rules", "--attention", "--json"],
+    { cwd: repoRoot, encoding: "utf8" }
+  );
+
+  assert.equal(result.status, 0);
+
+  const payload = JSON.parse(result.stdout);
+  assert.equal(payload.schemaVersion, "axiom.graph.v7");
+  assert.deepEqual(payload.filters, { violationsOnly: true, attention: true });
+  assert.equal(payload.summary.shownObservedDependencies, 2);
+});
+
+test("cli observe --json marks the attention filter", () => {
+  const result = spawnSync(
+    process.execPath,
+    [cliPath, "observe", "--root", "fixtures/visibility-rules", "--json"],
     { cwd: repoRoot, encoding: "utf8" }
   );
 

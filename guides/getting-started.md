@@ -1,6 +1,6 @@
 # Getting Started With Axiom
 
-Axiom gives TypeScript and JavaScript projects a lightweight architecture awareness layer.
+Axiom gives TypeScript and JavaScript projects a lightweight architecture observability layer with enforceable contracts.
 
 The short version:
 
@@ -60,6 +60,7 @@ You should see two violations:
 For a smaller view:
 
 ```bash
+node dist/cli.js observe --root examples/basic-app
 node dist/cli.js graph --root examples/basic-app --violations-only
 ```
 
@@ -127,6 +128,7 @@ axi check --root . --strict
 Use this when you want advisory review prompts for broad exposed barrels without failing the check:
 
 ```bash
+axi observe --root . --warn-public-api-surface
 axi check --root . --warn-public-api-surface
 ```
 
@@ -167,6 +169,7 @@ Run the workspace example:
 
 ```bash
 node dist/cli.js check --root examples/monorepo-workspace
+node dist/cli.js observe --root examples/monorepo-workspace
 node dist/cli.js graph --root examples/monorepo-workspace --violations-only
 ```
 

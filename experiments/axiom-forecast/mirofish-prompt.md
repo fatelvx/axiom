@@ -2,10 +2,32 @@
 
 Use the attached Axiom seed materials to simulate how real technical communities will evaluate and use Axiom over the next 6 to 18 months.
 
-Axiom is an architecture awareness layer and contract validator for AI-era codebases. It is not a prompt wrapper. Its current core loop is:
+Axiom is an architecture observability layer with enforceable contracts for AI-era codebases. It is not a prompt wrapper. Its validator loop is the trusted sensor behind the observability surface:
 
 ```text
 .axi contract + source scanner -> declared graph vs observed graph -> hard violations, intentional violations, advisory warnings
+```
+
+Current CLI surface:
+
+```bash
+axi check --root .
+axi observe --root .
+axi observe --root . --warn-public-api-surface
+axi graph --root . --attention
+axi infer --root .
+```
+
+Product boundary:
+
+```text
+Observe first, negotiate accepted tradeoffs, enforce only high-confidence intent.
+```
+
+Key thesis:
+
+```text
+Code can be locally correct while globally collapsing.
 ```
 
 Please run a multi-agent social simulation with stakeholder groups including:
@@ -28,7 +50,7 @@ Forecast questions:
 
 1. Who understands Axiom fastest, and why?
 2. Who dismisses Axiom, and what exact framing causes dismissal?
-3. Which positioning works best: architecture compiler, architecture awareness layer, AI codebase guardrail, or CI architecture validator?
+3. Which positioning works best: architecture observability layer, architecture compiler, AI codebase guardrail, or CI architecture validator?
 4. Does visible intentional violation debt increase adoption, or does it look like bureaucracy?
 5. Is `axi infer` enough to lower `.axi` authoring cost?
 6. What is Axiom's first killer workflow?
@@ -67,3 +89,4 @@ Important constraints:
 - Prefer recommendations that preserve validator-first direction.
 - Treat static-analysis blind spots and `.axi` maintenance cost as serious adoption risks.
 - Treat visible intentional violations as a product hypothesis to test, not as automatically correct.
+- Treat `axi observe` as the updated product surface to evaluate after the implementation change.

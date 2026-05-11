@@ -2,16 +2,16 @@
 
 Axiom is most useful when it starts small, makes drift visible, and protects a boundary that already hurts.
 
-It should not feel like a fully automatic architecture guardian on day one. Treat it as an architecture attention layer first, then tighten mature contracts into CI gates.
+It should not feel like a fully automatic architecture guardian on day one. Treat it as architecture observability first, then tighten mature contracts into CI gates.
 
 ## Guardrail Ladder
 
 The comfortable adoption path is a ladder, not a switch:
 
-1. Observe the graph with `axi graph --root .` or `axi graph --root . --attention`.
+1. Observe the attention surface with `axi observe --root .`.
 2. Measure coverage with `axi check --root . --warn-unowned`.
 3. Keep temporary architecture debt visible with `accepts ... until ... because ...`.
-4. Inspect broad public surfaces with `axi graph --root . --attention --warn-public-api-surface`.
+4. Inspect broad public surfaces with `axi observe --root . --warn-public-api-surface`.
 5. Move only clear, high-confidence rules into CI with `axi check --root .`.
 6. Use `--strict` after whole-repo ownership is intentional.
 
@@ -190,6 +190,7 @@ axi check --root . --intentional-violation-warning-days 14
 Useful commands:
 
 ```bash
+axi observe --root .
 axi check --root .
 axi graph --root . --violations-only
 axi graph --root . --attention
@@ -198,7 +199,7 @@ axi check --root . --json
 
 Use human output while developing. Use JSON output for CI annotations, agent feedback, and custom reporting.
 
-`axi graph --root . --attention` is also useful as an architecture attention view: it keeps failing edges, intentional violations, and warning guardrails in one focused output. `--violations-only` remains available as the literal alias.
+`axi observe --root .` is the product-facing architecture attention view: it keeps failing edges, intentional violations, and warning guardrails in one focused output. `axi graph --root . --attention` and `--violations-only` remain available when you want the graph command explicitly.
 
 ## When To Tighten
 

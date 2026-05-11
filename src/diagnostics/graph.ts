@@ -73,6 +73,7 @@ interface GraphJsonIntentionalDependencyViolation extends GraphJsonDependencyVio
 export interface GraphFormatOptions {
   violationsOnly?: boolean;
   attention?: boolean;
+  observe?: boolean;
 }
 
 export interface GraphJsonResult {
@@ -167,6 +168,10 @@ export function formatGraphResult(result: CheckResult, options: GraphFormatOptio
 }
 
 function formatGraphHeader(options: GraphFormatOptions): string {
+  if (options.observe) {
+    return "Axiom observe.";
+  }
+
   if (options.attention) {
     return "Axiom graph (attention).";
   }

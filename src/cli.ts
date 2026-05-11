@@ -19,20 +19,23 @@ interface CliOptions {
   warnPublicApiSurface: boolean;
 }
 
-const args = process.argv.slice(2);
-const command = args[0];
+type CliCommand = "check" | "graph" | "infer" | "observe";
 
-if (!command || command === "--help" || command === "-h") {
+const args = process.argv.slice(2);
+const commandValue = args[0];
+
+if (!commandValue || commandValue === "--help" || commandValue === "-h") {
   printHelp();
   process.exit(0);
 }
 
-if (command !== "check" && command !== "graph" && command !== "infer") {
-  console.error(`Unknown command '${command}'.`);
+if (!isCommand(commandValue)) {
+  console.error(`Unknown command '${commandValue}'.`);
   printHelp();
   process.exit(1);
 }
 
+const command = commandValue;
 const options = parseOptions(args.slice(1), command);
 
 try {
@@ -63,14 +66,16 @@ try {
     console.log(
       formatGraphJson(result, {
         violationsOnly: options.graphViolationsOnly,
-        attention: options.graphAttention
+        attention: options.graphAttention,
+        observe: command === "observe"
       })
     );
   } else {
     console.log(
       formatGraphResult(result, {
         violationsOnly: options.graphViolationsOnly,
-        attention: options.graphAttention
+        attention: options.graphAttention,
+        observe: command === "observe"
       })
     );
   }
@@ -81,13 +86,17 @@ try {
   process.exit(1);
 }
 
-function parseOptions(values: string[], command: "check" | "graph" | "infer"): CliOptions {
+function isCommand(value: string | undefined): value is CliCommand {
+  return value === "check" || value === "graph" || value === "infer" || value === "observe";
+}
+
+function parseOptions(values: string[], command: CliCommand): CliOptions {
   const options: CliOptions = {
     root: process.cwd(),
     json: false,
     adoptionMode: "loose",
-    graphViolationsOnly: false,
-    graphAttention: false,
+    graphViolationsOnly: command === "observe",
+    graphAttention: command === "observe",
     warnPublicApiSurface: false
   };
 
@@ -141,7 +150,7 @@ function parseOptions(values: string[], command: "check" | "graph" | "infer"): C
 
     if (value === "--intentional-violation-warning-days") {
       if (command === "infer") {
-        console.error("--intentional-violation-warning-days is only supported by check and graph.");
+        console.error("--intentional-violation-warning-days is only supported by check, graph, and observe.");
         process.exit(1);
       }
 
@@ -164,7 +173,7 @@ function parseOptions(values: string[], command: "check" | "graph" | "infer"): C
 
     if (value === "--warn-public-api-surface") {
       if (command === "infer") {
-        console.error("--warn-public-api-surface is only supported by check and graph.");
+        console.error("--warn-public-api-surface is only supported by check, graph, and observe.");
         process.exit(1);
       }
 
@@ -173,8 +182,8 @@ function parseOptions(values: string[], command: "check" | "graph" | "infer"): C
     }
 
     if (value === "--violations-only") {
-      if (command !== "graph") {
-        console.error("--violations-only is only supported by graph.");
+      if (command !== "graph" && command !== "observe") {
+        console.error("--violations-only is only supported by graph and observe.");
         process.exit(1);
       }
 
@@ -183,8 +192,8 @@ function parseOptions(values: string[], command: "check" | "graph" | "infer"): C
     }
 
     if (value === "--attention") {
-      if (command !== "graph") {
-        console.error("--attention is only supported by graph.");
+      if (command !== "graph" && command !== "observe") {
+        console.error("--attention is only supported by graph and observe.");
         process.exit(1);
       }
 
@@ -246,16 +255,19 @@ function printHelp(): void {
 Usage:
   axi check [--root <path>] [--config <path>] [--json] [--warn-unowned] [--strict] [--intentional-violation-warning-days <n>] [--warn-public-api-surface]
   axi graph [--root <path>] [--config <path>] [--json] [--warn-unowned] [--strict] [--violations-only|--attention] [--intentional-violation-warning-days <n>] [--warn-public-api-surface]
+  axi observe [--root <path>] [--config <path>] [--json] [--warn-unowned] [--strict] [--intentional-violation-warning-days <n>] [--warn-public-api-surface]
   axi infer [--root <path>] [--config <path>] [--json] [--group-depth <n>] [--group-by folder|workspace]
 
 Commands:
-  check   Validate source dependencies against .axi architecture specs.
-  graph   Print declared and observed architecture graphs.
-  infer   Print a starter .axi contract inferred from current imports.
+  check    Validate source dependencies against .axi architecture specs.
+  graph    Print declared and observed architecture graphs.
+  observe  Show the architecture attention surface: violations, visible debt, and warnings.
+  infer    Print a starter .axi contract inferred from current imports.
 
 Graph:
   --violations-only  Show only observed dependency edges that have violations.
   --attention        Alias for --violations-only with awareness-oriented human output.
+  observe            Product-facing alias for graph --attention.
 
 Adoption:
   default          Ignore source files not owned by any module path.

@@ -6,6 +6,12 @@ Goal:
 
 Use a multi-agent social simulation to predict how real users may understand, adopt, criticize, misuse, or ignore Axiom before the project over-invests in the wrong product direction.
 
+Current backtest focus:
+
+- `axi observe` as a product-facing architecture attention command.
+- Architecture observability with enforceable contracts.
+- Whether "observe first, negotiate accepted tradeoffs, enforce only high-confidence intent" improves trust or sounds too abstract.
+
 Files:
 
 - `seed.md`: the product context to feed into MiroFish.
@@ -20,7 +26,7 @@ Live run input snapshot:
 
 ```text
 https://github.com/fatelvx/axiom
-commit 5211298 Add MiroFish credential entry helper
+current master after the axi observe / observability positioning update
 ```
 
 Use this experiment as forecast input, not as a replacement for real users. A useful forecast should produce falsifiable adoption risks, concrete messaging changes, and roadmap tradeoffs.

@@ -10,6 +10,8 @@ Predict how real technical communities may understand, evaluate, adopt, criticiz
 
 The goal is not to prove Axiom is good. The goal is to find product risks early and update the roadmap before overbuilding.
 
+This backtest should evaluate the updated product surface after `axi observe` and the architecture-observability framing. Treat the forecast as a pressure map, not an action script.
+
 ## Seed Materials
 
 Use `seed.md` as the primary input.
@@ -42,7 +44,7 @@ Simulate at least these stakeholder groups:
 ## Simulation Phases
 
 1. First impression
-   - Each group sees the GitHub README and one quick CLI example.
+   - Each group sees the GitHub README and one quick CLI example, including `axi observe`.
    - Record what they think Axiom is within 30 seconds.
 
 2. Objection formation
@@ -99,6 +101,7 @@ Adopt recommendations that:
 - reduce false-positive risk
 - improve intentional violation review
 - make architecture drift more visible
+- improve the architecture observability surface
 - lower `.axi` authoring cost
 - preserve validator-first direction
 

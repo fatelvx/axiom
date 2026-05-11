@@ -6,6 +6,7 @@
 - Updated GitHub Actions dependencies to current major versions while keeping CI on Node 20.
 - Added time-bounded `.axi` intentional violation rules with required expiration dates and reasons.
 - Added unused intentional violation warnings so stale temporary debt remains visible after code cleanup.
+- Added expiring intentional violation warnings 30 days before accepted debt reaches its deadline.
 - Included warning guardrails in focused graph output so `axi graph --violations-only` acts more like an architecture attention view.
 - Surfaced module `purpose` text in graph and check JSON output.
 - Reframed accepted dependency debt as intentional violations in human and JSON output.

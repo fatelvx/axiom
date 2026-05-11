@@ -152,6 +152,39 @@ test("check JSON exposes planned suppressions and intentional violations", () =>
   });
 });
 
+test("check JSON exposes expiring intentional violations as warnings", () => {
+  const result = runCheck({ root: path.join(repoRoot, "fixtures/suppressed-dependency"), today: "2098-12-15" });
+  const payload = toCheckJson(result);
+
+  assert.equal(payload.ok, true);
+  assert.equal(payload.summary.violations, 0);
+  assert.equal(payload.summary.intentionalViolations, 1);
+  assert.equal(payload.summary.warnings, 1);
+  assert.deepEqual(payload.warnings[0], {
+    code: "expiring_suppression",
+    message: "Simulation has an intentional violation to Rendering that expires in 17 days.",
+    location: {
+      filePath: "axiom/main.axi",
+      line: 7
+    },
+    details: {
+      module: "Simulation",
+      target: "Rendering",
+      suppressedCode: "forbidden_dependency",
+      expiresOn: "2099-01-01",
+      daysUntilExpiration: 17,
+      reason: "legacy renderer migration",
+      rule: "Simulation suppresses forbidden_dependency to Rendering until 2099-01-01",
+      ruleLocation: {
+        filePath: "axiom/main.axi",
+        line: 7
+      },
+      suggestion:
+        "Review this intentional violation before it expires; remove it if the debt is fixed, or extend it with a fresh reason if the debt remains."
+    }
+  });
+});
+
 test("check JSON exposes unused suppressions as warnings", () => {
   const result = runCheck({ root: path.join(repoRoot, "fixtures/unused-suppression") });
   const payload = toCheckJson(result);

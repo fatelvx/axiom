@@ -10,6 +10,7 @@ import { createOwnershipIndex, validateOwnership } from "./ownership.js";
 import {
   applySuppressions,
   buildObservedDependencies,
+  findExpiringSuppressions,
   findUnusedSuppressions,
   validateObservedDependencies,
   validateSpec
@@ -21,6 +22,7 @@ export interface CheckOptions {
   root: string;
   configPath?: string;
   adoptionMode?: AdoptionMode;
+  today?: string;
 }
 
 export interface CheckResult {
@@ -62,7 +64,7 @@ export function runCheck(options: CheckOptions): CheckResult {
     violations.push(...parsed.violations);
   }
 
-  violations.push(...validateSpec(spec));
+  violations.push(...validateSpec(spec, { today: options.today }));
 
   const imports: ImportRecord[] = sourceFiles.flatMap((sourceFile) => scanImports(sourceFile, { resolver }));
   const ownership = createOwnershipIndex(root, spec.modules);
@@ -77,10 +79,13 @@ export function runCheck(options: CheckOptions): CheckResult {
 
   const observedDependencies = buildObservedDependencies(imports, ownership);
 
-  const observedValidation = applySuppressions(spec, validateObservedDependencies(spec, observedDependencies, root));
+  const observedValidation = applySuppressions(spec, validateObservedDependencies(spec, observedDependencies, root), {
+    today: options.today
+  });
   violations.push(...observedValidation.violations);
   suppressedViolations.push(...observedValidation.suppressedViolations);
-  warnings.push(...findUnusedSuppressions(spec, suppressedViolations));
+  warnings.push(...findExpiringSuppressions(suppressedViolations, { today: options.today }));
+  warnings.push(...findUnusedSuppressions(spec, suppressedViolations, { today: options.today }));
 
   return {
     root,

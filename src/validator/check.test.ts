@@ -220,6 +220,19 @@ test("active planned suppressions keep matching observed violations from failing
   });
 });
 
+test("active planned suppressions near expiration are reported as warnings", () => {
+  const result = runCheck({ root: path.join(repoRoot, "fixtures/suppressed-dependency"), today: "2098-12-15" });
+
+  assert.deepEqual(result.violations, []);
+  assert.equal(result.suppressedViolations.length, 1);
+  assert.equal(result.warnings.length, 1);
+  assert.equal(result.warnings[0]?.code, "expiring_suppression");
+  assert.equal(
+    result.warnings[0]?.message,
+    "Simulation has an intentional violation to Rendering that expires in 17 days."
+  );
+});
+
 test("expired planned suppressions fail and leave the original violation visible", () => {
   const result = runCheck({ root: path.join(repoRoot, "fixtures/expired-suppression") });
   const codes = result.violations.map((violation) => violation.code);

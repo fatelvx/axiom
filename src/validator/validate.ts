@@ -21,8 +21,13 @@ const suppressibleCodes = new Set<ViolationCode>([
   "undeclared_dependency",
   "unexposed_import"
 ]);
+const expiringSuppressionWarningDays = 30;
 
-export function validateSpec(spec: AxiomSpec): Violation[] {
+interface DateValidationOptions {
+  today?: string;
+}
+
+export function validateSpec(spec: AxiomSpec, options: DateValidationOptions = {}): Violation[] {
   const violations: Violation[] = [];
   const byName = buildModuleMap(spec.modules, violations);
   const layerOrder = spec.layerOrders[0];
@@ -131,7 +136,7 @@ export function validateSpec(spec: AxiomSpec): Violation[] {
         continue;
       }
 
-      if (isExpiredDate(suppression.expiresOn)) {
+      if (isExpiredDate(suppression.expiresOn, options.today)) {
         violations.push({
           code: "expired_suppression",
           message: `${module.name} has an expired suppression for ${suppression.target.name}.`,
@@ -155,14 +160,15 @@ export function validateSpec(spec: AxiomSpec): Violation[] {
 
 export function applySuppressions(
   spec: AxiomSpec,
-  violations: Violation[]
+  violations: Violation[],
+  options: DateValidationOptions = {}
 ): { violations: Violation[]; suppressedViolations: SuppressedViolation[] } {
   const remainingViolations: Violation[] = [];
   const suppressedViolations: SuppressedViolation[] = [];
   const modulesByName = new Map(spec.modules.map((module) => [module.name, module]));
 
   for (const violation of violations) {
-    const suppression = findActiveSuppression(modulesByName, violation);
+    const suppression = findActiveSuppression(modulesByName, violation, options);
 
     if (!suppression) {
       remainingViolations.push(violation);
@@ -183,7 +189,8 @@ export function applySuppressions(
 
 export function findUnusedSuppressions(
   spec: AxiomSpec,
-  suppressedViolations: SuppressedViolation[]
+  suppressedViolations: SuppressedViolation[],
+  options: DateValidationOptions = {}
 ): Violation[] {
   const usedSuppressionLocations = new Set(
     suppressedViolations.map((suppressedViolation) => locationKey(suppressedViolation.suppression.location))
@@ -194,7 +201,7 @@ export function findUnusedSuppressions(
   for (const module of spec.modules) {
     for (const suppression of module.suppressions) {
       if (
-        !isActiveValidSuppression(suppression, knownModules) ||
+        !isActiveValidSuppression(suppression, knownModules, options) ||
         usedSuppressionLocations.has(locationKey(suppression.location))
       ) {
         continue;
@@ -216,6 +223,52 @@ export function findUnusedSuppressions(
         }
       });
     }
+  }
+
+  return warnings;
+}
+
+export function findExpiringSuppressions(
+  suppressedViolations: SuppressedViolation[],
+  options: DateValidationOptions = {}
+): Violation[] {
+  const warnings: Violation[] = [];
+  const seenLocations = new Set<string>();
+
+  for (const suppressedViolation of suppressedViolations) {
+    const suppression = suppressedViolation.suppression;
+    const key = locationKey(suppression.location);
+    if (seenLocations.has(key)) {
+      continue;
+    }
+    seenLocations.add(key);
+
+    const daysUntilExpiration = daysUntilDate(suppression.expiresOn, options.today);
+    if (
+      daysUntilExpiration === undefined ||
+      daysUntilExpiration < 0 ||
+      daysUntilExpiration > expiringSuppressionWarningDays
+    ) {
+      continue;
+    }
+
+    warnings.push({
+      code: "expiring_suppression",
+      message: `${suppression.fromModule} has an intentional violation to ${suppression.toModule} that expires ${formatExpirationDistance(daysUntilExpiration)}.`,
+      location: suppression.location,
+      details: {
+        module: suppression.fromModule,
+        target: suppression.toModule,
+        suppressedCode: suppression.code,
+        expiresOn: suppression.expiresOn,
+        daysUntilExpiration,
+        reason: suppression.reason,
+        rule: `${suppression.fromModule} suppresses ${suppression.code} to ${suppression.toModule} until ${suppression.expiresOn}`,
+        ruleLocation: suppression.location,
+        suggestion:
+          "Review this intentional violation before it expires; remove it if the debt is fixed, or extend it with a fresh reason if the debt remains."
+      }
+    });
   }
 
   return warnings;
@@ -410,7 +463,8 @@ function relativePath(root: string, filePath: string): string {
 
 function findActiveSuppression(
   modulesByName: Map<string, AxiomModule>,
-  violation: Violation
+  violation: Violation,
+  options: DateValidationOptions
 ): SuppressionInfo | undefined {
   if (!suppressibleCodes.has(violation.code)) {
     return undefined;
@@ -433,7 +487,7 @@ function findActiveSuppression(
       suppression.target.name === toModule &&
       suppression.reason.trim().length > 0 &&
       isValidIsoDate(suppression.expiresOn) &&
-      !isExpiredDate(suppression.expiresOn)
+      !isExpiredDate(suppression.expiresOn, options.today)
   );
 
   if (!rule) {
@@ -463,13 +517,17 @@ function readString(value: unknown): string | undefined {
   return typeof value === "string" && value.length > 0 ? value : undefined;
 }
 
-function isActiveValidSuppression(suppression: SuppressionRule, knownModules: Set<string>): boolean {
+function isActiveValidSuppression(
+  suppression: SuppressionRule,
+  knownModules: Set<string>,
+  options: DateValidationOptions
+): boolean {
   return (
     suppressibleCodes.has(suppression.code as ViolationCode) &&
     knownModules.has(suppression.target.name) &&
     suppression.reason.trim().length > 0 &&
     isValidIsoDate(suppression.expiresOn) &&
-    !isExpiredDate(suppression.expiresOn)
+    !isExpiredDate(suppression.expiresOn, options.today)
   );
 }
 
@@ -491,8 +549,48 @@ function isValidIsoDate(value: string): boolean {
   return date.getUTCFullYear() === year && date.getUTCMonth() === month - 1 && date.getUTCDate() === day;
 }
 
-function isExpiredDate(value: string): boolean {
-  return isValidIsoDate(value) && value < todayIsoDate();
+function isExpiredDate(value: string, today?: string): boolean {
+  return isValidIsoDate(value) && value < resolveTodayIsoDate(today);
+}
+
+function daysUntilDate(value: string, today?: string): number | undefined {
+  const todayDate = parseIsoDate(resolveTodayIsoDate(today));
+  const targetDate = parseIsoDate(value);
+  if (!todayDate || !targetDate) {
+    return undefined;
+  }
+
+  const todayMs = Date.UTC(todayDate.year, todayDate.month - 1, todayDate.day);
+  const targetMs = Date.UTC(targetDate.year, targetDate.month - 1, targetDate.day);
+  return Math.round((targetMs - todayMs) / (24 * 60 * 60 * 1000));
+}
+
+function formatExpirationDistance(daysUntilExpiration: number): string {
+  if (daysUntilExpiration === 0) {
+    return "today";
+  }
+
+  if (daysUntilExpiration === 1) {
+    return "in 1 day";
+  }
+
+  return `in ${daysUntilExpiration} days`;
+}
+
+function resolveTodayIsoDate(today?: string): string {
+  return today && isValidIsoDate(today) ? today : todayIsoDate();
+}
+
+function parseIsoDate(value: string): { year: number; month: number; day: number } | undefined {
+  const match = value.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (!match) {
+    return undefined;
+  }
+
+  const year = Number(match[1]);
+  const month = Number(match[2]);
+  const day = Number(match[3]);
+  return { year, month, day };
 }
 
 function todayIsoDate(): string {

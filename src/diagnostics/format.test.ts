@@ -81,6 +81,18 @@ test("human diagnostics report intentional violations prominently", () => {
   assert.match(output, /reason: legacy renderer migration/);
 });
 
+test("human diagnostics report expiring intentional violations as warnings", () => {
+  const fixtureRoot = path.join(repoRoot, "fixtures/suppressed-dependency");
+  const result = runCheck({ root: fixtureRoot, today: "2098-12-15" });
+  const output = formatCheckResult(result);
+
+  assert.match(output, /Axiom check passed with intentional violations and warnings\./);
+  assert.match(output, /warning expiring_suppression axiom\/main\.axi:7/);
+  assert.match(output, /Simulation has an intentional violation to Rendering that expires in 17 days\./);
+  assert.match(output, /rule: Simulation suppresses forbidden_dependency to Rendering until 2099-01-01/);
+  assert.match(output, /fix: Review this intentional violation before it expires/);
+});
+
 test("human diagnostics report unused suppressions as warnings", () => {
   const fixtureRoot = path.join(repoRoot, "fixtures/unused-suppression");
   const result = runCheck({ root: fixtureRoot });

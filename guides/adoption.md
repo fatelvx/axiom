@@ -138,7 +138,7 @@ forbids module ServicesInternal
 suppresses forbidden_dependency to ServicesInternal until 2027-06-30 because "legacy import while the public service API is split out"
 ```
 
-Active intentional violations let `axi check` pass but remain visible in human output, JSON output, and focused graph output. Expired intentional violations fail the check, and unused entries are warnings, so old architecture debt does not become invisible policy.
+Active intentional violations let `axi check` pass but remain visible in human output, JSON output, and focused graph output. Entries expiring within 30 days are warnings, expired intentional violations fail the check, and unused entries are warnings, so old architecture debt does not become invisible policy.
 
 ## Reading Failures
 

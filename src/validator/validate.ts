@@ -96,13 +96,13 @@ export function validateSpec(spec: AxiomSpec, options: DateValidationOptions = {
       if (!suppressibleCodes.has(suppression.code as ViolationCode)) {
         violations.push({
           code: "invalid_suppression",
-          message: `${module.name} suppresses unsupported violation code ${suppression.code}.`,
+          message: `${module.name} accepts unsupported violation code ${suppression.code}.`,
           location: suppression.location,
           details: {
             module: module.name,
             suppressedCode: suppression.code,
             suppressibleCodes: [...suppressibleCodes].sort(),
-            suggestion: "Use suppressions only for observed dependency and visibility violations."
+            suggestion: "Use intentional violations only for observed dependency and visibility violations."
           }
         });
       }
@@ -110,12 +110,12 @@ export function validateSpec(spec: AxiomSpec, options: DateValidationOptions = {
       if (!byName.has(suppression.target.name)) {
         violations.push({
           code: "unknown_module",
-          message: `${module.name} suppresses a violation to unknown module ${suppression.target.name}.`,
+          message: `${module.name} accepts a violation to unknown module ${suppression.target.name}.`,
           location: suppression.target.location,
           details: {
             module: module.name,
             target: suppression.target.name,
-            suggestion: `Declare module ${suppression.target.name}, or remove the suppression from module ${module.name}.`
+            suggestion: `Declare module ${suppression.target.name}, or remove the intentional violation from module ${module.name}.`
           }
         });
       }
@@ -123,7 +123,7 @@ export function validateSpec(spec: AxiomSpec, options: DateValidationOptions = {
       if (!isValidIsoDate(suppression.expiresOn) || suppression.reason.trim().length === 0) {
         violations.push({
           code: "invalid_suppression",
-          message: `${module.name} has an invalid suppression for ${suppression.target.name}.`,
+          message: `${module.name} has an invalid intentional violation for ${suppression.target.name}.`,
           location: suppression.location,
           details: {
             module: module.name,
@@ -140,7 +140,7 @@ export function validateSpec(spec: AxiomSpec, options: DateValidationOptions = {
       if (isExpiredDate(suppression.expiresOn, options.today)) {
         violations.push({
           code: "expired_suppression",
-          message: `${module.name} has an expired suppression for ${suppression.target.name}.`,
+          message: `${module.name} has an expired intentional violation for ${suppression.target.name}.`,
           location: suppression.location,
           details: {
             module: module.name,
@@ -148,7 +148,7 @@ export function validateSpec(spec: AxiomSpec, options: DateValidationOptions = {
             suppressedCode: suppression.code,
             expiresOn: suppression.expiresOn,
             reason: suppression.reason,
-            suggestion: "Remove the suppression if the architecture debt is fixed, or extend it with a fresh reason."
+            suggestion: "Remove the intentional violation if the architecture debt is fixed, or extend it with a fresh reason."
           }
         });
       }
@@ -210,7 +210,7 @@ export function findUnusedSuppressions(
 
       warnings.push({
         code: "unused_suppression",
-        message: `${module.name} has an unused suppression for ${suppression.target.name}.`,
+        message: `${module.name} has an unused intentional violation for ${suppression.target.name}.`,
         location: suppression.location,
         details: {
           module: module.name,
@@ -218,9 +218,10 @@ export function findUnusedSuppressions(
           suppressedCode: suppression.code,
           expiresOn: suppression.expiresOn,
           reason: suppression.reason,
-          rule: `${module.name} suppresses ${suppression.code} to ${suppression.target.name} until ${suppression.expiresOn}`,
+          rule: `${module.name} accepts ${suppression.code} to ${suppression.target.name} until ${suppression.expiresOn}`,
           ruleLocation: suppression.location,
-          suggestion: "Remove the suppression if the architecture debt is gone, or keep it only while a matching violation is expected."
+          suggestion:
+            "Remove the intentional violation if the architecture debt is gone, or keep it only while a matching violation is expected."
         }
       });
     }
@@ -264,7 +265,7 @@ export function findExpiringSuppressions(
         expiresOn: suppression.expiresOn,
         daysUntilExpiration,
         reason: suppression.reason,
-        rule: `${suppression.fromModule} suppresses ${suppression.code} to ${suppression.toModule} until ${suppression.expiresOn}`,
+        rule: `${suppression.fromModule} accepts ${suppression.code} to ${suppression.toModule} until ${suppression.expiresOn}`,
         ruleLocation: suppression.location,
         suggestion:
           "Review this intentional violation before it expires; remove it if the debt is fixed, or extend it with a fresh reason if the debt remains."

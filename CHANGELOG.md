@@ -8,6 +8,7 @@
 - Added unused intentional violation warnings so stale temporary debt remains visible after code cleanup.
 - Added expiring intentional violation warnings 30 days before accepted debt reaches its deadline.
 - Added project config and CLI controls for the intentional violation expiry warning window.
+- Added `accepts ... until ... because ...` as the preferred `.axi` syntax for visible intentional violations.
 - Included warning guardrails in focused graph output so `axi graph --violations-only` acts more like an architecture attention view.
 - Surfaced module `purpose` text in graph and check JSON output.
 - Reframed accepted dependency debt as intentional violations in human and JSON output.

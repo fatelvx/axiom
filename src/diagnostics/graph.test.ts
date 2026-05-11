@@ -143,6 +143,6 @@ test("violations-only graph output includes warning guardrails", () => {
   assert.match(output, /violations: 0/);
   assert.match(output, /warnings: 1/);
   assert.match(output, /violating dependencies:\n  none/);
-  assert.match(output, /warnings:\n  unused_suppression axiom\/main\.axi:7: Simulation has an unused suppression for Rendering\./);
-  assert.match(output, /fix: Remove the suppression if the architecture debt is gone/);
+  assert.match(output, /warnings:\n  unused_suppression axiom\/main\.axi:7: Simulation has an unused intentional violation for Rendering\./);
+  assert.match(output, /fix: Remove the intentional violation if the architecture debt is gone/);
 });

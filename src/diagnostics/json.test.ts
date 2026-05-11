@@ -98,7 +98,7 @@ test("check JSON normalizes violations and nested locations", () => {
   });
 });
 
-test("check JSON exposes planned suppressions and intentional violations", () => {
+test("check JSON exposes accepted intentional violations", () => {
   const result = runCheck({ root: path.join(repoRoot, "fixtures/suppressed-dependency") });
   const payload = toCheckJson(result);
 
@@ -174,7 +174,7 @@ test("check JSON exposes expiring intentional violations as warnings", () => {
       expiresOn: "2099-01-01",
       daysUntilExpiration: 17,
       reason: "legacy renderer migration",
-      rule: "Simulation suppresses forbidden_dependency to Rendering until 2099-01-01",
+      rule: "Simulation accepts forbidden_dependency to Rendering until 2099-01-01",
       ruleLocation: {
         filePath: "axiom/main.axi",
         line: 7
@@ -194,7 +194,7 @@ test("check JSON exposes unused suppressions as warnings", () => {
   assert.equal(payload.summary.warnings, 1);
   assert.deepEqual(payload.warnings[0], {
     code: "unused_suppression",
-    message: "Simulation has an unused suppression for Rendering.",
+    message: "Simulation has an unused intentional violation for Rendering.",
     location: {
       filePath: "axiom/main.axi",
       line: 7
@@ -205,13 +205,13 @@ test("check JSON exposes unused suppressions as warnings", () => {
       suppressedCode: "forbidden_dependency",
       expiresOn: "2099-01-01",
       reason: "legacy renderer migration",
-      rule: "Simulation suppresses forbidden_dependency to Rendering until 2099-01-01",
+      rule: "Simulation accepts forbidden_dependency to Rendering until 2099-01-01",
       ruleLocation: {
         filePath: "axiom/main.axi",
         line: 7
       },
       suggestion:
-        "Remove the suppression if the architecture debt is gone, or keep it only while a matching violation is expected."
+        "Remove the intentional violation if the architecture debt is gone, or keep it only while a matching violation is expected."
     }
   });
 });

@@ -96,7 +96,7 @@ export function parseAxiomText(filePath: string, text: string): ParseResult {
     }
 
     const suppressionMatch = line.match(
-      /^suppresses\s+([A-Za-z][A-Za-z0-9_]*)\s+to\s+([A-Za-z][A-Za-z0-9_]*)\s+until\s+(\d{4}-\d{2}-\d{2})\s+because\s+"([^"]*)"$/u
+      /^(?:accepts|suppresses)\s+([A-Za-z][A-Za-z0-9_]*)\s+to\s+([A-Za-z][A-Za-z0-9_]*)\s+until\s+(\d{4}-\d{2}-\d{2})\s+because\s+"([^"]*)"$/u
     );
     if (suppressionMatch) {
       current.suppressions.push({
@@ -112,11 +112,11 @@ export function parseAxiomText(filePath: string, text: string): ParseResult {
       continue;
     }
 
-    if (line.startsWith("suppresses ")) {
+    if (line.startsWith("accepts ") || line.startsWith("suppresses ")) {
       violations.push({
         code: "parse_error",
         message:
-          'Invalid suppression statement. Use: suppresses <violation_code> to <Module> until <YYYY-MM-DD> because "<reason>".',
+          'Invalid intentional violation statement. Use: accepts <violation_code> to <Module> until <YYYY-MM-DD> because "<reason>".',
         location
       });
       continue;

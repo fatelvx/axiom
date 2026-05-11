@@ -32,7 +32,7 @@ purpose "deterministic physics simulation"
   assert.equal(simulation?.purpose, "deterministic physics simulation");
 });
 
-test("parses planned suppressions with expiration and reason", () => {
+test("parses legacy planned suppressions with expiration and reason", () => {
   const result = parseAxiomText(
     "main.axi",
     `
@@ -59,6 +59,23 @@ suppresses forbidden_dependency to Rendering until 2099-01-01 because "legacy re
       line: 4
     }
   });
+});
+
+test("parses intentional violation accepts syntax", () => {
+  const result = parseAxiomText(
+    "main.axi",
+    `
+module Simulation
+path "src/simulation/**"
+accepts forbidden_dependency to Rendering until 2099-01-01 because "legacy renderer migration"
+`
+  );
+
+  assert.deepEqual(result.violations, []);
+  assert.equal(result.modules[0]?.suppressions[0]?.code, "forbidden_dependency");
+  assert.equal(result.modules[0]?.suppressions[0]?.target.name, "Rendering");
+  assert.equal(result.modules[0]?.suppressions[0]?.expiresOn, "2099-01-01");
+  assert.equal(result.modules[0]?.suppressions[0]?.reason, "legacy renderer migration");
 });
 
 test("parses layer order", () => {

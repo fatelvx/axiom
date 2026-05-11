@@ -350,7 +350,7 @@ When a real project needs a temporary intentional violation, keep it visible in 
 module UI
 path "src/ui/**"
 forbids module ServicesInternal
-suppresses forbidden_dependency to ServicesInternal until 2027-06-30 because "legacy import while the public service API is split out"
+accepts forbidden_dependency to ServicesInternal until 2027-06-30 because "legacy import while the public service API is split out"
 ```
 
 Intentional violations only apply to observed dependency and visibility violations. Expired intentional violations fail the check, invalid entries cannot hide violations, entries expiring within 30 days become warnings, and unused entries are warnings so old architecture debt stays visible after the code is cleaned up.

@@ -89,7 +89,7 @@ test("human diagnostics report expiring intentional violations as warnings", () 
   assert.match(output, /Axiom check passed with intentional violations and warnings\./);
   assert.match(output, /warning expiring_suppression axiom\/main\.axi:7/);
   assert.match(output, /Simulation has an intentional violation to Rendering that expires in 17 days\./);
-  assert.match(output, /rule: Simulation suppresses forbidden_dependency to Rendering until 2099-01-01/);
+  assert.match(output, /rule: Simulation accepts forbidden_dependency to Rendering until 2099-01-01/);
   assert.match(output, /fix: Review this intentional violation before it expires/);
 });
 
@@ -100,7 +100,7 @@ test("human diagnostics report unused suppressions as warnings", () => {
 
   assert.match(output, /Axiom check passed with warnings\./);
   assert.match(output, /warning unused_suppression axiom\/main\.axi:7/);
-  assert.match(output, /Simulation has an unused suppression for Rendering\./);
-  assert.match(output, /rule: Simulation suppresses forbidden_dependency to Rendering until 2099-01-01/);
-  assert.match(output, /fix: Remove the suppression if the architecture debt is gone/);
+  assert.match(output, /Simulation has an unused intentional violation for Rendering\./);
+  assert.match(output, /rule: Simulation accepts forbidden_dependency to Rendering until 2099-01-01/);
+  assert.match(output, /fix: Remove the intentional violation if the architecture debt is gone/);
 });

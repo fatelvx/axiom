@@ -203,7 +203,7 @@ test("strict mode reports unowned source files as violations", () => {
   assert.deepEqual(result.warnings, []);
 });
 
-test("active planned suppressions keep matching observed violations from failing check", () => {
+test("active intentional violations keep matching observed violations from failing check", () => {
   const result = runCheck({ root: path.join(repoRoot, "fixtures/suppressed-dependency") });
 
   assert.deepEqual(result.violations, []);
@@ -222,7 +222,7 @@ test("active planned suppressions keep matching observed violations from failing
   });
 });
 
-test("active planned suppressions near expiration are reported as warnings", () => {
+test("active intentional violations near expiration are reported as warnings", () => {
   const result = runCheck({ root: path.join(repoRoot, "fixtures/suppressed-dependency"), today: "2098-12-15" });
 
   assert.deepEqual(result.violations, []);
@@ -268,7 +268,7 @@ test("intentional violation expiration warning window can be overridden per chec
   assert.deepEqual(result.warnings, []);
 });
 
-test("expired planned suppressions fail and leave the original violation visible", () => {
+test("expired intentional violations fail and leave the original violation visible", () => {
   const result = runCheck({ root: path.join(repoRoot, "fixtures/expired-suppression") });
   const codes = result.violations.map((violation) => violation.code);
 
@@ -276,7 +276,7 @@ test("expired planned suppressions fail and leave the original violation visible
   assert.deepEqual(result.suppressedViolations, []);
 });
 
-test("invalid planned suppressions fail before they can hide violations", () => {
+test("invalid intentional violations fail before they can hide violations", () => {
   const result = runCheck({ root: path.join(repoRoot, "fixtures/invalid-suppression") });
 
   assert.deepEqual(result.violations.map((violation) => violation.code), [
@@ -285,12 +285,12 @@ test("invalid planned suppressions fail before they can hide violations", () => 
   ]);
 });
 
-test("unused planned suppressions are reported as warnings", () => {
+test("unused intentional violations are reported as warnings", () => {
   const result = runCheck({ root: path.join(repoRoot, "fixtures/unused-suppression") });
 
   assert.deepEqual(result.violations, []);
   assert.deepEqual(result.suppressedViolations, []);
   assert.equal(result.warnings.length, 1);
   assert.equal(result.warnings[0]?.code, "unused_suppression");
-  assert.equal(result.warnings[0]?.message, "Simulation has an unused suppression for Rendering.");
+  assert.equal(result.warnings[0]?.message, "Simulation has an unused intentional violation for Rendering.");
 });

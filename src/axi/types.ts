@@ -14,6 +14,7 @@ export type ViolationCode =
   | "unknown_module"
   | "cycle_dependency"
   | "layer_breach"
+  | "hidden_reexport"
   | "undeclared_dependency"
   | "hidden_import"
   | "unexposed_import"
@@ -81,6 +82,7 @@ export interface Violation {
 export interface ImportRecord {
   filePath: string;
   line: number;
+  kind: "import" | "export" | "dynamic_import" | "require" | "import_type";
   specifier: string;
   resolvedPath?: string;
 }

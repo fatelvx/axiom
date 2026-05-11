@@ -11,6 +11,7 @@ import {
   applySuppressions,
   buildObservedDependencies,
   findExpiringSuppressions,
+  validateModuleSurfaceConsistency,
   findUnusedSuppressions,
   validateObservedDependencies,
   validateSpec
@@ -82,7 +83,11 @@ export function runCheck(options: CheckOptions): CheckResult {
 
   const observedDependencies = buildObservedDependencies(imports, ownership);
 
-  const observedValidation = applySuppressions(spec, validateObservedDependencies(spec, observedDependencies, root), {
+  const observedViolations = [
+    ...validateObservedDependencies(spec, observedDependencies, root),
+    ...validateModuleSurfaceConsistency(spec, imports, ownership, root)
+  ];
+  const observedValidation = applySuppressions(spec, observedViolations, {
     today: options.today
   });
   violations.push(...observedValidation.violations);

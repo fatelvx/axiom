@@ -16,6 +16,7 @@ import type { OwnershipIndex } from "./ownership.js";
 
 const suppressibleCodes = new Set<ViolationCode>([
   "forbidden_dependency",
+  "hidden_reexport",
   "hidden_import",
   "layer_breach",
   "undeclared_dependency",
@@ -434,6 +435,59 @@ export function validateObservedDependencies(
         }
       });
     }
+  }
+
+  return violations;
+}
+
+export function validateModuleSurfaceConsistency(
+  spec: AxiomSpec,
+  imports: ImportRecord[],
+  ownership: OwnershipIndex,
+  root: string
+): Violation[] {
+  const violations: Violation[] = [];
+  const byName = new Map(spec.modules.map((module) => [module.name, module]));
+
+  for (const importRecord of imports) {
+    if (importRecord.kind !== "export" || !importRecord.resolvedPath) {
+      continue;
+    }
+
+    const owner = ownership.findModule(importRecord.filePath);
+    const target = ownership.findModule(importRecord.resolvedPath);
+    if (!owner || !target || owner.name !== target.name) {
+      continue;
+    }
+
+    const module = byName.get(owner.name);
+    if (!module || module.exposes.length === 0 || !matchesAnyPathRule(root, importRecord.filePath, module.exposes)) {
+      continue;
+    }
+
+    const hiddenRule = findMatchingPathRule(root, importRecord.resolvedPath, module.hides);
+    if (!hiddenRule) {
+      continue;
+    }
+
+    violations.push({
+      code: "hidden_reexport",
+      message: `${module.name} re-exports a hidden path through an exposed file.`,
+      location: {
+        filePath: importRecord.filePath,
+        line: importRecord.line
+      },
+      details: {
+        fromModule: module.name,
+        toModule: module.name,
+        specifier: importRecord.specifier,
+        exportedPath: relativePath(root, importRecord.resolvedPath),
+        observed: `${module.name} exposes hidden path`,
+        rule: `${module.name} hides ${hiddenRule.pattern}`,
+        ruleLocation: hiddenRule.location,
+        suggestion: "Remove this re-export from the exposed surface, or move the exported API out of the hidden path."
+      }
+    });
   }
 
   return violations;

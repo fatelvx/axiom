@@ -65,6 +65,18 @@ test("human diagnostics include visibility rule details", () => {
   assert.match(output, /rule: Services hides src\/services\/internal\/\*\* \(axiom\/main\.axi:8\)/);
 });
 
+test("human diagnostics include hidden re-export details", () => {
+  const fixtureRoot = path.join(repoRoot, "fixtures/hidden-reexport");
+  const result = runCheck({ root: fixtureRoot });
+  const output = formatCheckResult(result);
+
+  assert.match(output, /error hidden_reexport src\/services\/index\.ts:1/);
+  assert.match(output, /Services re-exports a hidden path through an exposed file\./);
+  assert.match(output, /observed: Services exposes hidden path via "\.\/internal\/token"/);
+  assert.match(output, /rule: Services hides src\/services\/internal\/\*\* \(axiom\/main\.axi:4\)/);
+  assert.match(output, /fix: Remove this re-export from the exposed surface/);
+});
+
 test("human diagnostics report intentional violations prominently", () => {
   const fixtureRoot = path.join(repoRoot, "fixtures/suppressed-dependency");
   const result = runCheck({ root: fixtureRoot });

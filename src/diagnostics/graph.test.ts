@@ -158,6 +158,15 @@ test("violations-only graph output includes warning guardrails", () => {
   assert.match(output, /fix: Remove the intentional violation if the architecture debt is gone/);
 });
 
+test("violations-only graph output includes non-edge surface violations", () => {
+  const result = runCheck({ root: path.join(repoRoot, "fixtures/hidden-reexport") });
+  const output = formatGraphResult(result, { violationsOnly: true });
+
+  assert.match(output, /violating dependencies:\n  none/);
+  assert.match(output, /other violations:\n  hidden_reexport src\/services\/index\.ts:1/);
+  assert.match(output, /Services re-exports a hidden path through an exposed file\./);
+});
+
 test("graph JSON exposes warning details for agent review", () => {
   const result = runCheck({ root: path.join(repoRoot, "fixtures/unused-suppression") });
   const payload = toGraphJson(result, { violationsOnly: true });

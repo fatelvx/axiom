@@ -110,6 +110,7 @@ Axiom v0.5.8 currently supports:
 - Forbidden module edges with `forbids module`.
 - Layer direction with `layers Core -> UI`.
 - Public/private module surfaces with `exposes` and `hides`.
+- Direct hidden-path re-exports from exposed entry points.
 - TypeScript/JavaScript import scanning through the TypeScript parser.
 - Relative imports, barrel `index.*` files, dynamic imports, `require`, and multiline imports.
 - TypeScript `paths` aliases from `tsconfig.json`.
@@ -128,7 +129,7 @@ Axiom v0.5.8 currently supports:
 Axiom v0 is intentionally honest about its blind spots:
 
 - It does not fully observe runtime-only dependency paths such as string-based dependency injection, plugin registries, generated imports, or `eval`.
-- It does not prove that a module is semantically well-designed. Code can still become too coupled through broad barrel exports or overly large public entry points.
+- It does not prove that a module is semantically well-designed. Axiom can catch direct hidden-path re-exports, but code can still become too coupled through broad barrel exports or overly large public entry points.
 - It does not replace ESLint, TypeScript, tests, or review. Axiom focuses on architecture intent: declared graph, observed graph, drift, warnings, intentional violations, and CI gates for clear contracts.
 - It does not make `.axi` maintenance free. Use `axi infer` to start from the current graph, then tighten only the boundaries that matter.
 - It does not promise whole-monorepo speed without scope control. Use `include`, `exclude`, and focused contract locations to keep large repositories comfortable in CI.
@@ -433,6 +434,7 @@ Axiom can currently report:
 - `forbidden_dependency`
 - `undeclared_dependency`
 - `hidden_import`
+- `hidden_reexport`
 - `unexposed_import`
 - `unowned_source_file`
 - `invalid_suppression`

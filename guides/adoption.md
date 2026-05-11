@@ -79,7 +79,7 @@ Axiom is a static architecture validator, not a full runtime oracle.
 
 Expect blind spots around dependency injection strings, plugin registries, generated imports, `eval`, and other runtime-only paths. If those patterns matter in your project, model the stable source-level boundary first and keep the runtime convention visible in review or future custom checks.
 
-Also watch for "compliant but unhealthy" architecture. For example, a giant `index.ts` can make imports pass while concentrating too much coupling in one public surface. Prefer small exposed entry points, explicit `hides` rules for internals, and intentional violations with expiration dates when migration needs time.
+Also watch for "compliant but unhealthy" architecture. For example, a giant `index.ts` can make imports pass while concentrating too much coupling in one public surface. Axiom now catches direct `export ... from` leaks from hidden paths through exposed entry points, but it still cannot prove every symbol-level API decision is healthy. Prefer small exposed entry points, explicit `hides` rules for internals, and intentional violations with expiration dates when migration needs time.
 
 ## CI
 

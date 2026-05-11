@@ -91,6 +91,34 @@ test("visibility fixture reports hidden and unexposed imports", () => {
   assert.deepEqual(codes, ["unexposed_import", "hidden_import"]);
 });
 
+test("hidden re-export fixture reports exposed barrel leaks", () => {
+  const result = runCheck({ root: path.join(repoRoot, "fixtures/hidden-reexport") });
+
+  assert.deepEqual(result.observedDependencies, []);
+  assert.equal(result.violations.length, 1);
+  assert.deepEqual(result.violations[0], {
+    code: "hidden_reexport",
+    message: "Services re-exports a hidden path through an exposed file.",
+    location: {
+      filePath: path.join(repoRoot, "fixtures/hidden-reexport/src/services/index.ts"),
+      line: 1
+    },
+    details: {
+      fromModule: "Services",
+      toModule: "Services",
+      specifier: "./internal/token",
+      exportedPath: "src/services/internal/token.ts",
+      observed: "Services exposes hidden path",
+      rule: "Services hides src/services/internal/**",
+      ruleLocation: {
+        filePath: path.join(repoRoot, "fixtures/hidden-reexport/axiom/main.axi"),
+        line: 4
+      },
+      suggestion: "Remove this re-export from the exposed surface, or move the exported API out of the hidden path."
+    }
+  });
+});
+
 test("check uses axiom.config.json discovery settings", () => {
   const result = runCheck({ root: path.join(repoRoot, "fixtures/config-filter") });
 
@@ -218,6 +246,25 @@ test("active intentional violations keep matching observed violations from faili
     location: {
       filePath: path.join(repoRoot, "fixtures/suppressed-dependency/axiom/main.axi"),
       line: 7
+    }
+  });
+});
+
+test("intentional violations can accept exposed hidden re-exports", () => {
+  const result = runCheck({ root: path.join(repoRoot, "fixtures/accepted-hidden-reexport") });
+
+  assert.deepEqual(result.violations, []);
+  assert.equal(result.suppressedViolations.length, 1);
+  assert.equal(result.suppressedViolations[0]?.violation.code, "hidden_reexport");
+  assert.deepEqual(result.suppressedViolations[0]?.suppression, {
+    fromModule: "Services",
+    toModule: "Services",
+    code: "hidden_reexport",
+    expiresOn: "2099-01-01",
+    reason: "legacy public barrel cleanup",
+    location: {
+      filePath: path.join(repoRoot, "fixtures/accepted-hidden-reexport/axiom/main.axi"),
+      line: 5
     }
   });
 });

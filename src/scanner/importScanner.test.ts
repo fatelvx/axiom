@@ -30,27 +30,32 @@ test("scanner resolves relative dynamic imports and barrel index imports", () =>
     assert.deepEqual(
       imports.map((record) => ({
         line: record.line,
+        kind: record.kind,
         specifier: record.specifier,
         resolvedPath: normalize(root, record.resolvedPath)
       })),
       [
         {
           line: 1,
+          kind: "import",
           specifier: "./feature",
           resolvedPath: "src/feature.ts"
         },
         {
           line: 2,
+          kind: "export",
           specifier: "./barrel",
           resolvedPath: "src/barrel/index.ts"
         },
         {
           line: 3,
+          kind: "dynamic_import",
           specifier: "./lazy",
           resolvedPath: "src/lazy.ts"
         },
         {
           line: 4,
+          kind: "require",
           specifier: "./legacy",
           resolvedPath: "src/legacy.js"
         }
@@ -100,47 +105,56 @@ test("scanner reads imports from TypeScript syntax instead of line regexes", () 
     assert.deepEqual(
       imports.map((record) => ({
         line: record.line,
+        kind: record.kind,
         specifier: record.specifier,
         resolvedPath: normalize(root, record.resolvedPath)
       })),
       [
         {
           line: 3,
+          kind: "import",
           specifier: "./feature",
           resolvedPath: "src/feature.ts"
         },
         {
           line: 6,
+          kind: "import",
           specifier: "./types",
           resolvedPath: "src/types.ts"
         },
         {
           line: 7,
+          kind: "import",
           specifier: "./setup",
           resolvedPath: "src/setup.ts"
         },
         {
           line: 8,
+          kind: "export",
           specifier: "./barrel",
           resolvedPath: "src/barrel/index.ts"
         },
         {
           line: 9,
+          kind: "export",
           specifier: "./types",
           resolvedPath: "src/types.ts"
         },
         {
           line: 10,
+          kind: "dynamic_import",
           specifier: "./lazy",
           resolvedPath: "src/lazy.ts"
         },
         {
           line: 13,
+          kind: "import",
           specifier: "./legacy",
           resolvedPath: "src/legacy.ts"
         },
         {
           line: 14,
+          kind: "require",
           specifier: "./common",
           resolvedPath: "src/common.js"
         }

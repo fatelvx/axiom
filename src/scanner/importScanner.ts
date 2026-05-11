@@ -14,12 +14,13 @@ export function scanImports(filePath: string, options: ScanImportsOptions = {}):
   const imports: ImportRecord[] = [];
   const resolver = options.resolver ?? { resolve: resolveRelativeImport };
 
-  function recordImport(node: ts.Node, specifier: string): void {
+  function recordImport(node: ts.Node, kind: ImportRecord["kind"], specifier: string): void {
     const line = sourceFile.getLineAndCharacterOfPosition(node.getStart(sourceFile)).line + 1;
 
     imports.push({
       filePath,
       line,
+      kind,
       specifier,
       resolvedPath: resolver.resolve(filePath, specifier)
     });
@@ -29,27 +30,27 @@ export function scanImports(filePath: string, options: ScanImportsOptions = {}):
     if (ts.isImportDeclaration(node)) {
       const specifier = readStringLiteral(node.moduleSpecifier);
       if (specifier) {
-        recordImport(node, specifier);
+        recordImport(node, "import", specifier);
       }
     } else if (ts.isExportDeclaration(node)) {
       const specifier = readStringLiteral(node.moduleSpecifier);
       if (specifier) {
-        recordImport(node, specifier);
+        recordImport(node, "export", specifier);
       }
     } else if (ts.isImportEqualsDeclaration(node)) {
       const specifier = readImportEqualsSpecifier(node);
       if (specifier) {
-        recordImport(node, specifier);
+        recordImport(node, "import", specifier);
       }
     } else if (ts.isCallExpression(node)) {
-      const specifier = readCallSpecifier(node);
-      if (specifier) {
-        recordImport(node, specifier);
+      const callImport = readCallImport(node);
+      if (callImport) {
+        recordImport(node, callImport.kind, callImport.specifier);
       }
     } else if (ts.isImportTypeNode(node)) {
       const specifier = readImportTypeSpecifier(node);
       if (specifier) {
-        recordImport(node, specifier);
+        recordImport(node, "import_type", specifier);
       }
     }
 
@@ -81,18 +82,20 @@ function readImportEqualsSpecifier(node: ts.ImportEqualsDeclaration): string | u
   return readStringLiteral(node.moduleReference.expression);
 }
 
-function readCallSpecifier(node: ts.CallExpression): string | undefined {
+function readCallImport(node: ts.CallExpression): { kind: ImportRecord["kind"]; specifier: string } | undefined {
   const firstArgument = node.arguments[0];
   if (!firstArgument) {
     return undefined;
   }
 
   if (node.expression.kind === ts.SyntaxKind.ImportKeyword) {
-    return readStringLiteral(firstArgument);
+    const specifier = readStringLiteral(firstArgument);
+    return specifier ? { kind: "dynamic_import", specifier } : undefined;
   }
 
   if (ts.isIdentifier(node.expression) && node.expression.text === "require") {
-    return readStringLiteral(firstArgument);
+    const specifier = readStringLiteral(firstArgument);
+    return specifier ? { kind: "require", specifier } : undefined;
   }
 
   return undefined;

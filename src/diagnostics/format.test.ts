@@ -65,16 +65,18 @@ test("human diagnostics include visibility rule details", () => {
   assert.match(output, /rule: Services hides src\/services\/internal\/\*\* \(axiom\/main\.axi:8\)/);
 });
 
-test("human diagnostics report active planned suppressions", () => {
+test("human diagnostics report intentional violations prominently", () => {
   const fixtureRoot = path.join(repoRoot, "fixtures/suppressed-dependency");
   const result = runCheck({ root: fixtureRoot });
   const output = formatCheckResult(result);
 
-  assert.match(output, /Axiom check passed with suppressions\./);
-  assert.match(output, /suppressed forbidden_dependency src\/simulation\/step\.ts:1/);
+  assert.match(output, /Axiom check passed with intentional violations\./);
+  assert.match(output, /intentional violations: 1/);
+  assert.match(output, /intentional violations \(accepted by contract\):/);
+  assert.match(output, /intentional violation forbidden_dependency src\/simulation\/step\.ts:1/);
   assert.match(
     output,
-    /suppression: Simulation suppresses forbidden_dependency to Rendering until 2099-01-01 \(axiom\/main\.axi:7\)/
+    /contract: Simulation intentionally accepts forbidden_dependency to Rendering until 2099-01-01 \(axiom\/main\.axi:7\)/
   );
   assert.match(output, /reason: legacy renderer migration/);
 });

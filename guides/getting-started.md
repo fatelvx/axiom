@@ -1,6 +1,6 @@
 # Getting Started With Axiom
 
-Axiom validates architecture contracts against real TypeScript and JavaScript imports.
+Axiom gives TypeScript and JavaScript projects a lightweight architecture awareness layer.
 
 The short version:
 
@@ -9,6 +9,8 @@ The short version:
 source imports -> observed graph
 Axiom compares both and reports architecture drift
 ```
+
+Use it first to make drift visible. Promote rules to hard CI failures only when the contract is explicit and high-confidence.
 
 ## 1. Install
 

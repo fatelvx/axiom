@@ -11,7 +11,7 @@ export function formatCheckResult(result: CheckResult): string {
     return [
       formatPassedSummary(result, passedWithNonFailingDiagnosticsHeader(result)),
       ...(result.suppressedViolations.length > 0
-        ? ["", ...formatSuppressedDiagnostics(result.root, result.suppressedViolations)]
+        ? ["", ...formatIntentionalViolations(result.root, result.suppressedViolations)]
         : []),
       ...(result.warnings.length > 0 ? ["", ...formatDiagnostics(result.root, result.warnings, "warning")] : [])
     ].join("\n").trimEnd();
@@ -21,7 +21,7 @@ export function formatCheckResult(result: CheckResult): string {
     "Axiom check failed.",
     `violations: ${result.violations.length}`,
     ...(result.warnings.length > 0 ? [`warnings: ${result.warnings.length}`] : []),
-    ...(result.suppressedViolations.length > 0 ? [`suppressed violations: ${result.suppressedViolations.length}`] : []),
+    ...(result.suppressedViolations.length > 0 ? [`intentional violations: ${result.suppressedViolations.length}`] : []),
     "",
     ...formatDiagnostics(result.root, result.violations, "error")
   ];
@@ -33,7 +33,7 @@ export function formatCheckResult(result: CheckResult): string {
 
   if (result.suppressedViolations.length > 0) {
     lines.push("");
-    lines.push(...formatSuppressedDiagnostics(result.root, result.suppressedViolations));
+    lines.push(...formatIntentionalViolations(result.root, result.suppressedViolations));
   }
 
   return lines.join("\n").trimEnd();
@@ -41,11 +41,11 @@ export function formatCheckResult(result: CheckResult): string {
 
 function passedWithNonFailingDiagnosticsHeader(result: CheckResult): string {
   if (result.suppressedViolations.length > 0 && result.warnings.length > 0) {
-    return "Axiom check passed with suppressions and warnings.";
+    return "Axiom check passed with intentional violations and warnings.";
   }
 
   if (result.suppressedViolations.length > 0) {
-    return "Axiom check passed with suppressions.";
+    return "Axiom check passed with intentional violations.";
   }
 
   return "Axiom check passed with warnings.";
@@ -58,7 +58,7 @@ function formatPassedSummary(result: CheckResult, header: string): string {
     `source files: ${result.sourceFiles.length}`,
     `imports scanned: ${result.importCount}`,
     `observed dependencies: ${result.observedDependencies.length}`,
-    ...(result.suppressedViolations.length > 0 ? [`suppressed violations: ${result.suppressedViolations.length}`] : []),
+    ...(result.suppressedViolations.length > 0 ? [`intentional violations: ${result.suppressedViolations.length}`] : []),
     ...(result.warnings.length > 0 ? [`warnings: ${result.warnings.length}`] : [])
   ].join("\n");
 }
@@ -74,8 +74,8 @@ function formatDiagnostics(root: string, diagnostics: Violation[], severity: "er
   return lines;
 }
 
-function formatSuppressedDiagnostics(root: string, diagnostics: SuppressedViolation[]): string[] {
-  const lines = ["suppressed violations:"];
+function formatIntentionalViolations(root: string, diagnostics: SuppressedViolation[]): string[] {
+  const lines = ["intentional violations (accepted by contract):"];
 
   for (const diagnostic of diagnostics) {
     const location = diagnostic.violation.location
@@ -84,11 +84,11 @@ function formatSuppressedDiagnostics(root: string, diagnostics: SuppressedViolat
     const suffix = location ? ` ${location}` : "";
     const ruleLocation = formatLocation(root, diagnostic.suppression.location.filePath, diagnostic.suppression.location.line);
 
-    lines.push(`suppressed ${diagnostic.violation.code}${suffix}`);
+    lines.push(`intentional violation ${diagnostic.violation.code}${suffix}`);
     lines.push(`  ${diagnostic.violation.message}`);
     lines.push(...formatDetails(root, diagnostic.violation));
     lines.push(
-      `  suppression: ${diagnostic.suppression.fromModule} suppresses ${diagnostic.suppression.code} to ${diagnostic.suppression.toModule} until ${diagnostic.suppression.expiresOn} (${ruleLocation})`
+      `  contract: ${diagnostic.suppression.fromModule} intentionally accepts ${diagnostic.suppression.code} to ${diagnostic.suppression.toModule} until ${diagnostic.suppression.expiresOn} (${ruleLocation})`
     );
     lines.push(`  reason: ${diagnostic.suppression.reason}`);
     lines.push("");

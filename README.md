@@ -4,9 +4,9 @@
 
 ![Axiom architecture firewall banner](assets/banner.svg)
 
-**Architecture contracts for AI-era codebases.**
+**Lightweight architecture awareness and enforceable contracts for AI-era codebases.**
 
-Axiom reads `.axi` contracts, scans real TypeScript and JavaScript imports, and fails when code drifts outside the architecture you declared.
+Axiom reads `.axi` contracts, scans real TypeScript and JavaScript imports, and shows where the observed code graph drifts from declared architecture intent. It can fail CI for high-confidence boundaries, but its first job is to make architecture drift visible enough for humans and agents to act on.
 
 > Axiom is part of an ongoing experiment to make architecture hallucinations in AI-generated code observable and enforceable. Read the technical note: [Architecture Hallucinations in LLM-Generated Code](https://gist.github.com/fatelvx/99fadeae8014a1ddc1e8b67727481ee5).
 
@@ -16,9 +16,24 @@ source imports -> observed graph
 Axiom compares both -> architecture violations with file, line, rule, and fix
 ```
 
-Axiom is not a prompt wrapper and not a style linter. It is an architecture compiler: it turns boundaries that usually live in docs, reviews, and memory into checks that can fail locally or in CI.
+Axiom is not a prompt wrapper and not a style linter. It is an architecture awareness layer with compiler-style checks: it turns boundaries that usually live in docs, reviews, and memory into visible graph feedback, warnings, intentional violations, and CI gates where the contract is clear enough.
 
 Status: public alpha / developer preview. The validator is usable today, but the `.axi` language and JSON schemas may still evolve before a stable 1.0.
+
+## Product Direction
+
+Axiom is deliberately not starting as a fully automatic architecture guardian. That would be too rigid and too noisy for real codebases.
+
+The near-term product is:
+
+- architecture drift awareness
+- dependency direction tracking
+- module boundary warnings
+- semantic ownership mapping through `.axi`
+- intentional violations that stay visible instead of being hidden
+- hard failures only for explicit, high-confidence contracts
+
+This matters more in AI-era repositories because agents can change many files quickly. Axiom should let agents communicate with the architecture contract, while the tool mediates what is a hard violation, what is accepted debt, and what is advisory drift.
 
 ## Why It Exists
 
@@ -100,7 +115,7 @@ Axiom v0.5.8 currently supports:
 - Package `imports` and workspace package `exports` for internal package-style imports.
 - Common monorepo contract discovery under `apps/*` and `packages/*`.
 - Gradual adoption with default loose mode, `--warn-unowned`, and `--strict`.
-- Planned suppressions that require an expiration date and reason.
+- Intentional violations that require an expiration date and reason.
 - Module `purpose` text surfaced in graph and JSON output for lightweight intent awareness.
 - Human output and stable JSON output for CI and agents.
 - Starter contract inference with `axi infer`.
@@ -149,7 +164,7 @@ Use them like this:
 
 - `axi check`: validate code against `.axi`; exits `1` on violations.
 - `axi graph`: inspect declared and observed graphs; exits `0` even with violations.
-- `axi graph --violations-only`: show only observed dependency edges with violations.
+- `axi graph --violations-only`: show failing edges, intentional violations, and warning guardrails.
 - `axi infer`: print a starter `.axi` draft from existing imports.
 
 Useful flags:
@@ -313,7 +328,7 @@ Use strict mode once every discovered source file should be owned:
 axi check --root . --strict
 ```
 
-## Planned Suppressions
+## Intentional Violations
 
 When a real project needs a temporary exception, keep it visible in `.axi`:
 
@@ -324,15 +339,15 @@ forbids module ServicesInternal
 suppresses forbidden_dependency to ServicesInternal until 2027-06-30 because "legacy import while the public service API is split out"
 ```
 
-Suppressions only apply to observed dependency and visibility violations. Expired suppressions fail the check, invalid suppressions cannot hide violations, and unused suppressions are warnings so old exceptions stay visible after the code is cleaned up.
+Intentional violations only apply to observed dependency and visibility violations. Expired exceptions fail the check, invalid exceptions cannot hide violations, and unused exceptions are warnings so old architecture debt stays visible after the code is cleaned up.
 
 ## JSON Output
 
-`axi check --json` emits `axiom.check.v3`:
+`axi check --json` emits `axiom.check.v4`:
 
 ```json
 {
-  "schemaVersion": "axiom.check.v3",
+  "schemaVersion": "axiom.check.v4",
   "ok": false,
   "summary": {
     "modules": 2,
@@ -341,7 +356,7 @@ Suppressions only apply to observed dependency and visibility violations. Expire
     "importsScanned": 1,
     "observedDependencies": 1,
     "violations": 1,
-    "suppressedViolations": 0,
+    "intentionalViolations": 0,
     "warnings": 0
   },
   "violations": [
@@ -362,7 +377,7 @@ Suppressions only apply to observed dependency and visibility violations. Expire
 }
 ```
 
-`axi graph --json` emits `axiom.graph.v4`. Each observed dependency includes `violations` and `suppressedViolations` arrays. With `--violations-only`, `observedDependencies` is filtered to the edges that need attention or have active suppression debt, warning guardrails are still shown, and `summary.observedDependencies` keeps the full count.
+`axi graph --json` emits `axiom.graph.v5`. Each observed dependency includes `violations` and `intentionalViolations` arrays. With `--violations-only`, `observedDependencies` is filtered to the edges that need attention or have accepted architecture debt, warning guardrails are still shown, and `summary.observedDependencies` keeps the full count.
 
 ## CI
 
@@ -402,6 +417,9 @@ Axiom can currently report:
 - `hidden_import`
 - `unexposed_import`
 - `unowned_source_file`
+- `invalid_suppression`
+- `expired_suppression`
+- `unused_suppression`
 - `layer_breach`
 - `ambiguous_module_owner`
 - `cycle_dependency`
@@ -428,10 +446,11 @@ node dist/cli.js check --root examples/basic-app
 
 Near-term:
 
-- Smoother first-week adoption controls.
-- Better monorepo spec discovery ergonomics.
+- A clearer architecture attention view.
+- Better monorepo performance and resolver caching.
 - Downstream project CI recipes.
 - More TypeScript module resolution hardening.
+- Drift scoring that starts advisory, not as a hard gate.
 
 Later:
 

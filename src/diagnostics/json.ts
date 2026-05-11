@@ -2,7 +2,7 @@ import path from "node:path";
 import type { AxiomModule, SourceLocation, SuppressedViolation, Violation, ViolationCode } from "../axi/types.js";
 import type { CheckResult } from "../validator/check.js";
 
-export const checkJsonSchemaVersion = "axiom.check.v3";
+export const checkJsonSchemaVersion = "axiom.check.v4";
 
 export interface CheckJsonLocation {
   filePath: string;
@@ -49,12 +49,13 @@ export interface CheckJsonViolation {
   details: Record<string, unknown>;
 }
 
-export interface CheckJsonSuppressedViolation extends CheckJsonViolation {
-  suppression: {
+export interface CheckJsonIntentionalViolation extends CheckJsonViolation {
+  kind: "intentional_violation";
+  contract: {
     fromModule: string;
     toModule: string;
     code: ViolationCode;
-    expiresOn: string;
+    acceptedUntil: string;
     reason: string;
     location: CheckJsonLocation;
   };
@@ -71,7 +72,7 @@ export interface CheckJsonResult {
     importsScanned: number;
     observedDependencies: number;
     violations: number;
-    suppressedViolations: number;
+    intentionalViolations: number;
     warnings: number;
   };
   specFiles: string[];
@@ -79,7 +80,7 @@ export interface CheckJsonResult {
   modules: CheckJsonModule[];
   observedDependencies: CheckJsonObservedDependency[];
   violations: CheckJsonViolation[];
-  suppressedViolations: CheckJsonSuppressedViolation[];
+  intentionalViolations: CheckJsonIntentionalViolation[];
   warnings: CheckJsonViolation[];
 }
 
@@ -95,7 +96,7 @@ export function toCheckJson(result: CheckResult): CheckJsonResult {
       importsScanned: result.importCount,
       observedDependencies: result.observedDependencies.length,
       violations: result.violations.length,
-      suppressedViolations: result.suppressedViolations.length,
+      intentionalViolations: result.suppressedViolations.length,
       warnings: result.warnings.length
     },
     specFiles: result.specFiles.map((filePath) => relativePath(result.root, filePath)),
@@ -114,8 +115,8 @@ export function toCheckJson(result: CheckResult): CheckJsonResult {
       }
     })),
     violations: result.violations.map((violation) => toJsonViolation(result.root, violation)),
-    suppressedViolations: result.suppressedViolations.map((suppressedViolation) =>
-      toJsonSuppressedViolation(result.root, suppressedViolation)
+    intentionalViolations: result.suppressedViolations.map((suppressedViolation) =>
+      toJsonIntentionalViolation(result.root, suppressedViolation)
     ),
     warnings: result.warnings.map((warning) => toJsonViolation(result.root, warning))
   };
@@ -155,14 +156,15 @@ function toJsonViolation(root: string, violation: Violation): CheckJsonViolation
   };
 }
 
-function toJsonSuppressedViolation(root: string, suppressedViolation: SuppressedViolation): CheckJsonSuppressedViolation {
+function toJsonIntentionalViolation(root: string, suppressedViolation: SuppressedViolation): CheckJsonIntentionalViolation {
   return {
     ...toJsonViolation(root, suppressedViolation.violation),
-    suppression: {
+    kind: "intentional_violation",
+    contract: {
       fromModule: suppressedViolation.suppression.fromModule,
       toModule: suppressedViolation.suppression.toModule,
       code: suppressedViolation.suppression.code,
-      expiresOn: suppressedViolation.suppression.expiresOn,
+      acceptedUntil: suppressedViolation.suppression.expiresOn,
       reason: suppressedViolation.suppression.reason,
       location: toJsonLocation(root, suppressedViolation.suppression.location)
     }

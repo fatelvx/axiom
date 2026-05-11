@@ -35,7 +35,7 @@ test("graph JSON exposes declared, forbidden, visibility, and observed edges", (
     observedDependencies: 3,
     shownObservedDependencies: 3,
     violations: 2,
-    suppressedViolations: 0,
+    intentionalViolations: 0,
     warnings: 0
   });
   assert.deepEqual(payload.declaredDependencies, [
@@ -77,7 +77,7 @@ test("graph JSON exposes declared, forbidden, visibility, and observed edges", (
     ["unexposed_import"],
     ["hidden_import"]
   ]);
-  assert.deepEqual(payload.observedDependencies.map((edge) => edge.suppressedViolations), [[], [], []]);
+  assert.deepEqual(payload.observedDependencies.map((edge) => edge.intentionalViolations), [[], [], []]);
 });
 
 test("human graph output includes readable sections", () => {
@@ -124,15 +124,15 @@ test("violations-only graph JSON filters observed dependencies but keeps total c
   );
 });
 
-test("violations-only graph output includes active suppressed dependency debt", () => {
+test("violations-only graph output includes intentional dependency debt", () => {
   const result = runCheck({ root: path.join(repoRoot, "fixtures/suppressed-dependency") });
   const output = formatGraphResult(result, { violationsOnly: true });
 
   assert.match(output, /violations: 0/);
-  assert.match(output, /suppressed violations: 1/);
+  assert.match(output, /intentional violations: 1/);
   assert.match(output, /Simulation -> Rendering via src\/simulation\/step\.ts:1 "\.\.\/rendering\/draw"/);
-  assert.match(output, /suppressed forbidden_dependency: Simulation imports forbidden module Rendering\./);
-  assert.match(output, /suppression: until 2099-01-01 \(axiom\/main\.axi:7\)/);
+  assert.match(output, /intentional violation forbidden_dependency: Simulation imports forbidden module Rendering\./);
+  assert.match(output, /contract: accepted until 2099-01-01 \(axiom\/main\.axi:7\)/);
   assert.match(output, /reason: legacy renderer migration/);
 });
 

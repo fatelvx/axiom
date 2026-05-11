@@ -16,7 +16,7 @@ test("cli --json returns parseable success output", () => {
   assert.equal(result.status, 0);
 
   const payload = JSON.parse(result.stdout);
-  assert.equal(payload.schemaVersion, "axiom.check.v3");
+  assert.equal(payload.schemaVersion, "axiom.check.v4");
   assert.equal(payload.ok, true);
   assert.equal(payload.summary.violations, 0);
   assert.equal(payload.summary.warnings, 0);
@@ -36,7 +36,7 @@ test("cli --json returns parseable violation output with non-zero exit", () => {
   assert.equal(result.status, 1);
 
   const payload = JSON.parse(result.stdout);
-  assert.equal(payload.schemaVersion, "axiom.check.v3");
+  assert.equal(payload.schemaVersion, "axiom.check.v4");
   assert.equal(payload.ok, false);
   assert.equal(payload.summary.violations, 1);
   assert.equal(payload.violations[0].code, "forbidden_dependency");
@@ -105,7 +105,7 @@ test("cli graph --json returns parseable graph output", () => {
   assert.equal(result.status, 0);
 
   const payload = JSON.parse(result.stdout);
-  assert.equal(payload.schemaVersion, "axiom.graph.v4");
+  assert.equal(payload.schemaVersion, "axiom.graph.v5");
   assert.equal(payload.summary.observedDependencies, 3);
   assert.equal(payload.summary.shownObservedDependencies, 3);
   assert.equal(payload.violations[0].code, "unexposed_import");
@@ -136,7 +136,7 @@ test("cli graph --violations-only --json returns filtered graph output", () => {
   assert.equal(result.status, 0);
 
   const payload = JSON.parse(result.stdout);
-  assert.equal(payload.schemaVersion, "axiom.graph.v4");
+  assert.equal(payload.schemaVersion, "axiom.graph.v5");
   assert.deepEqual(payload.filters, { violationsOnly: true });
   assert.equal(payload.summary.observedDependencies, 3);
   assert.equal(payload.summary.shownObservedDependencies, 2);

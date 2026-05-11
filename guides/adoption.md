@@ -1,6 +1,8 @@
 # Adopting Axiom In A Real Project
 
-Axiom is most useful when it starts small and protects a boundary that already hurts.
+Axiom is most useful when it starts small, makes drift visible, and protects a boundary that already hurts.
+
+It should not feel like a fully automatic architecture guardian on day one. Treat it as an architecture attention layer first, then tighten mature contracts into CI gates.
 
 ## Good First Rules
 
@@ -125,7 +127,7 @@ Use strict mode when every source file should be owned:
 axi check --root . --strict
 ```
 
-## Planned Suppressions
+## Intentional Violations
 
 Temporary exceptions belong in the architecture contract, with a date and a reason:
 
@@ -136,7 +138,7 @@ forbids module ServicesInternal
 suppresses forbidden_dependency to ServicesInternal until 2027-06-30 because "legacy import while the public service API is split out"
 ```
 
-Active suppressions let `axi check` pass but remain visible in human output, JSON output, and focused graph output. Expired suppressions fail the check, and unused suppressions are warnings, so old exceptions do not become invisible architecture policy.
+Active intentional violations let `axi check` pass but remain visible in human output, JSON output, and focused graph output. Expired exceptions fail the check, and unused exceptions are warnings, so old architecture debt does not become invisible policy.
 
 ## Reading Failures
 
@@ -150,7 +152,7 @@ axi check --root . --json
 
 Use human output while developing. Use JSON output for CI annotations, agent feedback, and custom reporting.
 
-`axi graph --root . --violations-only` is also useful as an architecture attention view: it keeps failing edges, active suppression debt, and warning guardrails in one focused output.
+`axi graph --root . --violations-only` is also useful as an architecture attention view: it keeps failing edges, intentional violations, and warning guardrails in one focused output.
 
 ## When To Tighten
 

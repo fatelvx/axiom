@@ -97,6 +97,7 @@ For a smaller graph view:
 
 ```bash
 node dist/cli.js graph --root examples/basic-app --violations-only
+node dist/cli.js graph --root examples/basic-app --attention
 ```
 
 ## What It Checks
@@ -176,7 +177,7 @@ Use them like this:
 
 - `axi check`: validate code against `.axi`; exits `1` on violations.
 - `axi graph`: inspect declared and observed graphs; exits `0` even with violations.
-- `axi graph --violations-only`: show failing edges, intentional violations, and warning guardrails.
+- `axi graph --violations-only` or `axi graph --attention`: show failing edges, intentional violations, and warning guardrails.
 - `axi infer`: print a starter `.axi` draft from existing imports.
 
 Useful flags:

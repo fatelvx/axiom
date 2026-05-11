@@ -111,6 +111,14 @@ test("violations-only graph output focuses observed edges with diagnostics", () 
   assert.match(output, /warnings:\n  none/);
 });
 
+test("attention graph output uses awareness-oriented heading", () => {
+  const result = runCheck({ root: path.join(repoRoot, "fixtures/visibility-rules") });
+  const output = formatGraphResult(result, { violationsOnly: true, attention: true });
+
+  assert.match(output, /Axiom graph \(attention\)\./);
+  assert.match(output, /observed dependencies: 2 of 3/);
+});
+
 test("violations-only graph JSON filters observed dependencies but keeps total counts", () => {
   const result = runCheck({ root: path.join(repoRoot, "fixtures/visibility-rules") });
   const payload = toGraphJson(result, { violationsOnly: true });

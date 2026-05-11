@@ -14,6 +14,7 @@ interface CliOptions {
   groupDepth?: number;
   groupBy?: InferGroupBy;
   graphViolationsOnly: boolean;
+  graphAttention: boolean;
   intentionalViolationExpiryWarningDays?: number;
 }
 
@@ -59,7 +60,12 @@ try {
   } else if (options.json) {
     console.log(formatGraphJson(result, { violationsOnly: options.graphViolationsOnly }));
   } else {
-    console.log(formatGraphResult(result, { violationsOnly: options.graphViolationsOnly }));
+    console.log(
+      formatGraphResult(result, {
+        violationsOnly: options.graphViolationsOnly,
+        attention: options.graphAttention
+      })
+    );
   }
 
   process.exit(command === "check" && result.violations.length > 0 ? 1 : 0);
@@ -73,7 +79,8 @@ function parseOptions(values: string[], command: "check" | "graph" | "infer"): C
     root: process.cwd(),
     json: false,
     adoptionMode: "loose",
-    graphViolationsOnly: false
+    graphViolationsOnly: false,
+    graphAttention: false
   };
 
   for (let index = 0; index < values.length; index += 1) {
@@ -157,6 +164,17 @@ function parseOptions(values: string[], command: "check" | "graph" | "infer"): C
       continue;
     }
 
+    if (value === "--attention") {
+      if (command !== "graph") {
+        console.error("--attention is only supported by graph.");
+        process.exit(1);
+      }
+
+      options.graphViolationsOnly = true;
+      options.graphAttention = true;
+      continue;
+    }
+
     if (value === "--group-depth") {
       if (command !== "infer") {
         console.error("--group-depth is only supported by infer.");
@@ -209,7 +227,7 @@ function printHelp(): void {
 
 Usage:
   axi check [--root <path>] [--config <path>] [--json] [--warn-unowned] [--strict] [--intentional-violation-warning-days <n>]
-  axi graph [--root <path>] [--config <path>] [--json] [--warn-unowned] [--strict] [--violations-only] [--intentional-violation-warning-days <n>]
+  axi graph [--root <path>] [--config <path>] [--json] [--warn-unowned] [--strict] [--violations-only|--attention] [--intentional-violation-warning-days <n>]
   axi infer [--root <path>] [--config <path>] [--json] [--group-depth <n>] [--group-by folder|workspace]
 
 Commands:
@@ -219,6 +237,7 @@ Commands:
 
 Graph:
   --violations-only  Show only observed dependency edges that have violations.
+  --attention        Alias for --violations-only with awareness-oriented human output.
 
 Adoption:
   default          Ignore source files not owned by any module path.

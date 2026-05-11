@@ -71,6 +71,7 @@ interface GraphJsonIntentionalDependencyViolation extends GraphJsonDependencyVio
 
 export interface GraphFormatOptions {
   violationsOnly?: boolean;
+  attention?: boolean;
 }
 
 export interface GraphJsonResult {
@@ -104,7 +105,7 @@ export interface GraphJsonResult {
 export function formatGraphResult(result: CheckResult, options: GraphFormatOptions = {}): string {
   const graph = toGraphJson(result, options);
   const lines = [
-    options.violationsOnly ? "Axiom graph (violations only)." : "Axiom graph.",
+    formatGraphHeader(options),
     `modules: ${graph.summary.modules}`,
     `declared dependencies: ${graph.summary.declaredDependencies}`,
     `forbidden dependencies: ${graph.summary.forbiddenDependencies}`,
@@ -161,6 +162,18 @@ export function formatGraphResult(result: CheckResult, options: GraphFormatOptio
   }
 
   return lines.join("\n");
+}
+
+function formatGraphHeader(options: GraphFormatOptions): string {
+  if (options.attention) {
+    return "Axiom graph (attention).";
+  }
+
+  if (options.violationsOnly) {
+    return "Axiom graph (violations only).";
+  }
+
+  return "Axiom graph.";
 }
 
 export function formatGraphJson(result: CheckResult, options: GraphFormatOptions = {}): string {

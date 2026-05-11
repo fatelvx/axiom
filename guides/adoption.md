@@ -163,12 +163,13 @@ Useful commands:
 ```bash
 axi check --root .
 axi graph --root . --violations-only
+axi graph --root . --attention
 axi check --root . --json
 ```
 
 Use human output while developing. Use JSON output for CI annotations, agent feedback, and custom reporting.
 
-`axi graph --root . --violations-only` is also useful as an architecture attention view: it keeps failing edges, intentional violations, and warning guardrails in one focused output.
+`axi graph --root . --attention` is also useful as an architecture attention view: it keeps failing edges, intentional violations, and warning guardrails in one focused output. `--violations-only` remains available as the literal alias.
 
 ## When To Tighten
 

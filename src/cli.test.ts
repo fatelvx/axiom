@@ -126,6 +126,19 @@ test("cli graph --violations-only filters observed dependency output", () => {
   assert.match(result.stdout, /src\/ui\/view\.ts:3 "\.\.\/services\/internal\/secret"/);
 });
 
+test("cli graph --attention aliases the focused architecture attention view", () => {
+  const result = spawnSync(
+    process.execPath,
+    [cliPath, "graph", "--root", "fixtures/visibility-rules", "--attention"],
+    { cwd: repoRoot, encoding: "utf8" }
+  );
+
+  assert.equal(result.status, 0);
+  assert.match(result.stdout, /Axiom graph \(attention\)\./);
+  assert.match(result.stdout, /observed dependencies: 2 of 3/);
+  assert.doesNotMatch(result.stdout, /src\/ui\/view\.ts:1 "\.\.\/services"/);
+});
+
 test("cli graph --violations-only --json returns filtered graph output", () => {
   const result = spawnSync(
     process.execPath,

@@ -10,6 +10,7 @@
 - Added project config and CLI controls for the intentional violation expiry warning window.
 - Added `accepts ... until ... because ...` as the preferred `.axi` syntax for visible intentional violations.
 - Included warning guardrails in focused graph output so `axi graph --violations-only` acts more like an architecture attention view.
+- Added `axi graph --attention` as a product-facing alias for the focused architecture attention view.
 - Surfaced module `purpose` text in graph and check JSON output.
 - Reframed accepted dependency debt as intentional violations in human and JSON output.
 - Added public limitations guidance for static-analysis blind spots, escape hatches, and compliant-but-unhealthy module surfaces.

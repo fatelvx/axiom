@@ -152,5 +152,29 @@ test("violations-only graph output includes warning guardrails", () => {
   assert.match(output, /warnings: 1/);
   assert.match(output, /violating dependencies:\n  none/);
   assert.match(output, /warnings:\n  unused_suppression axiom\/main\.axi:7: Simulation has an unused intentional violation for Rendering\./);
+  assert.match(output, /rule: Simulation accepts forbidden_dependency to Rendering until 2099-01-01 \(axiom\/main\.axi:7\)/);
+  assert.match(output, /expires: 2099-01-01/);
+  assert.match(output, /reason: legacy renderer migration/);
   assert.match(output, /fix: Remove the intentional violation if the architecture debt is gone/);
+});
+
+test("graph JSON exposes warning details for agent review", () => {
+  const result = runCheck({ root: path.join(repoRoot, "fixtures/unused-suppression") });
+  const payload = toGraphJson(result, { violationsOnly: true });
+
+  assert.equal(payload.schemaVersion, graphJsonSchemaVersion);
+  assert.deepEqual(payload.warnings[0]?.details, {
+    module: "Simulation",
+    target: "Rendering",
+    suppressedCode: "forbidden_dependency",
+    expiresOn: "2099-01-01",
+    reason: "legacy renderer migration",
+    rule: "Simulation accepts forbidden_dependency to Rendering until 2099-01-01",
+    ruleLocation: {
+      filePath: "axiom/main.axi",
+      line: 7
+    },
+    suggestion:
+      "Remove the intentional violation if the architecture debt is gone, or keep it only while a matching violation is expected."
+  });
 });

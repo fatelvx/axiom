@@ -2,7 +2,7 @@ import path from "node:path";
 import type { ModuleRef, PathRef, SourceLocation, Violation, ViolationCode } from "../axi/types.js";
 import type { CheckResult } from "../validator/check.js";
 
-export const graphJsonSchemaVersion = "axiom.graph.v5";
+export const graphJsonSchemaVersion = "axiom.graph.v6";
 
 interface GraphJsonLocation {
   filePath: string;
@@ -52,6 +52,7 @@ interface GraphJsonViolation {
   message: string;
   location?: GraphJsonLocation;
   suggestion?: string;
+  details?: Record<string, unknown>;
 }
 
 interface GraphJsonDependencyViolation {
@@ -236,18 +237,8 @@ export function toGraphJson(result: CheckResult, options: GraphFormatOptions = {
     exposedPaths,
     hiddenPaths,
     observedDependencies,
-    violations: result.violations.map((violation) => ({
-      code: violation.code,
-      message: violation.message,
-      ...(violation.location ? { location: toJsonLocation(result.root, violation.location) } : {}),
-      ...(readSuggestion(violation) ? { suggestion: readSuggestion(violation) } : {})
-    })),
-    warnings: result.warnings.map((warning) => ({
-      code: warning.code,
-      message: warning.message,
-      ...(warning.location ? { location: toJsonLocation(result.root, warning.location) } : {}),
-      ...(readSuggestion(warning) ? { suggestion: readSuggestion(warning) } : {})
-    }))
+    violations: result.violations.map((violation) => toJsonViolation(result.root, violation)),
+    warnings: result.warnings.map((warning) => toJsonViolation(result.root, warning))
   };
 }
 
@@ -330,12 +321,41 @@ function formatWarnings(graph: GraphJsonResult): string[] {
   for (const warning of graph.warnings) {
     const location = warning.location ? ` ${warning.location.filePath}:${warning.location.line}` : "";
     lines.push(`  ${warning.code}${location}: ${warning.message}`);
+    const rule = readString(warning.details?.rule);
+    const ruleLocation = readLocation(warning.details?.ruleLocation);
+    if (rule) {
+      const suffix = ruleLocation ? ` (${ruleLocation.filePath}:${ruleLocation.line})` : "";
+      lines.push(`  rule: ${rule}${suffix}`);
+    }
+
+    const expiresOn = readString(warning.details?.expiresOn);
+    const daysUntilExpiration = readNumber(warning.details?.daysUntilExpiration);
+    if (expiresOn) {
+      const suffix = daysUntilExpiration === undefined ? "" : ` (${formatExpirationDistance(daysUntilExpiration)})`;
+      lines.push(`  expires: ${expiresOn}${suffix}`);
+    }
+
+    const reason = readString(warning.details?.reason);
+    if (reason) {
+      lines.push(`  reason: ${reason}`);
+    }
+
     if (warning.suggestion) {
       lines.push(`  fix: ${warning.suggestion}`);
     }
   }
 
   return lines;
+}
+
+function toJsonViolation(root: string, violation: Violation): GraphJsonViolation {
+  return {
+    code: violation.code,
+    message: violation.message,
+    ...(violation.location ? { location: toJsonLocation(root, violation.location) } : {}),
+    ...(readSuggestion(violation) ? { suggestion: readSuggestion(violation) } : {}),
+    ...(violation.details ? { details: normalizeDetails(root, violation.details) } : {})
+  };
 }
 
 function formatModules(modules: GraphJsonModule[]): string[] {
@@ -455,6 +475,72 @@ function readSuggestion(violation: Violation): string | undefined {
 
 function readString(value: unknown): string | undefined {
   return typeof value === "string" && value.length > 0 ? value : undefined;
+}
+
+function readNumber(value: unknown): number | undefined {
+  return typeof value === "number" && Number.isFinite(value) ? value : undefined;
+}
+
+function readLocation(value: unknown): GraphJsonLocation | undefined {
+  if (!value || typeof value !== "object") {
+    return undefined;
+  }
+
+  const location = value as Partial<GraphJsonLocation>;
+  if (typeof location.filePath !== "string" || typeof location.line !== "number") {
+    return undefined;
+  }
+
+  return {
+    filePath: location.filePath,
+    line: location.line,
+    column: location.column
+  };
+}
+
+function formatExpirationDistance(daysUntilExpiration: number): string {
+  if (daysUntilExpiration === 0) {
+    return "today";
+  }
+
+  if (daysUntilExpiration === 1) {
+    return "in 1 day";
+  }
+
+  return `in ${daysUntilExpiration} days`;
+}
+
+function normalizeDetails(root: string, value: Record<string, unknown>): Record<string, unknown> {
+  return normalizeValue(root, value) as Record<string, unknown>;
+}
+
+function normalizeValue(root: string, value: unknown): unknown {
+  if (Array.isArray(value)) {
+    return value.map((item) => normalizeValue(root, item));
+  }
+
+  if (!value || typeof value !== "object") {
+    return value;
+  }
+
+  if (isSourceLocation(value)) {
+    return toJsonLocation(root, value);
+  }
+
+  const entries = Object.entries(value).map(([key, item]) => {
+    if (key === "filePath" || key === "resolvedPath") {
+      return [key, typeof item === "string" ? relativePath(root, item) : item];
+    }
+
+    return [key, normalizeValue(root, item)];
+  });
+
+  return Object.fromEntries(entries);
+}
+
+function isSourceLocation(value: object): value is SourceLocation {
+  const maybeLocation = value as Partial<SourceLocation>;
+  return typeof maybeLocation.filePath === "string" && typeof maybeLocation.line === "number";
 }
 
 function toJsonLocation(root: string, location: SourceLocation): GraphJsonLocation {

@@ -394,7 +394,7 @@ Tune the warning window per project with `intentionalViolationExpiryWarningDays`
 }
 ```
 
-`axi graph --json` emits `axiom.graph.v5`. Each observed dependency includes `violations` and `intentionalViolations` arrays. With `--violations-only`, `observedDependencies` is filtered to the edges that need attention or have accepted architecture debt, warning guardrails are still shown, and `summary.observedDependencies` keeps the full count.
+`axi graph --json` emits `axiom.graph.v6`. Each observed dependency includes `violations` and `intentionalViolations` arrays. With `--violations-only` or `--attention`, `observedDependencies` is filtered to the edges that need attention or have accepted architecture debt, warning guardrails are still shown with details, and `summary.observedDependencies` keeps the full count.
 
 ## CI
 

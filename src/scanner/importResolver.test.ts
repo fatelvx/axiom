@@ -176,6 +176,49 @@ test("resolver supports package exports and workspace package subpaths", () => {
   }
 });
 
+test("resolver discovers workspace packages from pnpm-workspace.yaml", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "axi-resolver-pnpm-workspace-"));
+
+  try {
+    writeFile(
+      root,
+      "package.json",
+      JSON.stringify({
+        name: "@demo/root",
+        private: true
+      })
+    );
+    writeFile(
+      root,
+      "pnpm-workspace.yaml",
+      `packages:
+  - "apps/*"
+  - 'packages/*'
+  - "!packages/ignored"
+`
+    );
+    writeFile(
+      root,
+      "packages/shared/package.json",
+      JSON.stringify({
+        name: "@demo/shared",
+        exports: {
+          ".": "./src/index.ts"
+        }
+      })
+    );
+    writeFile(root, "apps/web/src/main.ts", "export const app = true;\n");
+    writeFile(root, "packages/shared/src/index.ts", "export const shared = true;\n");
+
+    const resolver = createImportResolver({ root });
+    const fromFile = path.join(root, "apps/web/src/main.ts");
+
+    assert.equal(normalize(root, resolver.resolve(fromFile, "@demo/shared")), "packages/shared/src/index.ts");
+  } finally {
+    fs.rmSync(root, { force: true, recursive: true });
+  }
+});
+
 function writeFile(root: string, relativePath: string, contents: string): void {
   const filePath = path.join(root, relativePath);
   fs.mkdirSync(path.dirname(filePath), { recursive: true });

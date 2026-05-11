@@ -71,6 +71,8 @@ Use workspace-aware inference when drafting the first contract:
 axi infer --root . --group-by workspace
 ```
 
+Axiom also reads package boundaries from `package.json` workspaces and `pnpm-workspace.yaml` when resolving internal package exports.
+
 ## Limits And Escape Hatches
 
 Axiom is a static architecture validator, not a full runtime oracle.

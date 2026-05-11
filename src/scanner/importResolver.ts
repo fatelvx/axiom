@@ -158,7 +158,12 @@ export function loadPackageResolver(root: string): PackageResolver {
     addPackage(root, rootPackageJson);
   }
 
-  for (const workspacePattern of readWorkspacePatterns(rootPackageJson?.workspaces)) {
+  const workspacePatterns = new Set([
+    ...readPackageJsonWorkspacePatterns(rootPackageJson?.workspaces),
+    ...readPnpmWorkspacePatterns(root)
+  ]);
+
+  for (const workspacePattern of workspacePatterns) {
     for (const workspaceDirectory of expandWorkspacePattern(root, workspacePattern)) {
       const packageJson = readJsonFile(path.join(workspaceDirectory, "package.json"));
       if (packageJson) {
@@ -468,7 +473,7 @@ function findNearestPackage(packageResolver: PackageResolver, filePath: string):
   );
 }
 
-function readWorkspacePatterns(value: unknown): string[] {
+function readPackageJsonWorkspacePatterns(value: unknown): string[] {
   if (Array.isArray(value)) {
     return value.filter((item): item is string => typeof item === "string" && !item.startsWith("!"));
   }
@@ -477,6 +482,84 @@ function readWorkspacePatterns(value: unknown): string[] {
   return Array.isArray(packages)
     ? packages.filter((item): item is string => typeof item === "string" && !item.startsWith("!"))
     : [];
+}
+
+function readPnpmWorkspacePatterns(root: string): string[] {
+  const workspacePath = path.join(root, "pnpm-workspace.yaml");
+  if (!fs.existsSync(workspacePath)) {
+    return [];
+  }
+
+  const lines = fs.readFileSync(workspacePath, "utf8").split(/\r?\n/);
+  const patterns: string[] = [];
+
+  for (let index = 0; index < lines.length; index += 1) {
+    const rawLine = lines[index] ?? "";
+    const line = stripYamlComment(rawLine);
+    const packagesMatch = line.match(/^(\s*)packages\s*:\s*$/);
+    if (!packagesMatch) {
+      continue;
+    }
+
+    const baseIndent = packagesMatch[1]?.length ?? 0;
+    for (let itemIndex = index + 1; itemIndex < lines.length; itemIndex += 1) {
+      const itemRawLine = lines[itemIndex] ?? "";
+      const itemLine = stripYamlComment(itemRawLine);
+      if (itemLine.trim().length === 0) {
+        continue;
+      }
+
+      const indent = itemLine.match(/^(\s*)/)?.[1]?.length ?? 0;
+      if (indent <= baseIndent) {
+        break;
+      }
+
+      const itemMatch = itemLine.trim().match(/^-\s+(.+)$/);
+      if (!itemMatch) {
+        continue;
+      }
+
+      const pattern = unquoteYamlScalar(itemMatch[1]?.trim() ?? "");
+      if (pattern.length > 0 && !pattern.startsWith("!")) {
+        patterns.push(pattern);
+      }
+    }
+
+    break;
+  }
+
+  return patterns;
+}
+
+function stripYamlComment(line: string): string {
+  let inQuote: "\"" | "'" | undefined;
+
+  for (let index = 0; index < line.length; index += 1) {
+    const char = line[index];
+    const previous = index > 0 ? line[index - 1] : undefined;
+
+    if ((char === "\"" || char === "'") && previous !== "\\") {
+      inQuote = inQuote === char ? undefined : inQuote ?? char;
+      continue;
+    }
+
+    if (char === "#" && !inQuote) {
+      return line.slice(0, index);
+    }
+  }
+
+  return line;
+}
+
+function unquoteYamlScalar(value: string): string {
+  if (
+    (value.startsWith("\"") && value.endsWith("\"")) ||
+    (value.startsWith("'") && value.endsWith("'"))
+  ) {
+    return value.slice(1, -1);
+  }
+
+  return value;
 }
 
 function expandWorkspacePattern(root: string, pattern: string): string[] {

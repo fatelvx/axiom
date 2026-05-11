@@ -119,6 +119,42 @@ test("hidden re-export fixture reports exposed barrel leaks", () => {
   });
 });
 
+test("public API surface warnings are opt-in advisory diagnostics", () => {
+  const root = path.join(repoRoot, "fixtures/public-api-surface");
+  const quietResult = runCheck({ root });
+
+  assert.deepEqual(quietResult.violations, []);
+  assert.deepEqual(quietResult.warnings, []);
+
+  const result = runCheck({ root, warnPublicApiSurface: true });
+
+  assert.deepEqual(result.violations, []);
+  assert.equal(result.warnings.length, 1);
+  assert.deepEqual(result.warnings[0], {
+    code: "broad_public_surface",
+    message: "Services exposes a broad public API surface through export *.",
+    location: {
+      filePath: path.join(root, "src/services/index.ts"),
+      line: 1
+    },
+    details: {
+      module: "Services",
+      specifier: "./feature",
+      exposedPath: "src/services/index.ts",
+      exportKind: "star",
+      isTypeOnly: false,
+      observed: "Services broad public surface",
+      rule: "Services exposes src/services/index.ts",
+      ruleLocation: {
+        filePath: path.join(root, "axiom/main.axi"),
+        line: 3
+      },
+      suggestion:
+        "Review whether this barrel is intentionally broad; prefer explicit exports or split the public surface when coupling starts to hide behind one entry point."
+    }
+  });
+});
+
 test("check uses axiom.config.json discovery settings", () => {
   const result = runCheck({ root: path.join(repoRoot, "fixtures/config-filter") });
 

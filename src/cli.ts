@@ -16,6 +16,7 @@ interface CliOptions {
   graphViolationsOnly: boolean;
   graphAttention: boolean;
   intentionalViolationExpiryWarningDays?: number;
+  warnPublicApiSurface: boolean;
 }
 
 const args = process.argv.slice(2);
@@ -50,7 +51,8 @@ try {
     root: options.root,
     configPath: options.configPath,
     adoptionMode: options.adoptionMode,
-    intentionalViolationExpiryWarningDays: options.intentionalViolationExpiryWarningDays
+    intentionalViolationExpiryWarningDays: options.intentionalViolationExpiryWarningDays,
+    warnPublicApiSurface: options.warnPublicApiSurface
   });
 
   if (command === "check" && options.json) {
@@ -85,7 +87,8 @@ function parseOptions(values: string[], command: "check" | "graph" | "infer"): C
     json: false,
     adoptionMode: "loose",
     graphViolationsOnly: false,
-    graphAttention: false
+    graphAttention: false,
+    warnPublicApiSurface: false
   };
 
   for (let index = 0; index < values.length; index += 1) {
@@ -156,6 +159,16 @@ function parseOptions(values: string[], command: "check" | "graph" | "infer"): C
 
       options.intentionalViolationExpiryWarningDays = warningDays;
       index += 1;
+      continue;
+    }
+
+    if (value === "--warn-public-api-surface") {
+      if (command === "infer") {
+        console.error("--warn-public-api-surface is only supported by check and graph.");
+        process.exit(1);
+      }
+
+      options.warnPublicApiSurface = true;
       continue;
     }
 
@@ -231,8 +244,8 @@ function printHelp(): void {
   console.log(`Axiom
 
 Usage:
-  axi check [--root <path>] [--config <path>] [--json] [--warn-unowned] [--strict] [--intentional-violation-warning-days <n>]
-  axi graph [--root <path>] [--config <path>] [--json] [--warn-unowned] [--strict] [--violations-only|--attention] [--intentional-violation-warning-days <n>]
+  axi check [--root <path>] [--config <path>] [--json] [--warn-unowned] [--strict] [--intentional-violation-warning-days <n>] [--warn-public-api-surface]
+  axi graph [--root <path>] [--config <path>] [--json] [--warn-unowned] [--strict] [--violations-only|--attention] [--intentional-violation-warning-days <n>] [--warn-public-api-surface]
   axi infer [--root <path>] [--config <path>] [--json] [--group-depth <n>] [--group-by folder|workspace]
 
 Commands:
@@ -250,5 +263,7 @@ Adoption:
   --strict        Report unowned source files as violations.
   --intentional-violation-warning-days <n>
                    Warn when an intentional violation expires within n days. Defaults to 30.
+  --warn-public-api-surface
+                   Warn about broad exposed barrels such as export * without failing the check.
 `);
 }

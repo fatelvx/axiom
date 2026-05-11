@@ -126,6 +126,7 @@ Axiom v0.5.8 currently supports:
 - Layer direction with `layers Core -> UI`.
 - Public/private module surfaces with `exposes` and `hides`.
 - Direct hidden-path re-exports from exposed entry points.
+- Opt-in public API surface warnings for broad exposed barrels with `--warn-public-api-surface`.
 - TypeScript/JavaScript import scanning through the TypeScript parser.
 - Relative imports, barrel `index.*` files, dynamic imports, `require`, and multiline imports.
 - TypeScript `paths` aliases from `tsconfig.json`.
@@ -145,7 +146,7 @@ Axiom v0.5.8 currently supports:
 Axiom v0 is intentionally honest about its blind spots:
 
 - It does not fully observe runtime-only dependency paths such as string-based dependency injection, plugin registries, generated imports, or `eval`.
-- It does not prove that a module is semantically well-designed. Axiom can catch direct hidden-path re-exports, but code can still become too coupled through broad barrel exports or overly large public entry points. This is the `symbol-level API health` gap.
+- It does not prove that a module is semantically well-designed. Axiom can catch direct hidden-path re-exports, and `--warn-public-api-surface` can flag broad `export *` barrels, but code can still become too coupled through overly large public entry points. This is the `symbol-level API health` gap.
 - It does not replace ESLint, TypeScript, tests, or review. Axiom focuses on architecture intent: declared graph, observed graph, drift, warnings, intentional violations, and CI gates for clear contracts.
 - It does not make `.axi` maintenance free. Use `axi infer` to start from the current graph, then tighten only the boundaries that matter.
 - It does not promise whole-monorepo speed without scope control. Use `include`, `exclude`, and focused contract locations to keep large repositories comfortable in CI.
@@ -203,6 +204,7 @@ Useful flags:
 ```bash
 axi check --root . --json
 axi check --root . --warn-unowned
+axi check --root . --warn-public-api-surface
 axi check --root . --strict
 axi graph --root . --json
 axi infer --root . --group-depth 2
@@ -311,7 +313,8 @@ Axiom reads `axiom.config.json` from the project root when present:
   "exclude": ["src/**/*.test.ts", "src/generated/**"],
   "specs": ["axiom/**/*.axi"],
   "tsconfig": "tsconfig.json",
-  "intentionalViolationExpiryWarningDays": 30
+  "intentionalViolationExpiryWarningDays": 30,
+  "warnPublicApiSurface": false
 }
 ```
 
@@ -322,6 +325,7 @@ Fields:
 - `specs`: `.axi` files to read. Defaults to `axiom/**/*.axi` and `*.axi`.
 - `tsconfig`: TypeScript config path used for `paths` alias resolution. Defaults to `tsconfig.json` when present.
 - `intentionalViolationExpiryWarningDays`: warn when accepted intentional violations expire within this many days. Defaults to `30`.
+- `warnPublicApiSurface`: opt into advisory warnings for broad exposed barrels such as `export *`.
 
 Default discovery skips common dependency, build, cache, and temporary output folders:
 
@@ -375,6 +379,17 @@ accepts forbidden_dependency to ServicesInternal until 2027-06-30 because "legac
 Intentional violations only apply to observed dependency and visibility violations. Expired intentional violations fail the check, invalid entries cannot hide violations, entries expiring within 30 days become warnings, and unused entries are warnings so old architecture debt stays visible after the code is cleaned up.
 
 Tune the warning window per project with `intentionalViolationExpiryWarningDays` in `axiom.config.json`, or for one command with `--intentional-violation-warning-days <n>`.
+
+## Public API Surface Warnings
+
+To inspect the `symbol-level API health` pressure point without turning it into a hard gate, opt into public surface warnings:
+
+```bash
+axi check --root . --warn-public-api-surface
+axi graph --root . --attention --warn-public-api-surface
+```
+
+Today this flags broad exposed barrels such as `export * from "./feature"` or `export * as feature from "./feature"`. It is advisory: the check still exits `0` unless there are real violations. Treat it as a review prompt when an exposed entry point starts hiding coupling behind one public surface.
 
 ## JSON Output
 
@@ -451,6 +466,7 @@ Axiom can currently report:
 - `undeclared_dependency`
 - `hidden_import`
 - `hidden_reexport`
+- `broad_public_surface`
 - `unexposed_import`
 - `unowned_source_file`
 - `invalid_suppression`

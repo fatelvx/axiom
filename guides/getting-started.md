@@ -124,6 +124,12 @@ axi check --root . --warn-unowned
 axi check --root . --strict
 ```
 
+Use this when you want advisory review prompts for broad exposed barrels without failing the check:
+
+```bash
+axi check --root . --warn-public-api-surface
+```
+
 ## 6. Generate A Starter Draft
 
 For an existing project:

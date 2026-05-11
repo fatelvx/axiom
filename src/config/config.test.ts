@@ -12,7 +12,8 @@ test("loadConfig returns defaults when no config file exists", () => {
     assert.deepEqual(loadConfig(root), {
       include: [],
       exclude: [],
-      specs: defaultSpecPatterns
+      specs: defaultSpecPatterns,
+      warnPublicApiSurface: false
     });
   } finally {
     fs.rmSync(root, { force: true, recursive: true });
@@ -30,7 +31,8 @@ test("loadConfig reads axiom.config.json from the project root", () => {
         exclude: ["src/generated/**"],
         specs: ["architecture/**/*.axi"],
         tsconfig: "tsconfig.app.json",
-        intentionalViolationExpiryWarningDays: 14
+        intentionalViolationExpiryWarningDays: 14,
+        warnPublicApiSurface: true
       })
     );
 
@@ -41,6 +43,7 @@ test("loadConfig reads axiom.config.json from the project root", () => {
     assert.deepEqual(config.specs, ["architecture/**/*.axi"]);
     assert.equal(config.tsconfig, "tsconfig.app.json");
     assert.equal(config.intentionalViolationExpiryWarningDays, 14);
+    assert.equal(config.warnPublicApiSurface, true);
     assert.equal(config.filePath, path.join(root, "axiom.config.json"));
   } finally {
     fs.rmSync(root, { force: true, recursive: true });
@@ -66,6 +69,18 @@ test("loadConfig rejects invalid intentional violation warning windows", () => {
     fs.writeFileSync(path.join(root, "axiom.config.json"), JSON.stringify({ intentionalViolationExpiryWarningDays: -1 }));
 
     assert.throws(() => loadConfig(root), /intentionalViolationExpiryWarningDays/);
+  } finally {
+    fs.rmSync(root, { force: true, recursive: true });
+  }
+});
+
+test("loadConfig rejects invalid public API surface warning setting", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "axi-config-invalid-public-surface-"));
+
+  try {
+    fs.writeFileSync(path.join(root, "axiom.config.json"), JSON.stringify({ warnPublicApiSurface: "yes" }));
+
+    assert.throws(() => loadConfig(root), /warnPublicApiSurface/);
   } finally {
     fs.rmSync(root, { force: true, recursive: true });
   }

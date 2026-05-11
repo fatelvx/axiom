@@ -11,6 +11,7 @@ import {
   applySuppressions,
   buildObservedDependencies,
   findExpiringSuppressions,
+  findPublicApiSurfaceWarnings,
   validateModuleSurfaceConsistency,
   findUnusedSuppressions,
   validateObservedDependencies,
@@ -25,6 +26,7 @@ export interface CheckOptions {
   adoptionMode?: AdoptionMode;
   today?: string;
   intentionalViolationExpiryWarningDays?: number;
+  warnPublicApiSurface?: boolean;
 }
 
 export interface CheckResult {
@@ -45,6 +47,7 @@ export function runCheck(options: CheckOptions): CheckResult {
   const config = loadConfig(root, options.configPath);
   const intentionalViolationExpiryWarningDays =
     options.intentionalViolationExpiryWarningDays ?? config.intentionalViolationExpiryWarningDays;
+  const warnPublicApiSurface = options.warnPublicApiSurface ?? config.warnPublicApiSurface;
   const specFiles = findAxiomFiles(root, config);
   const sourceFiles = findSourceFiles(root, config);
   const resolver = createImportResolver({ root, tsconfigPath: config.tsconfig });
@@ -99,6 +102,9 @@ export function runCheck(options: CheckOptions): CheckResult {
     })
   );
   warnings.push(...findUnusedSuppressions(spec, suppressedViolations, { today: options.today }));
+  if (warnPublicApiSurface) {
+    warnings.push(...findPublicApiSurfaceWarnings(spec, imports, ownership, root));
+  }
 
   return {
     root,

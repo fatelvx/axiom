@@ -11,8 +11,9 @@ The comfortable adoption path is a ladder, not a switch:
 1. Observe the graph with `axi graph --root .` or `axi graph --root . --attention`.
 2. Measure coverage with `axi check --root . --warn-unowned`.
 3. Keep temporary architecture debt visible with `accepts ... until ... because ...`.
-4. Move only clear, high-confidence rules into CI with `axi check --root .`.
-5. Use `--strict` after whole-repo ownership is intentional.
+4. Inspect broad public surfaces with `axi graph --root . --attention --warn-public-api-surface`.
+5. Move only clear, high-confidence rules into CI with `axi check --root .`.
+6. Use `--strict` after whole-repo ownership is intentional.
 
 This keeps Axiom useful for humans and agents without turning every advisory signal into a blocker.
 
@@ -91,7 +92,7 @@ Axiom is a static architecture validator, not a full runtime oracle.
 
 Expect blind spots around dependency injection strings, plugin registries, generated imports, `eval`, and other runtime-only paths. If those patterns matter in your project, model the stable source-level boundary first and keep the runtime convention visible in review or future custom checks.
 
-Also watch for "compliant but unhealthy" architecture. For example, a giant `index.ts` can make imports pass while concentrating too much coupling in one public surface. Axiom now catches direct `export ... from` leaks from hidden paths through exposed entry points, but it still cannot prove every symbol-level API decision is healthy. Prefer small exposed entry points, explicit `hides` rules for internals, and intentional violations with expiration dates when migration needs time.
+Also watch for "compliant but unhealthy" architecture. For example, a giant `index.ts` can make imports pass while concentrating too much coupling in one public surface. Axiom now catches direct `export ... from` leaks from hidden paths through exposed entry points, and `--warn-public-api-surface` can flag exposed `export *` barrels as advisory warnings, but it still cannot prove every symbol-level API decision is healthy. Prefer small exposed entry points, explicit `hides` rules for internals, and intentional violations with expiration dates when migration needs time.
 
 If your team sees a public surface growing too broad, treat that as an architecture review signal even when `axi check` passes. Symbol-level public API health is a future advisory analysis area, not a v0 guarantee.
 

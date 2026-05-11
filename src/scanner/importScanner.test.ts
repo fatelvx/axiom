@@ -165,6 +165,52 @@ test("scanner reads imports from TypeScript syntax instead of line regexes", () 
   }
 });
 
+test("scanner marks broad re-export forms", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "axi-imports-export-kind-"));
+
+  try {
+    writeFile(
+      root,
+      "src/app.ts",
+      ['export * from "./feature";', 'export * as featureNamespace from "./feature";'].join("\n")
+    );
+    writeFile(root, "src/feature.ts", "export const value = true;\n");
+
+    const imports = scanImports(path.join(root, "src/app.ts"));
+
+    assert.deepEqual(
+      imports.map((record) => ({
+        line: record.line,
+        kind: record.kind,
+        specifier: record.specifier,
+        resolvedPath: normalize(root, record.resolvedPath),
+        exportKind: record.exportKind,
+        isTypeOnly: record.isTypeOnly
+      })),
+      [
+        {
+          line: 1,
+          kind: "export",
+          specifier: "./feature",
+          resolvedPath: "src/feature.ts",
+          exportKind: "star",
+          isTypeOnly: false
+        },
+        {
+          line: 2,
+          kind: "export",
+          specifier: "./feature",
+          resolvedPath: "src/feature.ts",
+          exportKind: "namespace",
+          isTypeOnly: false
+        }
+      ]
+    );
+  } finally {
+    fs.rmSync(root, { force: true, recursive: true });
+  }
+});
+
 test("scanner resolves aliases through an injected resolver", () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "axi-imports-alias-"));
 

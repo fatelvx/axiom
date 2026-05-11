@@ -82,6 +82,23 @@ test("cli check --strict reports unowned source files as violations", () => {
   assert.equal(payload.violations[0].code, "unowned_source_file");
 });
 
+test("cli check --warn-public-api-surface reports advisory broad surface warnings", () => {
+  const result = spawnSync(
+    process.execPath,
+    [cliPath, "check", "--root", "fixtures/public-api-surface", "--warn-public-api-surface", "--json"],
+    { cwd: repoRoot, encoding: "utf8" }
+  );
+
+  assert.equal(result.status, 0);
+
+  const payload = JSON.parse(result.stdout);
+  assert.equal(payload.ok, true);
+  assert.equal(payload.summary.violations, 0);
+  assert.equal(payload.summary.warnings, 1);
+  assert.equal(payload.warnings[0].code, "broad_public_surface");
+  assert.equal(payload.warnings[0].details.exportKind, "star");
+});
+
 test("cli graph returns graph output without acting as a validation gate", () => {
   const result = spawnSync(
     process.execPath,

@@ -493,6 +493,74 @@ export function validateModuleSurfaceConsistency(
   return violations;
 }
 
+export function findPublicApiSurfaceWarnings(
+  spec: AxiomSpec,
+  imports: ImportRecord[],
+  ownership: OwnershipIndex,
+  root: string
+): Violation[] {
+  const warnings: Violation[] = [];
+  const byName = new Map(spec.modules.map((module) => [module.name, module]));
+
+  for (const importRecord of imports) {
+    if (importRecord.kind !== "export" || (importRecord.exportKind !== "star" && importRecord.exportKind !== "namespace")) {
+      continue;
+    }
+
+    const owner = ownership.findModule(importRecord.filePath);
+    if (!owner) {
+      continue;
+    }
+
+    const module = byName.get(owner.name);
+    if (!module || module.exposes.length === 0 || !matchesAnyPathRule(root, importRecord.filePath, module.exposes)) {
+      continue;
+    }
+
+    const hiddenRule = findMatchingPathRule(root, importRecord.resolvedPath, module.hides);
+    if (hiddenRule) {
+      continue;
+    }
+
+    const exposedRule = findMatchingPathRule(root, importRecord.filePath, module.exposes);
+
+    warnings.push({
+      code: "broad_public_surface",
+      message: `${module.name} exposes a broad public API surface through ${formatExportKind(importRecord)}.`,
+      location: {
+        filePath: importRecord.filePath,
+        line: importRecord.line
+      },
+      details: {
+        module: module.name,
+        specifier: importRecord.specifier,
+        exposedPath: relativePath(root, importRecord.filePath),
+        exportKind: importRecord.exportKind,
+        isTypeOnly: importRecord.isTypeOnly === true,
+        observed: `${module.name} broad public surface`,
+        ...(exposedRule
+          ? {
+              rule: `${module.name} exposes ${exposedRule.pattern}`,
+              ruleLocation: exposedRule.location
+            }
+          : {}),
+        suggestion:
+          "Review whether this barrel is intentionally broad; prefer explicit exports or split the public surface when coupling starts to hide behind one entry point."
+      }
+    });
+  }
+
+  return warnings;
+}
+
+function formatExportKind(importRecord: ImportRecord): string {
+  if (importRecord.exportKind === "namespace") {
+    return "export * as";
+  }
+
+  return importRecord.isTypeOnly ? "export type *" : "export *";
+}
+
 function findMatchingPathRule(root: string, filePath: string | undefined, rules: PathRef[]): PathRef | undefined {
   if (!filePath) {
     return undefined;

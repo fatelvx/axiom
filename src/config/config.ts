@@ -7,6 +7,7 @@ export interface AxiomConfig {
   specs?: string[];
   tsconfig?: string;
   intentionalViolationExpiryWarningDays?: number;
+  warnPublicApiSurface?: boolean;
 }
 
 export interface LoadedAxiomConfig {
@@ -16,6 +17,7 @@ export interface LoadedAxiomConfig {
   specs: string[];
   tsconfig?: string;
   intentionalViolationExpiryWarningDays?: number;
+  warnPublicApiSurface: boolean;
 }
 
 export const defaultSpecPatterns = [
@@ -46,6 +48,7 @@ export function loadConfig(root: string, configPath?: string): LoadedAxiomConfig
     include: config.include ?? [],
     exclude: config.exclude ?? [],
     specs: config.specs ?? [...defaultSpecPatterns],
+    warnPublicApiSurface: config.warnPublicApiSurface ?? false,
     ...(config.tsconfig ? { tsconfig: config.tsconfig } : {}),
     ...(config.intentionalViolationExpiryWarningDays === undefined
       ? {}
@@ -57,7 +60,8 @@ function defaultConfig(): LoadedAxiomConfig {
   return {
     include: [],
     exclude: [],
-    specs: [...defaultSpecPatterns]
+    specs: [...defaultSpecPatterns],
+    warnPublicApiSurface: false
   };
 }
 
@@ -90,7 +94,8 @@ function parseConfigFile(filePath: string): AxiomConfig {
       filePath,
       rawConfig,
       "intentionalViolationExpiryWarningDays"
-    )
+    ),
+    warnPublicApiSurface: readOptionalBoolean(filePath, rawConfig, "warnPublicApiSurface")
   };
 }
 
@@ -132,6 +137,19 @@ function readOptionalNonNegativeInteger(
 
   if (typeof value !== "number" || !Number.isInteger(value) || value < 0) {
     throw new Error(`Axiom config '${key}' must be a non-negative integer: ${filePath}`);
+  }
+
+  return value;
+}
+
+function readOptionalBoolean(filePath: string, config: Record<string, unknown>, key: keyof AxiomConfig): boolean | undefined {
+  const value = config[key];
+  if (value === undefined) {
+    return undefined;
+  }
+
+  if (typeof value !== "boolean") {
+    throw new Error(`Axiom config '${key}' must be a boolean: ${filePath}`);
   }
 
   return value;

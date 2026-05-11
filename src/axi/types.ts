@@ -9,6 +9,7 @@ export type ViolationCode =
   | "unused_suppression"
   | "ambiguous_module_owner"
   | "unowned_source_file"
+  | "broad_public_surface"
   | "unknown_layer"
   | "missing_module_path"
   | "unknown_module"
@@ -85,6 +86,8 @@ export interface ImportRecord {
   kind: "import" | "export" | "dynamic_import" | "require" | "import_type";
   specifier: string;
   resolvedPath?: string;
+  exportKind?: "named" | "star" | "namespace";
+  isTypeOnly?: boolean;
 }
 
 export interface ObservedDependency {

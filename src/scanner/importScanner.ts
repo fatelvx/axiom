@@ -14,7 +14,12 @@ export function scanImports(filePath: string, options: ScanImportsOptions = {}):
   const imports: ImportRecord[] = [];
   const resolver = options.resolver ?? { resolve: resolveRelativeImport };
 
-  function recordImport(node: ts.Node, kind: ImportRecord["kind"], specifier: string): void {
+  function recordImport(
+    node: ts.Node,
+    kind: ImportRecord["kind"],
+    specifier: string,
+    options: Pick<ImportRecord, "exportKind" | "isTypeOnly"> = {}
+  ): void {
     const line = sourceFile.getLineAndCharacterOfPosition(node.getStart(sourceFile)).line + 1;
 
     imports.push({
@@ -22,7 +27,8 @@ export function scanImports(filePath: string, options: ScanImportsOptions = {}):
       line,
       kind,
       specifier,
-      resolvedPath: resolver.resolve(filePath, specifier)
+      resolvedPath: resolver.resolve(filePath, specifier),
+      ...options
     });
   }
 
@@ -35,7 +41,10 @@ export function scanImports(filePath: string, options: ScanImportsOptions = {}):
     } else if (ts.isExportDeclaration(node)) {
       const specifier = readStringLiteral(node.moduleSpecifier);
       if (specifier) {
-        recordImport(node, "export", specifier);
+        recordImport(node, "export", specifier, {
+          exportKind: readExportKind(node),
+          isTypeOnly: node.isTypeOnly
+        });
       }
     } else if (ts.isImportEqualsDeclaration(node)) {
       const specifier = readImportEqualsSpecifier(node);
@@ -60,6 +69,18 @@ export function scanImports(filePath: string, options: ScanImportsOptions = {}):
   visit(sourceFile);
 
   return imports;
+}
+
+function readExportKind(node: ts.ExportDeclaration): ImportRecord["exportKind"] {
+  if (!node.exportClause) {
+    return "star";
+  }
+
+  if (ts.isNamespaceExport(node.exportClause)) {
+    return "namespace";
+  }
+
+  return "named";
 }
 
 function readStringLiteral(node: ts.Node | undefined): string | undefined {

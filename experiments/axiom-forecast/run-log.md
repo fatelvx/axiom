@@ -47,15 +47,24 @@ Local readiness result:
 node: v24.14.1
 npm: 11.11.0
 python: 3.14.3
-uv: missing
+uv: initially missing; installed uv 0.11.13
+python 3.12: installed cpython-3.12.13 through uv
 LLM_API_KEY: missing
 LLM_BASE_URL: missing
 LLM_MODEL_NAME: missing
 ZEP_API_KEY: missing
-repo .env: missing
+repo .env: created as a local template with blank secrets
 ```
 
-This means the forecast package is ready, but the MiroFish runtime cannot execute the full simulation from this workspace yet.
+This means the forecast package and local runtime bootstrap are ready, but the MiroFish runtime cannot execute the full simulation until credentials are entered.
+
+Local credential entry point:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File experiments\axiom-forecast\tools\write-mirofish-env.ps1
+```
+
+The helper writes secrets to the local MiroFish `.env` file only. Do not paste keys into chat or commit `.env`.
 
 ### Process Decision
 
@@ -77,10 +86,11 @@ Forecast package prepared:
 - `seed.md`
 - `protocol.md`
 - `mirofish-prompt.md`
+- `tools/write-mirofish-env.ps1`
 - `results/dry-run-forecast.md`
 
 Full MiroFish execution status:
 
 ```text
-blocked pending uv, LLM_API_KEY, LLM_BASE_URL, LLM_MODEL_NAME, and ZEP_API_KEY
+blocked pending LLM_API_KEY, LLM_BASE_URL, LLM_MODEL_NAME, and ZEP_API_KEY
 ```

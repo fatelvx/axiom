@@ -38,7 +38,9 @@ axi check --root .
 axi observe --root .
 axi observe --root . --warn-public-api-surface
 axi observe --root . --warn-coupling-concentration
+axi observe --root . --baseline axiom-baseline.json
 axi graph --root .
+axi graph --root . --json
 axi graph --root . --attention
 axi infer --root .
 ```
@@ -57,6 +59,7 @@ Current supported checks include:
 - `axi observe` as the product-facing architecture attention surface
 - opt-in public API surface warnings for broad exposed barrels
 - opt-in coupling concentration warnings for high observed module fan-in or fan-out
+- baseline-aware observed edge drift from unfiltered graph JSON snapshots
 - JSON output for CI and agents
 - starter contract inference with `axi infer`
 

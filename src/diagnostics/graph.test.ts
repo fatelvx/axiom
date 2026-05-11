@@ -140,6 +140,92 @@ test("attention graph JSON marks the attention filter", () => {
   assert.equal(payload.summary.shownObservedDependencies, 2);
 });
 
+test("graph JSON exposes baseline-aware observed edge drift", () => {
+  const result = runCheck({ root: path.join(repoRoot, "fixtures/basic-ts-invalid") });
+  const payload = toGraphJson(result, {
+    violationsOnly: true,
+    attention: true,
+    baseline: {
+      path: "fixtures/baseline-drift/basic-valid.graph.json",
+      schemaVersion: "axiom.graph.v7",
+      observedDependencies: [
+        {
+          fromModule: "Rendering",
+          toModule: "Physics",
+          import: {
+            filePath: "src/rendering/draw.ts",
+            line: 1,
+            specifier: "../physics/math",
+            resolvedPath: "src/physics/math.ts"
+          }
+        },
+        {
+          fromModule: "Simulation",
+          toModule: "Physics",
+          import: {
+            filePath: "src/simulation/step.ts",
+            line: 1,
+            specifier: "../physics/math",
+            resolvedPath: "src/physics/math.ts"
+          }
+        }
+      ]
+    }
+  });
+
+  assert.equal(payload.drift?.kind, "advisory_observed_edge_drift");
+  assert.equal(payload.drift?.baseline.observedDependencies, 2);
+  assert.deepEqual(
+    payload.drift?.newObservedEdges.map((edge) => `${edge.fromModule}->${edge.toModule}`),
+    ["Simulation->Rendering"]
+  );
+  assert.deepEqual(payload.drift?.newObservedEdges[0]?.violations.map((violation) => violation.code), [
+    "forbidden_dependency"
+  ]);
+  assert.deepEqual(payload.drift?.newObservedEdges[0]?.imports[0], {
+    filePath: "src/simulation/step.ts",
+    line: 2,
+    specifier: "../rendering/draw",
+    resolvedPath: "src/rendering/draw.ts"
+  });
+  assert.deepEqual(
+    payload.drift?.removedObservedEdges.map((edge) => `${edge.fromModule}->${edge.toModule}`),
+    ["Rendering->Physics"]
+  );
+});
+
+test("attention graph output includes baseline drift", () => {
+  const result = runCheck({ root: path.join(repoRoot, "fixtures/basic-ts-invalid") });
+  const output = formatGraphResult(result, {
+    violationsOnly: true,
+    attention: true,
+    baseline: {
+      path: "fixtures/baseline-drift/basic-valid.graph.json",
+      schemaVersion: "axiom.graph.v7",
+      observedDependencies: [
+        {
+          fromModule: "Simulation",
+          toModule: "Physics",
+          import: {
+            filePath: "src/simulation/step.ts",
+            line: 1,
+            specifier: "../physics/math",
+            resolvedPath: "src/physics/math.ts"
+          }
+        }
+      ]
+    }
+  });
+
+  assert.match(output, /drift: 1 new observed edge, 0 removed observed edges/);
+  assert.match(output, /architecture drift \(advisory\):/);
+  assert.match(output, /baseline: fixtures\/baseline-drift\/basic-valid\.graph\.json \(1 observed dependencies, axiom\.graph\.v7\)/);
+  assert.match(output, /new observed edges:\n    Simulation -> Rendering \[forbidden_dependency\]/);
+  assert.match(output, /via src\/simulation\/step\.ts:2 "\.\.\/rendering\/draw"/);
+  assert.match(output, /forbidden_dependency: Simulation imports forbidden module Rendering\./);
+  assert.match(output, /removed observed edges:\n    none/);
+});
+
 test("violations-only graph output includes intentional dependency debt", () => {
   const result = runCheck({ root: path.join(repoRoot, "fixtures/suppressed-dependency") });
   const output = formatGraphResult(result, { violationsOnly: true });

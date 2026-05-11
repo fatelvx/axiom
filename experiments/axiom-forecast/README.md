@@ -10,6 +10,7 @@ Current backtest focus:
 
 - `axi observe` as a product-facing architecture attention command.
 - Architecture observability with enforceable contracts.
+- Baseline-aware observed edge drift for PR and agent review.
 - Whether "observe first, negotiate accepted tradeoffs, enforce only high-confidence intent" improves trust or sounds too abstract.
 
 Files:
@@ -22,6 +23,7 @@ Files:
 - `results/mirofish-live-run-2026-05-11.zh.md`: Chinese process log and actual generated-output excerpts.
 - `results/mirofish-observe-backtest-2026-05-11.md`: targeted backtest after adding `axi observe` and reframing the product around architecture observability.
 - `results/mirofish-coupling-backtest-2026-05-11.md`: targeted backtest after adding opt-in coupling concentration warnings.
+- `results/mirofish-baseline-drift-backtest-2026-05-11.md`: targeted backtest after adding baseline-aware observed edge drift.
 - `tools/write-mirofish-env.ps1`: local helper for writing MiroFish credentials to `.env` without pasting secrets into chat.
 
 Live run input snapshot:

@@ -1,0 +1,34 @@
+{
+  "schemaVersion": "axiom.graph.v7",
+  "root": "fixtures/basic-ts-valid",
+  "filters": {
+    "violationsOnly": false,
+    "attention": false
+  },
+  "summary": {
+    "observedDependencies": 2,
+    "shownObservedDependencies": 2
+  },
+  "observedDependencies": [
+    {
+      "fromModule": "Rendering",
+      "toModule": "Physics",
+      "import": {
+        "filePath": "src/rendering/draw.ts",
+        "line": 1,
+        "specifier": "../physics/math",
+        "resolvedPath": "src/physics/math.ts"
+      }
+    },
+    {
+      "fromModule": "Simulation",
+      "toModule": "Physics",
+      "import": {
+        "filePath": "src/simulation/step.ts",
+        "line": 1,
+        "specifier": "../physics/math",
+        "resolvedPath": "src/physics/math.ts"
+      }
+    }
+  ]
+}

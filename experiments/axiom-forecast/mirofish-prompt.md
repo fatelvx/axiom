@@ -15,6 +15,8 @@ axi check --root .
 axi observe --root .
 axi observe --root . --warn-public-api-surface
 axi observe --root . --warn-coupling-concentration
+axi observe --root . --baseline axiom-baseline.json
+axi graph --root . --json
 axi graph --root . --attention
 axi infer --root .
 ```
@@ -92,3 +94,4 @@ Important constraints:
 - Treat visible intentional violations as a product hypothesis to test, not as automatically correct.
 - Treat `axi observe` as the updated product surface to evaluate after the implementation change.
 - Treat `--warn-coupling-concentration` as an opt-in pressure signal, not as proof of bad architecture.
+- Treat `--baseline` drift as an observability signal for PR/agent review, not as a hard gate.

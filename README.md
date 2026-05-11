@@ -148,6 +148,7 @@ Axiom v0.5.8 currently supports:
 - Human output and stable JSON output for CI and agents.
 - Starter contract inference with `axi infer`.
 - Architecture attention output with `axi observe`.
+- Baseline-aware observed edge drift with `axi observe --baseline <graph-json>`.
 - Focused graph output with `axi graph --violations-only`.
 - Scan summaries with module, source-file, import, and observed-dependency counts.
 
@@ -224,6 +225,8 @@ axi check --root . --warn-public-api-surface
 axi check --root . --warn-coupling-concentration
 axi check --root . --strict
 axi graph --root . --json
+axi graph --root . --json > axiom-baseline.json
+axi observe --root . --baseline axiom-baseline.json
 axi infer --root . --group-depth 2
 axi infer --root . --group-by workspace
 ```
@@ -459,7 +462,16 @@ Today this flags a module when the observed graph shows fan-in from at least fou
 }
 ```
 
-`axi graph --json` and `axi observe --json` emit `axiom.graph.v7`. Each observed dependency includes `violations` and `intentionalViolations` arrays. With `--violations-only`, `--attention`, or `observe`, `observedDependencies` is filtered to the edges that need attention or have accepted architecture debt, warning guardrails are still shown with details, and `summary.observedDependencies` keeps the full count. The JSON `filters` object marks focused attention output.
+`axi graph --json` and `axi observe --json` emit `axiom.graph.v8`. Each observed dependency includes `violations` and `intentionalViolations` arrays. With `--violations-only`, `--attention`, or `observe`, `observedDependencies` is filtered to the edges that need attention or have accepted architecture debt, warning guardrails are still shown with details, and `summary.observedDependencies` keeps the full count. The JSON `filters` object marks focused attention output.
+
+Use an unfiltered graph JSON file as a baseline when you want to inspect architecture drift in a PR or agent run:
+
+```bash
+axi graph --root . --json > axiom-baseline.json
+axi observe --root . --baseline axiom-baseline.json
+```
+
+The baseline comparison reports new and removed observed module edges. It is an observability surface, not a hard gate; JSON marks it as `advisory_observed_edge_drift`. Axiom rejects filtered baselines from `--attention` or `--violations-only` so drift is not computed from incomplete graph data.
 
 ## CI
 
@@ -538,7 +550,7 @@ Near-term:
 - More TypeScript module resolution hardening.
 - Drift and architecture health surfaces that start advisory, not as hard gates.
 - Evolution graph views for visible architecture change over time.
-- Baseline-aware new observed edge drift after the baseline format is designed.
+- Baseline-aware drift refinement for CI comments and agent repair loops.
 - Public comparison and evidence for how Axiom differs from ESLint architecture rules, Dependency Cruiser, Nx boundaries, and custom CI scripts.
 - Symbol-level public API surface analysis as an advisory research area, not a v0 hard gate.
 

@@ -1,6 +1,8 @@
 #!/usr/bin/env node
+import fs from "node:fs";
+import path from "node:path";
 import { formatCheckResult } from "./diagnostics/format.js";
-import { formatGraphJson, formatGraphResult } from "./diagnostics/graph.js";
+import { formatGraphJson, formatGraphResult, type GraphBaseline } from "./diagnostics/graph.js";
 import { formatInferJson, formatInferResult } from "./diagnostics/infer.js";
 import { formatCheckJson } from "./diagnostics/json.js";
 import { type InferGroupBy, runInfer } from "./infer/infer.js";
@@ -15,6 +17,7 @@ interface CliOptions {
   groupBy?: InferGroupBy;
   graphViolationsOnly: boolean;
   graphAttention: boolean;
+  baselinePath?: string;
   intentionalViolationExpiryWarningDays?: number;
   warnPublicApiSurface: boolean;
   warnCouplingConcentration: boolean;
@@ -59,6 +62,7 @@ try {
     warnPublicApiSurface: options.warnPublicApiSurface,
     warnCouplingConcentration: options.warnCouplingConcentration
   });
+  const baseline = options.baselinePath ? loadGraphBaseline(options.baselinePath, options.root) : undefined;
 
   if (command === "check" && options.json) {
     console.log(formatCheckJson(result));
@@ -69,7 +73,8 @@ try {
       formatGraphJson(result, {
         violationsOnly: options.graphViolationsOnly,
         attention: options.graphAttention,
-        observe: command === "observe"
+        observe: command === "observe",
+        baseline
       })
     );
   } else {
@@ -77,7 +82,8 @@ try {
       formatGraphResult(result, {
         violationsOnly: options.graphViolationsOnly,
         attention: options.graphAttention,
-        observe: command === "observe"
+        observe: command === "observe",
+        baseline
       })
     );
   }
@@ -194,6 +200,23 @@ function parseOptions(values: string[], command: CliCommand): CliOptions {
       continue;
     }
 
+    if (value === "--baseline") {
+      if (command !== "graph" && command !== "observe") {
+        console.error("--baseline is only supported by graph and observe.");
+        process.exit(1);
+      }
+
+      const baselinePath = values[index + 1];
+      if (!baselinePath) {
+        console.error("Missing value for --baseline.");
+        process.exit(1);
+      }
+
+      options.baselinePath = baselinePath;
+      index += 1;
+      continue;
+    }
+
     if (value === "--violations-only") {
       if (command !== "graph" && command !== "observe") {
         console.error("--violations-only is only supported by graph and observe.");
@@ -262,13 +285,110 @@ function parseOptions(values: string[], command: CliCommand): CliOptions {
   return options;
 }
 
+function loadGraphBaseline(baselinePath: string, root: string): GraphBaseline {
+  const resolvedPath = resolveBaselinePath(baselinePath, root);
+  const rawText = fs.readFileSync(resolvedPath, "utf8");
+  const payload = JSON.parse(rawText) as unknown;
+
+  if (!payload || typeof payload !== "object") {
+    throw new Error("--baseline must point to an axi graph --json result.");
+  }
+
+  const record = payload as Record<string, unknown>;
+  const filters = readRecord(record.filters);
+  if (readBoolean(filters?.violationsOnly)) {
+    throw new Error("Baseline graph must be unfiltered. Re-run `axi graph --json` without --attention or --violations-only.");
+  }
+
+  const summary = readRecord(record.summary);
+  const observedCount = readNumber(summary?.observedDependencies);
+  const shownObservedCount = readNumber(summary?.shownObservedDependencies);
+  if (observedCount !== undefined && shownObservedCount !== undefined && shownObservedCount < observedCount) {
+    throw new Error("Baseline graph must be unfiltered. Re-run `axi graph --json` without --attention or --violations-only.");
+  }
+
+  const observedDependencies = record.observedDependencies;
+  if (!Array.isArray(observedDependencies)) {
+    throw new Error("--baseline must contain an observedDependencies array from axi graph --json.");
+  }
+
+  return {
+    path: normalizePath(baselinePath),
+    ...(typeof record.schemaVersion === "string" ? { schemaVersion: record.schemaVersion } : {}),
+    observedDependencies: observedDependencies.map((dependency, index) => parseBaselineDependency(dependency, index))
+  };
+}
+
+function parseBaselineDependency(value: unknown, index: number): GraphBaseline["observedDependencies"][number] {
+  if (!value || typeof value !== "object") {
+    throw new Error(`Invalid observed dependency at baseline index ${index}.`);
+  }
+
+  const dependency = value as Record<string, unknown>;
+  const fromModule = dependency.fromModule;
+  const toModule = dependency.toModule;
+  const importSite = readRecord(dependency.import);
+  const filePath = importSite?.filePath;
+  const line = importSite?.line;
+  const specifier = importSite?.specifier;
+  const resolvedPath = importSite?.resolvedPath;
+
+  if (typeof fromModule !== "string" || typeof toModule !== "string") {
+    throw new Error(`Invalid observed dependency modules at baseline index ${index}.`);
+  }
+
+  if (typeof filePath !== "string" || typeof line !== "number" || typeof specifier !== "string") {
+    throw new Error(`Invalid observed dependency import site at baseline index ${index}.`);
+  }
+
+  return {
+    fromModule,
+    toModule,
+    import: {
+      filePath,
+      line,
+      specifier,
+      ...(typeof resolvedPath === "string" ? { resolvedPath } : {})
+    }
+  };
+}
+
+function readRecord(value: unknown): Record<string, unknown> | undefined {
+  return value && typeof value === "object" && !Array.isArray(value) ? (value as Record<string, unknown>) : undefined;
+}
+
+function readBoolean(value: unknown): boolean {
+  return value === true;
+}
+
+function readNumber(value: unknown): number | undefined {
+  return typeof value === "number" && Number.isFinite(value) ? value : undefined;
+}
+
+function normalizePath(filePath: string): string {
+  return filePath.replace(/\\/g, "/");
+}
+
+function resolveBaselinePath(baselinePath: string, root: string): string {
+  if (path.isAbsolute(baselinePath)) {
+    return baselinePath;
+  }
+
+  const fromCwd = path.resolve(baselinePath);
+  if (fs.existsSync(fromCwd)) {
+    return fromCwd;
+  }
+
+  return path.resolve(root, baselinePath);
+}
+
 function printHelp(): void {
   console.log(`Axiom
 
 Usage:
   axi check [--root <path>] [--config <path>] [--json] [--warn-unowned] [--strict] [--intentional-violation-warning-days <n>] [--warn-public-api-surface] [--warn-coupling-concentration]
-  axi graph [--root <path>] [--config <path>] [--json] [--warn-unowned] [--strict] [--violations-only|--attention] [--intentional-violation-warning-days <n>] [--warn-public-api-surface] [--warn-coupling-concentration]
-  axi observe [--root <path>] [--config <path>] [--json] [--warn-unowned] [--strict] [--intentional-violation-warning-days <n>] [--warn-public-api-surface] [--warn-coupling-concentration]
+  axi graph [--root <path>] [--config <path>] [--json] [--warn-unowned] [--strict] [--violations-only|--attention] [--baseline <graph-json>] [--intentional-violation-warning-days <n>] [--warn-public-api-surface] [--warn-coupling-concentration]
+  axi observe [--root <path>] [--config <path>] [--json] [--warn-unowned] [--strict] [--baseline <graph-json>] [--intentional-violation-warning-days <n>] [--warn-public-api-surface] [--warn-coupling-concentration]
   axi infer [--root <path>] [--config <path>] [--json] [--group-depth <n>] [--group-by folder|workspace]
 
 Commands:
@@ -280,6 +400,8 @@ Commands:
 Graph:
   --violations-only  Show only observed dependency edges that have violations.
   --attention        Alias for --violations-only with awareness-oriented human output.
+  --baseline <graph-json>
+                    Compare observed module edges against an unfiltered axi graph --json baseline.
   observe            Product-facing alias for graph --attention.
 
 Adoption:

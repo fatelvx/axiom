@@ -217,3 +217,42 @@ Detailed result:
 ```text
 experiments/axiom-forecast/results/mirofish-coupling-backtest-2026-05-11.md
 ```
+
+### Baseline Drift Backtest
+
+Before this small backtest, Axiom was actually changed locally:
+
+```text
+working tree after baseline-aware observed edge drift implementation
+```
+
+Implemented product change:
+
+- Added `--baseline <graph-json>` to `axi graph` and `axi observe`.
+- Compared unique observed module edges against an unfiltered graph JSON baseline.
+- Reported new observed edges and removed observed edges.
+- Rejected filtered baselines from `--attention` or `--violations-only`.
+- Kept drift as advisory PR / agent review context, not a hard check failure.
+
+Method:
+
+Tried the existing MiroFish forecast graph and ReportAgent with the same local model configuration. The ReportAgent call wrote output but exceeded the shell timeout and produced partially mojibake text due to local prompt/runtime encoding fragility.
+
+Then ran a smaller direct `LLMClient` targeted backtest using the same local MiroFish `.env` and model configuration to get readable output.
+
+Primary result:
+
+- Baseline drift is directionally closer to architecture observability than another threshold warning.
+- The biggest immediate risk is product interpretation: even the backtest briefly described drift as a CI check failure despite the prompt saying it is advisory.
+- The next smallest repair is to make advisory status visible in both human and JSON output.
+
+Follow-up taken:
+
+- Human output now says `architecture drift (advisory)`.
+- Graph JSON drift now includes `kind: "advisory_observed_edge_drift"`.
+
+Detailed result:
+
+```text
+experiments/axiom-forecast/results/mirofish-baseline-drift-backtest-2026-05-11.md
+```

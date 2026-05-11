@@ -139,6 +139,13 @@ axi observe --root . --warn-coupling-concentration
 axi check --root . --warn-coupling-concentration
 ```
 
+Use this when you want to see architecture drift since a known graph snapshot:
+
+```bash
+axi graph --root . --json > axiom-baseline.json
+axi observe --root . --baseline axiom-baseline.json
+```
+
 ## 6. Generate A Starter Draft
 
 For an existing project:

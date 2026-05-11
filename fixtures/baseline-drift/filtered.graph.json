@@ -1,0 +1,24 @@
+{
+  "schemaVersion": "axiom.graph.v7",
+  "root": "fixtures/visibility-rules",
+  "filters": {
+    "violationsOnly": true,
+    "attention": true
+  },
+  "summary": {
+    "observedDependencies": 3,
+    "shownObservedDependencies": 2
+  },
+  "observedDependencies": [
+    {
+      "fromModule": "UI",
+      "toModule": "Services",
+      "import": {
+        "filePath": "src/ui/view.ts",
+        "line": 2,
+        "specifier": "../services/feature",
+        "resolvedPath": "src/services/feature.ts"
+      }
+    }
+  ]
+}

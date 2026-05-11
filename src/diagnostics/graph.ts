@@ -2,7 +2,7 @@ import path from "node:path";
 import type { ModuleRef, PathRef, SourceLocation, Violation, ViolationCode } from "../axi/types.js";
 import type { CheckResult } from "../validator/check.js";
 
-export const graphJsonSchemaVersion = "axiom.graph.v7";
+export const graphJsonSchemaVersion = "axiom.graph.v8";
 
 interface GraphJsonLocation {
   filePath: string;
@@ -34,15 +34,17 @@ interface GraphJsonVisibilityRule {
   ruleLocation: GraphJsonLocation;
 }
 
-interface GraphJsonObservedDependency {
+interface GraphJsonImportSite {
+  filePath: string;
+  line: number;
+  specifier: string;
+  resolvedPath?: string;
+}
+
+export interface GraphJsonObservedDependency {
   fromModule: string;
   toModule: string;
-  import: {
-    filePath: string;
-    line: number;
-    specifier: string;
-    resolvedPath?: string;
-  };
+  import: GraphJsonImportSite;
   violations: GraphJsonDependencyViolation[];
   intentionalViolations: GraphJsonIntentionalDependencyViolation[];
 }
@@ -74,6 +76,38 @@ export interface GraphFormatOptions {
   violationsOnly?: boolean;
   attention?: boolean;
   observe?: boolean;
+  baseline?: GraphBaseline;
+}
+
+export interface GraphBaseline {
+  path?: string;
+  schemaVersion?: string;
+  observedDependencies: GraphBaselineObservedDependency[];
+}
+
+export interface GraphBaselineObservedDependency {
+  fromModule: string;
+  toModule: string;
+  import: GraphJsonImportSite;
+}
+
+interface GraphJsonDrift {
+  kind: "advisory_observed_edge_drift";
+  baseline: {
+    path?: string;
+    schemaVersion?: string;
+    observedDependencies: number;
+  };
+  newObservedEdges: GraphJsonDriftEdge[];
+  removedObservedEdges: GraphJsonDriftEdge[];
+}
+
+interface GraphJsonDriftEdge {
+  fromModule: string;
+  toModule: string;
+  imports: GraphJsonImportSite[];
+  violations: GraphJsonDependencyViolation[];
+  intentionalViolations: GraphJsonIntentionalDependencyViolation[];
 }
 
 export interface GraphJsonResult {
@@ -103,6 +137,7 @@ export interface GraphJsonResult {
   observedDependencies: GraphJsonObservedDependency[];
   violations: GraphJsonViolation[];
   warnings: GraphJsonViolation[];
+  drift?: GraphJsonDrift;
 }
 
 export function formatGraphResult(result: CheckResult, options: GraphFormatOptions = {}): string {
@@ -117,6 +152,15 @@ export function formatGraphResult(result: CheckResult, options: GraphFormatOptio
     `intentional violations: ${graph.summary.intentionalViolations}`,
     `warnings: ${graph.summary.warnings}`,
   ];
+  if (graph.drift) {
+    lines.push(
+      `drift: ${graph.drift.newObservedEdges.length} new observed edge${pluralize(
+        graph.drift.newObservedEdges.length
+      )}, ${graph.drift.removedObservedEdges.length} removed observed edge${pluralize(
+        graph.drift.removedObservedEdges.length
+      )}`
+    );
+  }
 
   if (options.violationsOnly) {
     lines.push("");
@@ -125,6 +169,10 @@ export function formatGraphResult(result: CheckResult, options: GraphFormatOptio
     lines.push(...formatOtherViolations(graph));
     lines.push("");
     lines.push(...formatWarnings(graph));
+    if (graph.drift) {
+      lines.push("");
+      lines.push(...formatDrift(graph.drift));
+    }
     return lines.join("\n");
   }
 
@@ -162,6 +210,11 @@ export function formatGraphResult(result: CheckResult, options: GraphFormatOptio
         `  ${dependency.fromModule} -> ${dependency.toModule} via ${dependency.import.filePath}:${dependency.import.line} "${dependency.import.specifier}"${violationSuffix}`
       );
     }
+  }
+
+  if (graph.drift) {
+    lines.push("");
+    lines.push(...formatDrift(graph.drift));
   }
 
   return lines.join("\n");
@@ -208,6 +261,7 @@ export function toGraphJson(result: CheckResult, options: GraphFormatOptions = {
         (dependency) => dependency.violations.length > 0 || dependency.intentionalViolations.length > 0
       )
     : allObservedDependencies;
+  const drift = options.baseline ? computeDrift(options.baseline, allObservedDependencies) : undefined;
 
   return {
     schemaVersion: graphJsonSchemaVersion,
@@ -245,7 +299,8 @@ export function toGraphJson(result: CheckResult, options: GraphFormatOptions = {
     hiddenPaths,
     observedDependencies,
     violations: result.violations.map((violation) => toJsonViolation(result.root, violation)),
-    warnings: result.warnings.map((warning) => toJsonViolation(result.root, warning))
+    warnings: result.warnings.map((warning) => toJsonViolation(result.root, warning)),
+    ...(drift ? { drift } : {})
   };
 }
 
@@ -382,6 +437,157 @@ function formatWarnings(graph: GraphJsonResult): string[] {
   }
 
   return lines;
+}
+
+function formatDrift(drift: GraphJsonDrift): string[] {
+  const baselineLabel = drift.baseline.path ?? "provided baseline";
+  const schemaSuffix = drift.baseline.schemaVersion ? `, ${drift.baseline.schemaVersion}` : "";
+  const lines = [
+    "architecture drift (advisory):",
+    `  baseline: ${baselineLabel} (${drift.baseline.observedDependencies} observed dependencies${schemaSuffix})`,
+    "  new observed edges:"
+  ];
+
+  if (drift.newObservedEdges.length === 0) {
+    lines.push("    none");
+  } else {
+    for (const edge of drift.newObservedEdges) {
+      lines.push(...formatDriftEdge(edge, "via"));
+    }
+  }
+
+  lines.push("  removed observed edges:");
+  if (drift.removedObservedEdges.length === 0) {
+    lines.push("    none");
+  } else {
+    for (const edge of drift.removedObservedEdges) {
+      lines.push(...formatDriftEdge(edge, "previously via"));
+    }
+  }
+
+  return lines;
+}
+
+function formatDriftEdge(edge: GraphJsonDriftEdge, importPrefix: "via" | "previously via"): string[] {
+  const attentionCodes = [
+    ...edge.violations.map((violation) => violation.code),
+    ...edge.intentionalViolations.map((violation) => `${violation.code} intentional`)
+  ];
+  const suffix = attentionCodes.length > 0 ? ` [${attentionCodes.join(", ")}]` : "";
+  const lines = [`    ${edge.fromModule} -> ${edge.toModule}${suffix}`];
+
+  for (const importSite of edge.imports) {
+    lines.push(`      ${importPrefix} ${importSite.filePath}:${importSite.line} "${importSite.specifier}"`);
+  }
+
+  for (const violation of edge.violations) {
+    lines.push(`      ${violation.code}: ${violation.message}`);
+    if (violation.suggestion) {
+      lines.push(`      fix: ${violation.suggestion}`);
+    }
+  }
+
+  for (const violation of edge.intentionalViolations) {
+    lines.push(`      intentional violation ${violation.code}: ${violation.message}`);
+  }
+
+  return lines;
+}
+
+function computeDrift(
+  baseline: GraphBaseline,
+  currentDependencies: GraphJsonObservedDependency[]
+): GraphJsonDrift {
+  const baselineEdges = groupObservedEdges(baseline.observedDependencies);
+  const currentEdges = groupObservedEdges(currentDependencies);
+  const newObservedEdges = [...currentEdges.entries()]
+    .filter(([key]) => !baselineEdges.has(key))
+    .map(([, edge]) => edge)
+    .sort(compareDriftEdges);
+  const removedObservedEdges = [...baselineEdges.entries()]
+    .filter(([key]) => !currentEdges.has(key))
+    .map(([, edge]) => edge)
+    .sort(compareDriftEdges);
+
+  return {
+    kind: "advisory_observed_edge_drift",
+    baseline: {
+      ...(baseline.path ? { path: baseline.path } : {}),
+      ...(baseline.schemaVersion ? { schemaVersion: baseline.schemaVersion } : {}),
+      observedDependencies: baseline.observedDependencies.length
+    },
+    newObservedEdges,
+    removedObservedEdges
+  };
+}
+
+function groupObservedEdges(
+  dependencies: ReadonlyArray<GraphBaselineObservedDependency | GraphJsonObservedDependency>
+): Map<string, GraphJsonDriftEdge> {
+  const edges = new Map<string, GraphJsonDriftEdge>();
+
+  for (const dependency of dependencies) {
+    const key = observedEdgeKey(dependency.fromModule, dependency.toModule);
+    const existing = edges.get(key);
+    const edge =
+      existing ??
+      {
+        fromModule: dependency.fromModule,
+        toModule: dependency.toModule,
+        imports: [],
+        violations: [],
+        intentionalViolations: []
+      };
+    edge.imports.push(dependency.import);
+    if ("violations" in dependency) {
+      addUniqueViolations(edge.violations, dependency.violations);
+      addUniqueIntentionalViolations(edge.intentionalViolations, dependency.intentionalViolations);
+    }
+    edges.set(key, edge);
+  }
+
+  return edges;
+}
+
+function observedEdgeKey(fromModule: string, toModule: string): string {
+  return `${fromModule}\0${toModule}`;
+}
+
+function addUniqueViolations(target: GraphJsonDependencyViolation[], incoming: GraphJsonDependencyViolation[]): void {
+  const existing = new Set(target.map((violation) => diagnosticKey(violation)));
+  for (const violation of incoming) {
+    const key = diagnosticKey(violation);
+    if (!existing.has(key)) {
+      target.push(violation);
+      existing.add(key);
+    }
+  }
+}
+
+function addUniqueIntentionalViolations(
+  target: GraphJsonIntentionalDependencyViolation[],
+  incoming: GraphJsonIntentionalDependencyViolation[]
+): void {
+  const existing = new Set(target.map((violation) => intentionalDiagnosticKey(violation)));
+  for (const violation of incoming) {
+    const key = intentionalDiagnosticKey(violation);
+    if (!existing.has(key)) {
+      target.push(violation);
+      existing.add(key);
+    }
+  }
+}
+
+function diagnosticKey(violation: GraphJsonDependencyViolation): string {
+  return `${violation.code}\0${violation.message}\0${violation.suggestion ?? ""}`;
+}
+
+function intentionalDiagnosticKey(violation: GraphJsonIntentionalDependencyViolation): string {
+  return `${diagnosticKey(violation)}\0${violation.contract.acceptedUntil}\0${violation.contract.reason}\0${violation.contract.ruleLocation.filePath}:${violation.contract.ruleLocation.line}`;
+}
+
+function compareDriftEdges(left: GraphJsonDriftEdge, right: GraphJsonDriftEdge): number {
+  return `${left.fromModule}->${left.toModule}`.localeCompare(`${right.fromModule}->${right.toModule}`);
 }
 
 function toJsonViolation(root: string, violation: Violation): GraphJsonViolation {
@@ -552,6 +758,10 @@ function formatExpirationDistance(daysUntilExpiration: number): string {
   }
 
   return `in ${daysUntilExpiration} days`;
+}
+
+function pluralize(count: number): string {
+  return count === 1 ? "" : "s";
 }
 
 function normalizeDetails(root: string, value: Record<string, unknown>): Record<string, unknown> {

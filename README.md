@@ -121,6 +121,18 @@ Axiom v0.5.8 currently supports:
 - Starter contract inference with `axi infer`.
 - Focused graph output with `axi graph --violations-only`.
 
+## What It Does Not Prove
+
+Axiom v0 is intentionally honest about its blind spots:
+
+- It does not fully observe runtime-only dependency paths such as string-based dependency injection, plugin registries, generated imports, or `eval`.
+- It does not prove that a module is semantically well-designed. Code can still become too coupled through broad barrel exports or overly large public entry points.
+- It does not replace ESLint, TypeScript, tests, or review. Axiom focuses on architecture intent: declared graph, observed graph, drift, warnings, intentional violations, and CI gates for clear contracts.
+- It does not make `.axi` maintenance free. Use `axi infer` to start from the current graph, then tighten only the boundaries that matter.
+- It does not promise whole-monorepo speed without scope control. Use `include`, `exclude`, and focused contract locations to keep large repositories comfortable in CI.
+
+The product goal is not perfect automatic architecture governance. The goal is a shared, machine-checkable awareness layer where humans and agents can see drift early, accept temporary debt visibly, and enforce high-confidence boundaries.
+
 ## Install
 
 Requirements:

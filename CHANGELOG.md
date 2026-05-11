@@ -10,6 +10,7 @@
 - Included warning guardrails in focused graph output so `axi graph --violations-only` acts more like an architecture attention view.
 - Surfaced module `purpose` text in graph and check JSON output.
 - Reframed accepted dependency debt as intentional violations in human and JSON output.
+- Added public limitations guidance for static-analysis blind spots, escape hatches, and compliant-but-unhealthy module surfaces.
 - Updated README positioning and banner language toward architecture awareness plus high-confidence contracts.
 - Bumped check JSON to `axiom.check.v4` and graph JSON to `axiom.graph.v5` for intentional violation reporting.
 

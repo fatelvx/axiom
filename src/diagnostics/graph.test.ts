@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import path from "node:path";
 import test from "node:test";
-import { formatGraphResult, graphJsonSchemaVersion, toGraphJson } from "./graph.js";
+import { formatGraphMarkdown, formatGraphResult, graphJsonSchemaVersion, toGraphJson } from "./graph.js";
 import { runCheck } from "../validator/check.js";
 
 const repoRoot = process.cwd();
@@ -224,6 +224,44 @@ test("attention graph output includes baseline drift", () => {
   assert.match(output, /via src\/simulation\/step\.ts:2 "\.\.\/rendering\/draw"/);
   assert.match(output, /forbidden_dependency: Simulation imports forbidden module Rendering\./);
   assert.match(output, /removed observed edges:\n    none/);
+});
+
+test("markdown graph output summarizes reviewable architecture signals", () => {
+  const result = runCheck({ root: path.join(repoRoot, "fixtures/basic-ts-invalid") });
+  const output = formatGraphMarkdown(result, {
+    violationsOnly: true,
+    attention: true,
+    observe: true,
+    baseline: {
+      path: "fixtures/baseline-drift/basic-valid.graph.json",
+      schemaVersion: "axiom.graph.v7",
+      observedDependencies: [
+        {
+          fromModule: "Simulation",
+          toModule: "Physics",
+          import: {
+            filePath: "src/simulation/step.ts",
+            line: 1,
+            specifier: "../physics/math",
+            resolvedPath: "src/physics/math.ts"
+          }
+        }
+      ]
+    }
+  });
+
+  assert.match(output, /## Axiom Architecture Review/);
+  assert.match(output, /Status: failing contract/);
+  assert.match(output, /Review mode: observe \(advisory\)/);
+  assert.match(output, /- Observed dependencies: 1 of 2/);
+  assert.match(output, /### Hard Violations/);
+  assert.match(output, /`Simulation -> Rendering` via `src\/simulation\/step\.ts:2` importing `\.\.\/rendering\/draw`/);
+  assert.match(output, /`forbidden_dependency`: Simulation imports forbidden module Rendering\./);
+  assert.match(output, /### Visible Intentional Debt/);
+  assert.match(output, /- None/);
+  assert.match(output, /### Architecture Drift \(Advisory\)/);
+  assert.match(output, /`advisory_observed_edge_drift`/);
+  assert.match(output, /- New observed edges:\n  - `Simulation -> Rendering` \(`forbidden_dependency`\)/);
 });
 
 test("violations-only graph output includes intentional dependency debt", () => {

@@ -16,8 +16,10 @@ axi observe --root .
 axi observe --root . --warn-public-api-surface
 axi observe --root . --warn-coupling-concentration
 axi observe --root . --baseline axiom-baseline.json
+axi observe --root . --baseline axiom-baseline.json --markdown
 axi graph --root . --json
 axi graph --root . --attention
+axi graph --root . --markdown
 axi infer --root .
 ```
 
@@ -95,3 +97,4 @@ Important constraints:
 - Treat `axi observe` as the updated product surface to evaluate after the implementation change.
 - Treat `--warn-coupling-concentration` as an opt-in pressure signal, not as proof of bad architecture.
 - Treat `--baseline` drift as an observability signal for PR/agent review, not as a hard gate.
+- Treat `--markdown` as a PR/agent review summary over existing graph results, not as a new validator path.

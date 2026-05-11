@@ -61,6 +61,7 @@ For a smaller view:
 
 ```bash
 node dist/cli.js observe --root examples/basic-app
+node dist/cli.js observe --root examples/basic-app --markdown
 node dist/cli.js graph --root examples/basic-app --violations-only
 ```
 
@@ -144,7 +145,10 @@ Use this when you want to see architecture drift since a known graph snapshot:
 ```bash
 axi graph --root . --json > axiom-baseline.json
 axi observe --root . --baseline axiom-baseline.json
+axi observe --root . --baseline axiom-baseline.json --markdown
 ```
+
+Use `--markdown` when the output should become a PR comment, review note, or agent repair-loop message. It keeps hard violations, visible intentional debt, advisory warnings, and drift in separate sections.
 
 ## 6. Generate A Starter Draft
 

@@ -256,3 +256,42 @@ Detailed result:
 ```text
 experiments/axiom-forecast/results/mirofish-baseline-drift-backtest-2026-05-11.md
 ```
+
+## 2026-05-12
+
+### Markdown Review Backtest
+
+Before this small backtest, Axiom was actually changed locally:
+
+```text
+working tree after graph/observe --markdown implementation
+```
+
+Implemented product change:
+
+- Added `--markdown` to `axi graph` and `axi observe`.
+- Kept Markdown as presentation output over the existing validator and graph result.
+- Separated hard violations, visible intentional debt, advisory warnings, and advisory baseline drift.
+- Kept `axi check` as the CI gate.
+
+Method:
+
+Used the same local MiroFish `.env` and model configuration through direct `LLMClient` targeted backtests. This was not a full OASIS rerun.
+
+Primary result:
+
+- The Markdown review surface is useful as a PR / agent communication artifact.
+- The backtest repeatedly tried to turn advisory drift into optional hard enforcement anyway, including suggestions such as `--fail-on-drift` and a separate drift exit code.
+- It also hallucinated hidden escape hatches such as `.axiignore` and `axi suppress`, even though Axiom already uses visible `.axi` `accepts ... until ... because ...` intentional violations.
+- The useful lesson is that the artifact itself must protect the product boundary: Markdown is review output, not a gate.
+
+Follow-up taken:
+
+- Markdown review notes now say: `This is review output; use axi check when you want a CI gate.`
+- CLI help now labels `--markdown` as presentation output and points users to `axi check` for gating.
+
+Detailed result:
+
+```text
+experiments/axiom-forecast/results/mirofish-markdown-review-backtest-2026-05-12.md
+```

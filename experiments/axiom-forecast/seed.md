@@ -28,7 +28,7 @@ Public repo:
 
 ```text
 https://github.com/fatelvx/axiom
-current master after the axi observe / observability positioning update
+current working snapshot after the Markdown review summary update
 ```
 
 ## Current CLI
@@ -39,9 +39,11 @@ axi observe --root .
 axi observe --root . --warn-public-api-surface
 axi observe --root . --warn-coupling-concentration
 axi observe --root . --baseline axiom-baseline.json
+axi observe --root . --baseline axiom-baseline.json --markdown
 axi graph --root .
 axi graph --root . --json
 axi graph --root . --attention
+axi graph --root . --markdown
 axi infer --root .
 ```
 
@@ -60,6 +62,7 @@ Current supported checks include:
 - opt-in public API surface warnings for broad exposed barrels
 - opt-in coupling concentration warnings for high observed module fan-in or fan-out
 - baseline-aware observed edge drift from unfiltered graph JSON snapshots
+- Markdown review summaries for PR comments and agent repair loops
 - JSON output for CI and agents
 - starter contract inference with `axi infer`
 

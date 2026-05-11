@@ -11,6 +11,7 @@ Current backtest focus:
 - `axi observe` as a product-facing architecture attention command.
 - Architecture observability with enforceable contracts.
 - Baseline-aware observed edge drift for PR and agent review.
+- Markdown review summaries for PR comments and agent repair loops.
 - Whether "observe first, negotiate accepted tradeoffs, enforce only high-confidence intent" improves trust or sounds too abstract.
 
 Files:
@@ -24,6 +25,7 @@ Files:
 - `results/mirofish-observe-backtest-2026-05-11.md`: targeted backtest after adding `axi observe` and reframing the product around architecture observability.
 - `results/mirofish-coupling-backtest-2026-05-11.md`: targeted backtest after adding opt-in coupling concentration warnings.
 - `results/mirofish-baseline-drift-backtest-2026-05-11.md`: targeted backtest after adding baseline-aware observed edge drift.
+- `results/mirofish-markdown-review-backtest-2026-05-12.md`: targeted backtest after adding Markdown PR / agent review summaries.
 - `tools/write-mirofish-env.ps1`: local helper for writing MiroFish credentials to `.env` without pasting secrets into chat.
 
 Live run input snapshot:
@@ -31,6 +33,12 @@ Live run input snapshot:
 ```text
 https://github.com/fatelvx/axiom
 current master after the axi observe / observability positioning update
+```
+
+Latest targeted backtest snapshot:
+
+```text
+current working snapshot after the Markdown review summary update
 ```
 
 Use this experiment as forecast input, not as a replacement for real users. A useful forecast should produce falsifiable adoption risks, concrete messaging changes, and roadmap tradeoffs.

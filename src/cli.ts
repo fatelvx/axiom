@@ -2,7 +2,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { formatCheckResult } from "./diagnostics/format.js";
-import { formatGraphJson, formatGraphResult, type GraphBaseline } from "./diagnostics/graph.js";
+import { formatGraphJson, formatGraphMarkdown, formatGraphResult, type GraphBaseline } from "./diagnostics/graph.js";
 import { formatInferJson, formatInferResult } from "./diagnostics/infer.js";
 import { formatCheckJson } from "./diagnostics/json.js";
 import { type InferGroupBy, runInfer } from "./infer/infer.js";
@@ -11,6 +11,7 @@ import { type AdoptionMode, runCheck } from "./validator/check.js";
 interface CliOptions {
   root: string;
   json: boolean;
+  markdown: boolean;
   configPath?: string;
   adoptionMode: AdoptionMode;
   groupDepth?: number;
@@ -77,6 +78,15 @@ try {
         baseline
       })
     );
+  } else if (options.markdown) {
+    console.log(
+      formatGraphMarkdown(result, {
+        violationsOnly: options.graphViolationsOnly,
+        attention: options.graphAttention,
+        observe: command === "observe",
+        baseline
+      })
+    );
   } else {
     console.log(
       formatGraphResult(result, {
@@ -102,6 +112,7 @@ function parseOptions(values: string[], command: CliCommand): CliOptions {
   const options: CliOptions = {
     root: process.cwd(),
     json: false,
+    markdown: false,
     adoptionMode: "loose",
     graphViolationsOnly: command === "observe",
     graphAttention: command === "observe",
@@ -124,7 +135,27 @@ function parseOptions(values: string[], command: CliCommand): CliOptions {
     }
 
     if (value === "--json") {
+      if (options.markdown) {
+        console.error("Use either --json or --markdown, not both.");
+        process.exit(1);
+      }
+
       options.json = true;
+      continue;
+    }
+
+    if (value === "--markdown") {
+      if (command !== "graph" && command !== "observe") {
+        console.error("--markdown is only supported by graph and observe.");
+        process.exit(1);
+      }
+
+      if (options.json) {
+        console.error("Use either --json or --markdown, not both.");
+        process.exit(1);
+      }
+
+      options.markdown = true;
       continue;
     }
 
@@ -387,8 +418,8 @@ function printHelp(): void {
 
 Usage:
   axi check [--root <path>] [--config <path>] [--json] [--warn-unowned] [--strict] [--intentional-violation-warning-days <n>] [--warn-public-api-surface] [--warn-coupling-concentration]
-  axi graph [--root <path>] [--config <path>] [--json] [--warn-unowned] [--strict] [--violations-only|--attention] [--baseline <graph-json>] [--intentional-violation-warning-days <n>] [--warn-public-api-surface] [--warn-coupling-concentration]
-  axi observe [--root <path>] [--config <path>] [--json] [--warn-unowned] [--strict] [--baseline <graph-json>] [--intentional-violation-warning-days <n>] [--warn-public-api-surface] [--warn-coupling-concentration]
+  axi graph [--root <path>] [--config <path>] [--json|--markdown] [--warn-unowned] [--strict] [--violations-only|--attention] [--baseline <graph-json>] [--intentional-violation-warning-days <n>] [--warn-public-api-surface] [--warn-coupling-concentration]
+  axi observe [--root <path>] [--config <path>] [--json|--markdown] [--warn-unowned] [--strict] [--baseline <graph-json>] [--intentional-violation-warning-days <n>] [--warn-public-api-surface] [--warn-coupling-concentration]
   axi infer [--root <path>] [--config <path>] [--json] [--group-depth <n>] [--group-by folder|workspace]
 
 Commands:
@@ -402,6 +433,8 @@ Graph:
   --attention        Alias for --violations-only with awareness-oriented human output.
   --baseline <graph-json>
                     Compare observed module edges against an unfiltered axi graph --json baseline.
+  --markdown        Print a PR/agent-friendly architecture review summary for graph or observe.
+                    This is presentation output; use axi check for a CI gate.
   observe            Product-facing alias for graph --attention.
 
 Adoption:

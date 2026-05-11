@@ -14,8 +14,9 @@ The comfortable adoption path is a ladder, not a switch:
 4. Inspect broad public surfaces with `axi observe --root . --warn-public-api-surface`.
 5. Inspect concentrated coupling with `axi observe --root . --warn-coupling-concentration`.
 6. Compare against a saved graph with `axi observe --root . --baseline axiom-baseline.json`.
-7. Move only clear, high-confidence rules into CI with `axi check --root .`.
-8. Use `--strict` after whole-repo ownership is intentional.
+7. Summarize PR or agent review context with `axi observe --root . --markdown`.
+8. Move only clear, high-confidence rules into CI with `axi check --root .`.
+9. Use `--strict` after whole-repo ownership is intentional.
 
 This keeps Axiom useful for humans and agents without turning every advisory signal into a blocker.
 
@@ -200,17 +201,21 @@ axi observe --root .
 axi check --root .
 axi graph --root . --violations-only
 axi graph --root . --attention
+axi observe --root . --markdown
 axi check --root . --json
 axi graph --root . --json > axiom-baseline.json
 axi observe --root . --baseline axiom-baseline.json
+axi observe --root . --baseline axiom-baseline.json --markdown
 axi observe --root . --warn-public-api-surface --warn-coupling-concentration
 ```
 
-Use human output while developing. Use JSON output for CI annotations, agent feedback, and custom reporting.
+Use human output while developing. Use JSON output for CI annotations and custom reporting. Use Markdown output for PR comments, review artifacts, and agent repair-loop summaries.
 
 `axi observe --root .` is the product-facing architecture attention view: it keeps failing edges, intentional violations, and warning guardrails in one focused output. `axi graph --root . --attention` and `--violations-only` remain available when you want the graph command explicitly.
 
 `axi observe --root . --baseline axiom-baseline.json` compares the current observed module edges with an unfiltered `axi graph --json` snapshot. JSON marks this as `advisory_observed_edge_drift`; treat new and removed edges as PR review context first, and promote only the parts that prove consistently useful into stricter automation.
+
+`axi observe --root . --markdown` and `axi observe --root . --baseline axiom-baseline.json --markdown` keep hard violations, visible intentional debt, advisory warnings, and drift in separate sections. This makes the escape hatch conspicuous without making every advisory signal a blocker.
 
 ## When To Tighten
 

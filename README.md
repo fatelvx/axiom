@@ -146,6 +146,7 @@ Axiom v0.5.8 currently supports:
 - Intentional violations that require an expiration date and reason.
 - Module `purpose` text surfaced in graph and JSON output for lightweight intent awareness.
 - Human output and stable JSON output for CI and agents.
+- Markdown architecture review summaries for PRs and agent repair loops with `axi observe --markdown`.
 - Starter contract inference with `axi infer`.
 - Architecture attention output with `axi observe`.
 - Baseline-aware observed edge drift with `axi observe --baseline <graph-json>`.
@@ -218,6 +219,7 @@ Useful flags:
 ```bash
 axi check --root . --json
 axi observe --root .
+axi observe --root . --markdown
 axi observe --root . --warn-public-api-surface
 axi observe --root . --warn-coupling-concentration
 axi check --root . --warn-unowned
@@ -227,6 +229,7 @@ axi check --root . --strict
 axi graph --root . --json
 axi graph --root . --json > axiom-baseline.json
 axi observe --root . --baseline axiom-baseline.json
+axi observe --root . --baseline axiom-baseline.json --markdown
 axi infer --root . --group-depth 2
 axi infer --root . --group-by workspace
 ```
@@ -426,7 +429,7 @@ axi graph --root . --attention --warn-coupling-concentration
 
 Today this flags a module when the observed graph shows fan-in from at least four distinct modules or fan-out to at least four distinct modules. It is advisory: the check still exits `0` unless there are real violations. Treat it as a review prompt for modules that may be becoming coordination hubs, broad facades, or hidden dependency magnets.
 
-## JSON Output
+## JSON And Markdown Output
 
 `axi check --json` emits `axiom.check.v4`:
 
@@ -472,6 +475,15 @@ axi observe --root . --baseline axiom-baseline.json
 ```
 
 The baseline comparison reports new and removed observed module edges. It is an observability surface, not a hard gate; JSON marks it as `advisory_observed_edge_drift`. Axiom rejects filtered baselines from `--attention` or `--violations-only` so drift is not computed from incomplete graph data.
+
+Use Markdown output when the result should be pasted into a PR comment, agent repair loop, or review artifact:
+
+```bash
+axi observe --root . --markdown
+axi observe --root . --baseline axiom-baseline.json --markdown
+```
+
+Markdown output is a review summary, not a new validator path. It separates hard violations, visible intentional debt, advisory warnings, and baseline drift so humans and agents can negotiate with the architecture contract without treating every signal as a hard gate.
 
 ## CI
 

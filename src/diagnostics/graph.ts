@@ -240,6 +240,50 @@ export function formatGraphJson(result: CheckResult, options: GraphFormatOptions
   return JSON.stringify(toGraphJson(result, options), null, 2);
 }
 
+export function formatGraphMarkdown(result: CheckResult, options: GraphFormatOptions = {}): string {
+  const graph = toGraphJson(result, options);
+  const lines = [
+    "## Axiom Architecture Review",
+    "",
+    `Status: ${formatMarkdownReviewStatus(graph)}`,
+    `Review mode: ${formatMarkdownReviewMode(options)}`,
+    "",
+    "### Summary",
+    `- Modules: ${graph.summary.modules}`,
+    `- Declared dependencies: ${graph.summary.declaredDependencies}`,
+    `- Observed dependencies: ${formatObservedDependencyCount(graph)}`,
+    `- Hard violations: ${graph.summary.violations}`,
+    `- Intentional violations: ${graph.summary.intentionalViolations}`,
+    `- Advisory warnings: ${graph.summary.warnings}`
+  ];
+
+  if (graph.drift) {
+    lines.push(
+      `- Drift: ${graph.drift.newObservedEdges.length} new observed edge${pluralize(
+        graph.drift.newObservedEdges.length
+      )}, ${graph.drift.removedObservedEdges.length} removed observed edge${pluralize(
+        graph.drift.removedObservedEdges.length
+      )}`
+    );
+  }
+
+  lines.push("");
+  lines.push(...formatMarkdownReviewNotes(graph));
+  lines.push("");
+  lines.push(...formatMarkdownHardViolations(graph));
+  lines.push("");
+  lines.push(...formatMarkdownIntentionalDebt(graph));
+  lines.push("");
+  lines.push(...formatMarkdownWarnings(graph));
+
+  if (graph.drift) {
+    lines.push("");
+    lines.push(...formatMarkdownDrift(graph.drift));
+  }
+
+  return lines.join("\n");
+}
+
 export function toGraphJson(result: CheckResult, options: GraphFormatOptions = {}): GraphJsonResult {
   const declaredDependencies = result.spec.modules.flatMap((module) =>
     module.depends.map((dependency) => toEdge(result.root, module.name, dependency))
@@ -312,6 +356,254 @@ function formatObservedDependencyCount(graph: GraphJsonResult): string {
   return `${graph.summary.shownObservedDependencies} of ${graph.summary.observedDependencies}`;
 }
 
+function formatMarkdownReviewStatus(graph: GraphJsonResult): string {
+  if (graph.summary.violations > 0) {
+    return "failing contract";
+  }
+
+  const driftCount = (graph.drift?.newObservedEdges.length ?? 0) + (graph.drift?.removedObservedEdges.length ?? 0);
+  if (graph.summary.intentionalViolations > 0 || graph.summary.warnings > 0 || driftCount > 0) {
+    return "needs review";
+  }
+
+  return "clear";
+}
+
+function formatMarkdownReviewMode(options: GraphFormatOptions): string {
+  if (options.observe) {
+    return "observe (advisory)";
+  }
+
+  if (options.attention) {
+    return "graph attention (advisory)";
+  }
+
+  if (options.violationsOnly) {
+    return "graph violations-only (advisory)";
+  }
+
+  return "graph summary (advisory)";
+}
+
+function formatMarkdownReviewNotes(graph: GraphJsonResult): string[] {
+  const lines = [
+    "### Review Notes",
+    "- This is review output; use `axi check` when you want a CI gate.",
+    "- Hard violations are contract failures.",
+    "- Intentional violations, warnings, and drift are visible debt or advisory signals."
+  ];
+
+  if (graph.filters.violationsOnly) {
+    lines.push("- Observed dependencies are filtered to attention edges; the summary keeps the full count.");
+  }
+
+  return lines;
+}
+
+function formatMarkdownHardViolations(graph: GraphJsonResult): string[] {
+  const violatingDependencies = graph.observedDependencies.filter((dependency) => dependency.violations.length > 0);
+  const otherViolations = getOtherViolations(graph);
+  const lines = ["### Hard Violations"];
+
+  if (violatingDependencies.length === 0 && otherViolations.length === 0) {
+    lines.push("- None");
+    return lines;
+  }
+
+  for (const dependency of violatingDependencies) {
+    lines.push(
+      `- ${markdownCode(`${dependency.fromModule} -> ${dependency.toModule}`)} via ${formatMarkdownImport(
+        dependency.import
+      )}`
+    );
+
+    for (const violation of dependency.violations) {
+      lines.push(`  - ${markdownCode(violation.code)}: ${violation.message}`);
+      if (violation.suggestion) {
+        lines.push(`  - Fix: ${violation.suggestion}`);
+      }
+    }
+  }
+
+  for (const violation of otherViolations) {
+    const location = violation.location ? ` at ${markdownCode(formatLocation(violation.location))}` : "";
+    lines.push(`- ${markdownCode(violation.code)}${location}: ${violation.message}`);
+    if (violation.suggestion) {
+      lines.push(`  - Fix: ${violation.suggestion}`);
+    }
+  }
+
+  return lines;
+}
+
+function formatMarkdownIntentionalDebt(graph: GraphJsonResult): string[] {
+  const dependencies = graph.observedDependencies.filter((dependency) => dependency.intentionalViolations.length > 0);
+  const lines = ["### Visible Intentional Debt"];
+
+  if (dependencies.length === 0) {
+    lines.push("- None");
+    return lines;
+  }
+
+  for (const dependency of dependencies) {
+    lines.push(
+      `- ${markdownCode(`${dependency.fromModule} -> ${dependency.toModule}`)} via ${formatMarkdownImport(
+        dependency.import
+      )}`
+    );
+
+    for (const violation of dependency.intentionalViolations) {
+      lines.push(`  - ${markdownCode(violation.code)}: ${violation.message}`);
+      lines.push(`  - Accepted until: ${markdownCode(violation.contract.acceptedUntil)}`);
+      lines.push(`  - Contract: ${markdownCode(formatLocation(violation.contract.ruleLocation))}`);
+      lines.push(`  - Reason: ${violation.contract.reason}`);
+    }
+  }
+
+  return lines;
+}
+
+function formatMarkdownWarnings(graph: GraphJsonResult): string[] {
+  const lines = ["### Advisory Warnings"];
+
+  if (graph.warnings.length === 0) {
+    lines.push("- None");
+    return lines;
+  }
+
+  for (const warning of graph.warnings) {
+    const location = warning.location ? ` at ${markdownCode(formatLocation(warning.location))}` : "";
+    lines.push(`- ${markdownCode(warning.code)}${location}: ${warning.message}`);
+    appendMarkdownWarningDetails(lines, warning);
+  }
+
+  return lines;
+}
+
+function appendMarkdownWarningDetails(lines: string[], warning: GraphJsonViolation): void {
+  appendMarkdownDetail(lines, "Observed", readString(warning.details?.observed));
+
+  const rule = readString(warning.details?.rule);
+  const ruleLocation = readLocation(warning.details?.ruleLocation);
+  if (rule) {
+    const suffix = ruleLocation ? ` (${formatLocation(ruleLocation)})` : "";
+    appendMarkdownDetail(lines, "Rule", `${rule}${suffix}`);
+  }
+
+  const threshold = readRecord(warning.details?.threshold);
+  const fanInThreshold = readNumber(threshold?.fanInModules);
+  const fanOutThreshold = readNumber(threshold?.fanOutModules);
+  if (fanInThreshold !== undefined || fanOutThreshold !== undefined) {
+    appendMarkdownDetail(
+      lines,
+      "Threshold",
+      [
+        fanInThreshold === undefined ? undefined : `fan-in >= ${fanInThreshold}`,
+        fanOutThreshold === undefined ? undefined : `fan-out >= ${fanOutThreshold}`
+      ]
+        .filter((item): item is string => item !== undefined)
+        .join(" or ")
+    );
+  }
+
+  const incomingModules = readStringArray(warning.details?.incomingModules);
+  if (incomingModules.length > 0) {
+    appendMarkdownDetail(lines, "Fan-in modules", incomingModules.join(", "));
+  }
+
+  const outgoingModules = readStringArray(warning.details?.outgoingModules);
+  if (outgoingModules.length > 0) {
+    appendMarkdownDetail(lines, "Fan-out modules", outgoingModules.join(", "));
+  }
+
+  const expiresOn = readString(warning.details?.expiresOn);
+  const daysUntilExpiration = readNumber(warning.details?.daysUntilExpiration);
+  if (expiresOn) {
+    const suffix = daysUntilExpiration === undefined ? "" : ` (${formatExpirationDistance(daysUntilExpiration)})`;
+    appendMarkdownDetail(lines, "Expires", `${expiresOn}${suffix}`);
+  }
+
+  appendMarkdownDetail(lines, "Reason", readString(warning.details?.reason));
+
+  if (warning.suggestion) {
+    appendMarkdownDetail(lines, "Fix", warning.suggestion);
+  }
+}
+
+function appendMarkdownDetail(lines: string[], label: string, value: string | undefined): void {
+  if (value) {
+    lines.push(`  - ${label}: ${value}`);
+  }
+}
+
+function formatMarkdownDrift(drift: GraphJsonDrift): string[] {
+  const baselineLabel = drift.baseline.path ?? "provided baseline";
+  const schemaSuffix = drift.baseline.schemaVersion ? `, ${drift.baseline.schemaVersion}` : "";
+  const lines = [
+    "### Architecture Drift (Advisory)",
+    `- Kind: ${markdownCode(drift.kind)}`,
+    `- Baseline: ${markdownCode(baselineLabel)} (${drift.baseline.observedDependencies} observed dependencies${schemaSuffix})`,
+    "- New observed edges:"
+  ];
+
+  if (drift.newObservedEdges.length === 0) {
+    lines.push("  - None");
+  } else {
+    for (const edge of drift.newObservedEdges) {
+      lines.push(...formatMarkdownDriftEdge(edge, "via"));
+    }
+  }
+
+  lines.push("- Removed observed edges:");
+  if (drift.removedObservedEdges.length === 0) {
+    lines.push("  - None");
+  } else {
+    for (const edge of drift.removedObservedEdges) {
+      lines.push(...formatMarkdownDriftEdge(edge, "previously via"));
+    }
+  }
+
+  return lines;
+}
+
+function formatMarkdownDriftEdge(edge: GraphJsonDriftEdge, importPrefix: "via" | "previously via"): string[] {
+  const attentionCodes = [
+    ...edge.violations.map((violation) => violation.code),
+    ...edge.intentionalViolations.map((violation) => `${violation.code} intentional`)
+  ];
+  const suffix = attentionCodes.length > 0 ? ` (${attentionCodes.map((code) => markdownCode(code)).join(", ")})` : "";
+  const lines = [`  - ${markdownCode(`${edge.fromModule} -> ${edge.toModule}`)}${suffix}`];
+
+  for (const importSite of edge.imports) {
+    lines.push(`    - ${importPrefix} ${formatMarkdownImport(importSite)}`);
+  }
+
+  for (const violation of edge.violations) {
+    lines.push(`    - ${markdownCode(violation.code)}: ${violation.message}`);
+    if (violation.suggestion) {
+      lines.push(`    - Fix: ${violation.suggestion}`);
+    }
+  }
+
+  for (const violation of edge.intentionalViolations) {
+    lines.push(`    - Intentional ${markdownCode(violation.code)}: ${violation.message}`);
+  }
+
+  return lines;
+}
+
+function formatMarkdownImport(importSite: GraphJsonImportSite): string {
+  return `${markdownCode(formatLocation(importSite))} importing ${markdownCode(importSite.specifier)}`;
+}
+
+function formatLocation(location: GraphJsonLocation | GraphJsonImportSite): string {
+  return `${location.filePath}:${location.line}`;
+}
+
+function markdownCode(value: string | number): string {
+  return `\`${String(value).replace(/`/g, "\\`")}\``;
+}
+
 function formatViolatingDependencies(graph: GraphJsonResult): string[] {
   const lines = ["violating dependencies:"];
 
@@ -345,18 +637,7 @@ function formatViolatingDependencies(graph: GraphJsonResult): string[] {
 }
 
 function formatOtherViolations(graph: GraphJsonResult): string[] {
-  const dependencyViolationKeys = new Set(
-    graph.observedDependencies.flatMap((dependency) =>
-      dependency.violations.map((violation) => `${dependency.import.filePath}:${dependency.import.line}:${violation.code}`)
-    )
-  );
-  const otherViolations = graph.violations.filter((violation) => {
-    if (!violation.location) {
-      return true;
-    }
-
-    return !dependencyViolationKeys.has(`${violation.location.filePath}:${violation.location.line}:${violation.code}`);
-  });
+  const otherViolations = getOtherViolations(graph);
   const lines = ["other violations:"];
 
   if (otherViolations.length === 0) {
@@ -370,6 +651,22 @@ function formatOtherViolations(graph: GraphJsonResult): string[] {
   }
 
   return lines;
+}
+
+function getOtherViolations(graph: GraphJsonResult): GraphJsonViolation[] {
+  const dependencyViolationKeys = new Set(
+    graph.observedDependencies.flatMap((dependency) =>
+      dependency.violations.map((violation) => `${dependency.import.filePath}:${dependency.import.line}:${violation.code}`)
+    )
+  );
+
+  return graph.violations.filter((violation) => {
+    if (!violation.location) {
+      return true;
+    }
+
+    return !dependencyViolationKeys.has(`${violation.location.filePath}:${violation.location.line}:${violation.code}`);
+  });
 }
 
 function formatWarnings(graph: GraphJsonResult): string[] {

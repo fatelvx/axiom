@@ -28,6 +28,7 @@
 - Explained coupling concentration warnings in focused graph and observe output with observed trigger, thresholds, and involved modules.
 - Added `--baseline <graph-json>` for graph and observe output so current observed module edges can be compared with an unfiltered graph snapshot as advisory drift.
 - Bumped graph JSON to `axiom.graph.v8` for optional baseline drift output.
+- Added `--markdown` for graph and observe output so PRs and agent repair loops can review hard violations, visible debt, warnings, and drift in one summary.
 - Bumped check JSON to `axiom.check.v4` for intentional violation reporting and warning details.
 
 ## 0.5.8 - Monorepo Spec Discovery

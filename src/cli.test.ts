@@ -273,6 +273,31 @@ test("cli observe --baseline reports observed edge drift without failing", () =>
   ]);
 });
 
+test("cli observe --baseline --markdown prints a PR-friendly review without failing", () => {
+  const result = spawnSync(
+    process.execPath,
+    [
+      cliPath,
+      "observe",
+      "--root",
+      "fixtures/basic-ts-invalid",
+      "--baseline",
+      "fixtures/baseline-drift/basic-valid.graph.json",
+      "--markdown"
+    ],
+    { cwd: repoRoot, encoding: "utf8" }
+  );
+
+  assert.equal(result.status, 0);
+  assert.match(result.stdout, /## Axiom Architecture Review/);
+  assert.match(result.stdout, /Status: failing contract/);
+  assert.match(result.stdout, /Review mode: observe \(advisory\)/);
+  assert.match(result.stdout, /### Hard Violations/);
+  assert.match(result.stdout, /`Simulation -> Rendering` via `src\/simulation\/step\.ts:2` importing `\.\.\/rendering\/draw`/);
+  assert.match(result.stdout, /### Architecture Drift \(Advisory\)/);
+  assert.match(result.stdout, /`advisory_observed_edge_drift`/);
+});
+
 test("cli observe --baseline rejects filtered graph baselines", () => {
   const result = spawnSync(
     process.execPath,
@@ -290,6 +315,28 @@ test("cli observe --baseline rejects filtered graph baselines", () => {
 
   assert.equal(result.status, 1);
   assert.match(result.stderr, /Baseline graph must be unfiltered/);
+});
+
+test("cli graph rejects markdown and json together", () => {
+  const result = spawnSync(
+    process.execPath,
+    [cliPath, "graph", "--root", "fixtures/basic-ts-valid", "--json", "--markdown"],
+    { cwd: repoRoot, encoding: "utf8" }
+  );
+
+  assert.equal(result.status, 1);
+  assert.match(result.stderr, /Use either --json or --markdown, not both/);
+});
+
+test("cli check rejects markdown output", () => {
+  const result = spawnSync(
+    process.execPath,
+    [cliPath, "check", "--root", "fixtures/basic-ts-valid", "--markdown"],
+    { cwd: repoRoot, encoding: "utf8" }
+  );
+
+  assert.equal(result.status, 1);
+  assert.match(result.stderr, /--markdown is only supported by graph and observe/);
 });
 
 test("cli infer prints a starter .axi contract", () => {

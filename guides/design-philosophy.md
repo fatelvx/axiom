@@ -73,6 +73,8 @@ Axiom avoids hidden allowlists as a product principle. Accepted debt should be:
 
 This lets humans and agents communicate with the architecture contract. A violation can be blocked, accepted temporarily, or reviewed as advisory pressure, but it should not disappear into a private ignore file.
 
+Axiom should not automatically turn first-run failures into accepted debt. A blanket "adopt everything" command would reduce onboarding friction, but it would also normalize unreviewed architecture debt and weaken the trust model. If Axiom ever adds a stronger adoption helper, it should preserve the same rule: accepted debt must be conspicuous, reviewed, time-bounded, and explained.
+
 ## Warning Signals
 
 Advisory warnings are not proof that code is wrong.

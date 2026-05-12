@@ -37,6 +37,23 @@ If the answer is uncertain, prefer a warning, graph view, or documented limitati
 
 If the team already uses ESLint architecture rules, Dependency Cruiser, Nx boundaries, CodeQL, or custom CI scripts, compare responsibilities before adding Axiom as another gate. The recommended boundary is documented in [Comparison And Boundaries](comparison.md): keep existing tools for the problems they already handle well, and use Axiom for declared architecture intent, visible accepted debt, and reviewable drift.
 
+## First-Run Adoption Without Blanket Acceptance
+
+Axiom intentionally does not provide a v0 command that turns every first-run problem into accepted debt automatically.
+
+That kind of helper would make the first run quieter, but it would also make unreviewed architecture debt look endorsed. Use `axi infer` as a current-graph snapshot, keep early contracts external with `--spec`, and add `accepts ... until ... because ...` only after a human has reviewed the tradeoff.
+
+For existing projects, the safer first-run loop is:
+
+```bash
+axi infer --root . > axiom-starter.axi
+axi observe --root . --spec axiom-starter.axi --markdown
+axi graph --root . --spec axiom-starter.axi --mermaid
+axi graph --root . --spec axiom-starter.axi --json > axiom-baseline.json
+```
+
+The starter contract mirrors current imports. Treat it as evidence, not approval. Use the saved baseline to review future drift with `axi observe --baseline`, then tighten only the boundaries that produce reliable signal.
+
 ## Good First Rules
 
 Choose one or two rules that would catch real mistakes:

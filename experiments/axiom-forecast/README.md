@@ -35,6 +35,7 @@ Files:
 - `results/mirofish-public-api-surface-target-2026-05-13.md`: targeted backtest after the nanoid/zod public API surface pilot.
 - `results/mirofish-inference-onboarding-target-2026-05-13.md`: targeted backtest after improving `no_spec_files` onboarding and collapsed cycle inference output.
 - `results/mirofish-mermaid-graph-target-2026-05-13.md`: targeted backtest after adding visual Mermaid graph output and the in-diagram legend repair.
+- `results/mirofish-big-backtest-v2-2026-05-13.md`: larger synthetic backtest after the Mermaid legend repair, including the rejected blanket-adopt recommendation.
 - `tools/write-mirofish-env.ps1`: local helper for writing MiroFish credentials to `.env` without pasting secrets into chat.
 
 Live run input snapshot:
@@ -66,6 +67,12 @@ Latest Mermaid graph target snapshot:
 
 ```text
 current master after `axi graph --mermaid`, `axi observe --mermaid`, and visible in-diagram graph legends
+```
+
+Latest big backtest snapshot:
+
+```text
+current master after Mermaid graph legend repair and explicit guidance against blanket auto-accepted first-run debt
 ```
 
 Use this experiment as forecast input, not as a replacement for real users. A useful forecast should produce falsifiable adoption risks, concrete messaging changes, and roadmap tradeoffs.

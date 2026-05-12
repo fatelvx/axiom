@@ -459,3 +459,34 @@ Detailed result:
 ```text
 experiments/axiom-forecast/results/mirofish-mermaid-graph-target-2026-05-13.md
 ```
+
+### Big Backtest V2 After Mermaid Legend Repair
+
+Before this larger backtest, Axiom had shipped and pushed:
+
+- Mermaid graph output.
+- An in-diagram Mermaid legend.
+- A filtered-view marker for `axi observe --mermaid`, `axi graph --attention --mermaid`, and `axi graph --violations-only --mermaid`.
+- The previous full alpha self-guard check.
+
+Method:
+
+Used the same local MiroFish `.env` and model configuration through direct `LLMClient`. This was a larger multi-stakeholder synthetic reception prompt, not a full OASIS social simulation rerun.
+
+Primary result:
+
+- Axiom is directionally credible, but broader pilot outreach still depends on low-noise onboarding, real performance evidence, and a stronger drift-over-time demonstration.
+- The forecast again exposed the "just another linter" risk: without time-series proof and real repo evidence, architecture observability can read like terminology over a point-in-time dependency checker.
+- It recommended an `axi adopt` command that automatically wraps first-run problems as accepted intentional debt.
+
+Follow-up decision:
+
+- Do not implement blanket auto-accepted debt as recommended.
+- The useful problem is adoption friction; the proposed mechanism conflicts with Axiom's visible-debt trust model.
+- Public adoption and philosophy docs now state that Axiom does not auto-turn first-run failures into accepted debt in v0. Existing projects should use `axi infer` as evidence, external `--spec` contracts for pilots, manual reviewed `accepts ... until ... because ...`, and graph baselines for drift-over-time review.
+
+Detailed result:
+
+```text
+experiments/axiom-forecast/results/mirofish-big-backtest-v2-2026-05-13.md
+```

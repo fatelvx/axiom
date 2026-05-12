@@ -18,7 +18,7 @@ When a living project is not ready to adopt Axiom formally, keep the first contr
 axi infer --root ../target-app --group-depth 2 > contracts/target-app.inferred.axi
 ```
 
-Review the inferred draft. Do not treat it as architecture truth. It mirrors today's graph, including messy cycles.
+Review the inferred draft. Do not treat it as architecture truth. It mirrors today's graph, including messy cycles, and the generated output labels itself as a current-graph snapshot rather than recommended architecture.
 
 Useful inference signals:
 

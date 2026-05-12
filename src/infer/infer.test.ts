@@ -20,6 +20,7 @@ test("infer creates a starter contract from source folders", () => {
   assert.deepEqual(simulation?.depends, ["Physics"]);
 
   const output = formatInferResult(result);
+  assert.match(output, /not a recommended architecture/);
   assert.match(output, /module Simulation/);
   assert.match(output, /path "src\/simulation\/\*\*"/);
   assert.match(output, /depends on Physics/);
@@ -106,8 +107,17 @@ test("infer JSON includes the generated .axi draft", () => {
   const payload = toInferJson(result);
 
   assert.equal(payload.schemaVersion, "axiom.infer.v2");
+  assert.deepEqual(payload.starterContract, {
+    kind: "current_graph_snapshot",
+    notice: [
+      "This starter contract mirrors the current dependency graph; it is not a recommended architecture.",
+      "Review module names, collapsed cycles, visibility suggestions, and dependencies before treating it as intent.",
+      "Use `axi check` only after the contract describes the architecture you want to protect."
+    ]
+  });
   assert.equal(payload.summary.sourceFiles, 3);
   assert.equal(payload.summary.modules, 3);
+  assert.match(payload.axi, /not a recommended architecture/);
   assert.match(payload.axi, /module Physics/);
 });
 

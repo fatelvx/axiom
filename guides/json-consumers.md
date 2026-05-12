@@ -20,7 +20,7 @@ Treat the prefix as the command family:
 
 - `axiom.check.*`: validation result. Use this for hard gates.
 - `axiom.graph.*`: declared/observed graph and observability result. Use this for inspection, PR comments, drift review, and agent context.
-- `axiom.infer.*`: generated starter contract draft. Use this for onboarding and contract authoring.
+- `axiom.infer.*`: generated starter contract draft. Use this for onboarding and contract authoring, not as a recommendation that the current graph is the desired architecture.
 
 Do not parse one family as another. A graph result is not a check result, even when it contains violations.
 
@@ -114,6 +114,16 @@ Baseline drift is advisory. JSON marks it as:
 ```
 
 Treat `drift.newObservedEdges[]` and `drift.removedObservedEdges[]` as review context first, not as automatic failures.
+
+## Inference Drafts
+
+`axi infer --json` emits `axiom.infer.*` and includes:
+
+- `starterContract.kind: "current_graph_snapshot"` to mark the output as a mirror of today's dependency graph.
+- `starterContract.notice[]` with the same human-facing warning printed in `.axi` comments.
+- `axi` containing the generated starter contract text.
+
+Do not treat inferred modules, collapsed cycles, or dependencies as maintainer intent until a human reviews and edits the contract. They are onboarding material for authoring a real `.axi` contract.
 
 ## Agent Use
 

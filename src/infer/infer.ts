@@ -51,8 +51,14 @@ export interface CollapsedCycleDependency {
   samples: InferredImportSample[];
 }
 
+export interface InferStarterContract {
+  kind: "current_graph_snapshot";
+  notice: string[];
+}
+
 export interface InferResult {
   root: string;
+  starterContract: InferStarterContract;
   sourceFiles: string[];
   importCount: number;
   candidateModules: number;
@@ -82,6 +88,12 @@ interface Component {
 }
 
 const sampleLimit = 5;
+
+export const inferStarterContractNotice = [
+  "This starter contract mirrors the current dependency graph; it is not a recommended architecture.",
+  "Review module names, collapsed cycles, visibility suggestions, and dependencies before treating it as intent.",
+  "Use `axi check` only after the contract describes the architecture you want to protect."
+];
 
 export function runInfer(options: InferOptions): InferResult {
   const root = path.resolve(options.root);
@@ -113,6 +125,10 @@ export function runInfer(options: InferOptions): InferResult {
 
   return {
     root,
+    starterContract: {
+      kind: "current_graph_snapshot",
+      notice: [...inferStarterContractNotice]
+    },
     sourceFiles,
     importCount: imports.length,
     candidateModules: candidateGroups.length,

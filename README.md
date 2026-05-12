@@ -169,7 +169,7 @@ Axiom v0.5.8 currently supports:
 - Module `purpose` text surfaced in graph and JSON output for lightweight intent awareness.
 - Human output and stable JSON output for CI and agents.
 - Markdown architecture review summaries for PRs and agent repair loops with `axi observe --markdown`.
-- Starter contract inference with `axi infer`.
+- Starter contract inference with `axi infer`, explicitly marked as a current-graph snapshot rather than recommended architecture.
 - Architecture attention output with `axi observe`.
 - Baseline-aware observed edge drift with `axi observe --baseline <graph-json>`.
 - Focused graph output with `axi graph --violations-only`.
@@ -356,7 +356,7 @@ For monorepos:
 axi infer --root . --group-by workspace
 ```
 
-Inference prints a draft to stdout and does not write files. Treat it as a starting point: rename modules, add layers, tighten `depends on`, and add `exposes` or `hides` after review. When `axi infer` collapses cyclic candidate groups, it now lists the included groups and observed internal edges so the cycle is useful architecture feedback instead of just a strange generated name.
+Inference prints a draft to stdout and does not write files. The output says up front that it mirrors the current dependency graph, not recommended architecture. Treat it as a starting point: rename modules, add layers, tighten `depends on`, and add `exposes` or `hides` after review. When `axi infer` collapses cyclic candidate groups, it now lists the included groups and observed internal edges so the cycle is useful architecture feedback instead of just a strange generated name.
 
 ## Monorepos
 

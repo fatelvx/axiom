@@ -23,6 +23,7 @@ interface CliOptions {
   warnUnresolvedImports: boolean;
   warnPublicApiSurface: boolean;
   warnCouplingConcentration: boolean;
+  warnDeepInternalImports: boolean;
 }
 
 type CliCommand = "check" | "graph" | "infer" | "observe";
@@ -63,7 +64,8 @@ try {
     intentionalViolationExpiryWarningDays: options.intentionalViolationExpiryWarningDays,
     warnUnresolvedImports: options.warnUnresolvedImports,
     warnPublicApiSurface: options.warnPublicApiSurface,
-    warnCouplingConcentration: options.warnCouplingConcentration
+    warnCouplingConcentration: options.warnCouplingConcentration,
+    warnDeepInternalImports: options.warnDeepInternalImports
   });
   const baseline = options.baselinePath ? loadGraphBaseline(options.baselinePath, options.root) : undefined;
 
@@ -120,7 +122,8 @@ function parseOptions(values: string[], command: CliCommand): CliOptions {
     graphAttention: command === "observe",
     warnUnresolvedImports: false,
     warnPublicApiSurface: false,
-    warnCouplingConcentration: false
+    warnCouplingConcentration: false,
+    warnDeepInternalImports: false
   };
 
   for (let index = 0; index < values.length; index += 1) {
@@ -241,6 +244,16 @@ function parseOptions(values: string[], command: CliCommand): CliOptions {
       }
 
       options.warnCouplingConcentration = true;
+      continue;
+    }
+
+    if (value === "--warn-deep-internal-imports") {
+      if (command === "infer") {
+        console.error("--warn-deep-internal-imports is only supported by check, graph, and observe.");
+        process.exit(1);
+      }
+
+      options.warnDeepInternalImports = true;
       continue;
     }
 
@@ -430,9 +443,9 @@ function printHelp(): void {
   console.log(`Axiom
 
 Usage:
-  axi check [--root <path>] [--config <path>] [--json] [--warn-unowned] [--strict] [--intentional-violation-warning-days <n>] [--warn-unresolved-imports] [--warn-public-api-surface] [--warn-coupling-concentration]
-  axi graph [--root <path>] [--config <path>] [--json|--markdown] [--warn-unowned] [--strict] [--violations-only|--attention] [--baseline <graph-json>] [--intentional-violation-warning-days <n>] [--warn-unresolved-imports] [--warn-public-api-surface] [--warn-coupling-concentration]
-  axi observe [--root <path>] [--config <path>] [--json|--markdown] [--warn-unowned] [--strict] [--baseline <graph-json>] [--intentional-violation-warning-days <n>] [--warn-unresolved-imports] [--warn-public-api-surface] [--warn-coupling-concentration]
+  axi check [--root <path>] [--config <path>] [--json] [--warn-unowned] [--strict] [--intentional-violation-warning-days <n>] [--warn-unresolved-imports] [--warn-public-api-surface] [--warn-coupling-concentration] [--warn-deep-internal-imports]
+  axi graph [--root <path>] [--config <path>] [--json|--markdown] [--warn-unowned] [--strict] [--violations-only|--attention] [--baseline <graph-json>] [--intentional-violation-warning-days <n>] [--warn-unresolved-imports] [--warn-public-api-surface] [--warn-coupling-concentration] [--warn-deep-internal-imports]
+  axi observe [--root <path>] [--config <path>] [--json|--markdown] [--warn-unowned] [--strict] [--baseline <graph-json>] [--intentional-violation-warning-days <n>] [--warn-unresolved-imports] [--warn-public-api-surface] [--warn-coupling-concentration] [--warn-deep-internal-imports]
   axi infer [--root <path>] [--config <path>] [--json] [--group-depth <n>] [--group-by folder|workspace]
 
 Commands:
@@ -462,5 +475,7 @@ Adoption:
                    Warn about broad exposed barrels such as export * without failing the check.
   --warn-coupling-concentration
                    Warn when one module has high observed fan-in or fan-out without failing the check.
+  --warn-deep-internal-imports
+                   Warn when a module uses a relative cross-module import to bypass a likely entry point.
 `);
 }

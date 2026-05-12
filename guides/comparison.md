@@ -21,7 +21,7 @@ It adds:
 - Hard failures for explicit, high-confidence rules such as forbidden dependencies, layer breaches, hidden imports, and unexposed imports.
 - `axi observe` for architecture attention without turning every signal into a gate.
 - Time-bounded intentional violations that stay visible as accepted debt.
-- Advisory warnings for known pressure points such as broad public barrels, unresolved internal-looking imports, and coupling concentration.
+- Advisory warnings for known pressure points such as broad public barrels, unresolved internal-looking imports, deep internal imports, and coupling concentration.
 - Baseline drift output that shows how observed module edges changed since a saved graph.
 - Markdown and JSON outputs designed for PR review, CI annotations, dashboards, and future agent repair loops.
 

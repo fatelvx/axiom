@@ -61,6 +61,7 @@ Commands:
 node dist/cli.js infer --root <zod> --group-by workspace
 node dist/cli.js check --root <zod> --json
 node dist/cli.js observe --root <zod> --warn-coupling-concentration --markdown
+node dist/cli.js observe --root <zod> --warn-coupling-concentration --warn-deep-internal-imports --markdown
 ```
 
 Before the fix in this changeset, workspace inference generated overlapping module ownership for packages that had both `src/**` files and root-level package files. For example, `zod` produced both:
@@ -77,7 +78,7 @@ After the fix:
 - inferred modules: 15
 - observed dependency import-sites: 59
 - hard violations: 0
-- advisory warnings: 1
+- advisory warnings: 2 when coupling concentration and deep internal import warnings are enabled
 
 The generated starter contract now keeps package source modules and package root files non-overlapping. For example:
 
@@ -94,10 +95,27 @@ depends on Vitest
 
 - `coupling_concentration`: `Zod` has fan-in from 6 modules: `Benchmarks`, `Integration`, `Play`, `Resolution`, `Scripts`, and `Treeshaking`.
 
+The unique observed module edges in this inferred workspace graph were:
+
+- `Benchmarks -> Zod`
+- `Integration -> Zod`
+- `Play -> Zod`
+- `Resolution -> Zod`
+- `Scripts -> Zod`
+- `Treeshaking -> Zod`
+- `ZodVitest -> Vitest`
+
+That means the six fan-in modules did not depend on each other in this scan; the visible pressure was star-shaped around `Zod`.
+
+After adding `--warn-deep-internal-imports`, Axiom also surfaced:
+
+- `deep_internal_import` at `scripts/check-versions.ts:4`: `Scripts` imports `Zod` through `../packages/zod/src/v4/core/versions.js`, resolving to `packages/zod/src/v4/core/versions.ts`.
+
 Product read:
 
 - This is not a defect in zod. A stable core package is expected to have many dependents.
 - It is still useful architecture telemetry: Axiom can make dependency pressure visible without turning that pressure into a CI failure.
+- The deep internal import warning is a stronger design-intent review prompt than fan-in alone. It does not prove the import is wrong, but it shows a cross-module dependency on a non-entry implementation path that maintainers may want to make explicit or route through a public surface.
 - The real-project smoke found a concrete `axi infer` bug and tightened adoption ergonomics.
 
 ## Follow-Up

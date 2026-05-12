@@ -15,7 +15,8 @@ test("loadConfig returns defaults when no config file exists", () => {
       specs: defaultSpecPatterns,
       warnUnresolvedImports: false,
       warnPublicApiSurface: false,
-      warnCouplingConcentration: false
+      warnCouplingConcentration: false,
+      warnDeepInternalImports: false
     });
   } finally {
     fs.rmSync(root, { force: true, recursive: true });
@@ -36,7 +37,8 @@ test("loadConfig reads axiom.config.json from the project root", () => {
       intentionalViolationExpiryWarningDays: 14,
       warnUnresolvedImports: true,
       warnPublicApiSurface: true,
-      warnCouplingConcentration: true
+      warnCouplingConcentration: true,
+      warnDeepInternalImports: true
       })
     );
 
@@ -50,6 +52,7 @@ test("loadConfig reads axiom.config.json from the project root", () => {
     assert.equal(config.warnUnresolvedImports, true);
     assert.equal(config.warnPublicApiSurface, true);
     assert.equal(config.warnCouplingConcentration, true);
+    assert.equal(config.warnDeepInternalImports, true);
     assert.equal(config.filePath, path.join(root, "axiom.config.json"));
   } finally {
     fs.rmSync(root, { force: true, recursive: true });
@@ -111,6 +114,18 @@ test("loadConfig rejects invalid coupling concentration warning setting", () => 
     fs.writeFileSync(path.join(root, "axiom.config.json"), JSON.stringify({ warnCouplingConcentration: "yes" }));
 
     assert.throws(() => loadConfig(root), /warnCouplingConcentration/);
+  } finally {
+    fs.rmSync(root, { force: true, recursive: true });
+  }
+});
+
+test("loadConfig rejects invalid deep internal import warning setting", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "axi-config-invalid-deep-internal-imports-"));
+
+  try {
+    fs.writeFileSync(path.join(root, "axiom.config.json"), JSON.stringify({ warnDeepInternalImports: "yes" }));
+
+    assert.throws(() => loadConfig(root), /warnDeepInternalImports/);
   } finally {
     fs.rmSync(root, { force: true, recursive: true });
   }

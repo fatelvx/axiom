@@ -78,7 +78,8 @@ Use Markdown output for review context:
   npx axi observe --root . --markdown \
     --warn-public-api-surface \
     --warn-unresolved-imports \
-    --warn-coupling-concentration
+    --warn-coupling-concentration \
+    --warn-deep-internal-imports
 } >> "$GITHUB_STEP_SUMMARY"
 ```
 

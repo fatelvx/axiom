@@ -147,6 +147,13 @@ axi observe --root . --warn-coupling-concentration
 axi check --root . --warn-coupling-concentration
 ```
 
+Use this when you want advisory review prompts for relative imports that bypass likely module entry points:
+
+```bash
+axi observe --root . --warn-deep-internal-imports
+axi check --root . --warn-deep-internal-imports
+```
+
 Use this when you want to see architecture drift since a known graph snapshot:
 
 ```bash

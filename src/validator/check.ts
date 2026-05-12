@@ -18,6 +18,7 @@ import {
   applySuppressions,
   buildObservedDependencies,
   findCouplingConcentrationWarnings,
+  findDeepInternalImportWarnings,
   findExpiringSuppressions,
   findPublicApiSurfaceWarnings,
   findUnresolvedImportWarnings,
@@ -38,6 +39,7 @@ export interface CheckOptions {
   warnUnresolvedImports?: boolean;
   warnPublicApiSurface?: boolean;
   warnCouplingConcentration?: boolean;
+  warnDeepInternalImports?: boolean;
 }
 
 export interface CheckResult {
@@ -61,6 +63,7 @@ export function runCheck(options: CheckOptions): CheckResult {
   const warnUnresolvedImports = options.warnUnresolvedImports ?? config.warnUnresolvedImports;
   const warnPublicApiSurface = options.warnPublicApiSurface ?? config.warnPublicApiSurface;
   const warnCouplingConcentration = options.warnCouplingConcentration ?? config.warnCouplingConcentration;
+  const warnDeepInternalImports = options.warnDeepInternalImports ?? config.warnDeepInternalImports;
   const specFiles = findAxiomFiles(root, config);
   const sourceFiles = findSourceFiles(root, config);
   const resolver = createImportResolver({ root, tsconfigPath: config.tsconfig });
@@ -125,6 +128,9 @@ export function runCheck(options: CheckOptions): CheckResult {
   }
   if (warnCouplingConcentration) {
     warnings.push(...findCouplingConcentrationWarnings(observedDependencies));
+  }
+  if (warnDeepInternalImports) {
+    warnings.push(...findDeepInternalImportWarnings(spec, observedDependencies, sourceFiles, ownership, root));
   }
 
   return {

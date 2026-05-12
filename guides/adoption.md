@@ -13,11 +13,12 @@ The comfortable adoption path is a ladder, not a switch:
 3. Surface unresolved internal-looking imports with `axi observe --root . --warn-unresolved-imports`.
 4. Keep temporary architecture debt visible with `accepts ... until ... because ...`.
 5. Inspect broad public surfaces with `axi observe --root . --warn-public-api-surface`.
-6. Inspect concentrated coupling with `axi observe --root . --warn-coupling-concentration`.
-7. Compare against a saved graph with `axi observe --root . --baseline axiom-baseline.json`.
-8. Summarize PR or agent review context with `axi observe --root . --markdown`.
-9. Move only clear, high-confidence rules into CI with `axi check --root .`.
-10. Use `--strict` after whole-repo ownership is intentional.
+6. Inspect likely public-entry bypasses with `axi observe --root . --warn-deep-internal-imports`.
+7. Inspect concentrated coupling with `axi observe --root . --warn-coupling-concentration`.
+8. Compare against a saved graph with `axi observe --root . --baseline axiom-baseline.json`.
+9. Summarize PR or agent review context with `axi observe --root . --markdown`.
+10. Move only clear, high-confidence rules into CI with `axi check --root .`.
+11. Use `--strict` after whole-repo ownership is intentional.
 
 This keeps Axiom useful for humans and agents without turning every advisory signal into a blocker.
 
@@ -127,6 +128,8 @@ Expect blind spots around dependency injection strings, plugin registries, gener
 Use `--warn-unresolved-imports` when you want Axiom to surface static relative imports or package `#imports` that it can see but cannot resolve into the observed graph. This is advisory visibility into graph completeness, not proof that every runtime dependency path is known.
 
 Also watch for "compliant but unhealthy" architecture. For example, a giant `index.ts` can make imports pass while concentrating too much coupling in one public surface. Axiom now catches direct `export ... from` leaks and local `import ... from "./internal"` followed by `export { ... }` leaks from hidden paths through exposed entry points. `--warn-public-api-surface` can flag exposed `export *` barrels as advisory warnings, but Axiom still cannot prove every symbol-level API decision is healthy. Prefer small exposed entry points, explicit `hides` rules for internals, and intentional violations with expiration dates when migration needs time.
+
+Use `--warn-deep-internal-imports` when you want to find relative cross-module imports that bypass a likely `index.*` entry point. This is useful before you are ready to turn `exposes` into a hard rule: it can show where teams or agents are already relying on another module's internal file layout.
 
 `--warn-coupling-concentration` is another pressure signal, not a verdict. It reports modules with high observed fan-in or fan-out so teams can review whether a module is becoming a coordination hub, facade, or hidden dependency magnet. Some hubs are legitimate; the value is making them visible before the shape becomes accidental.
 
@@ -241,7 +244,7 @@ axi check --root . --json
 axi graph --root . --json > axiom-baseline.json
 axi observe --root . --baseline axiom-baseline.json
 axi observe --root . --baseline axiom-baseline.json --markdown
-axi observe --root . --warn-unresolved-imports --warn-public-api-surface --warn-coupling-concentration
+axi observe --root . --warn-unresolved-imports --warn-public-api-surface --warn-coupling-concentration --warn-deep-internal-imports
 ```
 
 Use human output while developing. Use JSON output for CI annotations and custom reporting. Use Markdown output for PR comments, review artifacts, and agent repair-loop summaries.
@@ -268,7 +271,7 @@ Start loose:
 Then tighten:
 
 - Turn on `--warn-unowned`.
-- Turn on `--warn-unresolved-imports`, `--warn-public-api-surface`, and `--warn-coupling-concentration` during architecture review.
+- Turn on `--warn-unresolved-imports`, `--warn-public-api-surface`, `--warn-coupling-concentration`, and `--warn-deep-internal-imports` during architecture review.
 - Add missing module paths.
 - Move mature contracts to `--strict`.
 - Add visibility rules for public package or service boundaries.

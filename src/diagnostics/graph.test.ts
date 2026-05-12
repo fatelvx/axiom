@@ -342,6 +342,20 @@ test("attention graph output explains coupling concentration warnings", () => {
   assert.match(output, /fan-in modules: FeatureA, FeatureB, FeatureC, FeatureD/);
 });
 
+test("attention graph output explains deep internal import warnings", () => {
+  const result = runCheck({
+    root: path.join(repoRoot, "fixtures/deep-internal-import"),
+    warnDeepInternalImports: true
+  });
+  const output = formatGraphResult(result, { violationsOnly: true, attention: true });
+
+  assert.match(output, /warnings: 1/);
+  assert.match(output, /deep_internal_import src\/app\/deep\.ts:1: App imports Lib through a deep relative path instead of a likely entry point\./);
+  assert.match(output, /observed: App -> Lib deep internal import/);
+  assert.match(output, /imported path: src\/lib\/internal\/secret\.ts/);
+  assert.match(output, /likely entry points: src\/lib\/index\.ts/);
+});
+
 test("violations-only graph output includes non-edge surface violations", () => {
   const result = runCheck({ root: path.join(repoRoot, "fixtures/hidden-reexport") });
   const output = formatGraphResult(result, { violationsOnly: true });

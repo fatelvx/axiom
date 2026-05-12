@@ -124,6 +124,16 @@ function formatDetails(root: string, violation: Violation): string[] {
     lines.push(`  observed: ${observed}${suffix}`);
   }
 
+  const importedPath = readString(violation.details.importedPath);
+  if (importedPath) {
+    lines.push(`  imported path: ${importedPath}`);
+  }
+
+  const publicEntrypoints = readStringArray(violation.details.publicEntrypoints);
+  if (publicEntrypoints.length > 0) {
+    lines.push(`  likely entry points: ${publicEntrypoints.join(", ")}`);
+  }
+
   const rule = readString(violation.details.rule);
   const ruleLocation = readLocation(violation.details.ruleLocation);
   const suffix = ruleLocation ? ` (${formatLocation(root, ruleLocation.filePath, ruleLocation.line)})` : "";

@@ -769,6 +769,93 @@ export function findCouplingConcentrationWarnings(observedDependencies: Observed
     });
 }
 
+export function findDeepInternalImportWarnings(
+  spec: AxiomSpec,
+  observedDependencies: ObservedDependency[],
+  sourceFiles: string[],
+  ownership: OwnershipIndex,
+  root: string
+): Violation[] {
+  const modulesByName = new Map(spec.modules.map((module) => [module.name, module]));
+  const entrypointsByModule = findLikelyEntrypointsByModule(sourceFiles, ownership, root);
+  const warnings: Violation[] = [];
+
+  for (const dependency of observedDependencies) {
+    const resolvedPath = dependency.importRecord.resolvedPath;
+    if (!resolvedPath || !isRelativeSpecifier(dependency.importRecord.specifier)) {
+      continue;
+    }
+
+    const targetModule = modulesByName.get(dependency.toModule);
+    if (!targetModule || targetModule.exposes.length > 0) {
+      continue;
+    }
+
+    const publicEntrypoints = entrypointsByModule.get(dependency.toModule) ?? [];
+    if (publicEntrypoints.length === 0) {
+      continue;
+    }
+
+    const importedPath = relativePath(root, resolvedPath);
+    if (publicEntrypoints.includes(importedPath)) {
+      continue;
+    }
+
+    warnings.push({
+      code: "deep_internal_import",
+      message: `${dependency.fromModule} imports ${dependency.toModule} through a deep relative path instead of a likely entry point.`,
+      location: {
+        filePath: dependency.importRecord.filePath,
+        line: dependency.importRecord.line
+      },
+      details: {
+        fromModule: dependency.fromModule,
+        toModule: dependency.toModule,
+        specifier: dependency.importRecord.specifier,
+        importedPath,
+        publicEntrypoints: publicEntrypoints.slice(0, 5),
+        publicEntrypointCount: publicEntrypoints.length,
+        importKind: dependency.importRecord.kind,
+        observed: `${dependency.fromModule} -> ${dependency.toModule} deep internal import`,
+        scope: "relative_cross_module_non_entrypoint",
+        suggestion:
+          `Import a public entry point from ${dependency.toModule}, or declare explicit exposes/hides rules if this deep path is intentional.`
+      }
+    });
+  }
+
+  return warnings;
+}
+
+function findLikelyEntrypointsByModule(
+  sourceFiles: string[],
+  ownership: OwnershipIndex,
+  root: string
+): Map<string, string[]> {
+  const entrypoints = new Map<string, string[]>();
+
+  for (const sourceFile of sourceFiles) {
+    if (!isIndexSourceFile(sourceFile)) {
+      continue;
+    }
+
+    const owner = ownership.findModule(sourceFile);
+    if (!owner) {
+      continue;
+    }
+
+    const moduleEntrypoints = entrypoints.get(owner.name) ?? [];
+    moduleEntrypoints.push(relativePath(root, sourceFile));
+    entrypoints.set(owner.name, moduleEntrypoints);
+  }
+
+  for (const moduleEntrypoints of entrypoints.values()) {
+    moduleEntrypoints.sort();
+  }
+
+  return entrypoints;
+}
+
 function ensureCouplingStats(
   statsByModule: Map<string, CouplingStats>,
   moduleName: string
@@ -834,8 +921,20 @@ function formatExportKind(importRecord: ImportRecord): string {
   return importRecord.isTypeOnly ? "export type *" : "export *";
 }
 
+function isRelativeSpecifier(specifier: string): boolean {
+  return specifier.startsWith(".");
+}
+
 function isInternalLikeUnresolvedSpecifier(specifier: string): boolean {
   return specifier.startsWith(".") || specifier.startsWith("#");
+}
+
+function isIndexSourceFile(filePath: string): boolean {
+  return stripExtension(path.basename(filePath)) === "index";
+}
+
+function stripExtension(fileName: string): string {
+  return fileName.replace(/\.[^.]+$/, "");
 }
 
 function findMatchingPathRule(root: string, filePath: string | undefined, rules: PathRef[]): PathRef | undefined {

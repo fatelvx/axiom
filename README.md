@@ -146,6 +146,7 @@ Axiom v0.5.8 currently supports:
 - Opt-in public API surface warnings for broad exposed barrels with `--warn-public-api-surface`.
 - Opt-in coupling concentration warnings for modules with high observed fan-in or fan-out with `--warn-coupling-concentration`.
 - Opt-in unresolved import warnings for static relative or package `#imports` that Axiom can see but cannot resolve with `--warn-unresolved-imports`.
+- Opt-in deep internal import warnings for relative cross-module imports that bypass likely `index.*` entry points with `--warn-deep-internal-imports`.
 - TypeScript/JavaScript import scanning through the TypeScript parser.
 - Relative imports, barrel `index.*` files, dynamic imports, `require`, and multiline imports.
 - TypeScript `paths` aliases from `tsconfig.json`.
@@ -169,7 +170,7 @@ Axiom v0 is intentionally honest about its blind spots:
 
 - It does not fully observe runtime-only dependency paths such as string-based dependency injection, plugin registries, generated imports, or `eval`.
 - It can optionally warn about static relative or package `#imports` that the scanner sees but cannot resolve with `--warn-unresolved-imports`, but it still cannot see non-literal runtime wiring.
-- It does not prove that a module is semantically well-designed. Axiom can catch direct hidden-path re-exports and local import-then-export leaks from hidden internals, and `--warn-public-api-surface` can flag broad `export *` barrels, but code can still become too coupled through wrappers, facades, or overly large public entry points. This is the `symbol-level API health` gap.
+- It does not prove that a module is semantically well-designed. Axiom can catch direct hidden-path re-exports and local import-then-export leaks from hidden internals, `--warn-public-api-surface` can flag broad `export *` barrels, and `--warn-deep-internal-imports` can flag relative imports that bypass likely entry points, but code can still become too coupled through wrappers, facades, or overly large public entry points. This is the `symbol-level API health` gap.
 - It does not prove that concentrated fan-in or fan-out is wrong. `--warn-coupling-concentration` surfaces modules that may be turning into coordination hubs so humans and agents can review the pressure before it becomes hidden debt.
 - It does not replace ESLint, TypeScript, tests, or review. Axiom focuses on architecture intent: declared graph, observed graph, drift, warnings, intentional violations, and CI gates for clear contracts.
 - It does not replace Dependency Cruiser, Nx boundaries, CodeQL, or custom repository scripts. See [Comparison And Boundaries](guides/comparison.md) for where Axiom is useful and where other tools are stronger.
@@ -269,10 +270,12 @@ axi observe --root . --markdown
 axi observe --root . --warn-public-api-surface
 axi observe --root . --warn-unresolved-imports
 axi observe --root . --warn-coupling-concentration
+axi observe --root . --warn-deep-internal-imports
 axi check --root . --warn-unowned
 axi check --root . --warn-public-api-surface
 axi check --root . --warn-unresolved-imports
 axi check --root . --warn-coupling-concentration
+axi check --root . --warn-deep-internal-imports
 axi check --root . --strict
 axi graph --root . --json
 axi graph --root . --json > axiom-baseline.json
@@ -495,6 +498,18 @@ axi graph --root . --attention --warn-coupling-concentration
 
 Today this flags a module when the observed graph shows fan-in from at least four distinct modules or fan-out to at least four distinct modules. It is advisory: the check still exits `0` unless there are real violations. Treat it as a review prompt for modules that may be becoming coordination hubs, broad facades, or hidden dependency magnets.
 
+## Deep Internal Import Warnings
+
+To inspect likely public-entry bypasses before formalizing `exposes` rules, opt into deep internal import warnings:
+
+```bash
+axi observe --root . --warn-deep-internal-imports
+axi check --root . --warn-deep-internal-imports
+axi graph --root . --attention --warn-deep-internal-imports
+```
+
+Today this flags relative cross-module imports that target a non-`index.*` file when the target module has a likely `index.*` entry point. It is advisory: the check still exits `0` unless there are real violations. Treat it as a prompt to import through a public entry point, or to add explicit `exposes` / `hides` rules when a deep path is intentional.
+
 ## JSON And Markdown Output
 
 `axi check --json` emits `axiom.check.v4`:
@@ -656,6 +671,7 @@ Near-term:
 - Baseline-aware drift refinement for CI comments and agent repair loops.
 - Pilot evidence for how Axiom complements ESLint architecture rules, Dependency Cruiser, Nx boundaries, CodeQL, and custom CI scripts.
 - Symbol-level public API surface analysis as an advisory research area, not a v0 hard gate.
+- Real-project drift comparisons across multiple repository versions, including coupling concentration and deep internal import pressure.
 
 Later:
 

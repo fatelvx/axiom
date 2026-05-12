@@ -119,6 +119,24 @@ test("cli observe --warn-coupling-concentration reports advisory coupling warnin
   assert.deepEqual(payload.warnings[0].details.incomingModules, ["FeatureA", "FeatureB", "FeatureC", "FeatureD"]);
 });
 
+test("cli observe --warn-deep-internal-imports reports advisory deep import warnings", () => {
+  const result = spawnSync(
+    process.execPath,
+    [cliPath, "observe", "--root", "fixtures/deep-internal-import", "--warn-deep-internal-imports", "--json"],
+    { cwd: repoRoot, encoding: "utf8" }
+  );
+
+  assert.equal(result.status, 0);
+
+  const payload = JSON.parse(result.stdout);
+  assert.equal(payload.schemaVersion, "axiom.graph.v9");
+  assert.equal(payload.summary.violations, 0);
+  assert.equal(payload.summary.warnings, 1);
+  assert.equal(payload.warnings[0].code, "deep_internal_import");
+  assert.equal(payload.warnings[0].details.importedPath, "src/lib/internal/secret.ts");
+  assert.deepEqual(payload.warnings[0].details.publicEntrypoints, ["src/lib/index.ts"]);
+});
+
 test("cli observe --warn-unresolved-imports reports advisory unresolved import warnings", () => {
   const result = spawnSync(
     process.execPath,

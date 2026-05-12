@@ -230,6 +230,41 @@ test("coupling concentration warnings are opt-in advisory diagnostics", () => {
   });
 });
 
+test("deep internal import warnings are opt-in advisory diagnostics", () => {
+  const root = path.join(repoRoot, "fixtures/deep-internal-import");
+  const quietResult = runCheck({ root });
+
+  assert.deepEqual(quietResult.violations, []);
+  assert.deepEqual(quietResult.warnings, []);
+
+  const result = runCheck({ root, warnDeepInternalImports: true });
+
+  assert.deepEqual(result.violations, []);
+  assert.equal(result.observedDependencies.length, 2);
+  assert.equal(result.warnings.length, 1);
+  assert.deepEqual(result.warnings[0], {
+    code: "deep_internal_import",
+    message: "App imports Lib through a deep relative path instead of a likely entry point.",
+    location: {
+      filePath: path.join(root, "src/app/deep.ts"),
+      line: 1
+    },
+    details: {
+      fromModule: "App",
+      toModule: "Lib",
+      specifier: "../lib/internal/secret",
+      importedPath: "src/lib/internal/secret.ts",
+      publicEntrypoints: ["src/lib/index.ts"],
+      publicEntrypointCount: 1,
+      importKind: "import",
+      observed: "App -> Lib deep internal import",
+      scope: "relative_cross_module_non_entrypoint",
+      suggestion:
+        "Import a public entry point from Lib, or declare explicit exposes/hides rules if this deep path is intentional."
+    }
+  });
+});
+
 test("unresolved import warnings are opt-in advisory diagnostics", () => {
   const root = path.join(repoRoot, "fixtures/unresolved-import");
   const quietResult = runCheck({ root });

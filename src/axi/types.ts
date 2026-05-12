@@ -12,6 +12,7 @@ export type ViolationCode =
   | "unresolved_import"
   | "broad_public_surface"
   | "coupling_concentration"
+  | "deep_internal_import"
   | "unknown_layer"
   | "missing_module_path"
   | "unknown_module"

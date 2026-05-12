@@ -529,6 +529,16 @@ function appendMarkdownWarningDetails(lines: string[], warning: GraphJsonViolati
     appendMarkdownDetail(lines, "Rule", `${rule}${suffix}`);
   }
 
+  const importedPath = readString(warning.details?.importedPath);
+  if (importedPath) {
+    appendMarkdownDetail(lines, "Imported path", markdownCode(importedPath));
+  }
+
+  const publicEntrypoints = readStringArray(warning.details?.publicEntrypoints);
+  if (publicEntrypoints.length > 0) {
+    appendMarkdownDetail(lines, "Likely entry points", publicEntrypoints.map(markdownCode).join(", "));
+  }
+
   const threshold = readRecord(warning.details?.threshold);
   const fanInThreshold = readNumber(threshold?.fanInModules);
   const fanOutThreshold = readNumber(threshold?.fanOutModules);
@@ -766,6 +776,16 @@ function formatWarnings(graph: GraphJsonResult): string[] {
     if (rule) {
       const suffix = ruleLocation ? ` (${ruleLocation.filePath}:${ruleLocation.line})` : "";
       lines.push(`  rule: ${rule}${suffix}`);
+    }
+
+    const importedPath = readString(warning.details?.importedPath);
+    if (importedPath) {
+      lines.push(`  imported path: ${importedPath}`);
+    }
+
+    const publicEntrypoints = readStringArray(warning.details?.publicEntrypoints);
+    if (publicEntrypoints.length > 0) {
+      lines.push(`  likely entry points: ${publicEntrypoints.join(", ")}`);
     }
 
     const threshold = readRecord(warning.details?.threshold);

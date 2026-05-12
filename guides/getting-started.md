@@ -165,6 +165,8 @@ axi observe --root . --baseline axiom-baseline.json --markdown
 
 Use `--markdown` when the output should become a PR comment, review note, or agent repair-loop message. It keeps hard violations, visible intentional debt, advisory warnings, and drift in separate sections.
 
+Plain `axi observe` output also states its review model: declared `.axi` intent is compared with observed source imports, the command stays advisory and exits `0`, and clean observed edges may be omitted from the attention view. This is intentional; use `axi check` when you want a CI gate.
+
 Use `--mermaid` when you want to see the observed module dependency graph visually:
 
 ```bash

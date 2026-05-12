@@ -171,7 +171,7 @@ Axiom v0.5.8 currently supports:
 - Markdown architecture review summaries for PRs and agent repair loops with `axi observe --markdown`.
 - Mermaid dependency diagrams for observed module graphs with `axi graph --mermaid` or `axi observe --mermaid`.
 - Starter contract inference with `axi infer`, explicitly marked as a current-graph snapshot rather than recommended architecture, with an authoring checklist and next commands.
-- Architecture attention output with `axi observe`.
+- Architecture attention output with `axi observe`, including a visible review model that separates advisory review from CI gates.
 - Baseline-aware observed edge drift with `axi observe --baseline <graph-json>`.
 - Focused graph output with `axi graph --violations-only`.
 - Scan summaries with module, source-file, import, and observed-dependency counts.
@@ -268,7 +268,7 @@ axi infer --root <project>
 Use them like this:
 
 - `axi check`: validate code against `.axi`; exits `1` on violations.
-- `axi observe`: show the architecture attention surface; exits `0` and focuses violations, visible debt, and warnings.
+- `axi observe`: show the architecture attention surface; exits `0`, explains the declared-intent vs observed-import review model, and focuses violations, visible debt, and warnings.
 - `axi graph`: inspect declared and observed graphs; exits `0` even with violations.
 - `axi graph --violations-only` or `axi graph --attention`: show failing edges, intentional violations, and warning guardrails.
 - `axi graph --mermaid`: print a visual Mermaid flowchart of observed module dependencies with a built-in legend.

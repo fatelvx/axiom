@@ -192,6 +192,7 @@ test("cli graph --violations-only filters observed dependency output", () => {
 
   assert.equal(result.status, 0);
   assert.match(result.stdout, /Axiom graph \(violations only\)\./);
+  assert.match(result.stdout, /review mode: violations-only graph \(presentation filter\)/);
   assert.match(result.stdout, /observed dependencies: 2 of 3/);
   assert.doesNotMatch(result.stdout, /src\/ui\/view\.ts:1 "\.\.\/services"/);
   assert.match(result.stdout, /src\/ui\/view\.ts:2 "\.\.\/services\/feature"/);
@@ -207,6 +208,7 @@ test("cli graph --attention aliases the focused architecture attention view", ()
 
   assert.equal(result.status, 0);
   assert.match(result.stdout, /Axiom graph \(attention\)\./);
+  assert.match(result.stdout, /model: declared \.axi intent vs observed source imports/);
   assert.match(result.stdout, /observed dependencies: 2 of 3/);
   assert.doesNotMatch(result.stdout, /src\/ui\/view\.ts:1 "\.\.\/services"/);
 });
@@ -248,6 +250,8 @@ test("cli observe shows the architecture attention surface", () => {
 
   assert.equal(result.status, 0);
   assert.match(result.stdout, /Axiom observe\./);
+  assert.match(result.stdout, /review mode: architecture attention \(advisory, exits 0\)/);
+  assert.match(result.stdout, /gate: use axi check for CI failures; observe is for review and drift visibility/);
   assert.match(result.stdout, /observed dependencies: 2 of 3/);
   assert.match(result.stdout, /violating dependencies:/);
   assert.doesNotMatch(result.stdout, /src\/ui\/view\.ts:1 "\.\.\/services"/);

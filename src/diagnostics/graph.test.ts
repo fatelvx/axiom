@@ -102,7 +102,10 @@ test("violations-only graph output focuses observed edges with diagnostics", () 
   const output = formatGraphResult(result, { violationsOnly: true });
 
   assert.match(output, /Axiom graph \(violations only\)\./);
+  assert.match(output, /review mode: violations-only graph \(presentation filter\)/);
+  assert.match(output, /model: declared \.axi intent vs observed source imports/);
   assert.match(output, /observed dependencies: 2 of 3/);
+  assert.match(output, /focus: showing 2 of 3 observed dependency edges with hard violations or accepted debt; clean edges omitted/);
   assert.doesNotMatch(output, /src\/ui\/view\.ts:1 "\.\.\/services"/);
   assert.match(output, /src\/ui\/view\.ts:2 "\.\.\/services\/feature"/);
   assert.match(output, /unexposed_import: UI imports a non-exposed path from Services\./);
@@ -118,6 +121,7 @@ test("attention graph output uses awareness-oriented heading", () => {
   const output = formatGraphResult(result, { violationsOnly: true, attention: true });
 
   assert.match(output, /Axiom graph \(attention\)\./);
+  assert.match(output, /review mode: graph attention \(advisory\)/);
   assert.match(output, /observed dependencies: 2 of 3/);
 });
 

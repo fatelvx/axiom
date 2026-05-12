@@ -159,6 +159,7 @@ export function formatGraphResult(result: CheckResult, options: GraphFormatOptio
   const graph = toGraphJson(result, options);
   const lines = [
     formatGraphHeader(options),
+    ...formatGraphReviewModel(graph, options),
     `modules: ${graph.summary.modules}`,
     `declared dependencies: ${graph.summary.declaredDependencies}`,
     `forbidden dependencies: ${graph.summary.forbiddenDependencies}`,
@@ -240,6 +241,45 @@ export function formatGraphResult(result: CheckResult, options: GraphFormatOptio
   }
 
   return lines.join("\n");
+}
+
+function formatGraphReviewModel(graph: GraphJsonResult, options: GraphFormatOptions): string[] {
+  if (options.observe) {
+    return [
+      "review mode: architecture attention (advisory, exits 0)",
+      "model: declared .axi intent vs observed source imports",
+      "gate: use axi check for CI failures; observe is for review and drift visibility",
+      `focus: ${formatAttentionFocus(graph)}`
+    ];
+  }
+
+  if (options.attention) {
+    return [
+      "review mode: graph attention (advisory)",
+      "model: declared .axi intent vs observed source imports",
+      `focus: ${formatAttentionFocus(graph)}`
+    ];
+  }
+
+  if (options.violationsOnly) {
+    return [
+      "review mode: violations-only graph (presentation filter)",
+      "model: declared .axi intent vs observed source imports",
+      `focus: ${formatAttentionFocus(graph)}`
+    ];
+  }
+
+  return [];
+}
+
+function formatAttentionFocus(graph: GraphJsonResult): string {
+  if (!graph.filters.violationsOnly) {
+    return "showing the full observed module graph";
+  }
+
+  return `showing ${formatObservedDependencyCount(
+    graph
+  )} observed dependency edge${pluralize(graph.summary.shownObservedDependencies)} with hard violations or accepted debt; clean edges omitted`;
 }
 
 function formatGraphHeader(options: GraphFormatOptions): string {

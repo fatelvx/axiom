@@ -23,6 +23,7 @@ Review the inferred draft. Do not treat it as architecture truth. It mirrors tod
 Useful inference signals:
 
 - Collapsed cycle groups show modules that are not cleanly separated yet.
+- Collapsed cycle comments include the source groups and observed internal edges that made inference merge them.
 - Broad groups show where the first contract may need better names.
 - Existing observed edges show what the current system already depends on.
 

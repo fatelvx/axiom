@@ -356,7 +356,7 @@ For monorepos:
 axi infer --root . --group-by workspace
 ```
 
-Inference prints a draft to stdout and does not write files. Treat it as a starting point: rename modules, add layers, tighten `depends on`, and add `exposes` or `hides` after review.
+Inference prints a draft to stdout and does not write files. Treat it as a starting point: rename modules, add layers, tighten `depends on`, and add `exposes` or `hides` after review. When `axi infer` collapses cyclic candidate groups, it now lists the included groups and observed internal edges so the cycle is useful architecture feedback instead of just a strange generated name.
 
 ## Monorepos
 

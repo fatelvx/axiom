@@ -76,7 +76,11 @@ export function runCheck(options: CheckOptions): CheckResult {
   if (specFiles.length === 0) {
     violations.push({
       code: "no_spec_files",
-      message: `No .axi files found under ${root}.`
+      message: `No .axi files found under ${root}.`,
+      details: {
+        suggestion:
+          "Run `axi infer --root . > axiom/main.axi` from the project root to create a starter contract, or pass an external pilot contract with `--spec <path-to-contract.axi>`."
+      }
     });
   }
 

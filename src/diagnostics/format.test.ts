@@ -34,6 +34,17 @@ test("human diagnostics include spec validation fixes", () => {
   assert.match(output, /fix: Add at least one path declaration under module Simulation\./);
 });
 
+test("human diagnostics tell no-spec projects how to start", () => {
+  const fixtureRoot = path.join(repoRoot, "fixtures/infer-cycle");
+  const result = runCheck({ root: fixtureRoot });
+  const output = formatCheckResult(result);
+
+  assert.match(output, /error no_spec_files/);
+  assert.match(output, /No \.axi files found/);
+  assert.match(output, /fix: Run `axi infer --root \. > axiom\/main\.axi` from the project root/);
+  assert.match(output, /--spec <path-to-contract\.axi>/);
+});
+
 test("human diagnostics include layer breach rule details", () => {
   const fixtureRoot = path.join(repoRoot, "fixtures/layer-breach");
   const result = runCheck({ root: fixtureRoot });

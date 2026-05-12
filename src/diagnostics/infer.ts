@@ -28,7 +28,26 @@ export function formatInferResult(result: InferResult): string {
   ];
 
   for (const cycle of result.collapsedCycles) {
-    lines.push(`# collapsed cycle: ${cycle.module} = ${cycle.sourceGroups.join(" + ")}`);
+    lines.push(`# collapsed cycle: ${cycle.module}`);
+    if (cycle.sourceGroups.length <= 4) {
+      lines.push(`# includes: ${cycle.sourceGroups.join(", ")}`);
+    } else {
+      lines.push("# includes:");
+      for (const sourceGroup of cycle.sourceGroups) {
+        lines.push(`# - ${sourceGroup}`);
+      }
+    }
+    if (cycle.internalDependencies.length > 0) {
+      lines.push("# observed internal edges:");
+      for (const dependency of cycle.internalDependencies.slice(0, 8)) {
+        lines.push(`# - ${dependency.fromGroup} -> ${dependency.toGroup} (${dependency.count})`);
+      }
+      if (cycle.internalDependencies.length > 8) {
+        lines.push(`# - ... ${cycle.internalDependencies.length - 8} more`);
+      }
+    }
+    lines.push("# reason: inferred groups form a circular dependency, so this starter contract keeps them together.");
+    lines.push("# review: rename this merged module after deciding whether the cycle should be split.");
   }
 
   if (result.collapsedCycles.length > 0) {

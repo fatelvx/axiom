@@ -32,7 +32,35 @@ test("infer collapses cyclic candidate groups into one starter module", () => {
   assert.deepEqual(result.collapsedCycles, [
     {
       module: "AB",
-      sourceGroups: ["A", "B"]
+      sourceGroups: ["A", "B"],
+      internalDependencies: [
+        {
+          fromGroup: "A",
+          toGroup: "B",
+          count: 1,
+          samples: [
+            {
+              filePath: "src/a/index.ts",
+              line: 1,
+              specifier: "../b",
+              resolvedPath: "src/b/index.ts"
+            }
+          ]
+        },
+        {
+          fromGroup: "B",
+          toGroup: "A",
+          count: 1,
+          samples: [
+            {
+              filePath: "src/b/index.ts",
+              line: 1,
+              specifier: "../a",
+              resolvedPath: "src/a/index.ts"
+            }
+          ]
+        }
+      ]
     }
   ]);
   assert.deepEqual(result.modules, [
@@ -45,6 +73,32 @@ test("infer collapses cyclic candidate groups into one starter module", () => {
       sourceGroups: ["A", "B"]
     }
   ]);
+
+  const output = formatInferResult(result);
+  assert.match(output, /# collapsed cycle: AB/);
+  assert.match(output, /# includes: A, B/);
+  assert.match(output, /# - A -> B \(1\)/);
+  assert.match(output, /# reason: inferred groups form a circular dependency/);
+});
+
+test("infer gives long collapsed cycles a readable module name", () => {
+  const result = runInfer({ root: path.join(repoRoot, "fixtures/infer-long-cycle"), groupDepth: 2 });
+
+  assert.equal(result.candidateModules, 4);
+  assert.deepEqual(result.collapsedCycles.map((cycle) => cycle.module), ["ServicesCycle"]);
+  assert.deepEqual(result.collapsedCycles[0]?.sourceGroups, [
+    "ServicesAgentLoop",
+    "ServicesMemory",
+    "ServicesTools",
+    "Store"
+  ]);
+  assert.deepEqual(result.modules.map((module) => module.name), ["ServicesCycle"]);
+
+  const output = formatInferResult(result);
+  assert.match(output, /# collapsed cycle: ServicesCycle/);
+  assert.match(output, /# includes: ServicesAgentLoop, ServicesMemory, ServicesTools, Store/);
+  assert.match(output, /# - ServicesAgentLoop -> ServicesMemory \(1\)/);
+  assert.doesNotMatch(output, /ServicesAgentLoopServicesMemoryServicesToolsStore/);
 });
 
 test("infer JSON includes the generated .axi draft", () => {

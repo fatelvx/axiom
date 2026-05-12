@@ -41,6 +41,14 @@ export interface InferredImportSample {
 export interface CollapsedCycle {
   module: string;
   sourceGroups: string[];
+  internalDependencies: CollapsedCycleDependency[];
+}
+
+export interface CollapsedCycleDependency {
+  fromGroup: string;
+  toGroup: string;
+  count: number;
+  samples: InferredImportSample[];
 }
 
 export interface InferResult {
@@ -99,18 +107,16 @@ export function runInfer(options: InferOptions): InferResult {
   const keyToComponent = mapKeysToComponents(components);
   const modules = buildInferredModules(root, candidateGroups, candidateEdges, components, keyToComponent);
   const observedDependencies = buildObservedDependencies(root, candidateEdges, keyToComponent, components);
+  const collapsedCycles = components
+    .filter((component) => component.keys.length > 1)
+    .map((component) => buildCollapsedCycle(candidateGroups, candidateEdges, component));
 
   return {
     root,
     sourceFiles,
     importCount: imports.length,
     candidateModules: candidateGroups.length,
-    collapsedCycles: components
-      .filter((component) => component.keys.length > 1)
-      .map((component) => ({
-        module: component.name,
-        sourceGroups: component.keys.map((key) => candidateName(candidateGroups, key)).sort()
-      })),
+    collapsedCycles,
     modules,
     observedDependencies
   };
@@ -527,7 +533,75 @@ function candidateName(candidateGroups: CandidateGroup[], key: string): string {
 
 function combinedName(candidateGroups: CandidateGroup[], keys: string[]): string {
   const names = keys.map((key) => candidateName(candidateGroups, key)).sort();
-  return names.length === 1 ? names[0] ?? "Module" : names.join("");
+  if (names.length === 1) {
+    return names[0] ?? "Module";
+  }
+
+  const combined = names.join("");
+  if (combined.length <= 32 && names.length <= 3) {
+    return combined;
+  }
+
+  return conciseCycleName(names);
+}
+
+function conciseCycleName(names: string[]): string {
+  const dominantToken = findDominantLeadingToken(names);
+  if (dominantToken) {
+    return toIdentifier(`${dominantToken}-cycle`);
+  }
+
+  const firstName = names[0] ?? "Module";
+  return toIdentifier(`cycle-group-${firstName}-and-${Math.max(0, names.length - 1)}-more`);
+}
+
+function findDominantLeadingToken(names: string[]): string | undefined {
+  const counts = new Map<string, { token: string; count: number }>();
+
+  for (const name of names) {
+    const token = splitIdentifierWords(name)[0];
+    if (!token) {
+      continue;
+    }
+    const normalized = token.toLowerCase();
+    const entry = counts.get(normalized) ?? { token, count: 0 };
+    entry.count += 1;
+    counts.set(normalized, entry);
+  }
+
+  const requiredCount = Math.max(2, Math.ceil(names.length / 2));
+  return [...counts.values()]
+    .filter((entry) => entry.count >= requiredCount)
+    .sort((left, right) => right.count - left.count || left.token.localeCompare(right.token))[0]?.token;
+}
+
+function splitIdentifierWords(name: string): string[] {
+  return name.match(/[A-Z]+(?=[A-Z][a-z]|\d|$)|[A-Z]?[a-z]+|\d+/g) ?? [name];
+}
+
+function buildCollapsedCycle(
+  candidateGroups: CandidateGroup[],
+  candidateEdges: CandidateEdge[],
+  component: Component
+): CollapsedCycle {
+  const componentKeys = new Set(component.keys);
+  const internalDependencies = candidateEdges
+    .filter((edge) => componentKeys.has(edge.from) && componentKeys.has(edge.to) && edge.from !== edge.to)
+    .map((edge) => ({
+      fromGroup: candidateName(candidateGroups, edge.from),
+      toGroup: candidateName(candidateGroups, edge.to),
+      count: edge.count,
+      samples: edge.samples
+    }))
+    .sort((left, right) =>
+      `${left.fromGroup}\0${left.toGroup}`.localeCompare(`${right.fromGroup}\0${right.toGroup}`)
+    );
+
+  return {
+    module: component.name,
+    sourceGroups: component.keys.map((key) => candidateName(candidateGroups, key)).sort(),
+    internalDependencies
+  };
 }
 
 function uniquifyComponentNames(components: Component[]): Component[] {

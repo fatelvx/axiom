@@ -529,6 +529,8 @@ Today this flags a module when the observed graph shows fan-in from at least fou
 
 `axi graph --json` and `axi observe --json` emit `axiom.graph.v9`. Each observed dependency includes `violations` and `intentionalViolations` arrays. Graph JSON also includes a top-level `intentionalDebt` ledger so accepted non-edge violations, such as hidden public-surface re-exports, stay visible to PR comments and agents. With `--violations-only`, `--attention`, or `observe`, `observedDependencies` is filtered to the edges that need attention or have accepted architecture debt, warning guardrails are still shown with details, and `summary.observedDependencies` keeps the full count. The JSON `filters` object marks focused attention output.
 
+If you are building a CI annotation, PR comment, dashboard, or agent integration on top of JSON output, follow [JSON Consumers](guides/json-consumers.md). In short: use `axi check --json` for hard gates, tolerate additive fields, and treat `intentionalDebt[]` as the authoritative accepted-debt ledger for graph / observe output.
+
 Use an unfiltered graph JSON file as a baseline when you want to inspect architecture drift in a PR or agent run:
 
 ```bash
@@ -581,6 +583,7 @@ Then run that script in CI after installing dependencies.
 
 - [Getting Started](guides/getting-started.md)
 - [Adopting Axiom In A Real Project](guides/adoption.md)
+- [JSON Consumers](guides/json-consumers.md)
 - [Publishing The Public Alpha](guides/publishing-alpha.md)
 - [Contributing](CONTRIBUTING.md)
 - [Basic App Example](examples/basic-app)

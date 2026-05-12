@@ -38,6 +38,7 @@
 - Added a JSON consumer guide for CI annotation, PR comment, dashboard, and agent integrations.
 - Added a comparison and boundaries guide covering ESLint architecture rules, Dependency Cruiser, Nx boundaries, CodeQL, and custom scripts.
 - Added a targeted comparison backtest artifact for the "just Dependency Cruiser / ESLint" positioning risk.
+- Added a GitHub Actions guide and example workflow that split hard `axi check` gates from `axi observe --markdown` review summaries.
 - Updated package metadata to match the architecture observability plus enforceable contracts positioning.
 - Bumped check JSON to `axiom.check.v4` for intentional violation reporting and warning details.
 

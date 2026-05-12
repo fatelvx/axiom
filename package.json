@@ -35,6 +35,7 @@
     "assets/banner.svg",
     "guides/",
     "examples/basic-app/",
+    "examples/github-actions/",
     "examples/monorepo-workspace/"
   ],
   "bin": {

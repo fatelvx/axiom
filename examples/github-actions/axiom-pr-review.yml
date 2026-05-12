@@ -1,0 +1,42 @@
+name: Axiom Architecture
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  axiom:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - run: npm ci
+
+      - name: Axiom hard gate
+        shell: bash
+        run: |
+          set +e
+          npx axi check --root . --json > axiom-check.json
+          status=$?
+          node examples/github-actions/annotate-check.mjs axiom-check.json
+          exit "$status"
+
+      - name: Axiom architecture summary
+        if: always()
+        shell: bash
+        run: |
+          {
+            echo "## Axiom Architecture Summary"
+            echo
+            npx axi observe --root . --markdown \
+              --warn-public-api-surface \
+              --warn-unresolved-imports \
+              --warn-coupling-concentration
+          } >> "$GITHUB_STEP_SUMMARY"

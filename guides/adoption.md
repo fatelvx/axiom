@@ -248,6 +248,8 @@ Use human output while developing. Use JSON output for CI annotations and custom
 
 `axi observe --root .` is the product-facing architecture attention view: it keeps failing edges, intentional violations, and warning guardrails in one focused output. `axi graph --root . --attention` and `--violations-only` remain available when you want the graph command explicitly.
 
+For a concrete GitHub Actions setup, read [GitHub Actions And PR Summaries](github-actions.md). The recommended split is `axi check --json` for the hard gate and `axi observe --markdown` for review context.
+
 If you build on JSON output, read [JSON Consumers](json-consumers.md). Use `axi check --json` for gates, tolerate additive graph fields, and read top-level `intentionalDebt[]` when reviewing accepted debt.
 
 `axi observe --root . --baseline axiom-baseline.json` compares the current observed module edges with an unfiltered `axi graph --json` snapshot. JSON marks this as `advisory_observed_edge_drift`; treat new and removed edges as PR review context first, and promote only the parts that prove consistently useful into stricter automation.

@@ -203,3 +203,14 @@ node dist/cli.js graph --root examples/monorepo-workspace --violations-only
 ```
 
 The example shows `apps/web` importing a hidden internal file from `packages/shared`.
+
+## 8. Add A PR Summary
+
+After the first contract works locally, wire it into CI with a split gate and review summary:
+
+```bash
+axi check --root . --json
+axi observe --root . --markdown
+```
+
+Use [GitHub Actions And PR Summaries](github-actions.md) for a copyable workflow that turns hard violations into GitHub annotations while keeping advisory warnings, visible debt, and drift in the job summary.

@@ -27,7 +27,7 @@ It adds:
 
 The key difference is not a stronger import parser. The key difference is the workflow around declared intent, accepted tradeoffs, drift, and agent-readable review context.
 
-If you are building that workflow into CI annotations, PR comments, dashboards, or agent integrations, start with [JSON Consumers](json-consumers.md). The integration should use `axi check --json` for hard gates and `axi observe` or `axi graph` output for review context.
+If you are building that workflow into CI annotations, PR comments, dashboards, or agent integrations, start with [GitHub Actions And PR Summaries](github-actions.md) and [JSON Consumers](json-consumers.md). The integration should use `axi check --json` for hard gates and `axi observe` or `axi graph` output for review context.
 
 ## Tool Boundary Matrix
 

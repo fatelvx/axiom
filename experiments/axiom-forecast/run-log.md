@@ -490,3 +490,35 @@ Detailed result:
 ```text
 experiments/axiom-forecast/results/mirofish-big-backtest-v2-2026-05-13.md
 ```
+
+### Contract Recipes Target Backtest
+
+Before this target backtest, Axiom had shipped and pushed:
+
+- `guides/contract-recipes.md`
+- links from README, Getting Started, Adoption, and Pilot Workflow
+- starter contract shapes for React/Vite apps, React plus Pixi game clients, TypeScript libraries, monorepos, and external pilot contracts
+
+Method:
+
+Used the same local MiroFish `.env` and model configuration through direct `LLMClient`. This was a targeted risk-map prompt, not a full OASIS social simulation rerun.
+
+Primary result:
+
+- Recipes reduce the empty-page problem enough to make first pilots more likely.
+- The React plus Pixi recipe is a real adoption wedge for AI-assisted game projects because that audience has architecture pressure but little existing architecture-governance tooling.
+- Recipes do not fully answer the skeptical "why another config file" objection by themselves.
+- The highest-value follow-up is to prevent misuse: users should not copy a recipe straight into a CI gate, auto-accept first-run debt, or let `.axi` become stale.
+- The model suggested a runtime warning involving nonexistent `enforce` sections. That exact suggestion was rejected because it does not match Axiom's grammar or product model. The useful underlying issue was folded into docs as gate-readiness and contract-maintenance guidance.
+
+Follow-up taken:
+
+- Added a gate-readiness checklist to Contract Recipes.
+- Added a lightweight contract-maintenance rhythm to Adoption.
+- Added contract ownership to the Pilot Workflow promotion checklist.
+
+Detailed result:
+
+```text
+experiments/axiom-forecast/results/mirofish-contract-recipes-target-2026-05-13.md
+```

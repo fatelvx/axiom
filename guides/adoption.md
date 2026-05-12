@@ -304,6 +304,20 @@ If you build on JSON output, read [JSON Consumers](json-consumers.md). Use `axi 
 
 `axi observe --root . --markdown` and `axi observe --root . --baseline axiom-baseline.json --markdown` keep hard violations, visible intentional debt, advisory warnings, and drift in separate sections. This makes the escape hatch conspicuous without making every advisory signal a blocker. The visible debt section is contract-led, not edge-only, so accepted surface leaks still appear in the review artifact.
 
+## Contract Maintenance Rhythm
+
+A `.axi` contract should stay small enough that someone can own it.
+
+For a first real project, define:
+
+- who reviews contract changes,
+- which boundaries are important enough to gate,
+- when intentional violations expire,
+- when to refresh the graph baseline,
+- which advisory warnings are only discussion signals.
+
+Do not keep rules that no one can explain. Axiom's value is preserving declared architecture intent over time; a stale contract becomes the same maintenance burden as any other ignored config file.
+
 ## When To Tighten
 
 Start loose:

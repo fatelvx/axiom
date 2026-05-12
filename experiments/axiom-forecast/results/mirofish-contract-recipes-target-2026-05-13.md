@@ -1,0 +1,46 @@
+# MiroFish Targeted Backtest: Contract Recipes And Authoring Friction
+
+Created: 2026-05-12T23:27:10.617374+00:00
+
+Method: direct MiroFish `LLMClient` using the local configured model. This is a synthetic forecast and not real user research or a full OASIS social simulation run.
+
+Seed: `experiments/axiom-forecast/seed-contract-recipes-target-2026-05-13.md`
+Model: `deepseek-v4-pro` via `api.deepseek.com`
+Commit: `d7898a9 Add contract authoring recipes`
+Note: ASCII punctuation was requested to avoid local Windows mojibake in the saved artifact.
+
+## Forecast Output
+
+**1. Executive verdict**
+Recipes reduce the empty-page problem enough to lower first-pilot activation energy, but they are a short-term scaffold, not a durable differentiator. They will help a specific, motivated adopter who already wants structured architecture feedback; they will not convert a skeptic who sees Axiom as a duplicative linter. The most valuable signal is that recipes divert pressure from a dangerous blanket `axi adopt` flow. This change is worth validating in a larger backtest, but it is not yet the wedge that makes Axiom feel inevitable.
+
+**2. Stakeholder reaction map**
+
+- **Senior TypeScript application engineer**: Finds the React recipe immediately useful as a starting shape and appreciates the scoped "do not model everything" guidance. This engineer is more likely to run a pilot, but still feels the gap between recipe and production-ready contract.
+- **Monorepo platform engineer**: Sees the monorepo and external pilot recipes as sensible starting points. However, the platform engineer remains concerned about long-term maintenance of `.axi` across many packages; recipes don't yet answer "who updates this and when." Likely to pilot, but with high scrutiny on drift signal quality.
+- **AI agent workflow maintainer**: Recognizes recipes as a lightweight way to pre-seed a `.axi` for agents to consume as context. Appreciates that the loop is scriptable. Wishes for a machine-readable recipe catalog (JSON) rather than just markdown; feels the friction shift is partial.
+- **Skeptical Dependency Cruiser / ESLint user**: Reads the recipe guide and concludes it's a slightly templated version of existing tools plus a graph. Recipes do not change the "why another config file" perception; they only make that config easier to write. Likely to reject until Axiom's observability surface shows a distinct return on investment.
+- **Small React/Pixi game developer using AI agents**: The game recipe is directly relevant and reduces the initial configuration guesswork. This stakeholder is an adoption wedge exactly because the overlap between game architecture, AI-assistance, and contract needs is underserved. High likelihood of trying Axiom.
+- **Open-source contributor reading README and trying `axi infer` first**: The recipe guide is easy to follow and helps contextualize the infer output. However, the contributor might interpret recipes as "blessed architecture patterns" despite disclaimers, leading to fragile adoption. Overall positive but carries subtle over-trust risk.
+- **Staff engineer worried about long-term `.axi` maintenance cost**: Appreciates explicit warnings against auto-accept and day-one over-modeling. Sees recipes as a documentation improvement that partially alleviates "who writes this" fear, but wants evidence that teams can keep contracts lean over time. Still guarded.
+
+**3. Strongest adoption improvement**
+Recipes directly address the "I don't know how to start writing a `.axi` file" paralysis. By providing concrete, tested shapes, they turn a blank editor into a comparison task, which is a familiar engineering workflow. The explicit anti-patterns (do not auto-accept, do not model everything) also reduce harmful first-run behavior that would undermine Axiom's visible-debt discipline.
+
+**4. Remaining rejection pattern**
+The recipes will be read by some adopters as opinionated architecture templates rather than observation scopes. If teams copy a recipe, accept all violations, and bake it into `axi check` immediately, they will experience false positives and Axiom fatigue. The guidance tries to prevent this, but the null path of "copy recipe -> auto-accept -> gate on all warnings" is very easy to take. The tool does not programmatically prevent this misuse; it relies on text instructions, which will be missed by many.
+
+**5. Decision: proceed to larger backtest, run one more small refinement, or hold**
+**Proceed to a larger backtest**, but not before one small refinement: add a programmatic guard against premature gating. The highest-signal guard is a check in `axi check` or `axi observe` that warns when a `.axi` file contains only `accept` directives for all current violations without explicit, reviewed `enforce` sections. This is a minimal nudge that makes the "copy recipe -> auto-accept" anti-pattern visible at runtime without adding new semantics. Then run a backtest across the simulated stakeholder scenarios to see if that changes the rejection surface.
+
+**6. Recommended next step**
+Implement a warning: "Your `.axi` appears to accept all current violations without any enforce sections. Consider running `axi observe` to review intentional debt before promoting to gates." This can be a 2-line change in the existing violation classification logic. This addition directly targets the most likely failure mode of the recipes rollout and has high signal-to-noise because it requires no new architecture concepts, just a gentle reminder that observability precedes gating.
+
+**7. What not to overclaim**
+
+- Do not claim that recipes make Axiom self-explanatory or simple.
+- Do not claim that recipes differentiate Axiom from a linter with templates.
+- Do not claim that the game recipe guarantees adoption in AI-assisted game development; it is a well-placed experiment, not a proven funnel.
+- Do not claim that the current markdown-only format is sufficient for agent workflows; it is a starting point that will need structured distribution.
+- Do not claim that the maintenance burden of `.axi` is solved; the recipes only reduce the creation burden, not the "keep it useful over time" burden.
+

@@ -216,6 +216,31 @@ axi graph --root ../target-app --spec contracts/target-app.axi --mermaid
 
 Module paths inside `contracts/target-app.axi` still point at files under `--root`. This keeps the target repo clean until the contract is mature enough to adopt.
 
+## Before Turning A Recipe Into A Gate
+
+Do not copy a recipe straight into CI. A recipe is ready for `axi check` only when:
+
+- every module name matches language the team already uses,
+- every active `depends on` edge can be explained as intended architecture,
+- every `exposes` or `hides` rule describes a public/private boundary the team agrees with,
+- `axi observe --markdown` has been reviewed at least once,
+- any `accepts ... until ... because ...` entry names a specific migration tradeoff,
+- advisory warnings are still review context, not accidental blockers.
+
+If the contract mostly exists to quiet the first run, keep it external with `--spec` and use `axi observe` until the intended boundary is clearer.
+
+## Keeping Recipes Lean
+
+The first contract should have an owner and a review rhythm. A practical starting point:
+
+- update the contract when a module boundary or public entry point intentionally changes,
+- review visible intentional debt before its expiration window,
+- save an unfiltered `axi graph --json` baseline when the contract becomes useful,
+- compare future changes with `axi observe --baseline`,
+- delete rules that no one can explain.
+
+This keeps `.axi` from becoming another stale config file. The contract should preserve architecture intent, not document every folder forever.
+
 ## What To Avoid
 
 - Do not accept all first-run violations automatically.
@@ -229,4 +254,3 @@ The useful loop is:
 ```text
 current graph -> reviewed intent -> observe drift -> visible accepted debt -> selective gates
 ```
-

@@ -155,6 +155,7 @@ Move from external pilot to in-repo adoption when these are true:
 - Advisory warnings are useful enough to discuss without blocking merges.
 - The team understands that `axi observe` is review context and `axi check` is the gate.
 - Temporary exceptions are expressed as visible intentional violations, not hidden allowlists.
+- Someone owns contract maintenance and knows when to update module paths, public entry points, accepted debt, and graph baselines.
 
 Only then move the reviewed contract into the target repo and add CI.
 

@@ -35,6 +35,8 @@ Create a smaller reviewed contract beside the target repo:
 contracts/target-app.axi
 ```
 
+If you need a starting shape, pick the closest [Contract Recipe](contract-recipes.md) and then delete anything that is not true for the target project. A pilot contract should be small enough that every module name and dependency can be explained.
+
 Start with only one or two high-value boundaries. For example:
 
 ```axi

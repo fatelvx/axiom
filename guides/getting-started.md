@@ -91,6 +91,8 @@ layer UI
 depends on Services
 ```
 
+If this shape does not match your project, start from [Contract Recipes](contract-recipes.md) instead of writing from a blank page. The recipes are reviewed starting points, not hidden defaults.
+
 This says:
 
 - Domain is the inner layer.
@@ -209,6 +211,8 @@ axi infer --root . --group-by workspace
 ```
 
 The inferred contract is a starting point, not a final architecture. The output marks itself as a current-graph snapshot because it mirrors today's dependency shape rather than recommending what the architecture should become. It also includes an authoring checklist and next commands so the first `.axi` draft is easier to review. Rename modules, add layers, tighten `depends on`, and add `exposes` or `hides` after review. If inference collapses a cycle, read the included groups and observed internal edges as a clue about where boundaries are tangled.
+
+For common project shapes such as React apps, React plus Pixi game clients, TypeScript libraries, and monorepos, compare the inferred graph with [Contract Recipes](contract-recipes.md) before turning the draft into declared intent.
 
 ## 7. Try A Monorepo
 

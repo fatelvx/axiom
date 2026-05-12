@@ -56,6 +56,8 @@ The starter contract mirrors current imports. Treat it as evidence, not approval
 
 The generated comments are part of the onboarding surface. They remind reviewers to rename modules into team vocabulary, review every `depends on` edge as architecture intent, turn visibility suggestions into rules only after review, and avoid blanket debt acceptance. This is one of the main differences from a linter config: the first artifact is a negotiation aid for declared architecture intent, not just a list of rules to appease.
 
+If the inferred draft is too raw, use [Contract Recipes](contract-recipes.md) as a reviewed starting shape. Recipes lower authoring cost without making Axiom decide your architecture for you.
+
 ## Good First Rules
 
 Choose one or two rules that would catch real mistakes:

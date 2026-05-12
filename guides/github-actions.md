@@ -5,6 +5,7 @@ This guide shows the recommended split for GitHub Actions:
 - `axi check --json` is the hard gate.
 - GitHub annotations should come from hard `violations[]`.
 - `axi observe --markdown` is a PR or job-summary review artifact.
+- `axi graph --mermaid` can be attached or pasted when a visual observed dependency graph helps review.
 - Advisory warnings, visible debt, and drift should stay review context unless your team deliberately promotes a signal into policy.
 
 That separation is the product point. Axiom can enforce explicit contracts without turning every observability signal into CI friction.
@@ -105,6 +106,17 @@ axi observe --root . --baseline axiom-baseline.json --markdown
 In CI, the baseline should come from a known architecture snapshot, not from the current checkout right before the comparison. A current checkout baseline will usually compare the repository to itself and hide drift.
 
 Baseline drift is advisory. It can show that a PR introduced or removed module edges, but it does not prove the change is bad.
+
+## Optional Visual Graph
+
+Mermaid output is useful when reviewers need to see the shape of module dependencies:
+
+```bash
+axi graph --root . --mermaid > axiom-graph.mmd
+axi observe --root . --mermaid > axiom-attention.mmd
+```
+
+`axi graph --mermaid` shows the observed module graph. `axi observe --mermaid` uses the same focused attention filter as observe, so it can show only edges under review. Both are presentation outputs; keep `axi check` as the gate.
 
 ## Agent Repair Loop
 

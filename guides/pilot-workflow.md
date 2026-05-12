@@ -82,9 +82,19 @@ A pilot should keep these outputs separate:
 | Deep internal imports | `axi observe --warn-deep-internal-imports` | Which modules bypass likely public entry points |
 | Broad public barrels or facade entry points | Advanced `axi observe --warn-public-api-surface` probe | Where a declared public entry point may be growing facade pressure |
 | New observed edges | `axi observe --baseline` | Which architecture relationships changed |
+| Visual dependency graph | `axi graph --mermaid` | How module dependencies look at a glance |
 | Hard violations | `axi check` | Which explicit contract facts were broken |
 
 This distinction matters. Axiom should not become a generic "bad code" dashboard. Its stronger job is declared intent versus observed graph.
+
+When the discussion needs a picture instead of a text list, render the observed module graph:
+
+```bash
+axi graph --root ../target-app --spec contracts/target-app.axi --mermaid
+axi observe --root ../target-app --spec contracts/target-app.axi --mermaid
+```
+
+The Mermaid output is a review artifact. It does not change what `axi check` enforces.
 
 ## 5. Add Baseline Drift
 
@@ -150,6 +160,7 @@ Only then move the reviewed contract into the target repo and add CI.
 
 ```bash
 axi infer --root ../target-app --group-depth 2 > contracts/target-app.inferred.axi
+axi graph --root ../target-app --spec contracts/target-app.axi --mermaid
 axi observe --root ../target-app --spec contracts/target-app.axi --markdown --warn-deep-internal-imports
 axi check --root ../target-app --spec contracts/target-app.axi
 ```

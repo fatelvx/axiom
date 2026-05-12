@@ -16,9 +16,10 @@ The comfortable adoption path is a ladder, not a switch:
 6. Inspect concentrated coupling with `axi observe --root . --warn-coupling-concentration`.
 7. Compare against a saved graph with `axi observe --root . --baseline axiom-baseline.json`.
 8. Summarize PR or agent review context with `axi observe --root . --markdown`.
-9. Use public-surface probes only when the team is ready to review declared `exposes` entry points with `axi observe --root . --warn-public-api-surface`.
-10. Move only clear, high-confidence rules into CI with `axi check --root .`.
-11. Use `--strict` after whole-repo ownership is intentional.
+9. Visualize observed module dependencies with `axi graph --root . --mermaid`.
+10. Use public-surface probes only when the team is ready to review declared `exposes` entry points with `axi observe --root . --warn-public-api-surface`.
+11. Move only clear, high-confidence rules into CI with `axi check --root .`.
+12. Use `--strict` after whole-repo ownership is intentional.
 
 This keeps Axiom useful for humans and agents without turning every advisory signal into a blocker.
 
@@ -255,6 +256,7 @@ axi observe --root .
 axi check --root .
 axi graph --root . --violations-only
 axi graph --root . --attention
+axi graph --root . --mermaid
 axi observe --root . --markdown
 axi check --root . --json
 axi graph --root . --json > axiom-baseline.json
@@ -263,11 +265,13 @@ axi observe --root . --baseline axiom-baseline.json --markdown
 axi observe --root . --warn-unresolved-imports --warn-coupling-concentration --warn-deep-internal-imports
 ```
 
-Use human output while developing. Use JSON output for CI annotations and custom reporting. Use Markdown output for PR comments, review artifacts, and agent repair-loop summaries.
+Use human output while developing. Use JSON output for CI annotations and custom reporting. Use Markdown output for PR comments, review artifacts, and agent repair-loop summaries. Use Mermaid output when a visual observed module graph makes the drift discussion easier.
 
 Add `--warn-public-api-surface` separately only when the team is intentionally reviewing declared public entry points.
 
 `axi observe --root .` is the product-facing architecture attention view: it keeps failing edges, intentional violations, and warning guardrails in one focused output. `axi graph --root . --attention` and `--violations-only` remain available when you want the graph command explicitly.
+
+`axi graph --root . --mermaid` renders the observed module dependency graph with layer groupings. `axi observe --root . --mermaid` uses the same focused attention filter as observe, so it is useful for visualizing only the edges under review.
 
 For a concrete GitHub Actions setup, read [GitHub Actions And PR Summaries](github-actions.md). The recommended split is `axi check --json` for the hard gate and `axi observe --markdown` for review context.
 

@@ -2,7 +2,13 @@
 import fs from "node:fs";
 import path from "node:path";
 import { formatCheckResult } from "./diagnostics/format.js";
-import { formatGraphJson, formatGraphMarkdown, formatGraphResult, type GraphBaseline } from "./diagnostics/graph.js";
+import {
+  formatGraphJson,
+  formatGraphMarkdown,
+  formatGraphMermaid,
+  formatGraphResult,
+  type GraphBaseline
+} from "./diagnostics/graph.js";
 import { formatInferJson, formatInferResult } from "./diagnostics/infer.js";
 import { formatCheckJson } from "./diagnostics/json.js";
 import { type InferGroupBy, runInfer } from "./infer/infer.js";
@@ -12,6 +18,7 @@ interface CliOptions {
   root: string;
   json: boolean;
   markdown: boolean;
+  mermaid: boolean;
   configPath?: string;
   specPaths: string[];
   adoptionMode: AdoptionMode;
@@ -93,6 +100,15 @@ try {
         baseline
       })
     );
+  } else if (options.mermaid) {
+    console.log(
+      formatGraphMermaid(result, {
+        violationsOnly: options.graphViolationsOnly,
+        attention: options.graphAttention,
+        observe: command === "observe",
+        baseline
+      })
+    );
   } else {
     console.log(
       formatGraphResult(result, {
@@ -119,6 +135,7 @@ function parseOptions(values: string[], command: CliCommand): CliOptions {
     root: process.cwd(),
     json: false,
     markdown: false,
+    mermaid: false,
     specPaths: [],
     adoptionMode: "loose",
     graphViolationsOnly: command === "observe",
@@ -144,8 +161,8 @@ function parseOptions(values: string[], command: CliCommand): CliOptions {
     }
 
     if (value === "--json") {
-      if (options.markdown) {
-        console.error("Use either --json or --markdown, not both.");
+      if (hasPresentationOutput(options)) {
+        console.error("Use only one of --json, --markdown, or --mermaid.");
         process.exit(1);
       }
 
@@ -159,12 +176,27 @@ function parseOptions(values: string[], command: CliCommand): CliOptions {
         process.exit(1);
       }
 
-      if (options.json) {
-        console.error("Use either --json or --markdown, not both.");
+      if (hasPresentationOutput(options)) {
+        console.error("Use only one of --json, --markdown, or --mermaid.");
         process.exit(1);
       }
 
       options.markdown = true;
+      continue;
+    }
+
+    if (value === "--mermaid") {
+      if (command !== "graph" && command !== "observe") {
+        console.error("--mermaid is only supported by graph and observe.");
+        process.exit(1);
+      }
+
+      if (hasPresentationOutput(options)) {
+        console.error("Use only one of --json, --markdown, or --mermaid.");
+        process.exit(1);
+      }
+
+      options.mermaid = true;
       continue;
     }
 
@@ -362,6 +394,10 @@ function parseOptions(values: string[], command: CliCommand): CliOptions {
   return options;
 }
 
+function hasPresentationOutput(options: Pick<CliOptions, "json" | "markdown" | "mermaid">): boolean {
+  return options.json || options.markdown || options.mermaid;
+}
+
 function loadGraphBaseline(baselinePath: string, root: string): GraphBaseline {
   const resolvedPath = resolveBaselinePath(baselinePath, root);
   const rawText = fs.readFileSync(resolvedPath, "utf8");
@@ -464,8 +500,8 @@ function printHelp(): void {
 
 Usage:
   axi check [--root <path>] [--config <path>] [--spec <path>] [--json] [--warn-unowned] [--strict] [--intentional-violation-warning-days <n>] [--warn-unresolved-imports] [--warn-public-api-surface] [--warn-coupling-concentration] [--warn-deep-internal-imports]
-  axi graph [--root <path>] [--config <path>] [--spec <path>] [--json|--markdown] [--warn-unowned] [--strict] [--violations-only|--attention] [--baseline <graph-json>] [--intentional-violation-warning-days <n>] [--warn-unresolved-imports] [--warn-public-api-surface] [--warn-coupling-concentration] [--warn-deep-internal-imports]
-  axi observe [--root <path>] [--config <path>] [--spec <path>] [--json|--markdown] [--warn-unowned] [--strict] [--baseline <graph-json>] [--intentional-violation-warning-days <n>] [--warn-unresolved-imports] [--warn-public-api-surface] [--warn-coupling-concentration] [--warn-deep-internal-imports]
+  axi graph [--root <path>] [--config <path>] [--spec <path>] [--json|--markdown|--mermaid] [--warn-unowned] [--strict] [--violations-only|--attention] [--baseline <graph-json>] [--intentional-violation-warning-days <n>] [--warn-unresolved-imports] [--warn-public-api-surface] [--warn-coupling-concentration] [--warn-deep-internal-imports]
+  axi observe [--root <path>] [--config <path>] [--spec <path>] [--json|--markdown|--mermaid] [--warn-unowned] [--strict] [--baseline <graph-json>] [--intentional-violation-warning-days <n>] [--warn-unresolved-imports] [--warn-public-api-surface] [--warn-coupling-concentration] [--warn-deep-internal-imports]
   axi infer [--root <path>] [--config <path>] [--json] [--group-depth <n>] [--group-by folder|workspace]
 
 Commands:
@@ -481,6 +517,8 @@ Graph:
                     Compare observed module edges against an unfiltered axi graph --json baseline.
   --markdown        Print a PR/agent-friendly architecture review summary for graph or observe.
                     This is presentation output; use axi check for a CI gate.
+  --mermaid         Print a Mermaid flowchart of observed module dependencies for graph or observe.
+                    This is presentation output; use axi graph --json for machine-readable data.
   observe            Product-facing alias for graph --attention.
 
 Adoption:

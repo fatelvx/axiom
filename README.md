@@ -169,6 +169,7 @@ Axiom v0.5.8 currently supports:
 - Module `purpose` text surfaced in graph and JSON output for lightweight intent awareness.
 - Human output and stable JSON output for CI and agents.
 - Markdown architecture review summaries for PRs and agent repair loops with `axi observe --markdown`.
+- Mermaid dependency diagrams for observed module graphs with `axi graph --mermaid` or `axi observe --mermaid`.
 - Starter contract inference with `axi infer`, explicitly marked as a current-graph snapshot rather than recommended architecture.
 - Architecture attention output with `axi observe`.
 - Baseline-aware observed edge drift with `axi observe --baseline <graph-json>`.
@@ -270,6 +271,7 @@ Use them like this:
 - `axi observe`: show the architecture attention surface; exits `0` and focuses violations, visible debt, and warnings.
 - `axi graph`: inspect declared and observed graphs; exits `0` even with violations.
 - `axi graph --violations-only` or `axi graph --attention`: show failing edges, intentional violations, and warning guardrails.
+- `axi graph --mermaid`: print a visual Mermaid flowchart of observed module dependencies.
 - `axi infer`: print a starter `.axi` draft from existing imports.
 
 Useful flags:
@@ -278,6 +280,7 @@ Useful flags:
 axi check --root . --json
 axi observe --root .
 axi observe --root . --markdown
+axi graph --root . --mermaid
 axi observe --root . --warn-public-api-surface
 axi observe --root . --warn-unresolved-imports
 axi observe --root . --warn-coupling-concentration
@@ -290,6 +293,7 @@ axi check --root . --warn-deep-internal-imports
 axi check --root . --strict
 axi observe --root ../some-app --spec ./contracts/some-app.axi --markdown
 axi graph --root . --json
+axi observe --root . --mermaid
 axi graph --root . --json > axiom-baseline.json
 axi observe --root . --baseline axiom-baseline.json
 axi observe --root . --baseline axiom-baseline.json --markdown

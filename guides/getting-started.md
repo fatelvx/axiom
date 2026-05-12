@@ -63,6 +63,7 @@ For a smaller view:
 node dist/cli.js observe --root examples/basic-app
 node dist/cli.js observe --root examples/basic-app --markdown
 node dist/cli.js graph --root examples/basic-app --violations-only
+node dist/cli.js graph --root examples/basic-app --mermaid
 ```
 
 ## 3. Write A First Contract
@@ -163,6 +164,15 @@ axi observe --root . --baseline axiom-baseline.json --markdown
 ```
 
 Use `--markdown` when the output should become a PR comment, review note, or agent repair-loop message. It keeps hard violations, visible intentional debt, advisory warnings, and drift in separate sections.
+
+Use `--mermaid` when you want to see the observed module dependency graph visually:
+
+```bash
+axi graph --root . --mermaid
+axi observe --root . --mermaid
+```
+
+Mermaid output is presentation output over the same graph result. It does not change validation or CI behavior.
 
 If you are only testing Axiom and do not want to add `axiom/main.axi` to the target repository yet, keep the contract somewhere else and pass it explicitly:
 

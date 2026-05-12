@@ -32,6 +32,7 @@
 - Added a repeatable synthetic `npm run perf:smoke` harness and recorded initial scan-cost evidence for 2k-file and 10k-file generated workspaces.
 - Memoized ownership matching in the validator, reducing the local 10k-file synthetic smoke check from 78.7s to 10.0s in the same harness.
 - Added opt-in `--warn-unresolved-imports` advisory warnings for static relative or package `#imports` that Axiom can see but cannot resolve into the observed graph.
+- Added a Linux performance smoke GitHub Actions workflow, first-run next-step links, contract robustness guidance, a legacy `export *` migration playbook, and a contribution guide.
 - Bumped check JSON to `axiom.check.v4` for intentional violation reporting and warning details.
 
 ## 0.5.8 - Monorepo Spec Discovery

@@ -27,6 +27,8 @@ Scale it up with:
 npm run perf:smoke -- --modules 100 --files-per-module 100 --cross-imports-per-file 2
 ```
 
+The GitHub Actions [Performance Smoke](../../.github/workflows/perf-smoke.yml) workflow runs the same harness on `ubuntu-latest` and uploads JSON artifacts for the 2k-file and 10k-file synthetic runs. Treat those artifacts as cross-platform smoke evidence, not proof of production monorepo readiness.
+
 Machine-readable output:
 
 ```bash

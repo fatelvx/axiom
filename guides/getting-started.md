@@ -157,6 +157,8 @@ axi observe --root . --baseline axiom-baseline.json --markdown
 
 Use `--markdown` when the output should become a PR comment, review note, or agent repair-loop message. It keeps hard violations, visible intentional debt, advisory warnings, and drift in separate sections.
 
+When a project has a legacy `export *` surface, keep `--warn-public-api-surface` advisory and follow the migration playbook in [Adopting Axiom In A Real Project](adoption.md#legacy-export--surfaces).
+
 ## 6. Generate A Starter Draft
 
 For an existing project:

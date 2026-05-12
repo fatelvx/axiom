@@ -125,6 +125,12 @@ node dist/cli.js graph --root examples/basic-app --violations-only
 node dist/cli.js graph --root examples/basic-app --attention
 ```
 
+Choose your next step:
+
+- Existing project: start with `axi infer --root .`, then follow [Adopting Axiom In A Real Project](guides/adoption.md).
+- CI path: read the [CI](#ci) section and the dogfooded workflow in [.github/workflows/ci.yml](.github/workflows/ci.yml).
+- Real contract shape: inspect [examples/monorepo-workspace](examples/monorepo-workspace) for package-level contracts.
+
 ## What It Checks
 
 Axiom v0.5.8 currently supports:
@@ -170,6 +176,18 @@ Axiom v0 is intentionally honest about its blind spots:
 
 The product goal is not perfect automatic architecture governance. The goal is a shared, machine-checkable observability layer where humans and agents can see drift early, accept temporary debt visibly, and enforce high-confidence boundaries.
 
+## Contract Robustness
+
+Axiom treats broken contracts as visible diagnostics instead of silently skipping them:
+
+- Syntax errors become `parse_error` diagnostics with file and line locations.
+- Duplicate modules, missing module paths, unknown modules, unknown layers, duplicate layer orders, ambiguous owners, and declared dependency cycles are validation errors.
+- The parser keeps collecting diagnostics after a bad line where it can, so one typo does not hide the rest of the contract.
+- `.axi` files are declarative text. Axiom does not execute contract code, macros, or plugins.
+- Glob patterns are compiled for matching; Axiom does not expand a glob into an unbounded rule graph. Source discovery still walks real files, so large repositories should use scoped `include` and `exclude` patterns.
+
+There is no public hard budget yet for pathological glob complexity or contract size. Treat this as a known hardening frontier: keep contracts small, keep source scope explicit, and report cases where contract parsing or matching becomes expensive.
+
 ## Performance Smoke
 
 Axiom includes a repeatable synthetic performance smoke harness so scan comfort can be measured instead of hand-waved:
@@ -189,6 +207,8 @@ Local results on Windows x64 / Node v24.14.1 / Intel i5-8400:
 | After ownership lookup memoization | 10,000 | 19,700 | 10.0s |
 
 These are cold synthetic runs, not production benchmark proof. The latest run shows that repeated ownership matching was a real early bottleneck, but large monorepos still need scoped `include`/`exclude` config, focused contract locations, pilot evidence, and future resolver/discovery caching before Axiom should claim broad CI comfort.
+
+Linux numbers are collected separately by the [Performance Smoke](.github/workflows/perf-smoke.yml) workflow on `ubuntu-latest`, which uploads JSON artifacts for 2k-file and 10k-file synthetic runs. The README should only publish those numbers after a workflow artifact exists, not by extrapolating from local Windows results.
 
 ## Install
 
@@ -534,6 +554,13 @@ npm ci
 npm run ci
 ```
 
+The repository also has a separate performance smoke workflow that records Linux synthetic scan evidence without making the normal CI gate slower:
+
+```bash
+node scripts/perf-smoke.mjs --json
+node scripts/perf-smoke.mjs --modules 100 --files-per-module 100 --cross-imports-per-file 2 --json
+```
+
 For your own project, add a script:
 
 ```json
@@ -551,6 +578,7 @@ Then run that script in CI after installing dependencies.
 - [Getting Started](guides/getting-started.md)
 - [Adopting Axiom In A Real Project](guides/adoption.md)
 - [Publishing The Public Alpha](guides/publishing-alpha.md)
+- [Contributing](CONTRIBUTING.md)
 - [Basic App Example](examples/basic-app)
 - [Monorepo Workspace Example](examples/monorepo-workspace)
 
@@ -593,6 +621,10 @@ npm run alpha:check
 npm run check:fixture
 node dist/cli.js check --root examples/basic-app
 ```
+
+## Community
+
+Questions, contract-design discussions, and rough ideas are welcome. Use [GitHub Discussions](https://github.com/fatelvx/axiom/discussions) for open-ended design conversation when available, or [open an issue](https://github.com/fatelvx/axiom/issues) for bugs and concrete feature requests. See [CONTRIBUTING.md](CONTRIBUTING.md) before proposing `.axi` language changes.
 
 ## Roadmap
 

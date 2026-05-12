@@ -130,6 +130,22 @@ Also watch for "compliant but unhealthy" architecture. For example, a giant `ind
 
 If your team sees a public surface growing too broad, treat that as an architecture review signal even when `axi check` passes. Symbol-level public API health is a future advisory analysis area, not a v0 guarantee.
 
+## Legacy `export *` Surfaces
+
+Large existing barrels are common. Do not hide them with a separate allowlist, and do not try to turn `broad_public_surface` into an intentional violation. It is advisory by design.
+
+Use this migration path instead:
+
+1. Run `axi infer --root .` to capture the current module graph.
+2. Add `exposes` for the public entry points that are meant to exist today.
+3. Add `hides` for internal folders that should not be imported directly.
+4. Run `axi observe --root . --warn-public-api-surface` and treat each `export *` warning as a review item, not a merge blocker.
+5. Replace broad barrels with named exports or narrower entry points over time.
+6. If a real hidden-path leak or temporary visibility breach appears during migration, use `accepts ... until ... because ...` for that concrete violation only.
+7. Remove the intentional violation when the migration is done.
+
+This keeps the debt visible without pretending Axiom can prove full symbol-level API health in v0.
+
 ## CI
 
 After the first npm publish, install the scoped package:

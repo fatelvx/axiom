@@ -331,3 +331,37 @@ Detailed result:
 ```text
 experiments/axiom-forecast/results/mirofish-intentional-debt-ledger-backtest-2026-05-12.md
 ```
+
+## 2026-05-13
+
+### Big Backtest V1
+
+Before this backtest, Axiom had already shipped several adoption and pilot improvements:
+
+- `--spec <path>` external contract support.
+- Pilot workflow guidance for scanning a repository without committing `.axi` into it.
+- Real-project smoke notes from nanoid, zod, zod tag-to-tag version smoke, and Lumina-style external scan feedback.
+- Observe-first public positioning, visible debt, Markdown review output, baseline drift, and warning surfaces.
+
+Method:
+
+Used the same local MiroFish `.env` and model configuration through direct `LLMClient`. This was a larger multi-stakeholder prompt, not a full OASIS social simulation rerun.
+
+Primary result:
+
+- Axiom is credible as an architecture observability layer only if it stays honest about limits.
+- `--spec` external contracts are a strong pilot wedge.
+- The strongest remaining technical objection is "compliant shape, hidden coupling": a public entry point can make imports look compliant while the entry point itself becomes a large accidental facade.
+- The strongest product/onboarding objection remains `.axi` authoring and maintenance cost.
+- The forecast recommended more small pilots before a wider public push.
+
+Follow-up taken:
+
+- Added `public_entrypoint_coupling` as an opt-in advisory warning under `--warn-public-api-surface`.
+- This warning reports exposed entry points that reach at least four same-module internal files, including named re-export facades, without failing `axi check`.
+
+Detailed result:
+
+```text
+experiments/axiom-forecast/results/mirofish-big-backtest-v1-2026-05-13.md
+```

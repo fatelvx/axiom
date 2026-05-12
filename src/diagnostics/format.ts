@@ -134,6 +134,11 @@ function formatDetails(root: string, violation: Violation): string[] {
     lines.push(`  likely entry points: ${publicEntrypoints.join(", ")}`);
   }
 
+  const internalTargets = readStringArray(violation.details.internalTargets);
+  if (internalTargets.length > 0) {
+    lines.push(`  internal targets: ${internalTargets.join(", ")}`);
+  }
+
   const rule = readString(violation.details.rule);
   const ruleLocation = readLocation(violation.details.ruleLocation);
   const suffix = ruleLocation ? ` (${formatLocation(root, ruleLocation.filePath, ruleLocation.line)})` : "";

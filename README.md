@@ -144,7 +144,7 @@ Axiom v0.5.8 currently supports:
 - Layer direction with `layers Core -> UI`.
 - Public/private module surfaces with `exposes` and `hides`.
 - Direct hidden-path re-exports and local import-then-export hidden leaks from exposed entry points.
-- Opt-in public API surface warnings for broad exposed barrels with `--warn-public-api-surface`.
+- Opt-in public API surface warnings for broad exposed barrels and entry points that mask internal coupling with `--warn-public-api-surface`.
 - Opt-in coupling concentration warnings for modules with high observed fan-in or fan-out with `--warn-coupling-concentration`.
 - Opt-in unresolved import warnings for static relative or package `#imports` that Axiom can see but cannot resolve with `--warn-unresolved-imports`.
 - Opt-in deep internal import warnings for relative cross-module imports that bypass likely `index.*` entry points with `--warn-deep-internal-imports`.
@@ -171,7 +171,7 @@ Axiom v0 is intentionally honest about its blind spots:
 
 - It does not fully observe runtime-only dependency paths such as string-based dependency injection, plugin registries, generated imports, or `eval`.
 - It can optionally warn about static relative or package `#imports` that the scanner sees but cannot resolve with `--warn-unresolved-imports`, but it still cannot see non-literal runtime wiring.
-- It does not prove that a module is semantically well-designed. Axiom can catch direct hidden-path re-exports and local import-then-export leaks from hidden internals, `--warn-public-api-surface` can flag broad `export *` barrels, and `--warn-deep-internal-imports` can flag relative imports that bypass likely entry points, but code can still become too coupled through wrappers, facades, or overly large public entry points. This is the `symbol-level API health` gap.
+- It does not prove that a module is semantically well-designed. Axiom can catch direct hidden-path re-exports and local import-then-export leaks from hidden internals, `--warn-public-api-surface` can flag broad `export *` barrels and exposed entry points that reach many internal files, and `--warn-deep-internal-imports` can flag relative imports that bypass likely entry points, but code can still become too coupled through wrappers, facades, or overly large public entry points. This is the `symbol-level API health` gap.
 - It does not prove that concentrated fan-in or fan-out is wrong. `--warn-coupling-concentration` surfaces modules that may be turning into coordination hubs so humans and agents can review the pressure before it becomes hidden debt.
 - It does not replace ESLint, TypeScript, tests, or review. Axiom focuses on architecture intent: declared graph, observed graph, drift, warnings, intentional violations, and CI gates for clear contracts.
 - It does not replace Dependency Cruiser, Nx boundaries, CodeQL, or custom repository scripts. See [Comparison And Boundaries](guides/comparison.md) for where Axiom is useful and where other tools are stronger.
@@ -483,7 +483,7 @@ axi observe --root . --warn-public-api-surface
 axi graph --root . --attention --warn-public-api-surface
 ```
 
-Today this flags broad exposed barrels such as `export * from "./feature"` or `export * as feature from "./feature"`. It is advisory: the check still exits `0` unless there are real violations. Treat it as a review prompt when an exposed entry point starts hiding coupling behind one public surface.
+Today this flags broad exposed barrels such as `export * from "./feature"` or `export * as feature from "./feature"`. It also flags exposed entry points that reach at least four same-module internal files, including named re-export facades such as `export { feature } from "./feature"`. It is advisory: the check still exits `0` unless there are real violations. Treat it as a review prompt when an exposed entry point starts hiding coupling behind one public surface.
 
 Separate from that advisory warning, `hidden_reexport` is a hard, high-confidence violation when an exposed file leaks a hidden path directly, either with `export ... from "./internal"` or with `import ... from "./internal"` followed by `export { ... }`. Public wrappers around hidden implementation imports are still allowed; Axiom only flags the explicit hidden symbol leak.
 
@@ -636,6 +636,7 @@ Axiom can currently report:
 - `hidden_import`
 - `hidden_reexport`
 - `broad_public_surface`
+- `public_entrypoint_coupling`
 - `coupling_concentration`
 - `unresolved_import`
 - `unexposed_import`

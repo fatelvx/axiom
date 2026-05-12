@@ -196,6 +196,52 @@ test("public API surface warnings are opt-in advisory diagnostics", () => {
   });
 });
 
+test("public API surface warnings catch entry points that mask internal coupling", () => {
+  const root = path.join(repoRoot, "fixtures/public-entrypoint-coupling");
+  const quietResult = runCheck({ root });
+
+  assert.deepEqual(quietResult.violations, []);
+  assert.deepEqual(quietResult.warnings, []);
+
+  const result = runCheck({ root, warnPublicApiSurface: true });
+
+  assert.deepEqual(result.violations, []);
+  assert.equal(result.warnings.length, 1);
+  assert.deepEqual(result.warnings[0], {
+    code: "public_entrypoint_coupling",
+    message: "Services public entry point reaches 4 internal files.",
+    location: {
+      filePath: path.join(root, "src/services/index.ts"),
+      line: 1
+    },
+    details: {
+      module: "Services",
+      exposedPath: "src/services/index.ts",
+      internalTargetCount: 4,
+      internalImportSites: 4,
+      typeOnlyImportSites: 0,
+      internalTargets: [
+        "src/services/a.ts",
+        "src/services/b.ts",
+        "src/services/c.ts",
+        "src/services/d.ts"
+      ],
+      importKinds: ["export"],
+      threshold: {
+        internalTargets: 4
+      },
+      observed: "Services public entry point depends on 4 internal files",
+      rule: "Services exposes src/services/index.ts",
+      ruleLocation: {
+        filePath: path.join(root, "axiom/main.axi"),
+        line: 3
+      },
+      suggestion:
+        "Review whether this entry point is masking internal coupling; prefer narrower named exports, split the public surface, or make the facade boundary explicit."
+    }
+  });
+});
+
 test("coupling concentration warnings are opt-in advisory diagnostics", () => {
   const root = path.join(repoRoot, "fixtures/coupling-concentration");
   const quietResult = runCheck({ root });

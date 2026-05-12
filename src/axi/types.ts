@@ -11,6 +11,7 @@ export type ViolationCode =
   | "unowned_source_file"
   | "unresolved_import"
   | "broad_public_surface"
+  | "public_entrypoint_coupling"
   | "coupling_concentration"
   | "deep_internal_import"
   | "unknown_layer"

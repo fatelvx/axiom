@@ -80,7 +80,7 @@ A pilot should keep these outputs separate:
 | Large files, broad fan-out, scattered keys | Code-health audit | Where code may be hard to maintain |
 | Cycle groups from `axi infer` | Axiom inference | Which folders are already tangled |
 | Deep internal imports | `axi observe --warn-deep-internal-imports` | Which modules bypass likely public entry points |
-| Broad public barrels | `axi observe --warn-public-api-surface` | Where a compliant public API may hide coupling |
+| Broad public barrels or facade entry points | `axi observe --warn-public-api-surface` | Where a compliant public API may hide coupling |
 | New observed edges | `axi observe --baseline` | Which architecture relationships changed |
 | Hard violations | `axi check` | Which explicit contract facts were broken |
 

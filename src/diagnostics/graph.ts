@@ -539,16 +539,23 @@ function appendMarkdownWarningDetails(lines: string[], warning: GraphJsonViolati
     appendMarkdownDetail(lines, "Likely entry points", publicEntrypoints.map(markdownCode).join(", "));
   }
 
+  const internalTargets = readStringArray(warning.details?.internalTargets);
+  if (internalTargets.length > 0) {
+    appendMarkdownDetail(lines, "Internal targets", internalTargets.map(markdownCode).join(", "));
+  }
+
   const threshold = readRecord(warning.details?.threshold);
   const fanInThreshold = readNumber(threshold?.fanInModules);
   const fanOutThreshold = readNumber(threshold?.fanOutModules);
-  if (fanInThreshold !== undefined || fanOutThreshold !== undefined) {
+  const internalTargetsThreshold = readNumber(threshold?.internalTargets);
+  if (fanInThreshold !== undefined || fanOutThreshold !== undefined || internalTargetsThreshold !== undefined) {
     appendMarkdownDetail(
       lines,
       "Threshold",
       [
         fanInThreshold === undefined ? undefined : `fan-in >= ${fanInThreshold}`,
-        fanOutThreshold === undefined ? undefined : `fan-out >= ${fanOutThreshold}`
+        fanOutThreshold === undefined ? undefined : `fan-out >= ${fanOutThreshold}`,
+        internalTargetsThreshold === undefined ? undefined : `internal targets >= ${internalTargetsThreshold}`
       ]
         .filter((item): item is string => item !== undefined)
         .join(" or ")
@@ -788,14 +795,21 @@ function formatWarnings(graph: GraphJsonResult): string[] {
       lines.push(`  likely entry points: ${publicEntrypoints.join(", ")}`);
     }
 
+    const internalTargets = readStringArray(warning.details?.internalTargets);
+    if (internalTargets.length > 0) {
+      lines.push(`  internal targets: ${internalTargets.join(", ")}`);
+    }
+
     const threshold = readRecord(warning.details?.threshold);
     const fanInThreshold = readNumber(threshold?.fanInModules);
     const fanOutThreshold = readNumber(threshold?.fanOutModules);
-    if (fanInThreshold !== undefined || fanOutThreshold !== undefined) {
+    const internalTargetsThreshold = readNumber(threshold?.internalTargets);
+    if (fanInThreshold !== undefined || fanOutThreshold !== undefined || internalTargetsThreshold !== undefined) {
       lines.push(
         `  threshold: ${[
           fanInThreshold === undefined ? undefined : `fan-in >= ${fanInThreshold}`,
-          fanOutThreshold === undefined ? undefined : `fan-out >= ${fanOutThreshold}`
+          fanOutThreshold === undefined ? undefined : `fan-out >= ${fanOutThreshold}`,
+          internalTargetsThreshold === undefined ? undefined : `internal targets >= ${internalTargetsThreshold}`
         ]
           .filter((item): item is string => item !== undefined)
           .join(" or ")}`

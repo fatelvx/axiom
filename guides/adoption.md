@@ -143,7 +143,7 @@ Expect blind spots around dependency injection strings, plugin registries, gener
 
 Use `--warn-unresolved-imports` when you want Axiom to surface static relative imports or package `#imports` that it can see but cannot resolve into the observed graph. This is advisory visibility into graph completeness, not proof that every runtime dependency path is known.
 
-Also watch for "compliant but unhealthy" architecture. For example, a giant `index.ts` can make imports pass while concentrating too much coupling in one public surface. Axiom now catches direct `export ... from` leaks and local `import ... from "./internal"` followed by `export { ... }` leaks from hidden paths through exposed entry points. `--warn-public-api-surface` can flag exposed `export *` barrels as advisory warnings, but Axiom still cannot prove every symbol-level API decision is healthy. Prefer small exposed entry points, explicit `hides` rules for internals, and intentional violations with expiration dates when migration needs time.
+Also watch for "compliant but unhealthy" architecture. For example, a giant `index.ts` can make imports pass while concentrating too much coupling in one public surface. Axiom now catches direct `export ... from` leaks and local `import ... from "./internal"` followed by `export { ... }` leaks from hidden paths through exposed entry points. `--warn-public-api-surface` can flag exposed `export *` barrels and entry points that reach many internal files as advisory warnings, but Axiom still cannot prove every symbol-level API decision is healthy. Prefer small exposed entry points, explicit `hides` rules for internals, and intentional violations with expiration dates when migration needs time.
 
 Use `--warn-deep-internal-imports` when you want to find relative cross-module imports that bypass a likely `index.*` entry point. This is useful before you are ready to turn `exposes` into a hard rule: it can show where teams or agents are already relying on another module's internal file layout.
 
@@ -160,7 +160,7 @@ Use this migration path instead:
 1. Run `axi infer --root .` to capture the current module graph.
 2. Add `exposes` for the public entry points that are meant to exist today.
 3. Add `hides` for internal folders that should not be imported directly.
-4. Run `axi observe --root . --warn-public-api-surface` and treat each `export *` warning as a review item, not a merge blocker.
+4. Run `axi observe --root . --warn-public-api-surface` and treat each broad-barrel or entrypoint-coupling warning as a review item, not a merge blocker.
 5. Replace broad barrels with named exports or narrower entry points over time.
 6. If a real hidden-path leak or temporary visibility breach appears during migration, use `accepts ... until ... because ...` for that concrete violation only.
 7. Remove the intentional violation when the migration is done.

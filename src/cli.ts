@@ -494,7 +494,7 @@ Adoption:
   --warn-unresolved-imports
                    Warn when an owned file has a static relative or # import that Axiom cannot resolve.
   --warn-public-api-surface
-                   Warn about broad exposed barrels such as export * without failing the check.
+                   Warn about broad exposed barrels and entry points that mask internal coupling.
   --warn-coupling-concentration
                    Warn when one module has high observed fan-in or fan-out without failing the check.
   --warn-deep-internal-imports

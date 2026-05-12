@@ -31,6 +31,7 @@ Files:
 - `results/mirofish-performance-memoization-backtest-2026-05-12.md`: targeted backtest after reducing synthetic scan cost with ownership lookup memoization.
 - `results/mirofish-intentional-debt-ledger-backtest-2026-05-12.md`: targeted backtest after adding the top-level `intentionalDebt` ledger for accepted non-edge surface debt.
 - `results/mirofish-comparison-backtest-2026-05-12.md`: targeted backtest after adding the public comparison and boundaries guide.
+- `results/mirofish-big-backtest-v1-2026-05-13.md`: larger multi-stakeholder synthetic backtest after external specs, real-project smoke notes, pilot workflow guidance, and observe-first positioning.
 - `tools/write-mirofish-env.ps1`: local helper for writing MiroFish credentials to `.env` without pasting secrets into chat.
 
 Live run input snapshot:
@@ -43,7 +44,7 @@ current master after the axi observe / observability positioning update
 Latest targeted backtest snapshot:
 
 ```text
-current working snapshot after ownership lookup memoization and unresolved import advisory warnings
+current master after pilot workflow guidance, external contract support, real-project smoke notes, and public entrypoint coupling warnings
 ```
 
 Use this experiment as forecast input, not as a replacement for real users. A useful forecast should produce falsifiable adoption risks, concrete messaging changes, and roadmap tradeoffs.

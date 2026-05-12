@@ -547,6 +547,8 @@ axi observe --root . --baseline axiom-baseline.json --markdown
 
 Markdown output is a review summary, not a new validator path. It separates hard violations, visible intentional debt, advisory warnings, and baseline drift so humans and agents can negotiate with the architecture contract without treating every signal as a hard gate. Visible debt is listed from the contract ledger, not only from dependency edges, so accepted surface leaks remain conspicuous.
 
+Review output also states that Axiom does not auto-accept debt. Accepted debt must already be declared in `.axi` with an expiration date and reason, and expired or invalid intentional violations remain hard failures in `axi check`.
+
 ## CI
 
 This repository dogfoods Axiom in GitHub Actions:

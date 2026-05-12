@@ -295,3 +295,39 @@ Detailed result:
 ```text
 experiments/axiom-forecast/results/mirofish-markdown-review-backtest-2026-05-12.md
 ```
+
+### Intentional Debt Ledger Backtest
+
+Before this small backtest, Axiom was changed and pushed:
+
+```text
+commit afea23f Expose intentional debt ledger
+```
+
+Implemented product change:
+
+- Added top-level graph JSON `intentionalDebt` in `axiom.graph.v9`.
+- Updated human graph / observe output with a dedicated `visible intentional debt` section.
+- Updated Markdown review output so accepted non-edge surface debt such as `hidden_reexport` remains visible.
+
+Method:
+
+Used the same local MiroFish `.env` and model configuration through direct `LLMClient` targeted backtests. This was not a full OASIS rerun.
+
+Primary result:
+
+- The ledger direction was accepted as a real improvement for the visible escape-hatch thesis.
+- The main risks shifted to rubber-stamp debt, graph schema churn, and pressure to add agent auto-accept flows.
+- A follow-up tightening prompt hallucinated nonexistent semantic-oracle and telemetry details, which reinforced the need for review artifacts to defend Axiom's limits explicitly.
+
+Follow-up taken:
+
+- Markdown review notes now state that Axiom does not auto-accept debt.
+- Markdown review notes now state that accepted debt must be declared in `.axi` with an expiration date and reason.
+- Markdown review notes now state that expired or invalid intentional violations remain hard failures in `axi check`.
+
+Detailed result:
+
+```text
+experiments/axiom-forecast/results/mirofish-intentional-debt-ledger-backtest-2026-05-12.md
+```

@@ -256,6 +256,8 @@ test("markdown graph output summarizes reviewable architecture signals", () => {
   assert.match(output, /Status: failing contract/);
   assert.match(output, /Review mode: observe \(advisory\)/);
   assert.match(output, /- Observed dependencies: 1 of 2/);
+  assert.match(output, /Axiom does not auto-accept debt/);
+  assert.match(output, /Expired or invalid intentional violations are hard contract failures in `axi check`/);
   assert.match(output, /### Hard Violations/);
   assert.match(output, /`Simulation -> Rendering` via `src\/simulation\/step\.ts:2` importing `\.\.\/rendering\/draw`/);
   assert.match(output, /`forbidden_dependency`: Simulation imports forbidden module Rendering\./);

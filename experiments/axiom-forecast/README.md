@@ -28,6 +28,7 @@ Files:
 - `results/mirofish-baseline-drift-backtest-2026-05-11.md`: targeted backtest after adding baseline-aware observed edge drift.
 - `results/mirofish-markdown-review-backtest-2026-05-12.md`: targeted backtest after adding Markdown PR / agent review summaries.
 - `results/mirofish-performance-memoization-backtest-2026-05-12.md`: targeted backtest after reducing synthetic scan cost with ownership lookup memoization.
+- `results/mirofish-intentional-debt-ledger-backtest-2026-05-12.md`: targeted backtest after adding the top-level `intentionalDebt` ledger for accepted non-edge surface debt.
 - `tools/write-mirofish-env.ps1`: local helper for writing MiroFish credentials to `.env` without pasting secrets into chat.
 
 Live run input snapshot:

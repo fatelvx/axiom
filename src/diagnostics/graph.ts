@@ -416,7 +416,9 @@ function formatMarkdownReviewNotes(graph: GraphJsonResult): string[] {
     "### Review Notes",
     "- This is review output; use `axi check` when you want a CI gate.",
     "- Hard violations are contract failures.",
-    "- Intentional violations, warnings, and drift are visible debt or advisory signals."
+    "- Intentional violations, warnings, and drift are visible debt or advisory signals.",
+    "- Axiom does not auto-accept debt; accepted debt must be declared in `.axi` with an expiration date and reason.",
+    "- Expired or invalid intentional violations are hard contract failures in `axi check`."
   ];
 
   if (graph.filters.violationsOnly) {

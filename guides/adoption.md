@@ -217,6 +217,8 @@ accepts forbidden_dependency to ServicesInternal until 2027-06-30 because "legac
 
 Active intentional violations let `axi check` pass but remain visible in human output, JSON output, and focused graph output. Entries expiring within 30 days are warnings, expired intentional violations fail the check, and unused entries are warnings, so old architecture debt does not become invisible policy.
 
+Use `axi observe --root .` or `axi observe --root . --markdown` when reviewing accepted debt. The observe output includes a visible intentional debt ledger that also covers accepted non-edge surface violations, such as a temporary `hidden_reexport` from an exposed entry point.
+
 Use a shorter or longer warning window if your team reviews architecture debt on a different cadence:
 
 ```bash
@@ -246,7 +248,7 @@ Use human output while developing. Use JSON output for CI annotations and custom
 
 `axi observe --root . --baseline axiom-baseline.json` compares the current observed module edges with an unfiltered `axi graph --json` snapshot. JSON marks this as `advisory_observed_edge_drift`; treat new and removed edges as PR review context first, and promote only the parts that prove consistently useful into stricter automation.
 
-`axi observe --root . --markdown` and `axi observe --root . --baseline axiom-baseline.json --markdown` keep hard violations, visible intentional debt, advisory warnings, and drift in separate sections. This makes the escape hatch conspicuous without making every advisory signal a blocker.
+`axi observe --root . --markdown` and `axi observe --root . --baseline axiom-baseline.json --markdown` keep hard violations, visible intentional debt, advisory warnings, and drift in separate sections. This makes the escape hatch conspicuous without making every advisory signal a blocker. The visible debt section is contract-led, not edge-only, so accepted surface leaks still appear in the review artifact.
 
 ## When To Tighten
 

@@ -22,6 +22,7 @@ test("graph JSON exposes declared, forbidden, visibility, and observed edges", (
     "hiddenPaths",
     "observedDependencies",
     "violations",
+    "intentionalDebt",
     "warnings"
   ]);
   assert.equal(payload.schemaVersion, graphJsonSchemaVersion);
@@ -78,6 +79,7 @@ test("graph JSON exposes declared, forbidden, visibility, and observed edges", (
     ["hidden_import"]
   ]);
   assert.deepEqual(payload.observedDependencies.map((edge) => edge.intentionalViolations), [[], [], []]);
+  assert.deepEqual(payload.intentionalDebt, []);
 });
 
 test("human graph output includes readable sections", () => {
@@ -270,10 +272,44 @@ test("violations-only graph output includes intentional dependency debt", () => 
 
   assert.match(output, /violations: 0/);
   assert.match(output, /intentional violations: 1/);
-  assert.match(output, /Simulation -> Rendering via src\/simulation\/step\.ts:1 "\.\.\/rendering\/draw"/);
-  assert.match(output, /intentional violation forbidden_dependency: Simulation imports forbidden module Rendering\./);
+  assert.match(output, /violating dependencies:\n  none/);
+  assert.match(output, /visible intentional debt:\n  forbidden_dependency src\/simulation\/step\.ts:1: Simulation imports forbidden module Rendering\./);
+  assert.match(output, /edge: Simulation -> Rendering/);
+  assert.match(output, /observed: Simulation -> Rendering/);
+  assert.match(output, /specifier: "\.\.\/rendering\/draw"/);
+  assert.match(output, /rule: Simulation forbids module Rendering \(axiom\/main\.axi:6\)/);
   assert.match(output, /contract: accepted until 2099-01-01 \(axiom\/main\.axi:7\)/);
   assert.match(output, /reason: legacy renderer migration/);
+});
+
+test("attention output includes intentional debt without an observed dependency edge", () => {
+  const result = runCheck({ root: path.join(repoRoot, "fixtures/accepted-hidden-reexport") });
+  const output = formatGraphResult(result, { violationsOnly: true, attention: true });
+
+  assert.match(output, /observed dependencies: 0 of 0/);
+  assert.match(output, /intentional violations: 1/);
+  assert.match(output, /violating dependencies:\n  none/);
+  assert.match(output, /visible intentional debt:\n  hidden_reexport src\/services\/index\.ts:1: Services re-exports a hidden path through an exposed file\./);
+  assert.match(output, /edge: Services -> Services/);
+  assert.match(output, /observed: Services exposes hidden path/);
+  assert.match(output, /specifier: "\.\/internal\/token"/);
+  assert.match(output, /rule: Services hides src\/services\/internal\/\*\* \(axiom\/main\.axi:4\)/);
+  assert.match(output, /contract: accepted until 2099-01-01 \(axiom\/main\.axi:5\)/);
+  assert.match(output, /reason: legacy public barrel cleanup/);
+});
+
+test("markdown review includes non-edge intentional debt", () => {
+  const result = runCheck({ root: path.join(repoRoot, "fixtures/accepted-hidden-reexport") });
+  const output = formatGraphMarkdown(result, { violationsOnly: true, attention: true, observe: true });
+
+  assert.match(output, /Status: needs review/);
+  assert.match(output, /### Visible Intentional Debt/);
+  assert.match(output, /`hidden_reexport` at `src\/services\/index\.ts:1`: Services re-exports a hidden path through an exposed file\./);
+  assert.match(output, /Edge: `Services -> Services`/);
+  assert.match(output, /Observed: Services exposes hidden path/);
+  assert.match(output, /Accepted until: `2099-01-01`/);
+  assert.match(output, /Contract: `axiom\/main\.axi:5`/);
+  assert.match(output, /Reason: legacy public barrel cleanup/);
 });
 
 test("violations-only graph output includes warning guardrails", () => {
@@ -332,4 +368,45 @@ test("graph JSON exposes warning details for agent review", () => {
     suggestion:
       "Remove the intentional violation if the architecture debt is gone, or keep it only while a matching violation is expected."
   });
+});
+
+test("graph JSON exposes a top-level intentional debt ledger", () => {
+  const result = runCheck({ root: path.join(repoRoot, "fixtures/accepted-hidden-reexport") });
+  const payload = toGraphJson(result, { violationsOnly: true, attention: true });
+
+  assert.equal(payload.summary.intentionalViolations, 1);
+  assert.equal(payload.observedDependencies.length, 0);
+  assert.deepEqual(payload.intentionalDebt, [
+    {
+      kind: "intentional_violation",
+      code: "hidden_reexport",
+      message: "Services re-exports a hidden path through an exposed file.",
+      fromModule: "Services",
+      toModule: "Services",
+      acceptedUntil: "2099-01-01",
+      reason: "legacy public barrel cleanup",
+      contractLocation: {
+        filePath: "axiom/main.axi",
+        line: 5
+      },
+      location: {
+        filePath: "src/services/index.ts",
+        line: 1
+      },
+      details: {
+        fromModule: "Services",
+        toModule: "Services",
+        specifier: "./internal/token",
+        exportedPath: "src/services/internal/token.ts",
+        observed: "Services exposes hidden path",
+        rule: "Services hides src/services/internal/**",
+        ruleLocation: {
+          filePath: "axiom/main.axi",
+          line: 4
+        },
+        suggestion: "Remove this re-export from the exposed surface, or move the exported API out of the hidden path."
+      },
+      suggestion: "Remove this re-export from the exposed surface, or move the exported API out of the hidden path."
+    }
+  ]);
 });

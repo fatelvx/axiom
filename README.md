@@ -451,6 +451,8 @@ accepts forbidden_dependency to ServicesInternal until 2027-06-30 because "legac
 
 Intentional violations only apply to observed dependency and visibility violations. Expired intentional violations fail the check, invalid entries cannot hide violations, entries expiring within 30 days become warnings, and unused entries are warnings so old architecture debt stays visible after the code is cleaned up.
 
+`axi observe` and `axi observe --markdown` show a dedicated visible debt ledger. That ledger is not limited to dependency edges, so accepted surface violations such as `hidden_reexport` still appear even when the focused observed graph has no edge to show.
+
 Tune the warning window per project with `intentionalViolationExpiryWarningDays` in `axiom.config.json`, or for one command with `--intentional-violation-warning-days <n>`.
 
 ## Public API Surface Warnings
@@ -525,7 +527,7 @@ Today this flags a module when the observed graph shows fan-in from at least fou
 }
 ```
 
-`axi graph --json` and `axi observe --json` emit `axiom.graph.v8`. Each observed dependency includes `violations` and `intentionalViolations` arrays. With `--violations-only`, `--attention`, or `observe`, `observedDependencies` is filtered to the edges that need attention or have accepted architecture debt, warning guardrails are still shown with details, and `summary.observedDependencies` keeps the full count. The JSON `filters` object marks focused attention output.
+`axi graph --json` and `axi observe --json` emit `axiom.graph.v9`. Each observed dependency includes `violations` and `intentionalViolations` arrays. Graph JSON also includes a top-level `intentionalDebt` ledger so accepted non-edge violations, such as hidden public-surface re-exports, stay visible to PR comments and agents. With `--violations-only`, `--attention`, or `observe`, `observedDependencies` is filtered to the edges that need attention or have accepted architecture debt, warning guardrails are still shown with details, and `summary.observedDependencies` keeps the full count. The JSON `filters` object marks focused attention output.
 
 Use an unfiltered graph JSON file as a baseline when you want to inspect architecture drift in a PR or agent run:
 
@@ -543,7 +545,7 @@ axi observe --root . --markdown
 axi observe --root . --baseline axiom-baseline.json --markdown
 ```
 
-Markdown output is a review summary, not a new validator path. It separates hard violations, visible intentional debt, advisory warnings, and baseline drift so humans and agents can negotiate with the architecture contract without treating every signal as a hard gate.
+Markdown output is a review summary, not a new validator path. It separates hard violations, visible intentional debt, advisory warnings, and baseline drift so humans and agents can negotiate with the architecture contract without treating every signal as a hard gate. Visible debt is listed from the contract ledger, not only from dependency edges, so accepted surface leaks remain conspicuous.
 
 ## CI
 

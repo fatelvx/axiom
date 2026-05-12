@@ -2,7 +2,7 @@ import path from "node:path";
 import type { ModuleRef, PathRef, SourceLocation, Violation, ViolationCode } from "../axi/types.js";
 import type { CheckResult } from "../validator/check.js";
 
-export const graphJsonSchemaVersion = "axiom.graph.v8";
+export const graphJsonSchemaVersion = "axiom.graph.v9";
 
 interface GraphJsonLocation {
   filePath: string;
@@ -72,6 +72,20 @@ interface GraphJsonIntentionalDependencyViolation extends GraphJsonDependencyVio
   };
 }
 
+interface GraphJsonIntentionalDebt {
+  kind: "intentional_violation";
+  code: ViolationCode;
+  message: string;
+  fromModule: string;
+  toModule: string;
+  acceptedUntil: string;
+  reason: string;
+  contractLocation: GraphJsonLocation;
+  location?: GraphJsonLocation;
+  details?: Record<string, unknown>;
+  suggestion?: string;
+}
+
 export interface GraphFormatOptions {
   violationsOnly?: boolean;
   attention?: boolean;
@@ -136,6 +150,7 @@ export interface GraphJsonResult {
   hiddenPaths: GraphJsonVisibilityRule[];
   observedDependencies: GraphJsonObservedDependency[];
   violations: GraphJsonViolation[];
+  intentionalDebt: GraphJsonIntentionalDebt[];
   warnings: GraphJsonViolation[];
   drift?: GraphJsonDrift;
 }
@@ -165,6 +180,8 @@ export function formatGraphResult(result: CheckResult, options: GraphFormatOptio
   if (options.violationsOnly) {
     lines.push("");
     lines.push(...formatViolatingDependencies(graph));
+    lines.push("");
+    lines.push(...formatIntentionalDebt(graph));
     lines.push("");
     lines.push(...formatOtherViolations(graph));
     lines.push("");
@@ -210,6 +227,11 @@ export function formatGraphResult(result: CheckResult, options: GraphFormatOptio
         `  ${dependency.fromModule} -> ${dependency.toModule} via ${dependency.import.filePath}:${dependency.import.line} "${dependency.import.specifier}"${violationSuffix}`
       );
     }
+  }
+
+  if (graph.intentionalDebt.length > 0) {
+    lines.push("");
+    lines.push(...formatIntentionalDebt(graph));
   }
 
   if (graph.drift) {
@@ -305,6 +327,9 @@ export function toGraphJson(result: CheckResult, options: GraphFormatOptions = {
         (dependency) => dependency.violations.length > 0 || dependency.intentionalViolations.length > 0
       )
     : allObservedDependencies;
+  const intentionalDebt = result.suppressedViolations
+    .map((suppressedViolation) => toIntentionalDebt(result.root, suppressedViolation))
+    .sort(compareIntentionalDebt);
   const drift = options.baseline ? computeDrift(options.baseline, allObservedDependencies) : undefined;
 
   return {
@@ -343,6 +368,7 @@ export function toGraphJson(result: CheckResult, options: GraphFormatOptions = {
     hiddenPaths,
     observedDependencies,
     violations: result.violations.map((violation) => toJsonViolation(result.root, violation)),
+    intentionalDebt,
     warnings: result.warnings.map((warning) => toJsonViolation(result.root, warning)),
     ...(drift ? { drift } : {})
   };
@@ -437,26 +463,33 @@ function formatMarkdownHardViolations(graph: GraphJsonResult): string[] {
 }
 
 function formatMarkdownIntentionalDebt(graph: GraphJsonResult): string[] {
-  const dependencies = graph.observedDependencies.filter((dependency) => dependency.intentionalViolations.length > 0);
   const lines = ["### Visible Intentional Debt"];
 
-  if (dependencies.length === 0) {
+  if (graph.intentionalDebt.length === 0) {
     lines.push("- None");
     return lines;
   }
 
-  for (const dependency of dependencies) {
-    lines.push(
-      `- ${markdownCode(`${dependency.fromModule} -> ${dependency.toModule}`)} via ${formatMarkdownImport(
-        dependency.import
-      )}`
-    );
-
-    for (const violation of dependency.intentionalViolations) {
-      lines.push(`  - ${markdownCode(violation.code)}: ${violation.message}`);
-      lines.push(`  - Accepted until: ${markdownCode(violation.contract.acceptedUntil)}`);
-      lines.push(`  - Contract: ${markdownCode(formatLocation(violation.contract.ruleLocation))}`);
-      lines.push(`  - Reason: ${violation.contract.reason}`);
+  for (const debt of graph.intentionalDebt) {
+    const location = debt.location ? ` at ${markdownCode(formatLocation(debt.location))}` : "";
+    lines.push(`- ${markdownCode(debt.code)}${location}: ${debt.message}`);
+    lines.push(`  - Edge: ${markdownCode(`${debt.fromModule} -> ${debt.toModule}`)}`);
+    appendMarkdownDetail(lines, "Observed", readString(debt.details?.observed));
+    const specifier = readString(debt.details?.specifier);
+    if (specifier) {
+      appendMarkdownDetail(lines, "Specifier", markdownCode(specifier));
+    }
+    const rule = readString(debt.details?.rule);
+    const ruleLocation = readLocation(debt.details?.ruleLocation);
+    if (rule) {
+      const suffix = ruleLocation ? ` (${formatLocation(ruleLocation)})` : "";
+      appendMarkdownDetail(lines, "Rule", `${rule}${suffix}`);
+    }
+    lines.push(`  - Accepted until: ${markdownCode(debt.acceptedUntil)}`);
+    lines.push(`  - Contract: ${markdownCode(formatLocation(debt.contractLocation))}`);
+    lines.push(`  - Reason: ${debt.reason}`);
+    if (debt.suggestion) {
+      lines.push(`  - Fix: ${debt.suggestion}`);
     }
   }
 
@@ -610,13 +643,14 @@ function markdownCode(value: string | number): string {
 
 function formatViolatingDependencies(graph: GraphJsonResult): string[] {
   const lines = ["violating dependencies:"];
+  const dependencies = graph.observedDependencies.filter((dependency) => dependency.violations.length > 0);
 
-  if (graph.observedDependencies.length === 0) {
+  if (dependencies.length === 0) {
     lines.push("  none");
     return lines;
   }
 
-  for (const dependency of graph.observedDependencies) {
+  for (const dependency of dependencies) {
     lines.push(
       `  ${dependency.fromModule} -> ${dependency.toModule} via ${dependency.import.filePath}:${dependency.import.line} "${dependency.import.specifier}"`
     );
@@ -628,12 +662,43 @@ function formatViolatingDependencies(graph: GraphJsonResult): string[] {
       }
     }
 
-    for (const violation of dependency.intentionalViolations) {
-      lines.push(`    intentional violation ${violation.code}: ${violation.message}`);
-      lines.push(
-        `    contract: accepted until ${violation.contract.acceptedUntil} (${violation.contract.ruleLocation.filePath}:${violation.contract.ruleLocation.line})`
-      );
-      lines.push(`    reason: ${violation.contract.reason}`);
+  }
+
+  return lines;
+}
+
+function formatIntentionalDebt(graph: GraphJsonResult): string[] {
+  const lines = ["visible intentional debt:"];
+
+  if (graph.intentionalDebt.length === 0) {
+    lines.push("  none");
+    return lines;
+  }
+
+  for (const debt of graph.intentionalDebt) {
+    const location = debt.location ? ` ${debt.location.filePath}:${debt.location.line}` : "";
+    lines.push(`  ${debt.code}${location}: ${debt.message}`);
+    lines.push(`    edge: ${debt.fromModule} -> ${debt.toModule}`);
+    const observed = readString(debt.details?.observed);
+    if (observed) {
+      lines.push(`    observed: ${observed}`);
+    }
+    const specifier = readString(debt.details?.specifier);
+    if (specifier) {
+      lines.push(`    specifier: "${specifier}"`);
+    }
+    const rule = readString(debt.details?.rule);
+    const ruleLocation = readLocation(debt.details?.ruleLocation);
+    if (rule) {
+      const suffix = ruleLocation ? ` (${ruleLocation.filePath}:${ruleLocation.line})` : "";
+      lines.push(`    rule: ${rule}${suffix}`);
+    }
+    lines.push(
+      `    contract: accepted until ${debt.acceptedUntil} (${debt.contractLocation.filePath}:${debt.contractLocation.line})`
+    );
+    lines.push(`    reason: ${debt.reason}`);
+    if (debt.suggestion) {
+      lines.push(`    fix: ${debt.suggestion}`);
     }
   }
 
@@ -896,6 +961,12 @@ function compareDriftEdges(left: GraphJsonDriftEdge, right: GraphJsonDriftEdge):
   return `${left.fromModule}->${left.toModule}`.localeCompare(`${right.fromModule}->${right.toModule}`);
 }
 
+function compareIntentionalDebt(left: GraphJsonIntentionalDebt, right: GraphJsonIntentionalDebt): number {
+  return `${left.acceptedUntil}\0${left.fromModule}->${left.toModule}\0${left.code}`.localeCompare(
+    `${right.acceptedUntil}\0${right.fromModule}->${right.toModule}\0${right.code}`
+  );
+}
+
 function toJsonViolation(root: string, violation: Violation): GraphJsonViolation {
   return {
     code: violation.code,
@@ -903,6 +974,28 @@ function toJsonViolation(root: string, violation: Violation): GraphJsonViolation
     ...(violation.location ? { location: toJsonLocation(root, violation.location) } : {}),
     ...(readSuggestion(violation) ? { suggestion: readSuggestion(violation) } : {}),
     ...(violation.details ? { details: normalizeDetails(root, violation.details) } : {})
+  };
+}
+
+function toIntentionalDebt(
+  root: string,
+  suppressedViolation: CheckResult["suppressedViolations"][number]
+): GraphJsonIntentionalDebt {
+  const violation = suppressedViolation.violation;
+  const suppression = suppressedViolation.suppression;
+
+  return {
+    kind: "intentional_violation",
+    code: violation.code,
+    message: violation.message,
+    fromModule: suppression.fromModule,
+    toModule: suppression.toModule,
+    acceptedUntil: suppression.expiresOn,
+    reason: suppression.reason,
+    contractLocation: toJsonLocation(root, suppression.location),
+    ...(violation.location ? { location: toJsonLocation(root, violation.location) } : {}),
+    ...(violation.details ? { details: normalizeDetails(root, violation.details) } : {}),
+    ...(readSuggestion(violation) ? { suggestion: readSuggestion(violation) } : {})
   };
 }
 

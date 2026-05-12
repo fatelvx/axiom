@@ -17,6 +17,7 @@ export function createOwnershipIndex(root: string, modules: AxiomModule[]): Owne
     module,
     patterns: module.paths.map((pattern) => globToRegExp(pattern))
   }));
+  const matchesByPath = new Map<string, AxiomModule[]>();
 
   return {
     findModule(filePath: string): AxiomModule | undefined {
@@ -35,10 +36,18 @@ export function createOwnershipIndex(root: string, modules: AxiomModule[]): Owne
   };
 
   function findMatches(filePath: string): AxiomModule[] {
+    const resolvedPath = path.resolve(filePath);
+    const cached = matchesByPath.get(resolvedPath);
+    if (cached) {
+      return cached;
+    }
+
     const relativePath = normalizePathForMatch(path.relative(root, filePath));
-    return matchers
+    const matches = matchers
       .filter((matcher) => matcher.patterns.some((pattern) => pattern.test(relativePath)))
       .map((matcher) => matcher.module);
+    matchesByPath.set(resolvedPath, matches);
+    return matches;
   }
 }
 

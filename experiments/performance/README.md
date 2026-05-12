@@ -51,3 +51,8 @@ They are not enough to prove:
 - incremental PR-only scan speed
 
 Real adoption still needs scoped configs, pilot repositories, and eventually resolver/discovery caching if larger cold runs stay expensive.
+
+## Recorded Runs
+
+- [Initial synthetic smoke baseline](results/synthetic-smoke-2026-05-12.md)
+- [Ownership lookup memoization smoke](results/synthetic-smoke-2026-05-12-ownership-cache.md)

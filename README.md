@@ -175,14 +175,16 @@ npm run perf:smoke
 npm run perf:smoke -- --modules 100 --files-per-module 100 --cross-imports-per-file 2
 ```
 
-Initial local results on Windows x64 / Node v24.14.1 / Intel i5-8400:
+Local results on Windows x64 / Node v24.14.1 / Intel i5-8400:
 
-| Source files | Imports scanned | `axi check` duration |
-| ---: | ---: | ---: |
-| 2,000 | 3,880 | 7.8s |
-| 10,000 | 19,700 | 78.7s |
+| Run | Source files | Imports scanned | `axi check` duration |
+| --- | ---: | ---: | ---: |
+| Initial baseline | 2,000 | 3,880 | 7.8s |
+| Initial baseline | 10,000 | 19,700 | 78.7s |
+| After ownership lookup memoization | 2,000 | 3,880 | 2.9s |
+| After ownership lookup memoization | 10,000 | 19,700 | 10.0s |
 
-These are cold synthetic runs, not production benchmark proof. The 10k-file result is intentionally shown because it is both useful and sobering: Axiom can complete the scan, but large monorepos still need scoped `include`/`exclude` config, focused contract locations, and future resolver/discovery caching before Axiom should claim broad CI comfort.
+These are cold synthetic runs, not production benchmark proof. The latest run shows that repeated ownership matching was a real early bottleneck, but large monorepos still need scoped `include`/`exclude` config, focused contract locations, pilot evidence, and future resolver/discovery caching before Axiom should claim broad CI comfort.
 
 ## Install
 

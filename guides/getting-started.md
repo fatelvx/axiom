@@ -164,6 +164,14 @@ axi observe --root . --baseline axiom-baseline.json --markdown
 
 Use `--markdown` when the output should become a PR comment, review note, or agent repair-loop message. It keeps hard violations, visible intentional debt, advisory warnings, and drift in separate sections.
 
+If you are only testing Axiom and do not want to add `axiom/main.axi` to the target repository yet, keep the contract somewhere else and pass it explicitly:
+
+```bash
+axi observe --root ../some-app --spec ./contracts/some-app.axi --markdown
+```
+
+The contract paths still point at files under `--root`.
+
 When a project has a legacy `export *` surface, keep `--warn-public-api-surface` advisory and follow the migration playbook in [Adopting Axiom In A Real Project](adoption.md#legacy-export--surfaces).
 
 If you already use ESLint architecture rules, Dependency Cruiser, Nx boundaries, CodeQL, or custom scripts, read [Comparison And Boundaries](comparison.md) before replacing anything. Axiom is meant to add declared intent, visible accepted debt, and drift review; it is not a substitute for every existing static-analysis tool.

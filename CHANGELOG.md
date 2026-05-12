@@ -47,6 +47,7 @@
 - Added a real-project smoke report for nanoid and zod, and fixed workspace inference so package root files do not overlap package `src/**` modules.
 - Added opt-in `--warn-deep-internal-imports` advisory warnings for relative cross-module imports that bypass likely `index.*` entry points.
 - Added a real-project version smoke harness for comparing architecture pressure across repository tags.
+- Added `--spec <path>` for check, graph, and observe so external pilot contracts can scan a target repo without writing `.axi` files into it.
 
 ## 0.5.8 - Monorepo Spec Discovery
 

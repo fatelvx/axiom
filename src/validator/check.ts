@@ -33,6 +33,7 @@ export type AdoptionMode = "loose" | "warn-unowned" | "strict";
 export interface CheckOptions {
   root: string;
   configPath?: string;
+  specPaths?: string[];
   adoptionMode?: AdoptionMode;
   today?: string;
   intentionalViolationExpiryWarningDays?: number;
@@ -64,7 +65,7 @@ export function runCheck(options: CheckOptions): CheckResult {
   const warnPublicApiSurface = options.warnPublicApiSurface ?? config.warnPublicApiSurface;
   const warnCouplingConcentration = options.warnCouplingConcentration ?? config.warnCouplingConcentration;
   const warnDeepInternalImports = options.warnDeepInternalImports ?? config.warnDeepInternalImports;
-  const specFiles = findAxiomFiles(root, config);
+  const specFiles = options.specPaths?.length ? resolveExplicitSpecFiles(root, options.specPaths) : findAxiomFiles(root, config);
   const sourceFiles = findSourceFiles(root, config);
   const resolver = createImportResolver({ root, tsconfigPath: config.tsconfig });
   const violations: Violation[] = [];
@@ -144,6 +145,50 @@ export function runCheck(options: CheckOptions): CheckResult {
     warnings,
     suppressedViolations
   };
+}
+
+function resolveExplicitSpecFiles(root: string, specPaths: string[]): string[] {
+  const files: string[] = [];
+
+  for (const specPath of specPaths) {
+    const resolvedPath = resolveSpecPath(root, specPath);
+
+    if (!fs.existsSync(resolvedPath)) {
+      throw new Error(`Axiom spec not found: ${resolvedPath}`);
+    }
+
+    const stat = fs.statSync(resolvedPath);
+
+    if (stat.isDirectory()) {
+      const directorySpecs = findAxiomFiles(resolvedPath, { specs: ["**/*.axi"] });
+      if (directorySpecs.length === 0) {
+        throw new Error(`No .axi files found in explicit spec directory: ${resolvedPath}`);
+      }
+      files.push(...directorySpecs);
+      continue;
+    }
+
+    if (!stat.isFile() || !resolvedPath.endsWith(".axi")) {
+      throw new Error(`Axiom spec must be a .axi file or a directory containing .axi files: ${resolvedPath}`);
+    }
+
+    files.push(resolvedPath);
+  }
+
+  return [...new Set(files.map((filePath) => path.resolve(filePath)))].sort();
+}
+
+function resolveSpecPath(root: string, specPath: string): string {
+  if (path.isAbsolute(specPath)) {
+    return specPath;
+  }
+
+  const fromCwd = path.resolve(specPath);
+  if (fs.existsSync(fromCwd)) {
+    return fromCwd;
+  }
+
+  return path.resolve(root, specPath);
 }
 
 function findUnownedSourceFiles(sourceFiles: string[], ownership: ReturnType<typeof createOwnershipIndex>): Violation[] {

@@ -66,12 +66,13 @@ Use `axiom.config.json` to keep source discovery focused:
   "intentionalViolationExpiryWarningDays": 30,
   "warnUnresolvedImports": false,
   "warnPublicApiSurface": false,
-  "warnCouplingConcentration": false
+  "warnCouplingConcentration": false,
+  "warnDeepInternalImports": false
 }
 ```
 
 `include` and `exclude` control source scanning. `specs` controls `.axi` discovery.
-`intentionalViolationExpiryWarningDays` controls how early active intentional violations become warnings before their expiration date. `warnUnresolvedImports`, `warnPublicApiSurface`, and `warnCouplingConcentration` enable advisory signals without turning them into gates.
+`intentionalViolationExpiryWarningDays` controls how early active intentional violations become warnings before their expiration date. `warnUnresolvedImports`, `warnPublicApiSurface`, `warnCouplingConcentration`, and `warnDeepInternalImports` enable advisory signals without turning them into gates.
 
 ## Performance Comfort
 
@@ -118,6 +119,19 @@ axi infer --root . --group-by workspace
 ```
 
 Axiom also reads package boundaries from `package.json` workspaces and `pnpm-workspace.yaml` when resolving internal package exports.
+
+## External Pilot Contracts
+
+When you are testing Axiom on a living project, you may not want to put `axiom/main.axi` into that repository yet. Use `--spec` to keep the contract in a separate workspace while scanning the target repo:
+
+```bash
+axi observe --root ../some-app --spec ./contracts/some-app.axi --markdown
+axi check --root ../some-app --spec ./contracts/some-app.axi
+```
+
+`--spec` accepts a `.axi` file or a directory of `.axi` files and can be repeated. It replaces normal spec discovery for that run. Module `path`, `exposes`, and `hides` patterns in the external contract are still relative to `--root`.
+
+This is a good fit for early adoption: keep the first contract advisory, run `axi observe` with warnings, then move a reviewed contract into the project only when the team is ready for an explicit `axi check` gate.
 
 ## Limits And Escape Hatches
 

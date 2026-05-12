@@ -451,6 +451,35 @@ test("cli check uses project config discovery settings", () => {
   assert.deepEqual(payload.sourceFiles, ["src/app.ts"]);
 });
 
+test("cli check --spec uses an external contract file instead of root discovery", () => {
+  const result = spawnSync(
+    process.execPath,
+    [cliPath, "check", "--root", "fixtures/basic-ts-valid", "--spec", "fixtures/external-contracts/basic-main.axi", "--json"],
+    { cwd: repoRoot, encoding: "utf8" }
+  );
+
+  assert.equal(result.status, 0);
+
+  const payload = JSON.parse(result.stdout);
+  assert.equal(payload.summary.specFiles, 1);
+  assert.deepEqual(payload.specFiles, ["../external-contracts/basic-main.axi"]);
+  assert.equal(
+    payload.modules.find((module: { name: string }) => module.name === "Simulation")?.purpose,
+    "external pilot contract"
+  );
+});
+
+test("cli infer rejects --spec because inference stays read-only and spec-free", () => {
+  const result = spawnSync(
+    process.execPath,
+    [cliPath, "infer", "--root", "fixtures/basic-ts-valid", "--spec", "fixtures/external-contracts/basic-main.axi"],
+    { cwd: repoRoot, encoding: "utf8" }
+  );
+
+  assert.equal(result.status, 1);
+  assert.match(result.stderr, /--spec is only supported by check, graph, and observe/);
+});
+
 test("cli rejects invalid intentional violation warning day windows", () => {
   const result = spawnSync(
     process.execPath,

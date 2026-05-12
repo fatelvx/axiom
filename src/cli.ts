@@ -13,6 +13,7 @@ interface CliOptions {
   json: boolean;
   markdown: boolean;
   configPath?: string;
+  specPaths: string[];
   adoptionMode: AdoptionMode;
   groupDepth?: number;
   groupBy?: InferGroupBy;
@@ -60,6 +61,7 @@ try {
   const result = runCheck({
     root: options.root,
     configPath: options.configPath,
+    specPaths: options.specPaths,
     adoptionMode: options.adoptionMode,
     intentionalViolationExpiryWarningDays: options.intentionalViolationExpiryWarningDays,
     warnUnresolvedImports: options.warnUnresolvedImports,
@@ -117,6 +119,7 @@ function parseOptions(values: string[], command: CliCommand): CliOptions {
     root: process.cwd(),
     json: false,
     markdown: false,
+    specPaths: [],
     adoptionMode: "loose",
     graphViolationsOnly: command === "observe",
     graphAttention: command === "observe",
@@ -190,6 +193,23 @@ function parseOptions(values: string[], command: CliCommand): CliOptions {
         process.exit(1);
       }
       options.configPath = configPath;
+      index += 1;
+      continue;
+    }
+
+    if (value === "--spec") {
+      if (command === "infer") {
+        console.error("--spec is only supported by check, graph, and observe.");
+        process.exit(1);
+      }
+
+      const specPath = values[index + 1];
+      if (!specPath) {
+        console.error("Missing value for --spec.");
+        process.exit(1);
+      }
+
+      options.specPaths.push(specPath);
       index += 1;
       continue;
     }
@@ -443,9 +463,9 @@ function printHelp(): void {
   console.log(`Axiom
 
 Usage:
-  axi check [--root <path>] [--config <path>] [--json] [--warn-unowned] [--strict] [--intentional-violation-warning-days <n>] [--warn-unresolved-imports] [--warn-public-api-surface] [--warn-coupling-concentration] [--warn-deep-internal-imports]
-  axi graph [--root <path>] [--config <path>] [--json|--markdown] [--warn-unowned] [--strict] [--violations-only|--attention] [--baseline <graph-json>] [--intentional-violation-warning-days <n>] [--warn-unresolved-imports] [--warn-public-api-surface] [--warn-coupling-concentration] [--warn-deep-internal-imports]
-  axi observe [--root <path>] [--config <path>] [--json|--markdown] [--warn-unowned] [--strict] [--baseline <graph-json>] [--intentional-violation-warning-days <n>] [--warn-unresolved-imports] [--warn-public-api-surface] [--warn-coupling-concentration] [--warn-deep-internal-imports]
+  axi check [--root <path>] [--config <path>] [--spec <path>] [--json] [--warn-unowned] [--strict] [--intentional-violation-warning-days <n>] [--warn-unresolved-imports] [--warn-public-api-surface] [--warn-coupling-concentration] [--warn-deep-internal-imports]
+  axi graph [--root <path>] [--config <path>] [--spec <path>] [--json|--markdown] [--warn-unowned] [--strict] [--violations-only|--attention] [--baseline <graph-json>] [--intentional-violation-warning-days <n>] [--warn-unresolved-imports] [--warn-public-api-surface] [--warn-coupling-concentration] [--warn-deep-internal-imports]
+  axi observe [--root <path>] [--config <path>] [--spec <path>] [--json|--markdown] [--warn-unowned] [--strict] [--baseline <graph-json>] [--intentional-violation-warning-days <n>] [--warn-unresolved-imports] [--warn-public-api-surface] [--warn-coupling-concentration] [--warn-deep-internal-imports]
   axi infer [--root <path>] [--config <path>] [--json] [--group-depth <n>] [--group-by folder|workspace]
 
 Commands:
@@ -464,6 +484,8 @@ Graph:
   observe            Product-facing alias for graph --attention.
 
 Adoption:
+  --spec <path>    Use an explicit .axi file or directory instead of discovering specs under --root.
+                   Repeat the flag for multiple external contract files.
   default          Ignore source files not owned by any module path.
   --warn-unowned  Report unowned source files as warnings without failing check.
   --strict        Report unowned source files as violations.

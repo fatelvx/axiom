@@ -277,6 +277,7 @@ axi check --root . --warn-unresolved-imports
 axi check --root . --warn-coupling-concentration
 axi check --root . --warn-deep-internal-imports
 axi check --root . --strict
+axi observe --root ../some-app --spec ./contracts/some-app.axi --markdown
 axi graph --root . --json
 axi graph --root . --json > axiom-baseline.json
 axi observe --root . --baseline axiom-baseline.json
@@ -377,6 +378,15 @@ node dist/cli.js graph --root examples/monorepo-workspace --violations-only
 
 Use `axiom.config.json` `specs` when your workspace layout is different.
 
+For early pilots, you can keep the contract outside the scanned repository:
+
+```bash
+axi observe --root ../some-app --spec ./contracts/some-app.axi --markdown
+axi check --root ../some-app --spec ./contracts/some-app.axi
+```
+
+`--spec` accepts a `.axi` file or a directory containing `.axi` files. Repeat it for multiple files. Source paths inside those contracts are still relative to `--root`, so this is useful when you want to scan a repo without adding `axiom/main.axi` yet.
+
 ## Project Config
 
 Axiom reads `axiom.config.json` from the project root when present:
@@ -390,7 +400,8 @@ Axiom reads `axiom.config.json` from the project root when present:
   "intentionalViolationExpiryWarningDays": 30,
   "warnUnresolvedImports": false,
   "warnPublicApiSurface": false,
-  "warnCouplingConcentration": false
+  "warnCouplingConcentration": false,
+  "warnDeepInternalImports": false
 }
 ```
 
@@ -398,12 +409,13 @@ Fields:
 
 - `include`: source files to scan. If omitted, Axiom scans supported source files outside default ignored directories.
 - `exclude`: source files or directories to skip in addition to default ignored directories.
-- `specs`: `.axi` files to read. Defaults to `axiom/**/*.axi` and `*.axi`.
+- `specs`: `.axi` files to read. Defaults to root contracts plus common `apps/*` and `packages/*` contract locations.
 - `tsconfig`: TypeScript config path used for `paths` alias resolution. Defaults to `tsconfig.json` when present.
 - `intentionalViolationExpiryWarningDays`: warn when accepted intentional violations expire within this many days. Defaults to `30`.
 - `warnUnresolvedImports`: opt into advisory warnings for owned files with static relative or package `#imports` that Axiom cannot resolve.
 - `warnPublicApiSurface`: opt into advisory warnings for broad exposed barrels such as `export *`.
 - `warnCouplingConcentration`: opt into advisory warnings for modules with high observed fan-in or fan-out.
+- `warnDeepInternalImports`: opt into advisory warnings for relative cross-module imports that bypass likely entry points.
 
 Default discovery skips common dependency, build, cache, and temporary output folders:
 

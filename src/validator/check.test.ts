@@ -309,6 +309,17 @@ test("check uses axiom.config.json discovery settings", () => {
   ]);
 });
 
+test("check can use an explicit external spec file without writing into the target root", () => {
+  const result = runCheck({
+    root: path.join(repoRoot, "fixtures/basic-ts-valid"),
+    specPaths: [path.join(repoRoot, "fixtures/external-contracts/basic-main.axi")]
+  });
+
+  assert.deepEqual(result.violations, []);
+  assert.deepEqual(result.specFiles, [path.join(repoRoot, "fixtures/external-contracts/basic-main.axi")]);
+  assert.equal(result.spec.modules.find((module) => module.name === "Simulation")?.purpose, "external pilot contract");
+});
+
 test("check resolves TypeScript path aliases from tsconfig", () => {
   const result = runCheck({ root: path.join(repoRoot, "fixtures/tsconfig-paths") });
 

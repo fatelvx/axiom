@@ -12,6 +12,7 @@ Current backtest focus:
 - Architecture observability with enforceable contracts.
 - Baseline-aware observed edge drift for PR and agent review.
 - Markdown review summaries for PR comments and agent repair loops.
+- Performance memoization and static blind-spot visibility after the 10k synthetic smoke check improved.
 - Whether "observe first, negotiate accepted tradeoffs, enforce only high-confidence intent" improves trust or sounds too abstract.
 
 Files:
@@ -26,6 +27,7 @@ Files:
 - `results/mirofish-coupling-backtest-2026-05-11.md`: targeted backtest after adding opt-in coupling concentration warnings.
 - `results/mirofish-baseline-drift-backtest-2026-05-11.md`: targeted backtest after adding baseline-aware observed edge drift.
 - `results/mirofish-markdown-review-backtest-2026-05-12.md`: targeted backtest after adding Markdown PR / agent review summaries.
+- `results/mirofish-performance-memoization-backtest-2026-05-12.md`: targeted backtest after reducing synthetic scan cost with ownership lookup memoization.
 - `tools/write-mirofish-env.ps1`: local helper for writing MiroFish credentials to `.env` without pasting secrets into chat.
 
 Live run input snapshot:
@@ -38,7 +40,7 @@ current master after the axi observe / observability positioning update
 Latest targeted backtest snapshot:
 
 ```text
-current working snapshot after the Markdown review summary update
+current working snapshot after ownership lookup memoization and unresolved import advisory warnings
 ```
 
 Use this experiment as forecast input, not as a replacement for real users. A useful forecast should produce falsifiable adoption risks, concrete messaging changes, and roadmap tradeoffs.

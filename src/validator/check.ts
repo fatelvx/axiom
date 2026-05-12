@@ -13,6 +13,7 @@ import {
   findCouplingConcentrationWarnings,
   findExpiringSuppressions,
   findPublicApiSurfaceWarnings,
+  findUnresolvedImportWarnings,
   validateModuleSurfaceConsistency,
   findUnusedSuppressions,
   validateObservedDependencies,
@@ -27,6 +28,7 @@ export interface CheckOptions {
   adoptionMode?: AdoptionMode;
   today?: string;
   intentionalViolationExpiryWarningDays?: number;
+  warnUnresolvedImports?: boolean;
   warnPublicApiSurface?: boolean;
   warnCouplingConcentration?: boolean;
 }
@@ -49,6 +51,7 @@ export function runCheck(options: CheckOptions): CheckResult {
   const config = loadConfig(root, options.configPath);
   const intentionalViolationExpiryWarningDays =
     options.intentionalViolationExpiryWarningDays ?? config.intentionalViolationExpiryWarningDays;
+  const warnUnresolvedImports = options.warnUnresolvedImports ?? config.warnUnresolvedImports;
   const warnPublicApiSurface = options.warnPublicApiSurface ?? config.warnPublicApiSurface;
   const warnCouplingConcentration = options.warnCouplingConcentration ?? config.warnCouplingConcentration;
   const specFiles = findAxiomFiles(root, config);
@@ -105,6 +108,9 @@ export function runCheck(options: CheckOptions): CheckResult {
     })
   );
   warnings.push(...findUnusedSuppressions(spec, suppressedViolations, { today: options.today }));
+  if (warnUnresolvedImports) {
+    warnings.push(...findUnresolvedImportWarnings(imports, ownership, root));
+  }
   if (warnPublicApiSurface) {
     warnings.push(...findPublicApiSurfaceWarnings(spec, imports, ownership, root));
   }

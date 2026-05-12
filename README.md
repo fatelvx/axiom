@@ -48,6 +48,8 @@ The sharpest finding was `symbol-level API health`: Axiom can validate import an
 
 A later targeted backtest of `axi observe` accepted the observability direction and picked module fan-in/fan-out concentration as the next low-noise signal to try. That signal is now opt-in because high coupling is an architecture pressure point, not automatic proof of bad design.
 
+A targeted backtest after ownership lookup memoization accepted the performance improvement as a material reduction in CI-friction risk, but shifted the highest-signal objection toward observed-graph blind spots. Axiom now has opt-in unresolved import warnings for static internal-looking imports that the scanner can see but the resolver cannot map into the source graph.
+
 The forecast also predicted rejection if Axiom looks like:
 
 - Dependency Cruiser with a new syntax
@@ -136,6 +138,7 @@ Axiom v0.5.8 currently supports:
 - Direct hidden-path re-exports from exposed entry points.
 - Opt-in public API surface warnings for broad exposed barrels with `--warn-public-api-surface`.
 - Opt-in coupling concentration warnings for modules with high observed fan-in or fan-out with `--warn-coupling-concentration`.
+- Opt-in unresolved import warnings for static relative or package `#imports` that Axiom can see but cannot resolve with `--warn-unresolved-imports`.
 - TypeScript/JavaScript import scanning through the TypeScript parser.
 - Relative imports, barrel `index.*` files, dynamic imports, `require`, and multiline imports.
 - TypeScript `paths` aliases from `tsconfig.json`.
@@ -158,6 +161,7 @@ Axiom v0.5.8 currently supports:
 Axiom v0 is intentionally honest about its blind spots:
 
 - It does not fully observe runtime-only dependency paths such as string-based dependency injection, plugin registries, generated imports, or `eval`.
+- It can optionally warn about static relative or package `#imports` that the scanner sees but cannot resolve with `--warn-unresolved-imports`, but it still cannot see non-literal runtime wiring.
 - It does not prove that a module is semantically well-designed. Axiom can catch direct hidden-path re-exports, and `--warn-public-api-surface` can flag broad `export *` barrels, but code can still become too coupled through overly large public entry points. This is the `symbol-level API health` gap.
 - It does not prove that concentrated fan-in or fan-out is wrong. `--warn-coupling-concentration` surfaces modules that may be turning into coordination hubs so humans and agents can review the pressure before it becomes hidden debt.
 - It does not replace ESLint, TypeScript, tests, or review. Axiom focuses on architecture intent: declared graph, observed graph, drift, warnings, intentional violations, and CI gates for clear contracts.
@@ -241,9 +245,11 @@ axi check --root . --json
 axi observe --root .
 axi observe --root . --markdown
 axi observe --root . --warn-public-api-surface
+axi observe --root . --warn-unresolved-imports
 axi observe --root . --warn-coupling-concentration
 axi check --root . --warn-unowned
 axi check --root . --warn-public-api-surface
+axi check --root . --warn-unresolved-imports
 axi check --root . --warn-coupling-concentration
 axi check --root . --strict
 axi graph --root . --json
@@ -357,6 +363,7 @@ Axiom reads `axiom.config.json` from the project root when present:
   "specs": ["axiom/**/*.axi"],
   "tsconfig": "tsconfig.json",
   "intentionalViolationExpiryWarningDays": 30,
+  "warnUnresolvedImports": false,
   "warnPublicApiSurface": false,
   "warnCouplingConcentration": false
 }
@@ -369,6 +376,7 @@ Fields:
 - `specs`: `.axi` files to read. Defaults to `axiom/**/*.axi` and `*.axi`.
 - `tsconfig`: TypeScript config path used for `paths` alias resolution. Defaults to `tsconfig.json` when present.
 - `intentionalViolationExpiryWarningDays`: warn when accepted intentional violations expire within this many days. Defaults to `30`.
+- `warnUnresolvedImports`: opt into advisory warnings for owned files with static relative or package `#imports` that Axiom cannot resolve.
 - `warnPublicApiSurface`: opt into advisory warnings for broad exposed barrels such as `export *`.
 - `warnCouplingConcentration`: opt into advisory warnings for modules with high observed fan-in or fan-out.
 
@@ -436,6 +444,18 @@ axi graph --root . --attention --warn-public-api-surface
 ```
 
 Today this flags broad exposed barrels such as `export * from "./feature"` or `export * as feature from "./feature"`. It is advisory: the check still exits `0` unless there are real violations. Treat it as a review prompt when an exposed entry point starts hiding coupling behind one public surface.
+
+## Unresolved Import Warnings
+
+To inspect observed-graph blind spots without turning them into a hard gate, opt into unresolved import warnings:
+
+```bash
+axi observe --root . --warn-unresolved-imports
+axi check --root . --warn-unresolved-imports
+axi graph --root . --attention --warn-unresolved-imports
+```
+
+Today this flags static relative imports and package `#imports` from owned files when Axiom can see the import but cannot resolve it to a source file. It is advisory: the check still exits `0` unless there are real violations. Treat it as a prompt to configure `tsconfig` or package imports, restore a missing file, or acknowledge that generated/runtime wiring is outside the observed graph.
 
 ## Coupling Concentration Warnings
 
@@ -544,6 +564,7 @@ Axiom can currently report:
 - `hidden_reexport`
 - `broad_public_surface`
 - `coupling_concentration`
+- `unresolved_import`
 - `unexposed_import`
 - `unowned_source_file`
 - `invalid_suppression`

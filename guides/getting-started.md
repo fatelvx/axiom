@@ -133,6 +133,13 @@ axi observe --root . --warn-public-api-surface
 axi check --root . --warn-public-api-surface
 ```
 
+Use this when you want advisory visibility into static internal-looking imports Axiom can see but cannot resolve:
+
+```bash
+axi observe --root . --warn-unresolved-imports
+axi check --root . --warn-unresolved-imports
+```
+
 Use this when you want advisory review prompts for modules that may be turning into coupling hubs:
 
 ```bash

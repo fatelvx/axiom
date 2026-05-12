@@ -482,6 +482,10 @@ function formatMarkdownWarnings(graph: GraphJsonResult): string[] {
 
 function appendMarkdownWarningDetails(lines: string[], warning: GraphJsonViolation): void {
   appendMarkdownDetail(lines, "Observed", readString(warning.details?.observed));
+  const specifier = readString(warning.details?.specifier);
+  if (specifier) {
+    appendMarkdownDetail(lines, "Specifier", markdownCode(specifier));
+  }
 
   const rule = readString(warning.details?.rule);
   const ruleLocation = readLocation(warning.details?.ruleLocation);
@@ -683,6 +687,11 @@ function formatWarnings(graph: GraphJsonResult): string[] {
     const observed = readString(warning.details?.observed);
     if (observed) {
       lines.push(`  observed: ${observed}`);
+    }
+
+    const specifier = readString(warning.details?.specifier);
+    if (specifier) {
+      lines.push(`  specifier: "${specifier}"`);
     }
 
     const rule = readString(warning.details?.rule);

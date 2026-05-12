@@ -10,13 +10,14 @@ The comfortable adoption path is a ladder, not a switch:
 
 1. Observe the attention surface with `axi observe --root .`.
 2. Measure coverage with `axi check --root . --warn-unowned`.
-3. Keep temporary architecture debt visible with `accepts ... until ... because ...`.
-4. Inspect broad public surfaces with `axi observe --root . --warn-public-api-surface`.
-5. Inspect concentrated coupling with `axi observe --root . --warn-coupling-concentration`.
-6. Compare against a saved graph with `axi observe --root . --baseline axiom-baseline.json`.
-7. Summarize PR or agent review context with `axi observe --root . --markdown`.
-8. Move only clear, high-confidence rules into CI with `axi check --root .`.
-9. Use `--strict` after whole-repo ownership is intentional.
+3. Surface unresolved internal-looking imports with `axi observe --root . --warn-unresolved-imports`.
+4. Keep temporary architecture debt visible with `accepts ... until ... because ...`.
+5. Inspect broad public surfaces with `axi observe --root . --warn-public-api-surface`.
+6. Inspect concentrated coupling with `axi observe --root . --warn-coupling-concentration`.
+7. Compare against a saved graph with `axi observe --root . --baseline axiom-baseline.json`.
+8. Summarize PR or agent review context with `axi observe --root . --markdown`.
+9. Move only clear, high-confidence rules into CI with `axi check --root .`.
+10. Use `--strict` after whole-repo ownership is intentional.
 
 This keeps Axiom useful for humans and agents without turning every advisory signal into a blocker.
 
@@ -60,13 +61,14 @@ Use `axiom.config.json` to keep source discovery focused:
   "specs": ["axiom/**/*.axi"],
   "tsconfig": "tsconfig.json",
   "intentionalViolationExpiryWarningDays": 30,
+  "warnUnresolvedImports": false,
   "warnPublicApiSurface": false,
   "warnCouplingConcentration": false
 }
 ```
 
 `include` and `exclude` control source scanning. `specs` controls `.axi` discovery.
-`intentionalViolationExpiryWarningDays` controls how early active intentional violations become warnings before their expiration date. `warnPublicApiSurface` and `warnCouplingConcentration` enable advisory signals without turning them into gates.
+`intentionalViolationExpiryWarningDays` controls how early active intentional violations become warnings before their expiration date. `warnUnresolvedImports`, `warnPublicApiSurface`, and `warnCouplingConcentration` enable advisory signals without turning them into gates.
 
 ## Performance Comfort
 
@@ -77,7 +79,7 @@ npm run perf:smoke
 npm run perf:smoke -- --modules 100 --files-per-module 100 --cross-imports-per-file 2
 ```
 
-The first local smoke showed 2,000 generated source files scanning in about 7.8 seconds and 10,000 generated source files scanning in about 78.7 seconds on a Windows i5-8400 machine. Treat this as an honesty check, not a promise for your monorepo. If a full-root scan is too slow, narrow `include`, exclude generated/runtime folders, and keep early contracts focused on the boundaries that matter most.
+The first local smoke showed 2,000 generated source files scanning in about 7.8 seconds and 10,000 generated source files scanning in about 78.7 seconds on a Windows i5-8400 machine. After ownership lookup memoization, the same harness improved to about 2.9 seconds for 2,000 files and 10.0 seconds for 10,000 files. Treat this as an honesty check, not a promise for your monorepo. If a full-root scan is too slow, narrow `include`, exclude generated/runtime folders, and keep early contracts focused on the boundaries that matter most.
 
 ## Monorepos
 
@@ -119,6 +121,8 @@ Axiom also reads package boundaries from `package.json` workspaces and `pnpm-wor
 Axiom is a static architecture validator, not a full runtime oracle.
 
 Expect blind spots around dependency injection strings, plugin registries, generated imports, `eval`, and other runtime-only paths. If those patterns matter in your project, model the stable source-level boundary first and keep the runtime convention visible in review or future custom checks.
+
+Use `--warn-unresolved-imports` when you want Axiom to surface static relative imports or package `#imports` that it can see but cannot resolve into the observed graph. This is advisory visibility into graph completeness, not proof that every runtime dependency path is known.
 
 Also watch for "compliant but unhealthy" architecture. For example, a giant `index.ts` can make imports pass while concentrating too much coupling in one public surface. Axiom now catches direct `export ... from` leaks from hidden paths through exposed entry points, and `--warn-public-api-surface` can flag exposed `export *` barrels as advisory warnings, but it still cannot prove every symbol-level API decision is healthy. Prefer small exposed entry points, explicit `hides` rules for internals, and intentional violations with expiration dates when migration needs time.
 
@@ -217,7 +221,7 @@ axi check --root . --json
 axi graph --root . --json > axiom-baseline.json
 axi observe --root . --baseline axiom-baseline.json
 axi observe --root . --baseline axiom-baseline.json --markdown
-axi observe --root . --warn-public-api-surface --warn-coupling-concentration
+axi observe --root . --warn-unresolved-imports --warn-public-api-surface --warn-coupling-concentration
 ```
 
 Use human output while developing. Use JSON output for CI annotations and custom reporting. Use Markdown output for PR comments, review artifacts, and agent repair-loop summaries.
@@ -240,7 +244,7 @@ Start loose:
 Then tighten:
 
 - Turn on `--warn-unowned`.
-- Turn on `--warn-public-api-surface` and `--warn-coupling-concentration` during architecture review.
+- Turn on `--warn-unresolved-imports`, `--warn-public-api-surface`, and `--warn-coupling-concentration` during architecture review.
 - Add missing module paths.
 - Move mature contracts to `--strict`.
 - Add visibility rules for public package or service boundaries.

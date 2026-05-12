@@ -9,6 +9,7 @@ export type ViolationCode =
   | "unused_suppression"
   | "ambiguous_module_owner"
   | "unowned_source_file"
+  | "unresolved_import"
   | "broad_public_surface"
   | "coupling_concentration"
   | "unknown_layer"

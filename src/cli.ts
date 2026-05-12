@@ -20,6 +20,7 @@ interface CliOptions {
   graphAttention: boolean;
   baselinePath?: string;
   intentionalViolationExpiryWarningDays?: number;
+  warnUnresolvedImports: boolean;
   warnPublicApiSurface: boolean;
   warnCouplingConcentration: boolean;
 }
@@ -60,6 +61,7 @@ try {
     configPath: options.configPath,
     adoptionMode: options.adoptionMode,
     intentionalViolationExpiryWarningDays: options.intentionalViolationExpiryWarningDays,
+    warnUnresolvedImports: options.warnUnresolvedImports,
     warnPublicApiSurface: options.warnPublicApiSurface,
     warnCouplingConcentration: options.warnCouplingConcentration
   });
@@ -116,6 +118,7 @@ function parseOptions(values: string[], command: CliCommand): CliOptions {
     adoptionMode: "loose",
     graphViolationsOnly: command === "observe",
     graphAttention: command === "observe",
+    warnUnresolvedImports: false,
     warnPublicApiSurface: false,
     warnCouplingConcentration: false
   };
@@ -208,6 +211,16 @@ function parseOptions(values: string[], command: CliCommand): CliOptions {
 
       options.intentionalViolationExpiryWarningDays = warningDays;
       index += 1;
+      continue;
+    }
+
+    if (value === "--warn-unresolved-imports") {
+      if (command === "infer") {
+        console.error("--warn-unresolved-imports is only supported by check, graph, and observe.");
+        process.exit(1);
+      }
+
+      options.warnUnresolvedImports = true;
       continue;
     }
 
@@ -417,9 +430,9 @@ function printHelp(): void {
   console.log(`Axiom
 
 Usage:
-  axi check [--root <path>] [--config <path>] [--json] [--warn-unowned] [--strict] [--intentional-violation-warning-days <n>] [--warn-public-api-surface] [--warn-coupling-concentration]
-  axi graph [--root <path>] [--config <path>] [--json|--markdown] [--warn-unowned] [--strict] [--violations-only|--attention] [--baseline <graph-json>] [--intentional-violation-warning-days <n>] [--warn-public-api-surface] [--warn-coupling-concentration]
-  axi observe [--root <path>] [--config <path>] [--json|--markdown] [--warn-unowned] [--strict] [--baseline <graph-json>] [--intentional-violation-warning-days <n>] [--warn-public-api-surface] [--warn-coupling-concentration]
+  axi check [--root <path>] [--config <path>] [--json] [--warn-unowned] [--strict] [--intentional-violation-warning-days <n>] [--warn-unresolved-imports] [--warn-public-api-surface] [--warn-coupling-concentration]
+  axi graph [--root <path>] [--config <path>] [--json|--markdown] [--warn-unowned] [--strict] [--violations-only|--attention] [--baseline <graph-json>] [--intentional-violation-warning-days <n>] [--warn-unresolved-imports] [--warn-public-api-surface] [--warn-coupling-concentration]
+  axi observe [--root <path>] [--config <path>] [--json|--markdown] [--warn-unowned] [--strict] [--baseline <graph-json>] [--intentional-violation-warning-days <n>] [--warn-unresolved-imports] [--warn-public-api-surface] [--warn-coupling-concentration]
   axi infer [--root <path>] [--config <path>] [--json] [--group-depth <n>] [--group-by folder|workspace]
 
 Commands:
@@ -443,6 +456,8 @@ Adoption:
   --strict        Report unowned source files as violations.
   --intentional-violation-warning-days <n>
                    Warn when an intentional violation expires within n days. Defaults to 30.
+  --warn-unresolved-imports
+                   Warn when an owned file has a static relative or # import that Axiom cannot resolve.
   --warn-public-api-surface
                    Warn about broad exposed barrels such as export * without failing the check.
   --warn-coupling-concentration

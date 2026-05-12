@@ -189,6 +189,38 @@ test("coupling concentration warnings are opt-in advisory diagnostics", () => {
   });
 });
 
+test("unresolved import warnings are opt-in advisory diagnostics", () => {
+  const root = path.join(repoRoot, "fixtures/unresolved-import");
+  const quietResult = runCheck({ root });
+
+  assert.deepEqual(quietResult.violations, []);
+  assert.deepEqual(quietResult.warnings, []);
+
+  const result = runCheck({ root, warnUnresolvedImports: true });
+
+  assert.deepEqual(result.violations, []);
+  assert.equal(result.importCount, 2);
+  assert.equal(result.warnings.length, 1);
+  assert.deepEqual(result.warnings[0], {
+    code: "unresolved_import",
+    message: "App has an import that Axiom could not resolve into the observed graph.",
+    location: {
+      filePath: path.join(root, "src/app/index.ts"),
+      line: 1
+    },
+    details: {
+      module: "App",
+      specifier: "./generated/runtime-token",
+      importKind: "import",
+      observed: "App unresolved import",
+      resolution: "unresolved",
+      scope: "relative_or_package_imports",
+      suggestion:
+        "Axiom could not map this static import to a source file, so the observed graph may be incomplete. Add the missing file, configure tsconfig/package imports, or exclude generated/runtime paths intentionally."
+    }
+  });
+});
+
 test("check uses axiom.config.json discovery settings", () => {
   const result = runCheck({ root: path.join(repoRoot, "fixtures/config-filter") });
 

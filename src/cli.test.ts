@@ -119,6 +119,23 @@ test("cli observe --warn-coupling-concentration reports advisory coupling warnin
   assert.deepEqual(payload.warnings[0].details.incomingModules, ["FeatureA", "FeatureB", "FeatureC", "FeatureD"]);
 });
 
+test("cli observe --warn-unresolved-imports reports advisory unresolved import warnings", () => {
+  const result = spawnSync(
+    process.execPath,
+    [cliPath, "observe", "--root", "fixtures/unresolved-import", "--warn-unresolved-imports", "--json"],
+    { cwd: repoRoot, encoding: "utf8" }
+  );
+
+  assert.equal(result.status, 0);
+
+  const payload = JSON.parse(result.stdout);
+  assert.equal(payload.schemaVersion, "axiom.graph.v8");
+  assert.equal(payload.summary.violations, 0);
+  assert.equal(payload.summary.warnings, 1);
+  assert.equal(payload.warnings[0].code, "unresolved_import");
+  assert.equal(payload.warnings[0].details.specifier, "./generated/runtime-token");
+});
+
 test("cli graph returns graph output without acting as a validation gate", () => {
   const result = spawnSync(
     process.execPath,

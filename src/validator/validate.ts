@@ -561,6 +561,42 @@ export function findPublicApiSurfaceWarnings(
   return warnings;
 }
 
+export function findUnresolvedImportWarnings(
+  imports: ImportRecord[],
+  ownership: OwnershipIndex,
+  root: string
+): Violation[] {
+  return imports
+    .filter((importRecord) => !importRecord.resolvedPath && isInternalLikeUnresolvedSpecifier(importRecord.specifier))
+    .flatMap((importRecord) => {
+      const fromModule = ownership.findModule(importRecord.filePath);
+      if (!fromModule) {
+        return [];
+      }
+
+      return [
+        {
+          code: "unresolved_import" as const,
+          message: `${fromModule.name} has an import that Axiom could not resolve into the observed graph.`,
+          location: {
+            filePath: importRecord.filePath,
+            line: importRecord.line
+          },
+          details: {
+            module: fromModule.name,
+            specifier: importRecord.specifier,
+            importKind: importRecord.kind,
+            observed: `${fromModule.name} unresolved import`,
+            resolution: "unresolved",
+            scope: "relative_or_package_imports",
+            suggestion:
+              "Axiom could not map this static import to a source file, so the observed graph may be incomplete. Add the missing file, configure tsconfig/package imports, or exclude generated/runtime paths intentionally."
+          }
+        }
+      ];
+    });
+}
+
 export function findCouplingConcentrationWarnings(observedDependencies: ObservedDependency[]): Violation[] {
   const statsByModule = new Map<string, CouplingStats>();
 
@@ -681,6 +717,10 @@ function formatExportKind(importRecord: ImportRecord): string {
   }
 
   return importRecord.isTypeOnly ? "export type *" : "export *";
+}
+
+function isInternalLikeUnresolvedSpecifier(specifier: string): boolean {
+  return specifier.startsWith(".") || specifier.startsWith("#");
 }
 
 function findMatchingPathRule(root: string, filePath: string | undefined, rules: PathRef[]): PathRef | undefined {

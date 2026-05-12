@@ -13,6 +13,7 @@ test("loadConfig returns defaults when no config file exists", () => {
       include: [],
       exclude: [],
       specs: defaultSpecPatterns,
+      warnUnresolvedImports: false,
       warnPublicApiSurface: false,
       warnCouplingConcentration: false
     });
@@ -32,9 +33,10 @@ test("loadConfig reads axiom.config.json from the project root", () => {
         exclude: ["src/generated/**"],
         specs: ["architecture/**/*.axi"],
         tsconfig: "tsconfig.app.json",
-        intentionalViolationExpiryWarningDays: 14,
-        warnPublicApiSurface: true,
-        warnCouplingConcentration: true
+      intentionalViolationExpiryWarningDays: 14,
+      warnUnresolvedImports: true,
+      warnPublicApiSurface: true,
+      warnCouplingConcentration: true
       })
     );
 
@@ -45,6 +47,7 @@ test("loadConfig reads axiom.config.json from the project root", () => {
     assert.deepEqual(config.specs, ["architecture/**/*.axi"]);
     assert.equal(config.tsconfig, "tsconfig.app.json");
     assert.equal(config.intentionalViolationExpiryWarningDays, 14);
+    assert.equal(config.warnUnresolvedImports, true);
     assert.equal(config.warnPublicApiSurface, true);
     assert.equal(config.warnCouplingConcentration, true);
     assert.equal(config.filePath, path.join(root, "axiom.config.json"));
@@ -84,6 +87,18 @@ test("loadConfig rejects invalid public API surface warning setting", () => {
     fs.writeFileSync(path.join(root, "axiom.config.json"), JSON.stringify({ warnPublicApiSurface: "yes" }));
 
     assert.throws(() => loadConfig(root), /warnPublicApiSurface/);
+  } finally {
+    fs.rmSync(root, { force: true, recursive: true });
+  }
+});
+
+test("loadConfig rejects invalid unresolved import warning setting", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "axi-config-invalid-unresolved-imports-"));
+
+  try {
+    fs.writeFileSync(path.join(root, "axiom.config.json"), JSON.stringify({ warnUnresolvedImports: "yes" }));
+
+    assert.throws(() => loadConfig(root), /warnUnresolvedImports/);
   } finally {
     fs.rmSync(root, { force: true, recursive: true });
   }

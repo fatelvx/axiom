@@ -401,3 +401,29 @@ Detailed result:
 ```text
 experiments/axiom-forecast/results/mirofish-public-api-surface-target-2026-05-13.md
 ```
+
+### Inference Onboarding Target Backtest
+
+Before this target backtest, Axiom had shipped the Lumina-feedback refinement:
+
+- `no_spec_files` now tells users to run `axi infer` or use an external `--spec` pilot contract.
+- `axi infer` now gives long collapsed cycle groups a readable name such as `ServicesCycle`.
+- Collapsed cycle output now includes source groups, observed internal edges, a reason, and a review note.
+- Collapsed cycle JSON now includes `internalDependencies` for tool and agent consumers.
+
+Method:
+
+Used the same local MiroFish `.env` and model configuration through direct `LLMClient`. This was a targeted risk-map prompt, not a full OASIS social simulation rerun.
+
+Primary result:
+
+- The `no_spec_files` fix is the strongest adoption improvement because it turns a dead-end first run into a concrete next action.
+- Readable collapsed cycles are a clear improvement, but the output can still feel like dependency-analyzer commentary rather than architectural guidance.
+- The remaining risk is that users may commit the inferred starter contract as if it were recommended architecture instead of a mirror of the current graph.
+- The recommended next step is one small refinement before a larger backtest: add a starter-contract notice to `axi infer` text and JSON output saying inference mirrors current dependencies and must be reviewed before enforcement.
+
+Detailed result:
+
+```text
+experiments/axiom-forecast/results/mirofish-inference-onboarding-target-2026-05-13.md
+```

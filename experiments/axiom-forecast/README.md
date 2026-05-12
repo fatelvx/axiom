@@ -33,6 +33,7 @@ Files:
 - `results/mirofish-comparison-backtest-2026-05-12.md`: targeted backtest after adding the public comparison and boundaries guide.
 - `results/mirofish-big-backtest-v1-2026-05-13.md`: larger multi-stakeholder synthetic backtest after external specs, real-project smoke notes, pilot workflow guidance, and observe-first positioning.
 - `results/mirofish-public-api-surface-target-2026-05-13.md`: targeted backtest after the nanoid/zod public API surface pilot.
+- `results/mirofish-inference-onboarding-target-2026-05-13.md`: targeted backtest after improving `no_spec_files` onboarding and collapsed cycle inference output.
 - `tools/write-mirofish-env.ps1`: local helper for writing MiroFish credentials to `.env` without pasting secrets into chat.
 
 Live run input snapshot:
@@ -52,6 +53,12 @@ Latest public API surface target snapshot:
 
 ```text
 current master after the nanoid/zod public API pilot and `public_entrypoint_coupling` report calibration
+```
+
+Latest inference onboarding target snapshot:
+
+```text
+current master after `no_spec_files` guidance and readable collapsed cycle output
 ```
 
 Use this experiment as forecast input, not as a replacement for real users. A useful forecast should produce falsifiable adoption risks, concrete messaging changes, and roadmap tradeoffs.

@@ -46,6 +46,7 @@
 - Bumped check JSON to `axiom.check.v4` for intentional violation reporting and warning details.
 - Added a real-project smoke report for nanoid and zod, and fixed workspace inference so package root files do not overlap package `src/**` modules.
 - Added opt-in `--warn-deep-internal-imports` advisory warnings for relative cross-module imports that bypass likely `index.*` entry points.
+- Added a real-project version smoke harness for comparing architecture pressure across repository tags.
 
 ## 0.5.8 - Monorepo Spec Discovery
 

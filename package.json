@@ -55,6 +55,7 @@
     "pack:dry-run": "npm pack --dry-run",
     "perf:smoke": "npm run build && node scripts/perf-smoke.mjs",
     "prepare": "npm run build",
+    "real-project:version-smoke": "npm run build && node scripts/real-project-version-smoke.mjs",
     "test": "npm run build && node scripts/run-tests.mjs"
   },
   "dependencies": {

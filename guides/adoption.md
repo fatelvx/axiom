@@ -68,6 +68,17 @@ Use `axiom.config.json` to keep source discovery focused:
 `include` and `exclude` control source scanning. `specs` controls `.axi` discovery.
 `intentionalViolationExpiryWarningDays` controls how early active intentional violations become warnings before their expiration date. `warnPublicApiSurface` and `warnCouplingConcentration` enable advisory signals without turning them into gates.
 
+## Performance Comfort
+
+Large repositories should start with explicit scan scope. Axiom includes a synthetic smoke harness for local evidence:
+
+```bash
+npm run perf:smoke
+npm run perf:smoke -- --modules 100 --files-per-module 100 --cross-imports-per-file 2
+```
+
+The first local smoke showed 2,000 generated source files scanning in about 7.8 seconds and 10,000 generated source files scanning in about 78.7 seconds on a Windows i5-8400 machine. Treat this as an honesty check, not a promise for your monorepo. If a full-root scan is too slow, narrow `include`, exclude generated/runtime folders, and keep early contracts focused on the boundaries that matter most.
+
 ## Monorepos
 
 Axiom discovers specs from common workspace locations by default:

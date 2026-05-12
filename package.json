@@ -48,6 +48,7 @@
     "check:fixture": "npm run build && node dist/cli.js check --root fixtures/basic-ts-valid",
     "ci": "npm test && npm run axiom:self",
     "pack:dry-run": "npm pack --dry-run",
+    "perf:smoke": "npm run build && node scripts/perf-smoke.mjs",
     "prepare": "npm run build",
     "test": "npm run build && node scripts/run-tests.mjs"
   },

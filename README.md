@@ -166,6 +166,24 @@ Axiom v0 is intentionally honest about its blind spots:
 
 The product goal is not perfect automatic architecture governance. The goal is a shared, machine-checkable observability layer where humans and agents can see drift early, accept temporary debt visibly, and enforce high-confidence boundaries.
 
+## Performance Smoke
+
+Axiom includes a repeatable synthetic performance smoke harness so scan comfort can be measured instead of hand-waved:
+
+```bash
+npm run perf:smoke
+npm run perf:smoke -- --modules 100 --files-per-module 100 --cross-imports-per-file 2
+```
+
+Initial local results on Windows x64 / Node v24.14.1 / Intel i5-8400:
+
+| Source files | Imports scanned | `axi check` duration |
+| ---: | ---: | ---: |
+| 2,000 | 3,880 | 7.8s |
+| 10,000 | 19,700 | 78.7s |
+
+These are cold synthetic runs, not production benchmark proof. The 10k-file result is intentionally shown because it is both useful and sobering: Axiom can complete the scan, but large monorepos still need scoped `include`/`exclude` config, focused contract locations, and future resolver/discovery caching before Axiom should claim broad CI comfort.
+
 ## Install
 
 Requirements:
@@ -547,6 +565,7 @@ Axiom can currently report:
 npm run ci
 npm test
 npm run axiom:self
+npm run perf:smoke
 npm run alpha:check
 npm run check:fixture
 node dist/cli.js check --root examples/basic-app

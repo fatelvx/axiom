@@ -29,6 +29,7 @@
 - Added `--baseline <graph-json>` for graph and observe output so current observed module edges can be compared with an unfiltered graph snapshot as advisory drift.
 - Bumped graph JSON to `axiom.graph.v8` for optional baseline drift output.
 - Added `--markdown` for graph and observe output so PRs and agent repair loops can review hard violations, visible debt, warnings, and drift in one summary.
+- Added a repeatable synthetic `npm run perf:smoke` harness and recorded initial scan-cost evidence for 2k-file and 10k-file generated workspaces.
 - Bumped check JSON to `axiom.check.v4` for intentional violation reporting and warning details.
 
 ## 0.5.8 - Monorepo Spec Discovery

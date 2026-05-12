@@ -48,6 +48,7 @@
 - Added opt-in `--warn-deep-internal-imports` advisory warnings for relative cross-module imports that bypass likely `index.*` entry points.
 - Added a real-project version smoke harness for comparing architecture pressure across repository tags.
 - Added `--spec <path>` for check, graph, and observe so external pilot contracts can scan a target repo without writing `.axi` files into it.
+- Added a pilot workflow guide that separates code-health audits from Axiom boundary-drift scans and keeps early adoption observe-first.
 
 ## 0.5.8 - Monorepo Spec Discovery
 

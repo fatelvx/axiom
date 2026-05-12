@@ -128,6 +128,7 @@ node dist/cli.js graph --root examples/basic-app --attention
 Choose your next step:
 
 - Existing project: start with `axi infer --root .`, then follow [Adopting Axiom In A Real Project](guides/adoption.md).
+- Early pilot: keep the first contract outside the target repo with [Pilot Workflow](guides/pilot-workflow.md).
 - CI path: read [GitHub Actions And PR Summaries](guides/github-actions.md), then compare it with the dogfooded workflow in [.github/workflows/ci.yml](.github/workflows/ci.yml).
 - Real contract shape: inspect [examples/monorepo-workspace](examples/monorepo-workspace) for package-level contracts.
 - Tool comparison: read [Comparison And Boundaries](guides/comparison.md) if you are asking how Axiom differs from ESLint, Dependency Cruiser, Nx, CodeQL, or custom scripts.
@@ -616,6 +617,7 @@ For a fuller PR workflow, use [GitHub Actions And PR Summaries](guides/github-ac
 
 - [Getting Started](guides/getting-started.md)
 - [Adopting Axiom In A Real Project](guides/adoption.md)
+- [Pilot Workflow](guides/pilot-workflow.md)
 - [Comparison And Boundaries](guides/comparison.md)
 - [GitHub Actions And PR Summaries](guides/github-actions.md)
 - [JSON Consumers](guides/json-consumers.md)

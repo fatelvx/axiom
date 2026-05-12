@@ -27,7 +27,7 @@ It adds:
 
 The key difference is not a stronger import parser. The key difference is the workflow around declared intent, accepted tradeoffs, drift, and agent-readable review context.
 
-If you are building that workflow into CI annotations, PR comments, dashboards, or agent integrations, start with [GitHub Actions And PR Summaries](github-actions.md) and [JSON Consumers](json-consumers.md). The integration should use `axi check --json` for hard gates and `axi observe` or `axi graph` output for review context.
+If you are building that workflow into CI annotations, PR comments, dashboards, or agent integrations, start with [Pilot Workflow](pilot-workflow.md), [GitHub Actions And PR Summaries](github-actions.md), and [JSON Consumers](json-consumers.md). The integration should use `axi check --json` for hard gates and `axi observe` or `axi graph` output for review context.
 
 ## Tool Boundary Matrix
 
@@ -37,6 +37,7 @@ If you are building that workflow into CI annotations, PR comments, dashboards, 
 | Dependency Cruiser | Rich dependency graph rules for JavaScript/TypeScript projects | Mature dependency graph analysis, rule presets, and graph exploration | Make architecture intent explicit in `.axi`, connect violations with intentional debt and drift, and provide a contract shape agents can negotiate with |
 | Nx boundaries | Workspace/project graph boundaries, tags, affected builds, monorepo workflows | Nx's build graph, task orchestration, caching, and workspace-native constraints | Add package or module contracts for repos that are not all-in on Nx, plus visible exceptions and advisory architecture pressure signals |
 | CodeQL | Security and correctness queries over code semantics | Vulnerability detection, dataflow analysis, and deep semantic query capability | Keep architecture intent separate from security analysis; use Axiom for declared boundaries and CodeQL for semantic security/correctness checks |
+| Code-health audits | Large files, broad fan-out, scattered conventions, maintenance hot spots | Repository-specific quality heuristics and broad maintainability dashboards | Turn suspected pressure into declared boundaries, then show exact observed edges, file locations, visible debt, and drift |
 | Custom scripts | Highly tailored one-off repository policy | Maximum flexibility for project-specific checks | Replace ad hoc policy text with a small contract language, stable diagnostics, and review output that multiple consumers can share |
 
 ## Axiom Versus Dependency Cruiser

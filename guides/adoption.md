@@ -133,6 +133,8 @@ axi check --root ../some-app --spec ./contracts/some-app.axi
 
 This is a good fit for early adoption: keep the first contract advisory, run `axi observe` with warnings, then move a reviewed contract into the project only when the team is ready for an explicit `axi check` gate.
 
+For a full step-by-step flow, read [Pilot Workflow](pilot-workflow.md).
+
 ## Limits And Escape Hatches
 
 Axiom is a static architecture validator, not a full runtime oracle.

@@ -54,6 +54,8 @@ axi graph --root . --spec axiom-starter.axi --json > axiom-baseline.json
 
 The starter contract mirrors current imports. Treat it as evidence, not approval. Use the saved baseline to review future drift with `axi observe --baseline`, then tighten only the boundaries that produce reliable signal.
 
+The generated comments are part of the onboarding surface. They remind reviewers to rename modules into team vocabulary, review every `depends on` edge as architecture intent, turn visibility suggestions into rules only after review, and avoid blanket debt acceptance. This is one of the main differences from a linter config: the first artifact is a negotiation aid for declared architecture intent, not just a list of rules to appease.
+
 ## Good First Rules
 
 Choose one or two rules that would catch real mistakes:

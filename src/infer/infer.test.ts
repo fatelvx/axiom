@@ -21,6 +21,10 @@ test("infer creates a starter contract from source folders", () => {
 
   const output = formatInferResult(result);
   assert.match(output, /not a recommended architecture/);
+  assert.match(output, /# authoring checklist:/);
+  assert.match(output, /# 1\. Rename modules so they match the team's architecture vocabulary/);
+  assert.match(output, /# next commands:/);
+  assert.match(output, /# axi observe --root \. --spec <draft\.axi> --markdown/);
   assert.match(output, /module Simulation/);
   assert.match(output, /path "src\/simulation\/\*\*"/);
   assert.match(output, /depends on Physics/);
@@ -80,6 +84,7 @@ test("infer collapses cyclic candidate groups into one starter module", () => {
   assert.match(output, /# includes: A, B/);
   assert.match(output, /# - A -> B \(1\)/);
   assert.match(output, /# reason: inferred groups form a circular dependency/);
+  assert.match(output, /Review collapsed cycles as boundary tangles/);
 });
 
 test("infer gives long collapsed cycles a readable module name", () => {
@@ -106,13 +111,27 @@ test("infer JSON includes the generated .axi draft", () => {
   const result = runInfer({ root: path.join(repoRoot, "fixtures/basic-ts-valid") });
   const payload = toInferJson(result);
 
-  assert.equal(payload.schemaVersion, "axiom.infer.v2");
+  assert.equal(payload.schemaVersion, "axiom.infer.v3");
   assert.deepEqual(payload.starterContract, {
     kind: "current_graph_snapshot",
     notice: [
       "This starter contract mirrors the current dependency graph; it is not a recommended architecture.",
       "Review module names, collapsed cycles, visibility suggestions, and dependencies before treating it as intent.",
       "Use `axi check` only after the contract describes the architecture you want to protect."
+    ],
+    authoringChecklist: [
+      "Rename modules so they match the team's architecture vocabulary, not only folder names.",
+      "Review each `depends on` edge as intended architecture; remove or refactor accidental edges before using this as a gate.",
+      "Turn commented `exposes` and `hides` suggestions into real rules only after confirming the public/internal boundary.",
+      "Add `layers` and `layer` statements only when dependency direction is clear enough to enforce.",
+      "Use `accepts ... until ... because ...` only for reviewed migration debt; do not blanket-accept first-run problems.",
+      "Save an unfiltered graph JSON baseline when the draft is useful so future runs can show drift over time.",
+      "If the module map feels too broad or too detailed, rerun inference with `--group-depth` or `--group-by workspace`."
+    ],
+    nextCommands: [
+      "axi observe --root . --spec <draft.axi> --markdown",
+      "axi graph --root . --spec <draft.axi> --mermaid",
+      "axi graph --root . --spec <draft.axi> --json > axiom-baseline.json"
     ]
   });
   assert.equal(payload.summary.sourceFiles, 3);

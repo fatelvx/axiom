@@ -13,7 +13,7 @@ Each JSON payload starts with a `schemaVersion`:
 ```text
 axiom.check.v4
 axiom.graph.v9
-axiom.infer.v2
+axiom.infer.v3
 ```
 
 Treat the prefix as the command family:
@@ -121,6 +121,7 @@ Treat `drift.newObservedEdges[]` and `drift.removedObservedEdges[]` as review co
 
 - `starterContract.kind: "current_graph_snapshot"` to mark the output as a mirror of today's dependency graph.
 - `starterContract.notice[]` with the same human-facing warning printed in `.axi` comments.
+- `starterContract.authoringChecklist[]` and `starterContract.nextCommands[]` for tools that want to guide first-contract review.
 - `axi` containing the generated starter contract text.
 
 Do not treat inferred modules, collapsed cycles, or dependencies as maintainer intent until a human reviews and edits the contract. They are onboarding material for authoring a real `.axi` contract.

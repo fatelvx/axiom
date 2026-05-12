@@ -206,7 +206,7 @@ For a workspace or monorepo:
 axi infer --root . --group-by workspace
 ```
 
-The inferred contract is a starting point, not a final architecture. The output marks itself as a current-graph snapshot because it mirrors today's dependency shape rather than recommending what the architecture should become. Rename modules, add layers, tighten `depends on`, and add `exposes` or `hides` after review. If inference collapses a cycle, read the included groups and observed internal edges as a clue about where boundaries are tangled.
+The inferred contract is a starting point, not a final architecture. The output marks itself as a current-graph snapshot because it mirrors today's dependency shape rather than recommending what the architecture should become. It also includes an authoring checklist and next commands so the first `.axi` draft is easier to review. Rename modules, add layers, tighten `depends on`, and add `exposes` or `hides` after review. If inference collapses a cycle, read the included groups and observed internal edges as a clue about where boundaries are tangled.
 
 ## 7. Try A Monorepo
 

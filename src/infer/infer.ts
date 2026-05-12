@@ -54,6 +54,8 @@ export interface CollapsedCycleDependency {
 export interface InferStarterContract {
   kind: "current_graph_snapshot";
   notice: string[];
+  authoringChecklist: string[];
+  nextCommands: string[];
 }
 
 export interface InferResult {
@@ -95,6 +97,21 @@ export const inferStarterContractNotice = [
   "Use `axi check` only after the contract describes the architecture you want to protect."
 ];
 
+export const inferStarterContractAuthoringChecklist = [
+  "Rename modules so they match the team's architecture vocabulary, not only folder names.",
+  "Review each `depends on` edge as intended architecture; remove or refactor accidental edges before using this as a gate.",
+  "Turn commented `exposes` and `hides` suggestions into real rules only after confirming the public/internal boundary.",
+  "Add `layers` and `layer` statements only when dependency direction is clear enough to enforce.",
+  "Use `accepts ... until ... because ...` only for reviewed migration debt; do not blanket-accept first-run problems.",
+  "Save an unfiltered graph JSON baseline when the draft is useful so future runs can show drift over time."
+];
+
+export const inferStarterContractNextCommands = [
+  "axi observe --root . --spec <draft.axi> --markdown",
+  "axi graph --root . --spec <draft.axi> --mermaid",
+  "axi graph --root . --spec <draft.axi> --json > axiom-baseline.json"
+];
+
 export function runInfer(options: InferOptions): InferResult {
   const root = path.resolve(options.root);
   const config = loadConfig(root, options.configPath);
@@ -125,16 +142,34 @@ export function runInfer(options: InferOptions): InferResult {
 
   return {
     root,
-    starterContract: {
-      kind: "current_graph_snapshot",
-      notice: [...inferStarterContractNotice]
-    },
+    starterContract: buildStarterContract(collapsedCycles),
     sourceFiles,
     importCount: imports.length,
     candidateModules: candidateGroups.length,
     collapsedCycles,
     modules,
     observedDependencies
+  };
+}
+
+function buildStarterContract(collapsedCycles: CollapsedCycle[]): InferStarterContract {
+  const authoringChecklist = [...inferStarterContractAuthoringChecklist];
+
+  if (collapsedCycles.length > 0) {
+    authoringChecklist.push(
+      "Review collapsed cycles as boundary tangles; keep a merged module only if that cycle is an intentional unit."
+    );
+  } else {
+    authoringChecklist.push(
+      "If the module map feels too broad or too detailed, rerun inference with `--group-depth` or `--group-by workspace`."
+    );
+  }
+
+  return {
+    kind: "current_graph_snapshot",
+    notice: [...inferStarterContractNotice],
+    authoringChecklist,
+    nextCommands: [...inferStarterContractNextCommands]
   };
 }
 

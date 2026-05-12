@@ -1,6 +1,6 @@
 import type { InferResult, InferredDependency, InferredModule } from "../infer/infer.js";
 
-export const inferJsonSchemaVersion = "axiom.infer.v2";
+export const inferJsonSchemaVersion = "axiom.infer.v3";
 
 export interface InferJsonResult {
   schemaVersion: typeof inferJsonSchemaVersion;
@@ -26,6 +26,17 @@ export function formatInferResult(result: InferResult): string {
     ...result.starterContract.notice.map((line) => `# ${line}`),
     ""
   ];
+
+  lines.push("# authoring checklist:");
+  result.starterContract.authoringChecklist.forEach((item, index) => {
+    lines.push(`# ${index + 1}. ${item}`);
+  });
+  lines.push("");
+  lines.push("# next commands:");
+  for (const command of result.starterContract.nextCommands) {
+    lines.push(`# ${command}`);
+  }
+  lines.push("");
 
   for (const cycle of result.collapsedCycles) {
     lines.push(`# collapsed cycle: ${cycle.module}`);

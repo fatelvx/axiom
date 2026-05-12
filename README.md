@@ -170,7 +170,7 @@ Axiom v0.5.8 currently supports:
 - Human output and stable JSON output for CI and agents.
 - Markdown architecture review summaries for PRs and agent repair loops with `axi observe --markdown`.
 - Mermaid dependency diagrams for observed module graphs with `axi graph --mermaid` or `axi observe --mermaid`.
-- Starter contract inference with `axi infer`, explicitly marked as a current-graph snapshot rather than recommended architecture.
+- Starter contract inference with `axi infer`, explicitly marked as a current-graph snapshot rather than recommended architecture, with an authoring checklist and next commands.
 - Architecture attention output with `axi observe`.
 - Baseline-aware observed edge drift with `axi observe --baseline <graph-json>`.
 - Focused graph output with `axi graph --violations-only`.
@@ -272,7 +272,7 @@ Use them like this:
 - `axi graph`: inspect declared and observed graphs; exits `0` even with violations.
 - `axi graph --violations-only` or `axi graph --attention`: show failing edges, intentional violations, and warning guardrails.
 - `axi graph --mermaid`: print a visual Mermaid flowchart of observed module dependencies with a built-in legend.
-- `axi infer`: print a starter `.axi` draft from existing imports.
+- `axi infer`: print a starter `.axi` draft from existing imports, plus a review checklist for turning the draft into intent.
 
 Useful flags:
 
@@ -360,7 +360,7 @@ For monorepos:
 axi infer --root . --group-by workspace
 ```
 
-Inference prints a draft to stdout and does not write files. The output says up front that it mirrors the current dependency graph, not recommended architecture. Treat it as a starting point: rename modules, add layers, tighten `depends on`, and add `exposes` or `hides` after review. When `axi infer` collapses cyclic candidate groups, it now lists the included groups and observed internal edges so the cycle is useful architecture feedback instead of just a strange generated name.
+Inference prints a draft to stdout and does not write files. The output says up front that it mirrors the current dependency graph, not recommended architecture. It also includes an authoring checklist and next commands, so the first contract is not a blank configuration chore. Treat it as a starting point: rename modules, add layers, tighten `depends on`, and add `exposes` or `hides` after review. When `axi infer` collapses cyclic candidate groups, it lists the included groups and observed internal edges so the cycle is useful architecture feedback instead of just a strange generated name.
 
 ## Monorepos
 

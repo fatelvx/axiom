@@ -117,3 +117,25 @@ test("infer supports workspace package grouping", () => {
     ]
   );
 });
+
+test("workspace inference keeps package root files from overlapping src modules", () => {
+  const result = runInfer({ root: path.join(repoRoot, "fixtures/workspace-infer-root-files"), groupBy: "workspace" });
+
+  assert.equal(result.candidateModules, 2);
+  assert.deepEqual(
+    result.modules.map((module) => ({
+      name: module.name,
+      paths: module.paths
+    })),
+    [
+      {
+        name: "Lib",
+        paths: ["packages/lib/src/**"]
+      },
+      {
+        name: "LibVitest",
+        paths: ["packages/lib/vitest.config.ts"]
+      }
+    ]
+  );
+});

@@ -44,6 +44,7 @@
 - Added `npm run github-actions:smoke` to verify the GitHub Actions PR integration example against the built CLI.
 - Updated package metadata to match the architecture observability plus enforceable contracts positioning.
 - Bumped check JSON to `axiom.check.v4` for intentional violation reporting and warning details.
+- Added a real-project smoke report for nanoid and zod, and fixed workspace inference so package root files do not overlap package `src/**` modules.
 
 ## 0.5.8 - Monorepo Spec Discovery
 

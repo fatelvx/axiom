@@ -172,7 +172,7 @@ axi graph --root . --mermaid
 axi observe --root . --mermaid
 ```
 
-Mermaid output is presentation output over the same graph result. It does not change validation or CI behavior.
+Mermaid output is presentation output over the same graph result. The rendered diagram includes a legend that distinguishes declared `.axi` modules from observed import edges and marks filtered `observe` views. It does not change validation or CI behavior.
 
 If you are only testing Axiom and do not want to add `axiom/main.axi` to the target repository yet, keep the contract somewhere else and pass it explicitly:
 

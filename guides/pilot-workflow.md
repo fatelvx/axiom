@@ -94,7 +94,7 @@ axi graph --root ../target-app --spec contracts/target-app.axi --mermaid
 axi observe --root ../target-app --spec contracts/target-app.axi --mermaid
 ```
 
-The Mermaid output is a review artifact. It does not change what `axi check` enforces.
+The Mermaid output is a review artifact. It includes a visible legend and marks focused `observe` diagrams as filtered. It does not change what `axi check` enforces.
 
 ## 5. Add Baseline Drift
 

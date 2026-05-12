@@ -271,7 +271,7 @@ Add `--warn-public-api-surface` separately only when the team is intentionally r
 
 `axi observe --root .` is the product-facing architecture attention view: it keeps failing edges, intentional violations, and warning guardrails in one focused output. `axi graph --root . --attention` and `--violations-only` remain available when you want the graph command explicitly.
 
-`axi graph --root . --mermaid` renders the observed module dependency graph with layer groupings. `axi observe --root . --mermaid` uses the same focused attention filter as observe, so it is useful for visualizing only the edges under review.
+`axi graph --root . --mermaid` renders the observed module dependency graph with layer groupings and a visible legend. `axi observe --root . --mermaid` uses the same focused attention filter as observe, so the diagram marks itself as filtered and is useful for visualizing only the edges under review.
 
 For a concrete GitHub Actions setup, read [GitHub Actions And PR Summaries](github-actions.md). The recommended split is `axi check --json` for the hard gate and `axi observe --markdown` for review context.
 

@@ -271,7 +271,7 @@ Use them like this:
 - `axi observe`: show the architecture attention surface; exits `0` and focuses violations, visible debt, and warnings.
 - `axi graph`: inspect declared and observed graphs; exits `0` even with violations.
 - `axi graph --violations-only` or `axi graph --attention`: show failing edges, intentional violations, and warning guardrails.
-- `axi graph --mermaid`: print a visual Mermaid flowchart of observed module dependencies.
+- `axi graph --mermaid`: print a visual Mermaid flowchart of observed module dependencies with a built-in legend.
 - `axi infer`: print a starter `.axi` draft from existing imports.
 
 Useful flags:

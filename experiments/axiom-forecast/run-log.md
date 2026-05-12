@@ -427,3 +427,35 @@ Detailed result:
 ```text
 experiments/axiom-forecast/results/mirofish-inference-onboarding-target-2026-05-13.md
 ```
+
+### Mermaid Graph Target Backtest
+
+Before this target backtest, Axiom had shipped visual graph output:
+
+- `axi graph --mermaid`
+- `axi observe --mermaid`
+- layer-grouped module nodes
+- aggregated observed import edge counts
+- drift/debt codes on observed edges
+
+Method:
+
+Used the same local MiroFish `.env` and model configuration through direct `LLMClient`. This was a targeted risk-map prompt, not a full OASIS social simulation rerun.
+
+Primary result:
+
+- Mermaid output is useful because it turns long edge lists into a fast architecture review artifact.
+- The main risk is misclassification: skeptical developers may see a Mermaid dependency graph and assume Axiom is just a prettier `madge` or Dependency Cruiser output.
+- The reason this risk was real is that Mermaid comments are hidden in rendered diagrams, so observed-only and filtered-view boundaries were not visible in the artifact itself.
+
+Follow-up taken:
+
+- Added an in-diagram `Axiom graph legend` to every Mermaid output.
+- The legend states that nodes are declared `.axi` modules and edges are observed imports.
+- Filtered Mermaid views now visibly say they are filtered and that clean observed dependencies are omitted.
+
+Detailed result:
+
+```text
+experiments/axiom-forecast/results/mirofish-mermaid-graph-target-2026-05-13.md
+```

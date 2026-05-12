@@ -319,6 +319,8 @@ export function formatGraphMermaid(result: CheckResult, options: GraphFormatOpti
     "flowchart TB"
   ];
 
+  lines.push(...formatMermaidLegend(graph, options));
+
   const moduleGroups = groupModulesForMermaid(graph.modules);
   if (moduleGroups.length === 0) {
     lines.push("  %% no modules");
@@ -1181,6 +1183,41 @@ function formatMermaidEdgeLabel(edge: MermaidEdge): string {
   }
 
   return parts.join("; ");
+}
+
+function formatMermaidLegend(graph: GraphJsonResult, options: GraphFormatOptions): string[] {
+  const viewLabel = graph.filters.violationsOnly
+    ? `${options.observe ? "FILTERED observe view" : "FILTERED graph view"}: ${formatObservedDependencyCount(
+        graph
+      )} observed dependency edges shown`
+    : `Full observed view: ${graph.summary.observedDependencies} observed dependency edge${pluralize(
+        graph.summary.observedDependencies
+      )} shown`;
+  const filterLabel = graph.filters.violationsOnly
+    ? "Clean observed dependencies are omitted"
+    : "Clean and debt edges are both shown";
+
+  return [
+    `  subgraph axiom_legend["Axiom graph legend"]`,
+    `    axiom_legend_scope["${formatMermaidMultilineLabel([viewLabel, filterLabel])}"]`,
+    `    axiom_legend_nodes["${formatMermaidMultilineLabel([
+      "Nodes: declared .axi modules",
+      "Grouped by declared layer when present"
+    ])}"]`,
+    `    axiom_legend_edges["${formatMermaidMultilineLabel([
+      "Edges: observed imports",
+      "Labels show import counts and drift/debt codes"
+    ])}"]`,
+    `    axiom_legend_output["${formatMermaidMultilineLabel([
+      "Presentation output only",
+      "Use axi graph --json for machine-readable data"
+    ])}"]`,
+    "  end"
+  ];
+}
+
+function formatMermaidMultilineLabel(lines: string[]): string {
+  return lines.map(escapeMermaidLabel).join("<br/>");
 }
 
 function readMermaidModuleId(moduleIds: Map<string, string>, moduleName: string): string {

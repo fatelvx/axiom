@@ -116,7 +116,7 @@ axi graph --root . --mermaid > axiom-graph.mmd
 axi observe --root . --mermaid > axiom-attention.mmd
 ```
 
-`axi graph --mermaid` shows the observed module graph. `axi observe --mermaid` uses the same focused attention filter as observe, so it can show only edges under review. Both are presentation outputs; keep `axi check` as the gate.
+`axi graph --mermaid` shows the observed module graph with a built-in legend. `axi observe --mermaid` uses the same focused attention filter as observe, so it can show only edges under review and marks the diagram as filtered. Both are presentation outputs; keep `axi check` as the gate.
 
 ## Agent Repair Loop
 

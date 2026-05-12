@@ -126,7 +126,7 @@ Expect blind spots around dependency injection strings, plugin registries, gener
 
 Use `--warn-unresolved-imports` when you want Axiom to surface static relative imports or package `#imports` that it can see but cannot resolve into the observed graph. This is advisory visibility into graph completeness, not proof that every runtime dependency path is known.
 
-Also watch for "compliant but unhealthy" architecture. For example, a giant `index.ts` can make imports pass while concentrating too much coupling in one public surface. Axiom now catches direct `export ... from` leaks from hidden paths through exposed entry points, and `--warn-public-api-surface` can flag exposed `export *` barrels as advisory warnings, but it still cannot prove every symbol-level API decision is healthy. Prefer small exposed entry points, explicit `hides` rules for internals, and intentional violations with expiration dates when migration needs time.
+Also watch for "compliant but unhealthy" architecture. For example, a giant `index.ts` can make imports pass while concentrating too much coupling in one public surface. Axiom now catches direct `export ... from` leaks and local `import ... from "./internal"` followed by `export { ... }` leaks from hidden paths through exposed entry points. `--warn-public-api-surface` can flag exposed `export *` barrels as advisory warnings, but Axiom still cannot prove every symbol-level API decision is healthy. Prefer small exposed entry points, explicit `hides` rules for internals, and intentional violations with expiration dates when migration needs time.
 
 `--warn-coupling-concentration` is another pressure signal, not a verdict. It reports modules with high observed fan-in or fan-out so teams can review whether a module is becoming a coordination hub, facade, or hidden dependency magnet. Some hubs are legitimate; the value is making them visible before the shape becomes accidental.
 
@@ -146,7 +146,7 @@ Use this migration path instead:
 6. If a real hidden-path leak or temporary visibility breach appears during migration, use `accepts ... until ... because ...` for that concrete violation only.
 7. Remove the intentional violation when the migration is done.
 
-This keeps the debt visible without pretending Axiom can prove full symbol-level API health in v0.
+This keeps the debt visible without pretending Axiom can prove full symbol-level API health in v0. Public wrappers around hidden implementation imports are still a valid pattern; the hard violation is the explicit leak of a hidden symbol into an exposed surface.
 
 ## CI
 

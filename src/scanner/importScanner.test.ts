@@ -4,7 +4,7 @@ import os from "node:os";
 import path from "node:path";
 import test from "node:test";
 import { createImportResolver } from "./importResolver.js";
-import { scanImports } from "./importScanner.js";
+import { scanImports, scanSourceFile } from "./importScanner.js";
 
 test("scanner resolves relative dynamic imports and barrel index imports", () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "axi-imports-"));
@@ -206,6 +206,77 @@ test("scanner marks broad re-export forms", () => {
         }
       ]
     );
+  } finally {
+    fs.rmSync(root, { force: true, recursive: true });
+  }
+});
+
+test("scanner records imported bindings and local re-export names", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "axi-imports-local-export-"));
+
+  try {
+    writeFile(
+      root,
+      "src/app.ts",
+      [
+        'import defaultToken, { issueServiceToken as issue, type TokenOptions } from "./internal/token";',
+        'export { issue, type TokenOptions as PublicTokenOptions };',
+        "export default defaultToken;"
+      ].join("\n")
+    );
+    writeFile(root, "src/internal/token.ts", "export const issueServiceToken = true;\n");
+
+    const scan = scanSourceFile(path.join(root, "src/app.ts"));
+
+    assert.deepEqual(
+      scan.imports.map((record) => ({
+        line: record.line,
+        kind: record.kind,
+        specifier: record.specifier,
+        resolvedPath: normalize(root, record.resolvedPath),
+        importedBindings: record.importedBindings
+      })),
+      [
+        {
+          line: 1,
+          kind: "import",
+          specifier: "./internal/token",
+          resolvedPath: "src/internal/token.ts",
+          importedBindings: [
+            {
+              localName: "defaultToken",
+              importedName: "default",
+              isTypeOnly: false
+            },
+            {
+              localName: "issue",
+              importedName: "issueServiceToken",
+              isTypeOnly: false
+            },
+            {
+              localName: "TokenOptions",
+              importedName: "TokenOptions",
+              isTypeOnly: true
+            }
+          ]
+        }
+      ]
+    );
+    assert.deepEqual(scan.localExports, [
+      {
+        filePath: path.join(root, "src/app.ts"),
+        line: 2,
+        kind: "named",
+        exportedNames: ["issue", "TokenOptions"],
+        isTypeOnly: false
+      },
+      {
+        filePath: path.join(root, "src/app.ts"),
+        line: 3,
+        kind: "default",
+        exportedNames: ["defaultToken"]
+      }
+    ]);
   } finally {
     fs.rmSync(root, { force: true, recursive: true });
   }

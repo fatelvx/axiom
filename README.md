@@ -44,7 +44,7 @@ A live MiroFish forecast was run on 2026-05-11 against Axiom's current product s
 
 Treat forecast output as a risk map, not an action script. Axiom should absorb the problems it surfaces, then decide changes through the product's own filter: is the signal reliably checkable, does the change help real adopters instead of only quieting skeptics, and does it preserve Axiom's core difference as an architecture contract validator rather than a broad semantic oracle?
 
-The sharpest finding was `symbol-level API health`: Axiom can validate import and visibility intent, and it can catch direct hidden-path re-exports, but it cannot prove that broad public API surfaces are semantically healthy.
+The sharpest finding was `symbol-level API health`: Axiom can validate import and visibility intent, and it can catch direct hidden-path re-exports plus local import-then-export leaks from hidden internals, but it cannot prove that broad public API surfaces are semantically healthy.
 
 A later targeted backtest of `axi observe` accepted the observability direction and picked module fan-in/fan-out concentration as the next low-noise signal to try. That signal is now opt-in because high coupling is an architecture pressure point, not automatic proof of bad design.
 
@@ -142,7 +142,7 @@ Axiom v0.5.8 currently supports:
 - Forbidden module edges with `forbids module`.
 - Layer direction with `layers Core -> UI`.
 - Public/private module surfaces with `exposes` and `hides`.
-- Direct hidden-path re-exports from exposed entry points.
+- Direct hidden-path re-exports and local import-then-export hidden leaks from exposed entry points.
 - Opt-in public API surface warnings for broad exposed barrels with `--warn-public-api-surface`.
 - Opt-in coupling concentration warnings for modules with high observed fan-in or fan-out with `--warn-coupling-concentration`.
 - Opt-in unresolved import warnings for static relative or package `#imports` that Axiom can see but cannot resolve with `--warn-unresolved-imports`.
@@ -169,7 +169,7 @@ Axiom v0 is intentionally honest about its blind spots:
 
 - It does not fully observe runtime-only dependency paths such as string-based dependency injection, plugin registries, generated imports, or `eval`.
 - It can optionally warn about static relative or package `#imports` that the scanner sees but cannot resolve with `--warn-unresolved-imports`, but it still cannot see non-literal runtime wiring.
-- It does not prove that a module is semantically well-designed. Axiom can catch direct hidden-path re-exports, and `--warn-public-api-surface` can flag broad `export *` barrels, but code can still become too coupled through overly large public entry points. This is the `symbol-level API health` gap.
+- It does not prove that a module is semantically well-designed. Axiom can catch direct hidden-path re-exports and local import-then-export leaks from hidden internals, and `--warn-public-api-surface` can flag broad `export *` barrels, but code can still become too coupled through wrappers, facades, or overly large public entry points. This is the `symbol-level API health` gap.
 - It does not prove that concentrated fan-in or fan-out is wrong. `--warn-coupling-concentration` surfaces modules that may be turning into coordination hubs so humans and agents can review the pressure before it becomes hidden debt.
 - It does not replace ESLint, TypeScript, tests, or review. Axiom focuses on architecture intent: declared graph, observed graph, drift, warnings, intentional violations, and CI gates for clear contracts.
 - It does not replace Dependency Cruiser, Nx boundaries, CodeQL, or custom repository scripts. See [Comparison And Boundaries](guides/comparison.md) for where Axiom is useful and where other tools are stronger.
@@ -468,6 +468,8 @@ axi graph --root . --attention --warn-public-api-surface
 ```
 
 Today this flags broad exposed barrels such as `export * from "./feature"` or `export * as feature from "./feature"`. It is advisory: the check still exits `0` unless there are real violations. Treat it as a review prompt when an exposed entry point starts hiding coupling behind one public surface.
+
+Separate from that advisory warning, `hidden_reexport` is a hard, high-confidence violation when an exposed file leaks a hidden path directly, either with `export ... from "./internal"` or with `import ... from "./internal"` followed by `export { ... }`. Public wrappers around hidden implementation imports are still allowed; Axiom only flags the explicit hidden symbol leak.
 
 ## Unresolved Import Warnings
 

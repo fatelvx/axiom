@@ -3,6 +3,7 @@ import type {
   AxiomModule,
   AxiomSpec,
   ImportRecord,
+  LocalExportRecord,
   ObservedDependency,
   PathRef,
   SuppressedViolation,
@@ -35,6 +36,11 @@ interface CouplingStats {
   outgoingModules: Set<string>;
   incomingImportSites: number;
   outgoingImportSites: number;
+}
+
+interface HiddenImportedBinding {
+  importRecord: ImportRecord & { resolvedPath: string };
+  hiddenRule: PathRef;
 }
 
 export function validateSpec(spec: AxiomSpec, options: DateValidationOptions = {}): Violation[] {
@@ -451,6 +457,7 @@ export function validateObservedDependencies(
 export function validateModuleSurfaceConsistency(
   spec: AxiomSpec,
   imports: ImportRecord[],
+  localExports: LocalExportRecord[],
   ownership: OwnershipIndex,
   root: string
 ): Violation[] {
@@ -496,6 +503,57 @@ export function validateModuleSurfaceConsistency(
         suggestion: "Remove this re-export from the exposed surface, or move the exported API out of the hidden path."
       }
     });
+  }
+
+  const hiddenImportsByFile = collectHiddenImportedBindings(spec, imports, ownership, root);
+
+  for (const localExport of localExports) {
+    const hiddenBindings = hiddenImportsByFile.get(path.resolve(localExport.filePath));
+    if (!hiddenBindings) {
+      continue;
+    }
+
+    const owner = ownership.findModule(localExport.filePath);
+    if (!owner) {
+      continue;
+    }
+
+    const module = byName.get(owner.name);
+    if (!module || module.exposes.length === 0 || !matchesAnyPathRule(root, localExport.filePath, module.exposes)) {
+      continue;
+    }
+
+    for (const exportedName of localExport.exportedNames) {
+      const leak = hiddenBindings.get(exportedName);
+      if (!leak) {
+        continue;
+      }
+
+      violations.push({
+        code: "hidden_reexport",
+        message: `${module.name} re-exports a hidden import through an exposed file.`,
+        location: {
+          filePath: localExport.filePath,
+          line: localExport.line
+        },
+        details: {
+          fromModule: module.name,
+          toModule: module.name,
+          specifier: leak.importRecord.specifier,
+          exportedName,
+          exportedPath: relativePath(root, leak.importRecord.resolvedPath),
+          exportKind: localExport.kind,
+          importLocation: {
+            filePath: leak.importRecord.filePath,
+            line: leak.importRecord.line
+          },
+          observed: `${module.name} exposes hidden path`,
+          rule: `${module.name} hides ${leak.hiddenRule.pattern}`,
+          ruleLocation: leak.hiddenRule.location,
+          suggestion: "Remove this re-export from the exposed surface, or move the exported API out of the hidden path."
+        }
+      });
+    }
   }
 
   return violations;
@@ -559,6 +617,63 @@ export function findPublicApiSurfaceWarnings(
   }
 
   return warnings;
+}
+
+function collectHiddenImportedBindings(
+  spec: AxiomSpec,
+  imports: ImportRecord[],
+  ownership: OwnershipIndex,
+  root: string
+): Map<string, Map<string, HiddenImportedBinding>> {
+  const hiddenImportsByFile = new Map<string, Map<string, HiddenImportedBinding>>();
+  const byName = new Map(spec.modules.map((module) => [module.name, module]));
+
+  for (const importRecord of imports) {
+    if (importRecord.kind !== "import" || !importRecord.resolvedPath || !importRecord.importedBindings?.length) {
+      continue;
+    }
+
+    const owner = ownership.findModule(importRecord.filePath);
+    const target = ownership.findModule(importRecord.resolvedPath);
+    if (!owner || !target || owner.name !== target.name) {
+      continue;
+    }
+
+    const module = byName.get(owner.name);
+    if (!module) {
+      continue;
+    }
+
+    const hiddenRule = findMatchingPathRule(root, importRecord.resolvedPath, module.hides);
+    if (!hiddenRule) {
+      continue;
+    }
+
+    const bindingsByName = ensureHiddenBindingMap(hiddenImportsByFile, importRecord.filePath);
+    for (const binding of importRecord.importedBindings) {
+      bindingsByName.set(binding.localName, {
+        importRecord: importRecord as ImportRecord & { resolvedPath: string },
+        hiddenRule
+      });
+    }
+  }
+
+  return hiddenImportsByFile;
+}
+
+function ensureHiddenBindingMap(
+  hiddenImportsByFile: Map<string, Map<string, HiddenImportedBinding>>,
+  filePath: string
+): Map<string, HiddenImportedBinding> {
+  const key = path.resolve(filePath);
+  const existing = hiddenImportsByFile.get(key);
+  if (existing) {
+    return existing;
+  }
+
+  const created = new Map<string, HiddenImportedBinding>();
+  hiddenImportsByFile.set(key, created);
+  return created;
 }
 
 export function findUnresolvedImportWarnings(

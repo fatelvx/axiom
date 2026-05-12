@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import ts from "typescript";
-import type { ImportRecord } from "../axi/types.js";
+import type { ImportBinding, ImportRecord, LocalExportRecord, SourceFileScan } from "../axi/types.js";
 import { resolveRelativeImport, type ImportResolver } from "./importResolver.js";
 
 export interface ScanImportsOptions {
@@ -9,16 +9,21 @@ export interface ScanImportsOptions {
 }
 
 export function scanImports(filePath: string, options: ScanImportsOptions = {}): ImportRecord[] {
+  return scanSourceFile(filePath, options).imports;
+}
+
+export function scanSourceFile(filePath: string, options: ScanImportsOptions = {}): SourceFileScan {
   const text = fs.readFileSync(filePath, "utf8");
   const sourceFile = ts.createSourceFile(filePath, text, ts.ScriptTarget.Latest, true, getScriptKind(filePath));
   const imports: ImportRecord[] = [];
+  const localExports: LocalExportRecord[] = [];
   const resolver = options.resolver ?? { resolve: resolveRelativeImport };
 
   function recordImport(
     node: ts.Node,
     kind: ImportRecord["kind"],
     specifier: string,
-    options: Pick<ImportRecord, "exportKind" | "isTypeOnly"> = {}
+    options: Pick<ImportRecord, "exportKind" | "isTypeOnly" | "importedBindings"> = {}
   ): void {
     const line = sourceFile.getLineAndCharacterOfPosition(node.getStart(sourceFile)).line + 1;
 
@@ -32,11 +37,35 @@ export function scanImports(filePath: string, options: ScanImportsOptions = {}):
     });
   }
 
+  function recordLocalExport(
+    node: ts.Node,
+    kind: LocalExportRecord["kind"],
+    exportedNames: string[],
+    options: Pick<LocalExportRecord, "isTypeOnly"> = {}
+  ): void {
+    if (exportedNames.length === 0) {
+      return;
+    }
+
+    const line = sourceFile.getLineAndCharacterOfPosition(node.getStart(sourceFile)).line + 1;
+
+    localExports.push({
+      filePath,
+      line,
+      kind,
+      exportedNames,
+      ...options
+    });
+  }
+
   function visit(node: ts.Node): void {
     if (ts.isImportDeclaration(node)) {
       const specifier = readStringLiteral(node.moduleSpecifier);
       if (specifier) {
-        recordImport(node, "import", specifier);
+        recordImport(node, "import", specifier, {
+          isTypeOnly: node.importClause?.isTypeOnly,
+          importedBindings: readImportBindings(node)
+        });
       }
     } else if (ts.isExportDeclaration(node)) {
       const specifier = readStringLiteral(node.moduleSpecifier);
@@ -45,11 +74,21 @@ export function scanImports(filePath: string, options: ScanImportsOptions = {}):
           exportKind: readExportKind(node),
           isTypeOnly: node.isTypeOnly
         });
+      } else {
+        recordLocalExport(node, "named", readLocalExportNames(node), {
+          isTypeOnly: isLocalExportTypeOnly(node)
+        });
+      }
+    } else if (ts.isExportAssignment(node)) {
+      if (ts.isIdentifier(node.expression)) {
+        recordLocalExport(node, node.isExportEquals ? "export_equals" : "default", [node.expression.text]);
       }
     } else if (ts.isImportEqualsDeclaration(node)) {
       const specifier = readImportEqualsSpecifier(node);
       if (specifier) {
-        recordImport(node, "import", specifier);
+        recordImport(node, "import", specifier, {
+          importedBindings: [{ localName: node.name.text }]
+        });
       }
     } else if (ts.isCallExpression(node)) {
       const callImport = readCallImport(node);
@@ -68,7 +107,68 @@ export function scanImports(filePath: string, options: ScanImportsOptions = {}):
 
   visit(sourceFile);
 
-  return imports;
+  return { imports, localExports };
+}
+
+function readImportBindings(node: ts.ImportDeclaration): ImportBinding[] {
+  const importClause = node.importClause;
+  if (!importClause) {
+    return [];
+  }
+
+  const bindings: ImportBinding[] = [];
+
+  if (importClause.name) {
+    bindings.push({
+      localName: importClause.name.text,
+      importedName: "default",
+      isTypeOnly: importClause.isTypeOnly
+    });
+  }
+
+  const namedBindings = importClause.namedBindings;
+  if (!namedBindings) {
+    return bindings;
+  }
+
+  if (ts.isNamespaceImport(namedBindings)) {
+    bindings.push({
+      localName: namedBindings.name.text,
+      importedName: "*",
+      isTypeOnly: importClause.isTypeOnly
+    });
+    return bindings;
+  }
+
+  for (const element of namedBindings.elements) {
+    bindings.push({
+      localName: element.name.text,
+      importedName: element.propertyName?.text ?? element.name.text,
+      isTypeOnly: importClause.isTypeOnly || element.isTypeOnly
+    });
+  }
+
+  return bindings;
+}
+
+function readLocalExportNames(node: ts.ExportDeclaration): string[] {
+  if (!node.exportClause || !ts.isNamedExports(node.exportClause)) {
+    return [];
+  }
+
+  return node.exportClause.elements.map((element) => element.propertyName?.text ?? element.name.text);
+}
+
+function isLocalExportTypeOnly(node: ts.ExportDeclaration): boolean {
+  if (node.isTypeOnly) {
+    return true;
+  }
+
+  if (!node.exportClause || !ts.isNamedExports(node.exportClause)) {
+    return false;
+  }
+
+  return node.exportClause.elements.length > 0 && node.exportClause.elements.every((element) => element.isTypeOnly);
 }
 
 function readExportKind(node: ts.ExportDeclaration): ImportRecord["exportKind"] {

@@ -90,6 +90,26 @@ export interface ImportRecord {
   resolvedPath?: string;
   exportKind?: "named" | "star" | "namespace";
   isTypeOnly?: boolean;
+  importedBindings?: ImportBinding[];
+}
+
+export interface ImportBinding {
+  localName: string;
+  importedName?: string;
+  isTypeOnly?: boolean;
+}
+
+export interface LocalExportRecord {
+  filePath: string;
+  line: number;
+  kind: "named" | "default" | "export_equals";
+  exportedNames: string[];
+  isTypeOnly?: boolean;
+}
+
+export interface SourceFileScan {
+  imports: ImportRecord[];
+  localExports: LocalExportRecord[];
 }
 
 export interface ObservedDependency {

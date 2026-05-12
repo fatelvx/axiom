@@ -1,11 +1,18 @@
 import fs from "node:fs";
 import path from "node:path";
-import type { AxiomSpec, ImportRecord, ObservedDependency, SuppressedViolation, Violation } from "../axi/types.js";
+import type {
+  AxiomSpec,
+  ImportRecord,
+  LocalExportRecord,
+  ObservedDependency,
+  SuppressedViolation,
+  Violation
+} from "../axi/types.js";
 import { parseAxiomText } from "../axi/parser.js";
 import { loadConfig } from "../config/config.js";
 import { findAxiomFiles, findSourceFiles } from "../fs/discover.js";
 import { createImportResolver } from "../scanner/importResolver.js";
-import { scanImports } from "../scanner/importScanner.js";
+import { scanSourceFile } from "../scanner/importScanner.js";
 import { createOwnershipIndex, validateOwnership } from "./ownership.js";
 import {
   applySuppressions,
@@ -79,7 +86,9 @@ export function runCheck(options: CheckOptions): CheckResult {
 
   violations.push(...validateSpec(spec, { today: options.today }));
 
-  const imports: ImportRecord[] = sourceFiles.flatMap((sourceFile) => scanImports(sourceFile, { resolver }));
+  const sourceScans = sourceFiles.map((sourceFile) => scanSourceFile(sourceFile, { resolver }));
+  const imports: ImportRecord[] = sourceScans.flatMap((scan) => scan.imports);
+  const localExports: LocalExportRecord[] = sourceScans.flatMap((scan) => scan.localExports);
   const ownership = createOwnershipIndex(root, spec.modules);
   violations.push(...validateOwnership(sourceFiles, ownership));
   const unownedSourceFileDiagnostics = spec.modules.length > 0 ? findUnownedSourceFiles(sourceFiles, ownership) : [];
@@ -94,7 +103,7 @@ export function runCheck(options: CheckOptions): CheckResult {
 
   const observedViolations = [
     ...validateObservedDependencies(spec, observedDependencies, root),
-    ...validateModuleSurfaceConsistency(spec, imports, ownership, root)
+    ...validateModuleSurfaceConsistency(spec, imports, localExports, ownership, root)
   ];
   const observedValidation = applySuppressions(spec, observedViolations, {
     today: options.today

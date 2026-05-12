@@ -119,6 +119,47 @@ test("hidden re-export fixture reports exposed barrel leaks", () => {
   });
 });
 
+test("hidden local re-export fixture reports import-then-export leaks", () => {
+  const result = runCheck({ root: path.join(repoRoot, "fixtures/hidden-reexport-local") });
+
+  assert.deepEqual(result.observedDependencies, []);
+  assert.equal(result.violations.length, 1);
+  assert.deepEqual(result.violations[0], {
+    code: "hidden_reexport",
+    message: "Services re-exports a hidden import through an exposed file.",
+    location: {
+      filePath: path.join(repoRoot, "fixtures/hidden-reexport-local/src/services/index.ts"),
+      line: 3
+    },
+    details: {
+      fromModule: "Services",
+      toModule: "Services",
+      specifier: "./internal/token",
+      exportedName: "issueServiceToken",
+      exportedPath: "src/services/internal/token.ts",
+      exportKind: "named",
+      importLocation: {
+        filePath: path.join(repoRoot, "fixtures/hidden-reexport-local/src/services/index.ts"),
+        line: 1
+      },
+      observed: "Services exposes hidden path",
+      rule: "Services hides src/services/internal/**",
+      ruleLocation: {
+        filePath: path.join(repoRoot, "fixtures/hidden-reexport-local/axiom/main.axi"),
+        line: 4
+      },
+      suggestion: "Remove this re-export from the exposed surface, or move the exported API out of the hidden path."
+    }
+  });
+});
+
+test("hidden implementation imports can back a public wrapper without leaking hidden symbols", () => {
+  const result = runCheck({ root: path.join(repoRoot, "fixtures/hidden-wrapper-ok") });
+
+  assert.deepEqual(result.violations, []);
+  assert.deepEqual(result.suppressedViolations, []);
+});
+
 test("public API surface warnings are opt-in advisory diagnostics", () => {
   const root = path.join(repoRoot, "fixtures/public-api-surface");
   const quietResult = runCheck({ root });

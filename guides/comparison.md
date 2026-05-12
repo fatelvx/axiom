@@ -71,7 +71,7 @@ Axiom should stay honest about these limits:
 
 - It does not fully implement TypeScript or Node module resolution.
 - It does not observe non-literal runtime wiring such as string-based dependency injection, plugin registries, generated imports, or `eval`.
-- It cannot prove symbol-level API health. A broad `index.ts` can still hide unhealthy coupling even if directory-level imports pass.
+- It cannot prove symbol-level API health. A broad `index.ts`, facade, or wrapper can still hide unhealthy coupling even though Axiom catches direct and local import-then-export leaks from hidden paths.
 - It has only early synthetic performance smoke evidence, not broad production monorepo proof.
 - `.axi` authoring still costs attention. `axi infer` lowers the starting cost but does not decide architecture for the team.
 - Advisory signals such as coupling concentration can be useful pressure maps, but they are not proof that a module is badly designed.

@@ -13,6 +13,7 @@
 - Added `axi graph --attention` as a product-facing alias for the focused architecture attention view.
 - Added pnpm workspace package discovery for internal package export resolution.
 - Added `hidden_reexport` to catch exposed entry points that directly re-export hidden module internals.
+- Extended `hidden_reexport` to catch exposed import-then-export leaks from hidden module internals while allowing public wrappers around hidden implementation imports.
 - Bumped graph JSON to `axiom.graph.v7` so `--attention --json` records the attention filter explicitly.
 - Surfaced module `purpose` text in graph and check JSON output.
 - Reframed accepted dependency debt as intentional violations in human and JSON output.

@@ -57,7 +57,6 @@ Run the first scans as review output:
 axi observe --root ../target-app --spec contracts/target-app.axi --markdown \
   --warn-unowned \
   --warn-unresolved-imports \
-  --warn-public-api-surface \
   --warn-coupling-concentration \
   --warn-deep-internal-imports
 ```
@@ -80,7 +79,7 @@ A pilot should keep these outputs separate:
 | Large files, broad fan-out, scattered keys | Code-health audit | Where code may be hard to maintain |
 | Cycle groups from `axi infer` | Axiom inference | Which folders are already tangled |
 | Deep internal imports | `axi observe --warn-deep-internal-imports` | Which modules bypass likely public entry points |
-| Broad public barrels or facade entry points | `axi observe --warn-public-api-surface` | Where a compliant public API may hide coupling |
+| Broad public barrels or facade entry points | Advanced `axi observe --warn-public-api-surface` probe | Where a declared public entry point may be growing facade pressure |
 | New observed edges | `axi observe --baseline` | Which architecture relationships changed |
 | Hard violations | `axi check` | Which explicit contract facts were broken |
 
@@ -103,7 +102,18 @@ axi observe --root ../target-app --spec contracts/target-app.axi \
 
 This shows new and removed observed module edges. It is advisory review context, not a gate.
 
-## 6. Let Agents Use The Report
+## 6. Use Public-Surface Probes Carefully
+
+Use `--warn-public-api-surface` only when the pilot question is specifically about declared public entry points:
+
+```bash
+axi observe --root ../target-app --spec contracts/target-app.axi --markdown \
+  --warn-public-api-surface
+```
+
+This is an advanced calibration lens, not a default first scan. It requires active `exposes` rules and reports visible facade pressure: broad barrels or exposed entry points that reach many same-module internal files. A high count is not an architecture verdict. Some entry points, such as locale or icon aggregators, are intentionally broad. Treat the warning as a question for review: refactor, document, or accept that the public surface is intentionally wide.
+
+## 7. Let Agents Use The Report
 
 For AI-assisted repositories, give the agent the same contract and review output a human would use:
 
@@ -122,7 +132,7 @@ If the code intentionally changes architecture, explain whether the contract sho
 
 That keeps the agent from hiding bad architecture behind compliant folders or broad barrels.
 
-## 7. Promote Slowly
+## 8. Promote Slowly
 
 Move from external pilot to in-repo adoption when these are true:
 

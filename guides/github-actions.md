@@ -76,7 +76,6 @@ Use Markdown output for review context:
   echo "## Axiom Architecture Summary"
   echo
   npx axi observe --root . --markdown \
-    --warn-public-api-surface \
     --warn-unresolved-imports \
     --warn-coupling-concentration \
     --warn-deep-internal-imports
@@ -91,6 +90,8 @@ Use Markdown output for review context:
 - optional baseline drift
 
 Use `axi check` when the job should fail.
+
+Add `--warn-public-api-surface` only when the repository has active `exposes` rules and the team intentionally wants advanced public-entrypoint facade-pressure review. It is not part of the default PR summary because broad aggregators can be intentional and noisy for early pilots.
 
 ## Optional Baseline Drift
 

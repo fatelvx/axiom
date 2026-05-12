@@ -365,3 +365,39 @@ Detailed result:
 ```text
 experiments/axiom-forecast/results/mirofish-big-backtest-v1-2026-05-13.md
 ```
+
+### Public API Surface Target Backtest
+
+Before this target backtest, Axiom had run a small public API surface pilot:
+
+- nanoid at `964d1e0`
+- zod `v4.4.3` with both inferred and purpose-built public-surface probe contracts
+- zod version smoke rerun with `public-api` warnings enabled
+
+Primary pilot facts:
+
+- `public_entrypoint_coupling` stayed quiet under inferred contracts because `axi infer` does not activate `exposes` intent on the user's behalf.
+- The zod public-surface probe reported 21 public API warnings: 19 `broad_public_surface` and 2 `public_entrypoint_coupling`.
+- The two entrypoint-coupling warnings were `packages/zod/src/v4/core/index.ts` reaching 15 same-module internal files and `packages/zod/src/v4/locales/index.ts` reaching 52.
+
+Method:
+
+Used the same local MiroFish `.env` and model configuration through direct `LLMClient`. This was a targeted risk-map prompt, not a full OASIS social simulation rerun.
+
+Primary result:
+
+- The probe is high-signal but easy to misunderstand as architecture judgment.
+- Public-surface probes should stay as advanced calibration only, not part of the default first pilot workflow.
+- Broad aggregators such as locales can be intentional, so the docs should frame the signal as visible facade pressure rather than bad API design.
+- The forecast suggested an ignore mechanism, but Axiom should not adopt hidden inline ignores. Any future acknowledgement path must preserve visible-debt discipline.
+
+Follow-up taken:
+
+- Removed `--warn-public-api-surface` from the default pilot workflow command and default GitHub PR-summary example.
+- Clarified README, getting-started, and adoption docs that public-surface warnings are advanced, advisory, and not an API-quality verdict.
+
+Detailed result:
+
+```text
+experiments/axiom-forecast/results/mirofish-public-api-surface-target-2026-05-13.md
+```

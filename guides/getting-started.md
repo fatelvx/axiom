@@ -126,7 +126,7 @@ axi check --root . --warn-unowned
 axi check --root . --strict
 ```
 
-Use this when you want advisory review prompts for broad exposed barrels without failing the check:
+Use this advanced probe only when you already have active `exposes` rules and want advisory review prompts for broad exposed barrels or growing facade entry points:
 
 ```bash
 axi observe --root . --warn-public-api-surface
@@ -172,7 +172,7 @@ axi observe --root ../some-app --spec ./contracts/some-app.axi --markdown
 
 The contract paths still point at files under `--root`.
 
-When a project has a legacy `export *` surface or one public entry point that re-exports many internals, keep `--warn-public-api-surface` advisory and follow the migration playbook in [Adopting Axiom In A Real Project](adoption.md#legacy-export--surfaces).
+When a project has a legacy `export *` surface or one public entry point that re-exports many internals, keep `--warn-public-api-surface` advisory, treat broad aggregation as a review question rather than a defect, and follow the migration playbook in [Adopting Axiom In A Real Project](adoption.md#legacy-export--surfaces).
 
 If you already use ESLint architecture rules, Dependency Cruiser, Nx boundaries, CodeQL, or custom scripts, read [Comparison And Boundaries](comparison.md) before replacing anything. Axiom is meant to add declared intent, visible accepted debt, and drift review; it is not a substitute for every existing static-analysis tool.
 

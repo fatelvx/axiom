@@ -154,7 +154,7 @@ Axiom v0.5.8 currently supports:
 - Layer direction with `layers Core -> UI`.
 - Public/private module surfaces with `exposes` and `hides`.
 - Direct hidden-path re-exports and local import-then-export hidden leaks from exposed entry points.
-- Opt-in public API surface warnings for broad exposed barrels and entry points that mask internal coupling with `--warn-public-api-surface`.
+- Opt-in public API surface warnings for broad exposed barrels and visible facade pressure with `--warn-public-api-surface`.
 - Opt-in coupling concentration warnings for modules with high observed fan-in or fan-out with `--warn-coupling-concentration`.
 - Opt-in unresolved import warnings for static relative or package `#imports` that Axiom can see but cannot resolve with `--warn-unresolved-imports`.
 - Opt-in deep internal import warnings for relative cross-module imports that bypass likely `index.*` entry points with `--warn-deep-internal-imports`.
@@ -485,7 +485,7 @@ Tune the warning window per project with `intentionalViolationExpiryWarningDays`
 
 ## Public API Surface Warnings
 
-To inspect the `symbol-level API health` pressure point without turning it into a hard gate, opt into public surface warnings:
+To inspect the `symbol-level API health` pressure point without turning it into a hard gate, advanced users can opt into public surface warnings:
 
 ```bash
 axi check --root . --warn-public-api-surface
@@ -493,7 +493,9 @@ axi observe --root . --warn-public-api-surface
 axi graph --root . --attention --warn-public-api-surface
 ```
 
-Today this flags broad exposed barrels such as `export * from "./feature"` or `export * as feature from "./feature"`. It also flags exposed entry points that reach at least four same-module internal files, including named re-export facades such as `export { feature } from "./feature"`. It is advisory: the check still exits `0` unless there are real violations. Treat it as a review prompt when an exposed entry point starts hiding coupling behind one public surface.
+Today this flags broad exposed barrels such as `export * from "./feature"` or `export * as feature from "./feature"`. It also flags exposed entry points that reach at least four same-module internal files, including named re-export facades such as `export { feature } from "./feature"`. It is advisory: the check still exits `0` unless there are real violations.
+
+This is an advanced observability lens for projects that already have active `exposes` rules. A high count is not an API-quality verdict. Some entry points, such as locale or icon aggregators, are intentionally broad. Treat the warning as visible facade pressure: a prompt to review, document, or intentionally accept the shape, not a default onboarding gate.
 
 Separate from that advisory warning, `hidden_reexport` is a hard, high-confidence violation when an exposed file leaks a hidden path directly, either with `export ... from "./internal"` or with `import ... from "./internal"` followed by `export { ... }`. Public wrappers around hidden implementation imports are still allowed; Axiom only flags the explicit hidden symbol leak.
 

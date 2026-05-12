@@ -1,7 +1,7 @@
 {
   "name": "@fatelvx/axiom",
   "version": "0.5.8",
-  "description": "Architecture observability and enforceable contracts for AI-era codebases.",
+  "description": "Architecture observability and explicit contracts for AI-era codebases.",
   "license": "Apache-2.0",
   "type": "module",
   "homepage": "https://github.com/fatelvx/axiom#readme",

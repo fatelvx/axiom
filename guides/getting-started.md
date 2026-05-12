@@ -1,6 +1,6 @@
 # Getting Started With Axiom
 
-Axiom gives TypeScript and JavaScript projects a lightweight architecture observability layer with enforceable contracts.
+Axiom gives TypeScript and JavaScript projects a lightweight architecture observability layer with explicit contracts.
 
 The short version:
 

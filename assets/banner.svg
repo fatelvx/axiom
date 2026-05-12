@@ -1,6 +1,6 @@
 <svg width="1200" height="360" viewBox="0 0 1200 360" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
   <title id="title">Axiom architecture observability banner</title>
-  <desc id="desc">A banner explaining that Axiom compares .axi intent with source imports and surfaces drift, visible debt, and enforceable guardrails.</desc>
+  <desc id="desc">A banner explaining that Axiom compares .axi intent with source imports and surfaces drift, visible debt, and explicit guardrails.</desc>
   <defs>
     <linearGradient id="bg" x1="0" y1="0" x2="1200" y2="360" gradientUnits="userSpaceOnUse">
       <stop offset="0" stop-color="#101114"/>

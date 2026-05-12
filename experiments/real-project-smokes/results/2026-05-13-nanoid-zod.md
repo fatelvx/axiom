@@ -51,6 +51,7 @@ Product read:
 - This is a useful example of visible accepted debt: the leak may be intentional, but it remains reviewable, dated, and tied to the contract.
 - It matches the product direction of mediation rather than pretending every architectural exception must be blocked.
 - The current `accepts` representation is too coarse for surface leaks. One module-level acceptance covers both re-export sites. Future work should support site-, path-, or symbol-scoped acceptance for `hidden_reexport` and public API health findings.
+- This is not an implementation oversight. It is a deliberate v0 product simplification to avoid over-parameterizing the contract language before more real-project evidence shows which debt scopes are worth supporting.
 - `.d.ts` files are currently not source-scanned. That is acceptable for a runtime import graph, but it is a gap for TypeScript library public API health.
 
 ## zod

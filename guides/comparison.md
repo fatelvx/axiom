@@ -2,7 +2,7 @@
 
 Axiom should be judged against existing architecture tools, not sheltered from them.
 
-The short version: Axiom is not trying to be a better ESLint, a replacement for Dependency Cruiser, or a semantic code oracle. Its first useful category is architecture observability with enforceable contracts:
+The short version: Axiom is not trying to be a better ESLint, a replacement for Dependency Cruiser, or a semantic code oracle. Its first useful category is architecture observability with explicit contracts:
 
 ```text
 declared architecture intent + observed source graph -> violations, visible debt, warnings, and drift

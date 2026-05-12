@@ -4,7 +4,7 @@
 
 ![Axiom architecture observability banner](assets/banner.svg)
 
-**Architecture observability, visible debt, and enforceable contracts for AI-era codebases.**
+**Architecture observability, visible debt, and explicit contracts for AI-era codebases.**
 
 Axiom reads `.axi` contracts, scans real TypeScript and JavaScript imports, and shows where the observed code graph drifts from declared architecture intent. It can fail CI for high-confidence boundaries, but its first job is to make architecture drift and accepted debt observable enough for humans and agents to act on.
 
@@ -16,7 +16,7 @@ source imports -> observed graph
 Axiom compares both -> architecture violations with file, line, rule, and fix
 ```
 
-Axiom is not a prompt wrapper and not a style linter. It is an architecture observability layer with enforceable contracts: it turns boundaries that usually live in docs, reviews, and memory into visible graph feedback, warnings, intentional violations, and CI gates where the contract is clear enough.
+Axiom is not a prompt wrapper and not a style linter. It is an architecture observability layer with explicit contracts: it turns boundaries that usually live in docs, reviews, and memory into visible graph feedback, warnings, intentional violations, and CI gates where the contract is clear enough.
 
 Status: public alpha / developer preview. The validator is usable today, but the `.axi` language and JSON schemas may still evolve before a stable 1.0.
 
@@ -88,6 +88,15 @@ And this is reported:
 import { issueServiceToken } from "../services/internal/token";
 ```
 
+That hard error is different from an advisory public-entry bypass. In a looser early contract that has module paths but not strict `hides` / `exposes` rules yet, `--warn-deep-internal-imports` can still point at imports that bypass a likely `index.*` entry point:
+
+```ts
+import { parseToken } from "../services"; // likely public entry point
+import { parseToken } from "../services/internal/token"; // advisory deep_internal_import
+```
+
+The hidden internal import becomes an explicit contract violation when `hides` says `internal/**` is private. Without that strict contract, the same shape can still be a review signal: Axiom can see code reaching around a likely entry point, but it does not fail CI unless the team turns that intent into a clear contract.
+
 ## Try It In 60 Seconds
 
 From this repository:
@@ -132,6 +141,7 @@ Choose your next step:
 - CI path: read [GitHub Actions And PR Summaries](guides/github-actions.md), then compare it with the dogfooded workflow in [.github/workflows/ci.yml](.github/workflows/ci.yml).
 - Real contract shape: inspect [examples/monorepo-workspace](examples/monorepo-workspace) for package-level contracts.
 - Tool comparison: read [Comparison And Boundaries](guides/comparison.md) if you are asking how Axiom differs from ESLint, Dependency Cruiser, Nx, CodeQL, or custom scripts.
+- Product philosophy: read [Design Philosophy](guides/design-philosophy.md) to understand why Axiom prefers observability first and hard gates only for high-confidence contracts.
 
 ## What It Checks
 

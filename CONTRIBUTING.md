@@ -2,7 +2,7 @@
 
 Thanks for helping sharpen Axiom.
 
-Axiom is validator-first: `.axi` contracts plus source scanning produce concrete architecture diagnostics. New features should preserve the split between hard violations, visible intentional debt, and advisory warnings.
+Axiom is validator-first: `.axi` contracts plus source scanning produce concrete architecture diagnostics. New features should preserve the split between hard violations, visible intentional debt, and advisory warnings. Read [Design Philosophy](guides/design-philosophy.md) before proposing changes that alter product semantics or the `.axi` language.
 
 ## Local Setup
 

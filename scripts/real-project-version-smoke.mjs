@@ -7,7 +7,7 @@ import { performance } from "node:perf_hooks";
 const defaultRefs = ["v3.25.76", "v4.0.1", "v4.4.3"];
 const defaultRepo = "https://github.com/colinhacks/zod.git";
 const defaultName = "zod";
-const defaultWarnings = ["coupling", "deep"];
+const defaultWarnings = ["coupling", "deep", "public-api"];
 const options = parseArgs(process.argv.slice(2));
 const cliPath = path.resolve("dist", "cli.js");
 const startedAt = new Date();
@@ -325,6 +325,7 @@ function summarizeWarnings(warnings) {
   const byCode = {};
   const coupling = [];
   const deepInternalImports = [];
+  const publicApiSurface = [];
 
   for (const warning of warnings) {
     byCode[warning.code] = (byCode[warning.code] ?? 0) + 1;
@@ -354,12 +355,28 @@ function summarizeWarnings(warnings) {
         message: warning.message
       });
     }
+
+    if (warning.code === "broad_public_surface" || warning.code === "public_entrypoint_coupling") {
+      publicApiSurface.push({
+        code: warning.code,
+        location: warning.location,
+        module: warning.details?.module,
+        exposedPath: warning.details?.exposedPath,
+        specifier: warning.details?.specifier,
+        exportKind: warning.details?.exportKind,
+        internalTargetCount: warning.details?.internalTargetCount,
+        internalImportSites: warning.details?.internalImportSites,
+        internalTargets: warning.details?.internalTargets ?? [],
+        message: warning.message
+      });
+    }
   }
 
   return {
     byCode,
     coupling,
-    deepInternalImports
+    deepInternalImports,
+    publicApiSurface
   };
 }
 
@@ -407,8 +424,8 @@ function formatMarkdownReport(report) {
     "",
     "## Summary",
     "",
-    "| Ref | Commit | Package | Source files | Imports | Unique edges | Warnings | Coupling | Deep imports | Infer ms | Check ms | Graph ms |",
-    "| --- | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |"
+    "| Ref | Commit | Package | Source files | Imports | Unique edges | Warnings | Coupling | Deep imports | Public API | Infer ms | Check ms | Graph ms |",
+    "| --- | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |"
   ];
 
   for (const result of report.results) {
@@ -423,6 +440,7 @@ function formatMarkdownReport(report) {
         result.summary.advisoryWarnings,
         result.warnings.byCode.coupling_concentration ?? 0,
         result.warnings.byCode.deep_internal_import ?? 0,
+        (result.warnings.byCode.broad_public_surface ?? 0) + (result.warnings.byCode.public_entrypoint_coupling ?? 0),
         result.timingsMs.infer,
         result.timingsMs.check,
         result.timingsMs.graph
@@ -450,8 +468,12 @@ function formatMarkdownReport(report) {
   lines.push("## Warning Details", "");
   for (const result of report.results) {
     lines.push(`### ${result.ref}`);
-    if (result.warnings.coupling.length === 0 && result.warnings.deepInternalImports.length === 0) {
-      lines.push("- No coupling or deep internal import warnings.");
+    if (
+      result.warnings.coupling.length === 0 &&
+      result.warnings.deepInternalImports.length === 0 &&
+      result.warnings.publicApiSurface.length === 0
+    ) {
+      lines.push("- No coupling, deep internal import, or public API surface warnings.");
       lines.push("");
       continue;
     }
@@ -470,12 +492,26 @@ function formatMarkdownReport(report) {
         `- \`deep_internal_import\` at \`${location}\`: \`${warning.fromModule} -> ${warning.toModule}\` via \`${warning.specifier}\` -> \`${warning.importedPath}\`.`
       );
     }
+
+    for (const warning of result.warnings.publicApiSurface) {
+      const location = warning.location ? `${warning.location.filePath}:${warning.location.line}` : "unknown";
+      const details =
+        warning.code === "public_entrypoint_coupling"
+          ? `internal targets: ${warning.internalTargetCount ?? warning.internalTargets.length} (${formatList(
+              warning.internalTargets
+            )})`
+          : `specifier: ${warning.specifier ?? "unknown"}, export kind: ${warning.exportKind ?? "unknown"}`;
+      lines.push(
+        `- \`${warning.code}\` at \`${location}\`: ${warning.message} Exposed path: \`${warning.exposedPath ?? "unknown"}\`; ${details}.`
+      );
+    }
     lines.push("");
   }
 
   lines.push("## Caveats", "");
   lines.push("- Inferred contracts mirror each version's current graph; they do not prove the intended architecture.");
   lines.push("- Warning counts are advisory pressure signals, not CI failures.");
+  lines.push("- Public API surface warnings require active `exposes` rules; raw inferred contracts usually leave those as comments, so a zero public API count is expected unless a declared/probe contract is used.");
   lines.push("- Tag-to-tag comparisons can reflect repository reshaping, test/docs changes, or resolver coverage changes.");
   lines.push("- Use this as a calibration loop before turning any signal into a hard gate.");
   lines.push("");

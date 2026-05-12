@@ -1,0 +1,555 @@
+{
+  "kind": "axiom.real-project-public-api-pilot.v1",
+  "generatedAt": "2026-05-12T19:34:07.954Z",
+  "node": "v24.14.1",
+  "platform": "win32 x64",
+  "method": "temporary clones, local dist/cli.js, external specs for public-surface probes, inferred workspace contract for zod graph pressure",
+  "results": [
+    {
+      "name": "nanoid",
+      "ref": "964d1e0",
+      "commit": "964d1e0",
+      "packageVersion": "5.1.11",
+      "mode": "external-public-surface-contract",
+      "notes": "Small hand-written external contract for root public API, hidden url-alphabet implementation, CLI, and non-secure entry points.",
+      "warningFlags": [
+        "--warn-public-api-surface",
+        "--warn-deep-internal-imports",
+        "--warn-coupling-concentration"
+      ],
+      "summary": {
+        "modules": 3,
+        "sourceFiles": 18,
+        "importsScanned": 56,
+        "observedImportSites": 1,
+        "uniqueObservedEdges": 1,
+        "hardViolations": 0,
+        "intentionalViolations": 0,
+        "advisoryWarnings": 1
+      },
+      "warningSummary": {
+        "byCode": {
+          "unused_suppression": 1
+        },
+        "details": []
+      },
+      "uniqueEdges": [
+        "Cli->PublicApi"
+      ],
+      "timingsMs": {
+        "clone": 8411.8,
+        "check": 1122.9,
+        "graph": 1011.4
+      }
+    },
+    {
+      "name": "zod",
+      "ref": "v4.4.3",
+      "commit": "1fb56a5c",
+      "mode": "inferred-workspace-contract",
+      "notes": "Inferred workspace contract mirrors the current graph; it is not maintainer intent.",
+      "warningFlags": [
+        "--warn-coupling-concentration",
+        "--warn-deep-internal-imports",
+        "--warn-public-api-surface"
+      ],
+      "summary": {
+        "modules": 15,
+        "sourceFiles": 406,
+        "importsScanned": 1103,
+        "observedImportSites": 59,
+        "uniqueObservedEdges": 7,
+        "hardViolations": 0,
+        "intentionalViolations": 0,
+        "advisoryWarnings": 2
+      },
+      "warningSummary": {
+        "byCode": {
+          "coupling_concentration": 1,
+          "deep_internal_import": 1
+        },
+        "details": [
+          {
+            "code": "coupling_concentration",
+            "message": "Zod has concentrated fan-in from 6 modules.",
+            "details": {
+              "module": "Zod",
+              "fanInModules": 6,
+              "fanOutModules": 0,
+              "incomingModules": [
+                "Benchmarks",
+                "Integration",
+                "Play",
+                "Resolution",
+                "Scripts",
+                "Treeshaking"
+              ],
+              "outgoingModules": [],
+              "observed": "Zod fan-in from 6 modules"
+            }
+          },
+          {
+            "code": "deep_internal_import",
+            "message": "Scripts imports Zod through a deep relative path instead of a likely entry point.",
+            "location": {
+              "filePath": "scripts/check-versions.ts",
+              "line": 4
+            },
+            "details": {
+              "fromModule": "Scripts",
+              "toModule": "Zod",
+              "specifier": "../packages/zod/src/v4/core/versions.js",
+              "importedPath": "packages/zod/src/v4/core/versions.ts",
+              "publicEntrypoints": [
+                "packages/zod/src/index.ts",
+                "packages/zod/src/locales/index.ts",
+                "packages/zod/src/mini/index.ts",
+                "packages/zod/src/v3/benchmarks/index.ts",
+                "packages/zod/src/v3/index.ts"
+              ],
+              "observed": "Scripts -> Zod deep internal import"
+            }
+          }
+        ]
+      },
+      "uniqueEdges": [
+        "Benchmarks->Zod",
+        "Integration->Zod",
+        "Play->Zod",
+        "Resolution->Zod",
+        "Scripts->Zod",
+        "Treeshaking->Zod",
+        "ZodVitest->Vitest"
+      ],
+      "timingsMs": {
+        "clone": 10938.5,
+        "infer": 4269.9,
+        "check": 3152.2,
+        "graph": 3420.5
+      }
+    },
+    {
+      "name": "zod",
+      "ref": "v4.4.3",
+      "commit": "1fb56a5c",
+      "mode": "external-public-surface-probe",
+      "notes": "Purpose-built probe contract exposing likely Zod public entry points to calibrate broad/public entrypoint surface warnings.",
+      "warningFlags": [
+        "--warn-public-api-surface"
+      ],
+      "summary": {
+        "modules": 1,
+        "sourceFiles": 406,
+        "importsScanned": 1103,
+        "observedImportSites": 0,
+        "uniqueObservedEdges": 0,
+        "hardViolations": 0,
+        "intentionalViolations": 0,
+        "advisoryWarnings": 21
+      },
+      "warningSummary": {
+        "byCode": {
+          "broad_public_surface": 19,
+          "public_entrypoint_coupling": 2
+        },
+        "details": [
+          {
+            "code": "broad_public_surface",
+            "message": "ZodSrc exposes a broad public API surface through export *.",
+            "location": {
+              "filePath": "packages/zod/src/index.ts",
+              "line": 2
+            },
+            "details": {
+              "module": "ZodSrc",
+              "exposedPath": "packages/zod/src/index.ts",
+              "specifier": "./v4/classic/external.js",
+              "exportKind": "star",
+              "observed": "ZodSrc broad public surface"
+            }
+          },
+          {
+            "code": "broad_public_surface",
+            "message": "ZodSrc exposes a broad public API surface through export *.",
+            "location": {
+              "filePath": "packages/zod/src/v3/index.ts",
+              "line": 2
+            },
+            "details": {
+              "module": "ZodSrc",
+              "exposedPath": "packages/zod/src/v3/index.ts",
+              "specifier": "./external.js",
+              "exportKind": "star",
+              "observed": "ZodSrc broad public surface"
+            }
+          },
+          {
+            "code": "broad_public_surface",
+            "message": "ZodSrc exposes a broad public API surface through export *.",
+            "location": {
+              "filePath": "packages/zod/src/v4/classic/index.ts",
+              "line": 4
+            },
+            "details": {
+              "module": "ZodSrc",
+              "exposedPath": "packages/zod/src/v4/classic/index.ts",
+              "specifier": "./external.js",
+              "exportKind": "star",
+              "observed": "ZodSrc broad public surface"
+            }
+          },
+          {
+            "code": "broad_public_surface",
+            "message": "ZodSrc exposes a broad public API surface through export *.",
+            "location": {
+              "filePath": "packages/zod/src/v4/core/index.ts",
+              "line": 1
+            },
+            "details": {
+              "module": "ZodSrc",
+              "exposedPath": "packages/zod/src/v4/core/index.ts",
+              "specifier": "./core.js",
+              "exportKind": "star",
+              "observed": "ZodSrc broad public surface"
+            }
+          },
+          {
+            "code": "broad_public_surface",
+            "message": "ZodSrc exposes a broad public API surface through export *.",
+            "location": {
+              "filePath": "packages/zod/src/v4/core/index.ts",
+              "line": 2
+            },
+            "details": {
+              "module": "ZodSrc",
+              "exposedPath": "packages/zod/src/v4/core/index.ts",
+              "specifier": "./parse.js",
+              "exportKind": "star",
+              "observed": "ZodSrc broad public surface"
+            }
+          },
+          {
+            "code": "broad_public_surface",
+            "message": "ZodSrc exposes a broad public API surface through export *.",
+            "location": {
+              "filePath": "packages/zod/src/v4/core/index.ts",
+              "line": 3
+            },
+            "details": {
+              "module": "ZodSrc",
+              "exposedPath": "packages/zod/src/v4/core/index.ts",
+              "specifier": "./errors.js",
+              "exportKind": "star",
+              "observed": "ZodSrc broad public surface"
+            }
+          },
+          {
+            "code": "broad_public_surface",
+            "message": "ZodSrc exposes a broad public API surface through export *.",
+            "location": {
+              "filePath": "packages/zod/src/v4/core/index.ts",
+              "line": 4
+            },
+            "details": {
+              "module": "ZodSrc",
+              "exposedPath": "packages/zod/src/v4/core/index.ts",
+              "specifier": "./schemas.js",
+              "exportKind": "star",
+              "observed": "ZodSrc broad public surface"
+            }
+          },
+          {
+            "code": "broad_public_surface",
+            "message": "ZodSrc exposes a broad public API surface through export *.",
+            "location": {
+              "filePath": "packages/zod/src/v4/core/index.ts",
+              "line": 5
+            },
+            "details": {
+              "module": "ZodSrc",
+              "exposedPath": "packages/zod/src/v4/core/index.ts",
+              "specifier": "./checks.js",
+              "exportKind": "star",
+              "observed": "ZodSrc broad public surface"
+            }
+          },
+          {
+            "code": "broad_public_surface",
+            "message": "ZodSrc exposes a broad public API surface through export *.",
+            "location": {
+              "filePath": "packages/zod/src/v4/core/index.ts",
+              "line": 6
+            },
+            "details": {
+              "module": "ZodSrc",
+              "exposedPath": "packages/zod/src/v4/core/index.ts",
+              "specifier": "./versions.js",
+              "exportKind": "star",
+              "observed": "ZodSrc broad public surface"
+            }
+          },
+          {
+            "code": "broad_public_surface",
+            "message": "ZodSrc exposes a broad public API surface through export * as.",
+            "location": {
+              "filePath": "packages/zod/src/v4/core/index.ts",
+              "line": 7
+            },
+            "details": {
+              "module": "ZodSrc",
+              "exposedPath": "packages/zod/src/v4/core/index.ts",
+              "specifier": "./util.js",
+              "exportKind": "namespace",
+              "observed": "ZodSrc broad public surface"
+            }
+          },
+          {
+            "code": "broad_public_surface",
+            "message": "ZodSrc exposes a broad public API surface through export * as.",
+            "location": {
+              "filePath": "packages/zod/src/v4/core/index.ts",
+              "line": 8
+            },
+            "details": {
+              "module": "ZodSrc",
+              "exposedPath": "packages/zod/src/v4/core/index.ts",
+              "specifier": "./regexes.js",
+              "exportKind": "namespace",
+              "observed": "ZodSrc broad public surface"
+            }
+          },
+          {
+            "code": "broad_public_surface",
+            "message": "ZodSrc exposes a broad public API surface through export * as.",
+            "location": {
+              "filePath": "packages/zod/src/v4/core/index.ts",
+              "line": 9
+            },
+            "details": {
+              "module": "ZodSrc",
+              "exposedPath": "packages/zod/src/v4/core/index.ts",
+              "specifier": "../locales/index.js",
+              "exportKind": "namespace",
+              "observed": "ZodSrc broad public surface"
+            }
+          },
+          {
+            "code": "broad_public_surface",
+            "message": "ZodSrc exposes a broad public API surface through export *.",
+            "location": {
+              "filePath": "packages/zod/src/v4/core/index.ts",
+              "line": 10
+            },
+            "details": {
+              "module": "ZodSrc",
+              "exposedPath": "packages/zod/src/v4/core/index.ts",
+              "specifier": "./registries.js",
+              "exportKind": "star",
+              "observed": "ZodSrc broad public surface"
+            }
+          },
+          {
+            "code": "broad_public_surface",
+            "message": "ZodSrc exposes a broad public API surface through export *.",
+            "location": {
+              "filePath": "packages/zod/src/v4/core/index.ts",
+              "line": 11
+            },
+            "details": {
+              "module": "ZodSrc",
+              "exposedPath": "packages/zod/src/v4/core/index.ts",
+              "specifier": "./doc.js",
+              "exportKind": "star",
+              "observed": "ZodSrc broad public surface"
+            }
+          },
+          {
+            "code": "broad_public_surface",
+            "message": "ZodSrc exposes a broad public API surface through export *.",
+            "location": {
+              "filePath": "packages/zod/src/v4/core/index.ts",
+              "line": 12
+            },
+            "details": {
+              "module": "ZodSrc",
+              "exposedPath": "packages/zod/src/v4/core/index.ts",
+              "specifier": "./api.js",
+              "exportKind": "star",
+              "observed": "ZodSrc broad public surface"
+            }
+          },
+          {
+            "code": "broad_public_surface",
+            "message": "ZodSrc exposes a broad public API surface through export *.",
+            "location": {
+              "filePath": "packages/zod/src/v4/core/index.ts",
+              "line": 13
+            },
+            "details": {
+              "module": "ZodSrc",
+              "exposedPath": "packages/zod/src/v4/core/index.ts",
+              "specifier": "./to-json-schema.js",
+              "exportKind": "star",
+              "observed": "ZodSrc broad public surface"
+            }
+          },
+          {
+            "code": "broad_public_surface",
+            "message": "ZodSrc exposes a broad public API surface through export * as.",
+            "location": {
+              "filePath": "packages/zod/src/v4/core/index.ts",
+              "line": 16
+            },
+            "details": {
+              "module": "ZodSrc",
+              "exposedPath": "packages/zod/src/v4/core/index.ts",
+              "specifier": "./json-schema.js",
+              "exportKind": "namespace",
+              "observed": "ZodSrc broad public surface"
+            }
+          },
+          {
+            "code": "broad_public_surface",
+            "message": "ZodSrc exposes a broad public API surface through export *.",
+            "location": {
+              "filePath": "packages/zod/src/v4/index.ts",
+              "line": 2
+            },
+            "details": {
+              "module": "ZodSrc",
+              "exposedPath": "packages/zod/src/v4/index.ts",
+              "specifier": "./classic/index.js",
+              "exportKind": "star",
+              "observed": "ZodSrc broad public surface"
+            }
+          },
+          {
+            "code": "broad_public_surface",
+            "message": "ZodSrc exposes a broad public API surface through export *.",
+            "location": {
+              "filePath": "packages/zod/src/v4/mini/index.ts",
+              "line": 2
+            },
+            "details": {
+              "module": "ZodSrc",
+              "exposedPath": "packages/zod/src/v4/mini/index.ts",
+              "specifier": "./external.js",
+              "exportKind": "star",
+              "observed": "ZodSrc broad public surface"
+            }
+          },
+          {
+            "code": "public_entrypoint_coupling",
+            "message": "ZodSrc public entry point reaches 15 internal files.",
+            "location": {
+              "filePath": "packages/zod/src/v4/core/index.ts",
+              "line": 1
+            },
+            "details": {
+              "module": "ZodSrc",
+              "exposedPath": "packages/zod/src/v4/core/index.ts",
+              "internalTargetCount": 15,
+              "internalTargets": [
+                "packages/zod/src/v4/core/api.ts",
+                "packages/zod/src/v4/core/checks.ts",
+                "packages/zod/src/v4/core/core.ts",
+                "packages/zod/src/v4/core/doc.ts",
+                "packages/zod/src/v4/core/errors.ts",
+                "packages/zod/src/v4/core/json-schema-generator.ts",
+                "packages/zod/src/v4/core/json-schema-processors.ts",
+                "packages/zod/src/v4/core/json-schema.ts",
+                "packages/zod/src/v4/core/parse.ts",
+                "packages/zod/src/v4/core/regexes.ts",
+                "packages/zod/src/v4/core/registries.ts",
+                "packages/zod/src/v4/core/schemas.ts",
+                "packages/zod/src/v4/core/to-json-schema.ts",
+                "packages/zod/src/v4/core/util.ts",
+                "packages/zod/src/v4/core/versions.ts"
+              ],
+              "observed": "ZodSrc public entry point depends on 15 internal files"
+            }
+          },
+          {
+            "code": "public_entrypoint_coupling",
+            "message": "ZodSrc public entry point reaches 52 internal files.",
+            "location": {
+              "filePath": "packages/zod/src/v4/locales/index.ts",
+              "line": 1
+            },
+            "details": {
+              "module": "ZodSrc",
+              "exposedPath": "packages/zod/src/v4/locales/index.ts",
+              "internalTargetCount": 52,
+              "internalTargets": [
+                "packages/zod/src/v4/locales/ar.ts",
+                "packages/zod/src/v4/locales/az.ts",
+                "packages/zod/src/v4/locales/be.ts",
+                "packages/zod/src/v4/locales/bg.ts",
+                "packages/zod/src/v4/locales/ca.ts",
+                "packages/zod/src/v4/locales/cs.ts",
+                "packages/zod/src/v4/locales/da.ts",
+                "packages/zod/src/v4/locales/de.ts",
+                "packages/zod/src/v4/locales/el.ts",
+                "packages/zod/src/v4/locales/en.ts",
+                "packages/zod/src/v4/locales/eo.ts",
+                "packages/zod/src/v4/locales/es.ts",
+                "packages/zod/src/v4/locales/fa.ts",
+                "packages/zod/src/v4/locales/fi.ts",
+                "packages/zod/src/v4/locales/fr-CA.ts",
+                "packages/zod/src/v4/locales/fr.ts",
+                "packages/zod/src/v4/locales/he.ts",
+                "packages/zod/src/v4/locales/hr.ts",
+                "packages/zod/src/v4/locales/hu.ts",
+                "packages/zod/src/v4/locales/hy.ts",
+                "packages/zod/src/v4/locales/id.ts",
+                "packages/zod/src/v4/locales/is.ts",
+                "packages/zod/src/v4/locales/it.ts",
+                "packages/zod/src/v4/locales/ja.ts",
+                "packages/zod/src/v4/locales/ka.ts",
+                "packages/zod/src/v4/locales/kh.ts",
+                "packages/zod/src/v4/locales/km.ts",
+                "packages/zod/src/v4/locales/ko.ts",
+                "packages/zod/src/v4/locales/lt.ts",
+                "packages/zod/src/v4/locales/mk.ts",
+                "packages/zod/src/v4/locales/ms.ts",
+                "packages/zod/src/v4/locales/nl.ts",
+                "packages/zod/src/v4/locales/no.ts",
+                "packages/zod/src/v4/locales/ota.ts",
+                "packages/zod/src/v4/locales/pl.ts",
+                "packages/zod/src/v4/locales/ps.ts",
+                "packages/zod/src/v4/locales/pt.ts",
+                "packages/zod/src/v4/locales/ro.ts",
+                "packages/zod/src/v4/locales/ru.ts",
+                "packages/zod/src/v4/locales/sl.ts",
+                "packages/zod/src/v4/locales/sv.ts",
+                "packages/zod/src/v4/locales/ta.ts",
+                "packages/zod/src/v4/locales/th.ts",
+                "packages/zod/src/v4/locales/tr.ts",
+                "packages/zod/src/v4/locales/ua.ts",
+                "packages/zod/src/v4/locales/uk.ts",
+                "packages/zod/src/v4/locales/ur.ts",
+                "packages/zod/src/v4/locales/uz.ts",
+                "packages/zod/src/v4/locales/vi.ts",
+                "packages/zod/src/v4/locales/yo.ts",
+                "packages/zod/src/v4/locales/zh-CN.ts",
+                "packages/zod/src/v4/locales/zh-TW.ts"
+              ],
+              "observed": "ZodSrc public entry point depends on 52 internal files"
+            }
+          }
+        ]
+      },
+      "uniqueEdges": [],
+      "timingsMs": {
+        "clone": 10938.5,
+        "check": 5305.8,
+        "graph": 3831.1
+      }
+    }
+  ],
+  "decision": {
+    "publicApiSurfaceSignal": 21,
+    "deepInternalImportSignal": 1,
+    "recommendation": "Run a targeted MiroFish backtest before a full big backtest; the pilot produced concrete advisory signals to evaluate."
+  }
+}

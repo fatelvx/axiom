@@ -1,0 +1,259 @@
+{
+  "kind": "axiom.real-project-version-smoke.v1",
+  "generatedAt": "2026-05-12T19:40:43.761Z",
+  "repo": "https://github.com/colinhacks/zod.git",
+  "name": "zod",
+  "refs": [
+    "v3.25.76",
+    "v4.0.1",
+    "v4.4.3"
+  ],
+  "groupBy": "workspace",
+  "warningFlags": [
+    "--warn-coupling-concentration",
+    "--warn-deep-internal-imports",
+    "--warn-public-api-surface"
+  ],
+  "node": "v24.14.1",
+  "platform": "win32 x64",
+  "results": [
+    {
+      "ref": "v3.25.76",
+      "commit": "463f03e",
+      "summary": {
+        "modules": 15,
+        "sourceFiles": 340,
+        "importsScanned": 881,
+        "observedImportSites": 47,
+        "uniqueObservedEdges": 5,
+        "hardViolations": 0,
+        "intentionalViolations": 0,
+        "advisoryWarnings": 1
+      },
+      "uniqueEdges": [
+        "Benchmarks->Zod",
+        "Play->Zod",
+        "Resolution->Zod",
+        "Treeshaking->Zod",
+        "ZodVitest->Vitest"
+      ],
+      "warnings": {
+        "byCode": {
+          "coupling_concentration": 1
+        },
+        "coupling": [
+          {
+            "module": "Zod",
+            "direction": "fan_in",
+            "fanInModules": 4,
+            "fanOutModules": 0,
+            "incomingModules": [
+              "Benchmarks",
+              "Play",
+              "Resolution",
+              "Treeshaking"
+            ],
+            "outgoingModules": [],
+            "incomingImportSites": 46,
+            "outgoingImportSites": 0,
+            "message": "Zod has concentrated fan-in from 4 modules."
+          }
+        ],
+        "deepInternalImports": [],
+        "publicApiSurface": []
+      },
+      "timingsMs": {
+        "clone": 13376.1,
+        "infer": 2783.6,
+        "check": 2770.9,
+        "graph": 2578.9
+      }
+    },
+    {
+      "ref": "v4.0.1",
+      "commit": "b259211",
+      "summary": {
+        "modules": 15,
+        "sourceFiles": 343,
+        "importsScanned": 890,
+        "observedImportSites": 51,
+        "uniqueObservedEdges": 6,
+        "hardViolations": 0,
+        "intentionalViolations": 0,
+        "advisoryWarnings": 2
+      },
+      "uniqueEdges": [
+        "Benchmarks->Zod",
+        "Play->Zod",
+        "Resolution->Zod",
+        "Scripts->Zod",
+        "Treeshaking->Zod",
+        "ZodVitest->Vitest"
+      ],
+      "warnings": {
+        "byCode": {
+          "coupling_concentration": 1,
+          "deep_internal_import": 1
+        },
+        "coupling": [
+          {
+            "module": "Zod",
+            "direction": "fan_in",
+            "fanInModules": 5,
+            "fanOutModules": 0,
+            "incomingModules": [
+              "Benchmarks",
+              "Play",
+              "Resolution",
+              "Scripts",
+              "Treeshaking"
+            ],
+            "outgoingModules": [],
+            "incomingImportSites": 50,
+            "outgoingImportSites": 0,
+            "message": "Zod has concentrated fan-in from 5 modules."
+          }
+        ],
+        "deepInternalImports": [
+          {
+            "location": {
+              "filePath": "scripts/check-versions.ts",
+              "line": 4
+            },
+            "fromModule": "Scripts",
+            "toModule": "Zod",
+            "specifier": "../packages/zod/src/v4/core/versions.js",
+            "importedPath": "packages/zod/src/v4/core/versions.ts",
+            "publicEntrypoints": [
+              "packages/zod/src/index.ts",
+              "packages/zod/src/locales/index.ts",
+              "packages/zod/src/mini/index.ts",
+              "packages/zod/src/v3/benchmarks/index.ts",
+              "packages/zod/src/v3/index.ts"
+            ],
+            "message": "Scripts imports Zod through a deep relative path instead of a likely entry point."
+          }
+        ],
+        "publicApiSurface": []
+      },
+      "timingsMs": {
+        "clone": 4704,
+        "infer": 3221.2,
+        "check": 5207.4,
+        "graph": 4339.3
+      }
+    },
+    {
+      "ref": "v4.4.3",
+      "commit": "1fb56a5",
+      "summary": {
+        "modules": 15,
+        "sourceFiles": 406,
+        "importsScanned": 1103,
+        "observedImportSites": 59,
+        "uniqueObservedEdges": 7,
+        "hardViolations": 0,
+        "intentionalViolations": 0,
+        "advisoryWarnings": 2
+      },
+      "uniqueEdges": [
+        "Benchmarks->Zod",
+        "Integration->Zod",
+        "Play->Zod",
+        "Resolution->Zod",
+        "Scripts->Zod",
+        "Treeshaking->Zod",
+        "ZodVitest->Vitest"
+      ],
+      "warnings": {
+        "byCode": {
+          "coupling_concentration": 1,
+          "deep_internal_import": 1
+        },
+        "coupling": [
+          {
+            "module": "Zod",
+            "direction": "fan_in",
+            "fanInModules": 6,
+            "fanOutModules": 0,
+            "incomingModules": [
+              "Benchmarks",
+              "Integration",
+              "Play",
+              "Resolution",
+              "Scripts",
+              "Treeshaking"
+            ],
+            "outgoingModules": [],
+            "incomingImportSites": 58,
+            "outgoingImportSites": 0,
+            "message": "Zod has concentrated fan-in from 6 modules."
+          }
+        ],
+        "deepInternalImports": [
+          {
+            "location": {
+              "filePath": "scripts/check-versions.ts",
+              "line": 4
+            },
+            "fromModule": "Scripts",
+            "toModule": "Zod",
+            "specifier": "../packages/zod/src/v4/core/versions.js",
+            "importedPath": "packages/zod/src/v4/core/versions.ts",
+            "publicEntrypoints": [
+              "packages/zod/src/index.ts",
+              "packages/zod/src/locales/index.ts",
+              "packages/zod/src/mini/index.ts",
+              "packages/zod/src/v3/benchmarks/index.ts",
+              "packages/zod/src/v3/index.ts"
+            ],
+            "message": "Scripts imports Zod through a deep relative path instead of a likely entry point."
+          }
+        ],
+        "publicApiSurface": []
+      },
+      "timingsMs": {
+        "clone": 5701.7,
+        "infer": 5902.2,
+        "check": 5904.6,
+        "graph": 5837.1
+      }
+    }
+  ],
+  "comparisons": [
+    {
+      "fromRef": "v3.25.76",
+      "toRef": "v4.0.1",
+      "sourceFileDelta": 3,
+      "importsScannedDelta": 9,
+      "observedImportSiteDelta": 4,
+      "uniqueObservedEdgeDelta": 1,
+      "advisoryWarningDelta": 1,
+      "warningDeltas": {
+        "coupling_concentration": 0,
+        "deep_internal_import": 1
+      },
+      "newEdges": [
+        "Scripts->Zod"
+      ],
+      "removedEdges": []
+    },
+    {
+      "fromRef": "v4.0.1",
+      "toRef": "v4.4.3",
+      "sourceFileDelta": 63,
+      "importsScannedDelta": 213,
+      "observedImportSiteDelta": 8,
+      "uniqueObservedEdgeDelta": 1,
+      "advisoryWarningDelta": 0,
+      "warningDeltas": {
+        "coupling_concentration": 0,
+        "deep_internal_import": 0
+      },
+      "newEdges": [
+        "Integration->Zod"
+      ],
+      "removedEdges": []
+    }
+  ]
+}

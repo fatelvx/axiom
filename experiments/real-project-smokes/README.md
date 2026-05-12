@@ -29,6 +29,7 @@ npm run real-project:version-smoke -- \
   --repo https://github.com/colinhacks/zod.git \
   --name zod \
   --refs v3.25.76,v4.0.1,v4.4.3 \
+  --warnings coupling,deep,public-api \
   --json-out experiments/real-project-smokes/results/zod-version-smoke-2026-05-13.json \
   --markdown-out experiments/real-project-smokes/results/zod-version-smoke-2026-05-13.md
 ```
@@ -37,7 +38,11 @@ The script clones each ref into a temporary directory, runs `axi infer --group-b
 
 Treat this as drift calibration, not an architecture verdict. The inferred contract mirrors each version's current graph; it does not know the maintainers' intended architecture unless that intent is later declared in `.axi`.
 
+Public API surface warnings require active `exposes` rules. Raw inferred contracts usually leave `exposes` suggestions as comments, so public API pressure should be calibrated with a declared or probe contract when that is the question being tested.
+
 ## Recorded Runs
 
 - [nanoid and zod smoke, 2026-05-13](results/2026-05-13-nanoid-zod.md)
 - [zod version architecture smoke, 2026-05-13](results/zod-version-smoke-2026-05-13.md)
+- [zod version architecture smoke with public API flag, 2026-05-13](results/zod-version-smoke-public-api-2026-05-13.md)
+- [public API surface pilot, 2026-05-13](results/public-api-pilot-2026-05-13.md)

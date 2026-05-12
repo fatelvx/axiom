@@ -631,6 +631,7 @@ npm run ci
 npm test
 npm run axiom:self
 npm run perf:smoke
+npm run github-actions:smoke
 npm run alpha:check
 npm run check:fixture
 node dist/cli.js check --root examples/basic-app

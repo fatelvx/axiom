@@ -14,3 +14,9 @@ The workflow is intentionally split:
 - `axi observe --markdown` writes review context for humans and agents.
 
 See [GitHub Actions And PR Summaries](../../guides/github-actions.md) for the full guide.
+
+From the repository root, run this smoke test to verify the example wiring:
+
+```bash
+npm run github-actions:smoke
+```

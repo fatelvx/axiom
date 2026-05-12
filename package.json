@@ -46,11 +46,12 @@
     "access": "public"
   },
   "scripts": {
-    "alpha:check": "npm run ci && npm run pack:dry-run",
+    "alpha:check": "npm run ci && npm run github-actions:smoke && npm run pack:dry-run",
     "build": "tsc -p tsconfig.json",
     "axiom:self": "npm run build && node dist/cli.js check --root . --strict",
     "check:fixture": "npm run build && node dist/cli.js check --root fixtures/basic-ts-valid",
     "ci": "npm test && npm run axiom:self",
+    "github-actions:smoke": "npm run build && node scripts/github-actions-smoke.mjs",
     "pack:dry-run": "npm pack --dry-run",
     "perf:smoke": "npm run build && node scripts/perf-smoke.mjs",
     "prepare": "npm run build",

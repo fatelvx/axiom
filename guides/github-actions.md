@@ -33,6 +33,14 @@ The workflow does three things:
 2. Converts hard violations into GitHub `error` annotations.
 3. Appends `axi observe --markdown` to the GitHub step summary so reviewers and agents can see visible debt, warnings, and drift separately from the gate.
 
+From this repository, you can smoke-test the example integration locally:
+
+```bash
+npm run github-actions:smoke
+```
+
+The smoke test runs the real built CLI against `examples/basic-app`, verifies that hard violations become GitHub error annotations, verifies that a passing check becomes a notice, and verifies that `axi observe --markdown` produces PR review context without changing the gate.
+
 ## Annotation Helper
 
 The optional helper lives at:

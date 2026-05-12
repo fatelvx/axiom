@@ -130,6 +130,7 @@ Choose your next step:
 - Existing project: start with `axi infer --root .`, then follow [Adopting Axiom In A Real Project](guides/adoption.md).
 - CI path: read the [CI](#ci) section and the dogfooded workflow in [.github/workflows/ci.yml](.github/workflows/ci.yml).
 - Real contract shape: inspect [examples/monorepo-workspace](examples/monorepo-workspace) for package-level contracts.
+- Tool comparison: read [Comparison And Boundaries](guides/comparison.md) if you are asking how Axiom differs from ESLint, Dependency Cruiser, Nx, CodeQL, or custom scripts.
 
 ## What It Checks
 
@@ -171,6 +172,7 @@ Axiom v0 is intentionally honest about its blind spots:
 - It does not prove that a module is semantically well-designed. Axiom can catch direct hidden-path re-exports, and `--warn-public-api-surface` can flag broad `export *` barrels, but code can still become too coupled through overly large public entry points. This is the `symbol-level API health` gap.
 - It does not prove that concentrated fan-in or fan-out is wrong. `--warn-coupling-concentration` surfaces modules that may be turning into coordination hubs so humans and agents can review the pressure before it becomes hidden debt.
 - It does not replace ESLint, TypeScript, tests, or review. Axiom focuses on architecture intent: declared graph, observed graph, drift, warnings, intentional violations, and CI gates for clear contracts.
+- It does not replace Dependency Cruiser, Nx boundaries, CodeQL, or custom repository scripts. See [Comparison And Boundaries](guides/comparison.md) for where Axiom is useful and where other tools are stronger.
 - It does not make `.axi` maintenance free. Use `axi infer` to start from the current graph, then tighten only the boundaries that matter.
 - It does not promise whole-monorepo speed without scope control. Use `include`, `exclude`, and focused contract locations to keep large repositories comfortable in CI.
 
@@ -583,6 +585,7 @@ Then run that script in CI after installing dependencies.
 
 - [Getting Started](guides/getting-started.md)
 - [Adopting Axiom In A Real Project](guides/adoption.md)
+- [Comparison And Boundaries](guides/comparison.md)
 - [JSON Consumers](guides/json-consumers.md)
 - [Publishing The Public Alpha](guides/publishing-alpha.md)
 - [Contributing](CONTRIBUTING.md)
@@ -644,7 +647,7 @@ Near-term:
 - Drift and architecture health surfaces that start advisory, not as hard gates.
 - Evolution graph views for visible architecture change over time.
 - Baseline-aware drift refinement for CI comments and agent repair loops.
-- Public comparison and evidence for how Axiom differs from ESLint architecture rules, Dependency Cruiser, Nx boundaries, and custom CI scripts.
+- Pilot evidence for how Axiom complements ESLint architecture rules, Dependency Cruiser, Nx boundaries, CodeQL, and custom CI scripts.
 - Symbol-level public API surface analysis as an advisory research area, not a v0 hard gate.
 
 Later:

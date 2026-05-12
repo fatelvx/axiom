@@ -36,6 +36,9 @@
 - Added a top-level graph JSON `intentionalDebt` ledger and human/Markdown observe output for accepted non-edge surface violations such as `hidden_reexport`.
 - Clarified Markdown review notes so agents do not misread visible debt as auto-accepted or expired debt as advisory.
 - Added a JSON consumer guide for CI annotation, PR comment, dashboard, and agent integrations.
+- Added a comparison and boundaries guide covering ESLint architecture rules, Dependency Cruiser, Nx boundaries, CodeQL, and custom scripts.
+- Added a targeted comparison backtest artifact for the "just Dependency Cruiser / ESLint" positioning risk.
+- Updated package metadata to match the architecture observability plus enforceable contracts positioning.
 - Bumped check JSON to `axiom.check.v4` for intentional violation reporting and warning details.
 
 ## 0.5.8 - Monorepo Spec Discovery

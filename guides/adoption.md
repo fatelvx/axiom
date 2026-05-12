@@ -33,6 +33,8 @@ Ask three questions first:
 
 If the answer is uncertain, prefer a warning, graph view, or documented limitation before adding a CI failure. Axiom should admit blind spots, make them visible, and then tighten only where the signal proves useful.
 
+If the team already uses ESLint architecture rules, Dependency Cruiser, Nx boundaries, CodeQL, or custom CI scripts, compare responsibilities before adding Axiom as another gate. The recommended boundary is documented in [Comparison And Boundaries](comparison.md): keep existing tools for the problems they already handle well, and use Axiom for declared architecture intent, visible accepted debt, and reviewable drift.
+
 ## Good First Rules
 
 Choose one or two rules that would catch real mistakes:

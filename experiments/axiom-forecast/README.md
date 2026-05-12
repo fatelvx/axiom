@@ -13,6 +13,7 @@ Current backtest focus:
 - Baseline-aware observed edge drift for PR and agent review.
 - Markdown review summaries for PR comments and agent repair loops.
 - Performance memoization and static blind-spot visibility after the 10k synthetic smoke check improved.
+- Public comparison against ESLint architecture rules, Dependency Cruiser, Nx boundaries, CodeQL, and custom scripts.
 - Whether "observe first, negotiate accepted tradeoffs, enforce only high-confidence intent" improves trust or sounds too abstract.
 
 Files:
@@ -29,6 +30,7 @@ Files:
 - `results/mirofish-markdown-review-backtest-2026-05-12.md`: targeted backtest after adding Markdown PR / agent review summaries.
 - `results/mirofish-performance-memoization-backtest-2026-05-12.md`: targeted backtest after reducing synthetic scan cost with ownership lookup memoization.
 - `results/mirofish-intentional-debt-ledger-backtest-2026-05-12.md`: targeted backtest after adding the top-level `intentionalDebt` ledger for accepted non-edge surface debt.
+- `results/mirofish-comparison-backtest-2026-05-12.md`: targeted backtest after adding the public comparison and boundaries guide.
 - `tools/write-mirofish-env.ps1`: local helper for writing MiroFish credentials to `.env` without pasting secrets into chat.
 
 Live run input snapshot:

@@ -159,6 +159,8 @@ Use `--markdown` when the output should become a PR comment, review note, or age
 
 When a project has a legacy `export *` surface, keep `--warn-public-api-surface` advisory and follow the migration playbook in [Adopting Axiom In A Real Project](adoption.md#legacy-export--surfaces).
 
+If you already use ESLint architecture rules, Dependency Cruiser, Nx boundaries, CodeQL, or custom scripts, read [Comparison And Boundaries](comparison.md) before replacing anything. Axiom is meant to add declared intent, visible accepted debt, and drift review; it is not a substitute for every existing static-analysis tool.
+
 ## 6. Generate A Starter Draft
 
 For an existing project:

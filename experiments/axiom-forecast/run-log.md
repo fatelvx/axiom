@@ -798,3 +798,33 @@ Detailed result:
 ```text
 experiments/axiom-forecast/results/mirofish-tiered-evidence-validator-target-2026-05-14.md
 ```
+
+### Evidence Artifact Loop Target Backtest
+
+Before this target backtest, Axiom had added and linked:
+
+- `guides/evidence-artifact.md`
+- the `.axi + scan scope + graph baseline + review story + visible intentional debt` artifact convention
+- README, adoption, GitHub Actions, JSON consumer, and agent-loop guide entry points for the same convention
+
+Method:
+
+Used the same local MiroFish `.env` and model configuration through direct `LLMClient`. This was a targeted risk-map prompt, not a full OASIS social simulation rerun. No target repository installs, `npx`, dependency refreshes, or target scripts were run. The first Traditional Chinese direct response was mojibake due to the local MiroFish encoding fragility; a readable English rerun was retained and lightly normalized.
+
+Primary result:
+
+- The Evidence Artifact Loop materially reduces disconnected GitHub Actions / VS Code / MCP surface risk because every integration can wrap the same local evidence.
+- The artifact guide is not a moat by itself. Incumbents can copy a file convention unless Axiom proves better resolver accuracy, review-story value, and visible debt discipline on real repositories.
+- The guide introduces or sharpens two risks: artifact-management friction and enterprise privacy questions around future MCP graph exposure.
+- The recommended next action is a public real-project calibration sprint on three to five mixed-shape repositories before shipping an MCP server, even a read-only one.
+
+Follow-up decision:
+
+- Keep MCP as a design sketch, not the next shipped surface.
+- Use the Evidence Artifact Loop in the next real-project calibration reports: exact scan scope, graph baseline, `axi observe --json` review story, intentional debt ledger, and a short narrative of accepted or rejected debt.
+
+Detailed result:
+
+```text
+experiments/axiom-forecast/results/mirofish-evidence-artifact-target-2026-05-14.md
+```

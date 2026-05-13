@@ -4,7 +4,7 @@ Axiom JSON output is meant for CI annotations, PR comments, dashboards, and agen
 
 The project is still in public alpha, so JSON schemas can evolve before 1.0. Consumers should be strict about the signal they depend on and tolerant of fields they do not understand.
 
-For a copyable GitHub Actions workflow that annotates hard violations and writes an architecture summary, see [GitHub Actions And PR Summaries](github-actions.md). For agent and MCP usage, read [Agent And MCP Integration](agent-loop.md).
+For a copyable GitHub Actions workflow that annotates hard violations and writes an architecture summary, see [GitHub Actions And PR Summaries](github-actions.md). For agent and MCP usage, read [Agent And MCP Integration](agent-loop.md). For the shared repository convention behind both surfaces, read [Evidence Artifact Loop](evidence-artifact.md).
 
 ## Command Families
 

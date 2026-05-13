@@ -11,6 +11,8 @@ This guide shows the recommended split for GitHub Actions:
 
 That separation is the product point. Axiom can enforce explicit contracts without turning every observability signal into CI friction.
 
+For the repository artifact convention behind this workflow, read [Evidence Artifact Loop](evidence-artifact.md). It ties the `.axi` contract, graph baseline, generated review story, and visible intentional debt into one portable evidence loop.
+
 ## Copyable Workflow
 
 The example workflow lives at:

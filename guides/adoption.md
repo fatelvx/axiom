@@ -59,6 +59,8 @@ The generated comments are part of the onboarding surface. They remind reviewers
 
 If the inferred draft is too raw, use [Contract Recipes](contract-recipes.md) as a reviewed starting shape. Recipes lower authoring cost without making Axiom decide your architecture for you.
 
+When the first contract, baseline, review story, and visible debt need to become a repeatable team workflow, use [Evidence Artifact Loop](evidence-artifact.md). It defines the boring artifact convention that CI, agents, and future IDE surfaces should all share.
+
 ## Good First Rules
 
 Choose one or two rules that would catch real mistakes:

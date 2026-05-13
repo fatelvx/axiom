@@ -76,6 +76,8 @@
 - Improved inferred collapsed-cycle names with repeated prefixes, so cycles such as `Signals` plus `SignalsDebug` no longer become `SignalsSignalsDebug`.
 - Added `architectureSummary.reviewStory` and bumped graph JSON to `axiom.graph.v12` so graph / observe / diff output can summarize setup, top review pressures, and the next step for humans and future agent adapters.
 - Added an Agent And MCP Integration guide covering read-only agent loops, baseline lifecycle, review-story consumption, and MCP v0 guardrails.
+- Added an Evidence Artifact Loop guide that defines `.axi + baseline + reviewStory + intentionalDebt` as the portable adoption artifact for local runs, PRs, agents, and future IDE/MCP surfaces.
+- Added a targeted MiroFish backtest artifact for the Evidence Artifact Loop, keeping MCP behind real-project calibration instead of letting ecosystem surfaces outrun validator trust.
 - Added no-contract scan summaries and opt-in `--warn-large-files` advisory warnings so quiet import graphs do not hide intra-file responsibility pressure.
 - Added advisory architecture pressure notes to `axi infer` and bumped infer JSON to `axiom.infer.v6`.
 - Added cycle-breaking candidates to collapsed-cycle inference output and bumped infer JSON to `axiom.infer.v7`.

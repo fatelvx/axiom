@@ -137,6 +137,7 @@ Choose your next step:
 - Existing project: start with `axi infer --root .`, then follow [Adopting Axiom In A Real Project](guides/adoption.md).
 - Contract authoring: start from [Contract Recipes](guides/contract-recipes.md) if you do not want to invent the first `.axi` shape from scratch.
 - Early pilot: keep the first contract outside the target repo with [Pilot Workflow](guides/pilot-workflow.md).
+- Portable evidence: use [Evidence Artifact Loop](guides/evidence-artifact.md) when `.axi`, baselines, review stories, intentional debt, CI, and agents need to share one workflow.
 - First graph review: use [Read The Graph](guides/read-the-graph.md) when the diagram is useful but you are not sure whether it means healthy or drifting.
 - Teammate trial: send [10-Minute Pilot Card](guides/pilot-card.md) when someone wants to try Axiom without adding files to their repo.
 - CI path: read [GitHub Actions And PR Summaries](guides/github-actions.md), then compare it with the dogfooded workflow in [.github/workflows/ci.yml](.github/workflows/ci.yml).
@@ -643,6 +644,8 @@ Human, Markdown, and Mermaid output use the same distinction: focused views say 
 
 If you are building a CI annotation, PR comment, dashboard, or agent integration on top of JSON output, follow [JSON Consumers](guides/json-consumers.md). In short: use `axi check --json` for hard gates, tolerate additive fields, and treat `intentionalDebt[]` as the authoritative accepted-debt ledger for graph / observe output.
 
+For the recommended file and command convention that ties contracts, graph baselines, review stories, and visible debt together, read [Evidence Artifact Loop](guides/evidence-artifact.md).
+
 Use an unfiltered graph JSON file as a baseline when you want to inspect architecture drift in a PR or agent run:
 
 ```bash
@@ -699,6 +702,7 @@ For a fuller PR workflow, use [GitHub Actions And PR Summaries](guides/github-ac
 - [Adopting Axiom In A Real Project](guides/adoption.md)
 - [Contract Recipes](guides/contract-recipes.md)
 - [Pilot Workflow](guides/pilot-workflow.md)
+- [Evidence Artifact Loop](guides/evidence-artifact.md)
 - [Read The Graph](guides/read-the-graph.md)
 - [10-Minute Pilot Card](guides/pilot-card.md)
 - [Comparison And Boundaries](guides/comparison.md)

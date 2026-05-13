@@ -44,6 +44,7 @@ Files:
 - `results/mirofish-review-story-target-2026-05-13.md`: targeted backtest after adding `architectureSummary.reviewStory`; recommends a larger public-reception / MCP backtest next.
 - `results/mirofish-big-backtest-v4-2026-05-13.md`: larger synthetic backtest after `reviewStory`; recommends a limited read-only MCP preview after baseline lifecycle and agent-loop guardrail docs.
 - `results/mirofish-tiered-evidence-validator-target-2026-05-14.md`: targeted backtest after pnpm / Vite resolver hardening and the calibration-portfolio decision; keeps tiered evidence internal until hard-gate trust is broader.
+- `results/mirofish-evidence-artifact-target-2026-05-14.md`: targeted backtest after adding the Evidence Artifact Loop guide; says the artifact reduces disconnected-surface risk but still needs real-project calibration before MCP shipping.
 - `tools/write-mirofish-env.ps1`: local helper for writing MiroFish credentials to `.env` without pasting secrets into chat.
 
 Live run input snapshot:

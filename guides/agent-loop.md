@@ -10,6 +10,8 @@ reviewStory = what to inspect first, not a health score
 
 Do not ask an agent to "make Axiom green at all costs." That creates compliance-shaped code. Ask it to repair hard violations, explain advisory pressure, and propose contract changes only when the architecture intent really changed.
 
+For the shared artifact convention that agents, CI, and future MCP wrappers should read, start with [Evidence Artifact Loop](evidence-artifact.md).
+
 ## Safe Agent Loop
 
 Use this loop for Codex, Claude Code, Cursor, CI bots, or a future MCP adapter:

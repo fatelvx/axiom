@@ -1,0 +1,72 @@
+# Axiom Calibration Portfolio
+
+This file keeps real-project smokes from becoming target-specific tuning.
+
+Each smoke should answer two questions before any implementation change:
+
+1. What repository shape did Axiom just exercise?
+2. Is the observed gap a general validator gap, a common ecosystem convention, a scan-scope choice, a project-specific config need, or an honest static-analysis blind spot?
+
+## Gap Classes
+
+- `general-resolver-scanner`: A reusable import discovery, resolution, ownership, or graph-building behavior that many repositories likely need.
+- `common-ecosystem-convention`: A repeated ecosystem convention that deserves conservative built-in support after more than one calibration signal.
+- `scan-scope`: The smoke question was too broad or narrow; solve with `include`, `exclude`, or a clearer pilot question.
+- `project-config`: The repository needs explicit local config such as generated folders, source roots, or contract paths.
+- `static-blind-spot`: Axiom can see a limitation but should not pretend to prove it, such as runtime plugin loading or semantic API health.
+- `advisory-signal-calibration`: The hard graph is usable, but an advisory warning needs more evidence before becoming louder or more prominent.
+- `quiet-control`: No meaningful gap appeared; keep the repository as a low-noise regression control.
+
+## Current Portfolio Snapshot
+
+| Repo / run | Shape | Main calibration signal | Gap class | Decision |
+| --- | --- | --- | --- | --- |
+| nanoid public-surface pilot | small TypeScript library | `hidden_reexport` can reveal public entry leaks, but accepted surface debt may need finer scope later | advisory-signal-calibration | Keep as visible violation/debt work; do not add hidden ignores |
+| zod version and public API smokes | TypeScript library with broad public surfaces | broad barrels and public-entrypoint coupling are useful but easy to overread | advisory-signal-calibration | Keep public API surface warnings opt-in and advanced |
+| zustand diff smoke | small quiet library control | quiet graph stayed quiet | quiet-control | Keep as a quiet control |
+| Hono whole-repo and source-scoped smokes | framework/library with tests and benchmarks | whole-repo scope surfaced test/benchmark coupling; source scope changed the question | scan-scope | Treat scope as part of pilot design, not resolver code |
+| ofetch / ky / Preact Signals batch | small libraries and multi-package source tree | flat libraries may need deeper grouping; Preact Signals surfaced a real package cycle | advisory-signal-calibration | Use as graph interpretation and inferred-name calibration |
+| pnpm workspace smokes | large pnpm monorepo | package exports pointed at built `lib` files while source clone had `src` mirrors | general-resolver-scanner | Implemented conservative build-output source mirror resolution |
+| Vite type-only package imports smoke | pnpm workspace with declaration aliases | `#types/*` and `#dep-types/*` point to `.d.ts` files for type-only imports | general-resolver-scanner | Implemented declaration resolution only for scanner-confirmed type-only imports |
+
+## Missing Coverage
+
+The current portfolio is still too infrastructure- and library-heavy. Before broad integration expansion, add no-install smokes for:
+
+- framework app repo, such as a Next.js or Remix-style app
+- CLI tool repo with mixed command modules
+- package with mixed CJS and ESM entry points
+- generated-code-heavy repo where source scope matters
+- non-pnpm workspace, such as npm workspaces, Yarn workspaces, or Lerna-style packages
+- UI component library with barrel exports and design-system entry points
+
+## New Smoke Record Template
+
+Use this template in each new report.
+
+```markdown
+## Calibration Classification
+
+- Repo shape:
+- Safety posture:
+- Scope question:
+- Axiom command surface:
+- Main signal:
+- Gap class:
+- Decision:
+- Code changed:
+- Follow-up:
+```
+
+## Implementation Rule
+
+Do not change resolver, scanner, or validation behavior just because one repository is noisy.
+
+Built-in behavior should require a reusable explanation:
+
+- The pattern appears in more than one real-world shape, or is a clear standard ecosystem pattern.
+- The fix preserves hard/runtime correctness.
+- The fix does not hide unresolved graph uncertainty.
+- The result can be tested in fixtures and described without naming the target repository.
+
+If those conditions are not met, document scope, config, or limitation instead.

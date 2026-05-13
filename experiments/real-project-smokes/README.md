@@ -10,6 +10,22 @@ These runs are not production benchmarks and they are not endorsements of the sc
 
 Reports in this folder should be readable by external developers. Keep them framed as scoped calibration artifacts, not as chat transcripts, maintainer critiques, or marketing claims.
 
+## Calibration Portfolio
+
+Use [calibration-portfolio.md](calibration-portfolio.md) as the index for what each smoke teaches Axiom.
+
+Before turning a real-project finding into code, classify it as one of:
+
+- general resolver or scanner behavior
+- common ecosystem convention
+- scan-scope issue
+- project-specific configuration
+- static-analysis blind spot
+- advisory signal calibration
+- quiet control
+
+This keeps the validator from overfitting to whichever repository was scanned most recently. A useful run can end with "document scope/config/limitation" instead of a code change.
+
 ## Method
 
 Use a temporary clone, build the local Axiom CLI, and run one of:

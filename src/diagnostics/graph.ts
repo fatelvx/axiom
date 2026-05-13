@@ -2,7 +2,7 @@ import path from "node:path";
 import type { ModuleRef, PathRef, SourceLocation, Violation, ViolationCode } from "../axi/types.js";
 import type { CheckResult } from "../validator/check.js";
 
-export const graphJsonSchemaVersion = "axiom.graph.v9";
+export const graphJsonSchemaVersion = "axiom.graph.v10";
 
 interface GraphJsonLocation {
   filePath: string;
@@ -125,6 +125,33 @@ interface GraphJsonDriftEdge {
   intentionalViolations: GraphJsonIntentionalDependencyViolation[];
 }
 
+interface GraphJsonArchitectureSummary {
+  model: "declared_intent_vs_observed_imports";
+  mode: "graph" | "graph_attention" | "observe" | "diff";
+  status: "clear" | "needs_contract" | "failing_contract" | "needs_review" | "drift_detected";
+  gate: {
+    command: "axi check";
+    currentCommandIsGate: false;
+    hardViolationsFailCheck: true;
+  };
+  reviewFocus: string;
+  topSignals: GraphJsonArchitectureSignal[];
+  suggestedNextActions: string[];
+}
+
+interface GraphJsonArchitectureSignal {
+  kind: "hard_violation" | "visible_debt" | "advisory_warning" | "baseline_drift";
+  code: string;
+  message: string;
+  location?: GraphJsonLocation;
+  edge?: {
+    fromModule: string;
+    toModule: string;
+  };
+  acceptedUntil?: string;
+  reason?: string;
+}
+
 export interface GraphJsonResult {
   schemaVersion: typeof graphJsonSchemaVersion;
   root: string;
@@ -132,6 +159,7 @@ export interface GraphJsonResult {
     violationsOnly: boolean;
     attention: boolean;
   };
+  architectureSummary: GraphJsonArchitectureSummary;
   summary: {
     modules: number;
     declaredDependencies: number;
@@ -504,26 +532,39 @@ export function toGraphJson(result: CheckResult, options: GraphFormatOptions = {
     .map((suppressedViolation) => toIntentionalDebt(result.root, suppressedViolation))
     .sort(compareIntentionalDebt);
   const drift = options.baseline ? computeDrift(options.baseline, allObservedDependencies) : undefined;
+  const filters = {
+    violationsOnly: options.violationsOnly === true,
+    attention: options.attention === true
+  };
+  const summary = {
+    modules: result.spec.modules.length,
+    declaredDependencies: declaredDependencies.length,
+    forbiddenDependencies: forbiddenDependencies.length,
+    exposedPaths: exposedPaths.length,
+    hiddenPaths: hiddenPaths.length,
+    observedDependencies: allObservedDependencies.length,
+    shownObservedDependencies: observedDependencies.length,
+    violations: result.violations.length,
+    intentionalViolations: result.suppressedViolations.length,
+    warnings: result.warnings.length
+  };
+  const violations = result.violations.map((violation) => toJsonViolation(result.root, violation));
+  const warnings = result.warnings.map((warning) => toJsonViolation(result.root, warning));
 
   return {
     schemaVersion: graphJsonSchemaVersion,
     root: normalizePath(result.root),
-    filters: {
-      violationsOnly: options.violationsOnly === true,
-      attention: options.attention === true
-    },
-    summary: {
-      modules: result.spec.modules.length,
-      declaredDependencies: declaredDependencies.length,
-      forbiddenDependencies: forbiddenDependencies.length,
-      exposedPaths: exposedPaths.length,
-      hiddenPaths: hiddenPaths.length,
-      observedDependencies: allObservedDependencies.length,
-      shownObservedDependencies: observedDependencies.length,
-      violations: result.violations.length,
-      intentionalViolations: result.suppressedViolations.length,
-      warnings: result.warnings.length
-    },
+    filters,
+    architectureSummary: buildArchitectureSummary({
+      filters,
+      summary,
+      violations,
+      intentionalDebt,
+      warnings,
+      drift,
+      options
+    }),
+    summary,
     modules: result.spec.modules.map((module) => ({
       name: module.name,
       paths: [...module.paths],
@@ -542,10 +583,233 @@ export function toGraphJson(result: CheckResult, options: GraphFormatOptions = {
     allObservedDependencies,
     shownObservedDependencies: observedDependencies,
     observedDependencies,
-    violations: result.violations.map((violation) => toJsonViolation(result.root, violation)),
+    violations,
     intentionalDebt,
-    warnings: result.warnings.map((warning) => toJsonViolation(result.root, warning)),
+    warnings,
     ...(drift ? { drift } : {})
+  };
+}
+
+function buildArchitectureSummary(input: {
+  filters: GraphJsonResult["filters"];
+  summary: GraphJsonResult["summary"];
+  violations: GraphJsonViolation[];
+  intentionalDebt: GraphJsonIntentionalDebt[];
+  warnings: GraphJsonViolation[];
+  drift?: GraphJsonDrift;
+  options: GraphFormatOptions;
+}): GraphJsonArchitectureSummary {
+  return {
+    model: "declared_intent_vs_observed_imports",
+    mode: formatArchitectureSummaryMode(input.options),
+    status: formatArchitectureSummaryStatus(input),
+    gate: {
+      command: "axi check",
+      currentCommandIsGate: false,
+      hardViolationsFailCheck: true
+    },
+    reviewFocus: formatArchitectureSummaryFocus(input),
+    topSignals: formatArchitectureSummarySignals(input),
+    suggestedNextActions: formatArchitectureSummaryNextActions(input)
+  };
+}
+
+function formatArchitectureSummaryMode(options: GraphFormatOptions): GraphJsonArchitectureSummary["mode"] {
+  if (options.driftOnly) {
+    return "diff";
+  }
+
+  if (options.observe) {
+    return "observe";
+  }
+
+  if (options.attention || options.violationsOnly) {
+    return "graph_attention";
+  }
+
+  return "graph";
+}
+
+function formatArchitectureSummaryStatus(input: {
+  violations: GraphJsonViolation[];
+  intentionalDebt: GraphJsonIntentionalDebt[];
+  warnings: GraphJsonViolation[];
+  drift?: GraphJsonDrift;
+}): GraphJsonArchitectureSummary["status"] {
+  if (input.violations.some((violation) => violation.code === "no_spec_files")) {
+    return "needs_contract";
+  }
+
+  if (input.violations.length > 0) {
+    return "failing_contract";
+  }
+
+  if (input.intentionalDebt.length > 0 || input.warnings.length > 0) {
+    return "needs_review";
+  }
+
+  const driftCount = (input.drift?.newObservedEdges.length ?? 0) + (input.drift?.removedObservedEdges.length ?? 0);
+  if (driftCount > 0) {
+    return "drift_detected";
+  }
+
+  return "clear";
+}
+
+function formatArchitectureSummaryFocus(input: {
+  filters: GraphJsonResult["filters"];
+  summary: GraphJsonResult["summary"];
+  drift?: GraphJsonDrift;
+  options: GraphFormatOptions;
+}): string {
+  if (input.options.driftOnly) {
+    return "New and removed observed module edges since the baseline; unchanged edges are omitted.";
+  }
+
+  if (input.options.observe) {
+    return "Hard violations, visible intentional debt, advisory warnings, and optional baseline drift.";
+  }
+
+  if (input.filters.violationsOnly) {
+    return `${input.summary.shownObservedDependencies} of ${input.summary.observedDependencies} observed dependency edges are shown because they have hard violations or accepted debt.`;
+  }
+
+  if (input.drift) {
+    return "Full observed module graph with advisory baseline drift.";
+  }
+
+  return "Full declared and observed module graph.";
+}
+
+function formatArchitectureSummarySignals(input: {
+  violations: GraphJsonViolation[];
+  intentionalDebt: GraphJsonIntentionalDebt[];
+  warnings: GraphJsonViolation[];
+  drift?: GraphJsonDrift;
+}): GraphJsonArchitectureSignal[] {
+  const signals: GraphJsonArchitectureSignal[] = [];
+
+  for (const violation of input.violations) {
+    signals.push({
+      kind: "hard_violation",
+      code: violation.code,
+      message: violation.message,
+      ...(violation.location ? { location: violation.location } : {}),
+      ...edgeFromDetails(violation.details)
+    });
+  }
+
+  for (const debt of input.intentionalDebt) {
+    signals.push({
+      kind: "visible_debt",
+      code: debt.code,
+      message: debt.message,
+      ...(debt.location ? { location: debt.location } : {}),
+      edge: {
+        fromModule: debt.fromModule,
+        toModule: debt.toModule
+      },
+      acceptedUntil: debt.acceptedUntil,
+      reason: debt.reason
+    });
+  }
+
+  for (const warning of input.warnings) {
+    signals.push({
+      kind: "advisory_warning",
+      code: warning.code,
+      message: warning.message,
+      ...(warning.location ? { location: warning.location } : {}),
+      ...edgeFromDetails(warning.details)
+    });
+  }
+
+  if (input.drift) {
+    for (const edge of input.drift.newObservedEdges) {
+      signals.push({
+        kind: "baseline_drift",
+        code: input.drift.kind,
+        message: `New observed edge ${edge.fromModule} -> ${edge.toModule}.`,
+        ...(edge.imports[0] ? { location: pickImportLocation(edge.imports[0]) } : {}),
+        edge: {
+          fromModule: edge.fromModule,
+          toModule: edge.toModule
+        }
+      });
+    }
+
+    for (const edge of input.drift.removedObservedEdges) {
+      signals.push({
+        kind: "baseline_drift",
+        code: input.drift.kind,
+        message: `Removed observed edge ${edge.fromModule} -> ${edge.toModule}.`,
+        ...(edge.imports[0] ? { location: pickImportLocation(edge.imports[0]) } : {}),
+        edge: {
+          fromModule: edge.fromModule,
+          toModule: edge.toModule
+        }
+      });
+    }
+  }
+
+  return signals.slice(0, 5);
+}
+
+function formatArchitectureSummaryNextActions(input: {
+  violations: GraphJsonViolation[];
+  intentionalDebt: GraphJsonIntentionalDebt[];
+  warnings: GraphJsonViolation[];
+  drift?: GraphJsonDrift;
+}): string[] {
+  if (input.violations.some((violation) => violation.code === "no_spec_files")) {
+    return [
+      "Run `axi infer --root . > axiom/main.axi` to create a reviewed starter contract.",
+      "Run `axi observe --root . --spec axiom/main.axi --markdown` before promoting the contract into a CI gate."
+    ];
+  }
+
+  const actions: string[] = [];
+  if (input.violations.length > 0) {
+    actions.push("Use `axi check --json` as the hard gate and repair the listed `violations[]` first.");
+    actions.push("If a violation is truly temporary, propose a visible `.axi` `accepts ... until ... because ...` entry for review.");
+  }
+
+  if (input.intentionalDebt.length > 0) {
+    actions.push("Review `intentionalDebt[]` as accepted architecture debt; remove entries when the migration is done.");
+  }
+
+  if (input.warnings.length > 0) {
+    actions.push("Treat `warnings[]` as advisory architecture pressure before turning any signal into a hard rule.");
+  }
+
+  const driftCount = (input.drift?.newObservedEdges.length ?? 0) + (input.drift?.removedObservedEdges.length ?? 0);
+  if (driftCount > 0) {
+    actions.push("Review `drift` as baseline-aware architecture change before updating the baseline or contract.");
+  } else if (actions.length === 0) {
+    actions.push("Save an unfiltered `axi graph --json` baseline if you want future PRs to show architecture drift.");
+  }
+
+  return actions;
+}
+
+function edgeFromDetails(details: Record<string, unknown> | undefined): Pick<GraphJsonArchitectureSignal, "edge"> {
+  const fromModule = readString(details?.fromModule);
+  const toModule = readString(details?.toModule);
+
+  return fromModule && toModule
+    ? {
+        edge: {
+          fromModule,
+          toModule
+        }
+      }
+    : {};
+}
+
+function pickImportLocation(importSite: GraphJsonImportSite): GraphJsonLocation {
+  return {
+    filePath: importSite.filePath,
+    line: importSite.line
   };
 }
 

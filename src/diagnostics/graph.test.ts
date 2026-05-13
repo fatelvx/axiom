@@ -14,6 +14,7 @@ test("graph JSON exposes declared, forbidden, visibility, and observed edges", (
     "schemaVersion",
     "root",
     "filters",
+    "architectureSummary",
     "summary",
     "modules",
     "declaredDependencies",
@@ -29,6 +30,49 @@ test("graph JSON exposes declared, forbidden, visibility, and observed edges", (
   ]);
   assert.equal(payload.schemaVersion, graphJsonSchemaVersion);
   assert.deepEqual(payload.filters, { violationsOnly: false, attention: false });
+  assert.deepEqual(payload.architectureSummary, {
+    model: "declared_intent_vs_observed_imports",
+    mode: "graph",
+    status: "failing_contract",
+    gate: {
+      command: "axi check",
+      currentCommandIsGate: false,
+      hardViolationsFailCheck: true
+    },
+    reviewFocus: "Full declared and observed module graph.",
+    topSignals: [
+      {
+        kind: "hard_violation",
+        code: "unexposed_import",
+        message: "UI imports a non-exposed path from Services.",
+        location: {
+          filePath: "src/ui/view.ts",
+          line: 2
+        },
+        edge: {
+          fromModule: "UI",
+          toModule: "Services"
+        }
+      },
+      {
+        kind: "hard_violation",
+        code: "hidden_import",
+        message: "UI imports hidden path from Services.",
+        location: {
+          filePath: "src/ui/view.ts",
+          line: 3
+        },
+        edge: {
+          fromModule: "UI",
+          toModule: "Services"
+        }
+      }
+    ],
+    suggestedNextActions: [
+      "Use `axi check --json` as the hard gate and repair the listed `violations[]` first.",
+      "If a violation is truly temporary, propose a visible `.axi` `accepts ... until ... because ...` entry for review."
+    ]
+  });
   assert.deepEqual(payload.summary, {
     modules: 2,
     declaredDependencies: 1,

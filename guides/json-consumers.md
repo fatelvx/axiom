@@ -12,7 +12,7 @@ Each JSON payload starts with a `schemaVersion`:
 
 ```text
 axiom.check.v4
-axiom.graph.v9
+axiom.graph.v10
 axiom.infer.v4
 ```
 
@@ -85,6 +85,7 @@ Do not hard-gate on `axi graph`, `axi observe`, or Markdown output unless your o
 
 Important fields:
 
+- `architectureSummary`: agent-friendly status, review mode, top signals, and suggested next actions over the same graph result.
 - `summary`: counts for modules, observed dependencies, violations, intentional violations, and warnings.
 - `filters`: tells whether output is full graph, attention, or violations-only.
 - `allObservedDependencies[]`: the full observed module graph.
@@ -95,6 +96,8 @@ Important fields:
 - `drift`: optional advisory baseline-drift result when `--baseline` is provided.
 
 The top-level `intentionalDebt[]` ledger is the authoritative list for accepted debt review. Per-edge `intentionalViolations[]` entries are useful annotations, but some accepted debt is not a cross-module observed edge. For example, an accepted `hidden_reexport` from an exposed entry point can appear in `intentionalDebt[]` even when there is no `observedDependencies[]` edge to show.
+
+`architectureSummary` is a convenience surface for agents and dashboards. It does not add validation semantics. Use it to decide what to show first, then read the underlying `violations[]`, `intentionalDebt[]`, `warnings[]`, `drift`, and observed dependency arrays for exact evidence.
 
 ## Baseline Drift
 

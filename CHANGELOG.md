@@ -53,6 +53,10 @@
 - Added `axi diff` as a first-class advisory baseline-drift command over the existing graph model, with human, JSON, Markdown, and Mermaid output.
 - Added contract recipes and updated onboarding docs so pilots can move from inferred starter contracts to graph baselines and `axi diff` before adopting CI gates.
 - Made generated CLI artifacts round-trip through Windows PowerShell redirection: baseline graph JSON and external `.axi` specs can now be read when saved as UTF-16LE.
+- Made `axiom.config.json` loading tolerate BOM-encoded config files.
+- Added `.benchmark_tmp` to default ignored temporary output directories.
+- Added `allObservedDependencies[]` and `shownObservedDependencies[]` to graph / observe JSON so attention-mode machine consumers can distinguish the full observed graph from the filtered view.
+- Tightened deeper `axi infer` folder grouping so parent folders with direct files use non-overlapping `*` ownership when child folders become separate modules.
 
 ## 0.5.8 - Monorepo Spec Discovery
 

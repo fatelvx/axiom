@@ -273,6 +273,9 @@ test("cli graph --violations-only --json returns filtered graph output", () => {
   assert.deepEqual(payload.filters, { violationsOnly: true, attention: false });
   assert.equal(payload.summary.observedDependencies, 3);
   assert.equal(payload.summary.shownObservedDependencies, 2);
+  assert.equal(payload.allObservedDependencies.length, 3);
+  assert.equal(payload.shownObservedDependencies.length, 2);
+  assert.deepEqual(payload.observedDependencies, payload.shownObservedDependencies);
   assert.deepEqual(
     payload.observedDependencies.map((edge: { violations: Array<{ code: string }> }) => edge.violations[0]?.code),
     ["unexposed_import", "hidden_import"]
@@ -292,6 +295,8 @@ test("cli graph --attention --json marks the attention filter", () => {
   assert.equal(payload.schemaVersion, "axiom.graph.v9");
   assert.deepEqual(payload.filters, { violationsOnly: true, attention: true });
   assert.equal(payload.summary.shownObservedDependencies, 2);
+  assert.equal(payload.allObservedDependencies.length, 3);
+  assert.equal(payload.shownObservedDependencies.length, 2);
 });
 
 test("cli observe --json marks the attention filter", () => {

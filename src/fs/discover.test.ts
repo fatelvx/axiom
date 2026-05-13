@@ -14,6 +14,7 @@ test("source discovery skips dependency, build, and cache directories by default
 
     for (const directory of [
       ".cache",
+      ".benchmark_tmp",
       ".git",
       ".next",
       ".nuxt",

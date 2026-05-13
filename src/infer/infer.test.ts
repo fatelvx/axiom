@@ -1,7 +1,10 @@
 import assert from "node:assert/strict";
+import fs from "node:fs";
+import os from "node:os";
 import path from "node:path";
 import test from "node:test";
 import { formatInferResult, toInferJson } from "../diagnostics/infer.js";
+import { runCheck } from "../validator/check.js";
 import { runInfer } from "./infer.js";
 
 const repoRoot = process.cwd();
@@ -176,6 +179,47 @@ test("infer supports deeper source grouping", () => {
     ["ServicesAgent", "ServicesTools", "Ui"]
   );
   assert.deepEqual(deep.modules.find((module) => module.name === "Ui")?.depends, ["ServicesAgent", "ServicesTools"]);
+});
+
+test("infer keeps parent and child folder ownership non-overlapping for deeper grouping", () => {
+  const result = runInfer({ root: path.join(repoRoot, "fixtures/infer-overlap-folders"), groupDepth: 2 });
+
+  assert.deepEqual(
+    result.modules.map((module) => ({
+      name: module.name,
+      paths: module.paths
+    })),
+    [
+      {
+        name: "Services",
+        paths: ["src/services/*"]
+      },
+      {
+        name: "ServicesBenchmark",
+        paths: ["src/services/benchmark/**"]
+      },
+      {
+        name: "ServicesGuard",
+        paths: ["src/services/guard/**"]
+      }
+    ]
+  );
+
+  const directory = fs.mkdtempSync(path.join(os.tmpdir(), "axi-infer-overlap-"));
+  const specPath = path.join(directory, "main.axi");
+
+  try {
+    fs.writeFileSync(specPath, `${formatInferResult(result)}\n`);
+
+    const check = runCheck({
+      root: path.join(repoRoot, "fixtures/infer-overlap-folders"),
+      specPaths: [specPath]
+    });
+
+    assert.equal(check.violations.some((violation) => violation.code === "ambiguous_module_owner"), false);
+  } finally {
+    fs.rmSync(directory, { force: true, recursive: true });
+  }
 });
 
 test("infer supports workspace package grouping", () => {

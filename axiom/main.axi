@@ -14,7 +14,13 @@ purpose "parse .axi text into typed declarations"
 module Config
 path "src/config/**"
 layer Engine
+depends on TextIO
 purpose "load project discovery config"
+
+module TextIO
+path "src/fs/text.ts"
+layer Engine
+purpose "read generated text artifacts across common shell encodings"
 
 module ValidatorCore
 path "src/validator/glob.ts"
@@ -25,9 +31,10 @@ depends on CoreTypes
 purpose "match source ownership and compare declared vs observed graphs"
 
 module Discovery
-path "src/fs/**"
+path "src/fs/discover.ts"
 layer Engine
 depends on Config
+depends on TextIO
 depends on ValidatorCore
 purpose "discover source and spec files"
 
@@ -45,6 +52,7 @@ depends on Language
 depends on Config
 depends on Discovery
 depends on Scanner
+depends on TextIO
 depends on ValidatorCore
 purpose "orchestrate spec discovery, import scanning, and validation"
 
@@ -73,4 +81,5 @@ depends on Diagnostics
 depends on Discovery
 depends on CheckRunner
 depends on Infer
+depends on TextIO
 purpose "provide command line entry points"

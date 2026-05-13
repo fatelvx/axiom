@@ -1,5 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
+import { readTextFile } from "../fs/text.js";
 
 export interface AxiomConfig {
   include?: string[];
@@ -85,7 +86,7 @@ function parseConfigFile(filePath: string): AxiomConfig {
   let parsed: unknown;
 
   try {
-    parsed = JSON.parse(fs.readFileSync(filePath, "utf8"));
+    parsed = JSON.parse(readTextFile(filePath));
   } catch (error) {
     const detail = error instanceof Error ? error.message : String(error);
     throw new Error(`Failed to parse Axiom config ${filePath}: ${detail}`);

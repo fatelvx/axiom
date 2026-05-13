@@ -87,7 +87,9 @@ Important fields:
 
 - `summary`: counts for modules, observed dependencies, violations, intentional violations, and warnings.
 - `filters`: tells whether output is full graph, attention, or violations-only.
-- `observedDependencies[]`: observed module edges and import sites. Edge entries include `violations[]` and `intentionalViolations[]`.
+- `allObservedDependencies[]`: the full observed module graph.
+- `shownObservedDependencies[]`: the observed edges shown by the current view.
+- `observedDependencies[]`: compatibility alias for `shownObservedDependencies[]`. Edge entries include `violations[]` and `intentionalViolations[]`.
 - `intentionalDebt[]`: top-level accepted-debt ledger.
 - `warnings[]`: advisory warnings with normalized details.
 - `drift`: optional advisory baseline-drift result when `--baseline` is provided.

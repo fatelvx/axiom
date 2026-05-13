@@ -20,6 +20,8 @@ test("graph JSON exposes declared, forbidden, visibility, and observed edges", (
     "forbiddenDependencies",
     "exposedPaths",
     "hiddenPaths",
+    "allObservedDependencies",
+    "shownObservedDependencies",
     "observedDependencies",
     "violations",
     "intentionalDebt",
@@ -73,6 +75,8 @@ test("graph JSON exposes declared, forbidden, visibility, and observed edges", (
     payload.observedDependencies.map((edge) => `${edge.fromModule}->${edge.toModule}:${edge.import.line}`),
     ["UI->Services:1", "UI->Services:2", "UI->Services:3"]
   );
+  assert.deepEqual(payload.shownObservedDependencies, payload.observedDependencies);
+  assert.deepEqual(payload.allObservedDependencies, payload.observedDependencies);
   assert.deepEqual(payload.observedDependencies.map((edge) => edge.violations.map((violation) => violation.code)), [
     [],
     ["unexposed_import"],
@@ -132,6 +136,9 @@ test("violations-only graph JSON filters observed dependencies but keeps total c
   assert.deepEqual(payload.filters, { violationsOnly: true, attention: false });
   assert.equal(payload.summary.observedDependencies, 3);
   assert.equal(payload.summary.shownObservedDependencies, 2);
+  assert.equal(payload.allObservedDependencies.length, 3);
+  assert.equal(payload.shownObservedDependencies.length, 2);
+  assert.deepEqual(payload.observedDependencies, payload.shownObservedDependencies);
   assert.deepEqual(
     payload.observedDependencies.map((edge) => `${edge.import.line}:${edge.violations[0]?.code}`),
     ["2:unexposed_import", "3:hidden_import"]

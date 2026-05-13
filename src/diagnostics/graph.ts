@@ -149,6 +149,8 @@ export interface GraphJsonResult {
   forbiddenDependencies: GraphJsonEdge[];
   exposedPaths: GraphJsonVisibilityRule[];
   hiddenPaths: GraphJsonVisibilityRule[];
+  allObservedDependencies: GraphJsonObservedDependency[];
+  shownObservedDependencies: GraphJsonObservedDependency[];
   observedDependencies: GraphJsonObservedDependency[];
   violations: GraphJsonViolation[];
   intentionalDebt: GraphJsonIntentionalDebt[];
@@ -537,6 +539,8 @@ export function toGraphJson(result: CheckResult, options: GraphFormatOptions = {
     forbiddenDependencies,
     exposedPaths,
     hiddenPaths,
+    allObservedDependencies,
+    shownObservedDependencies: observedDependencies,
     observedDependencies,
     violations: result.violations.map((violation) => toJsonViolation(result.root, violation)),
     intentionalDebt,

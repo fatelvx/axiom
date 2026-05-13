@@ -450,6 +450,7 @@ Default discovery skips common dependency, build, cache, and temporary output fo
 
 ```text
 .cache
+.benchmark_tmp
 .git
 .next
 .nuxt
@@ -589,7 +590,7 @@ Today this flags relative cross-module imports that target a non-`index.*` file 
 }
 ```
 
-`axi graph --json` and `axi observe --json` emit `axiom.graph.v9`. Each observed dependency includes `violations` and `intentionalViolations` arrays. Graph JSON also includes a top-level `intentionalDebt` ledger so accepted non-edge violations, such as hidden public-surface re-exports, stay visible to PR comments and agents. With `--violations-only`, `--attention`, or `observe`, `observedDependencies` is filtered to the edges that need attention or have accepted architecture debt, warning guardrails are still shown with details, and `summary.observedDependencies` keeps the full count. The JSON `filters` object marks focused attention output.
+`axi graph --json` and `axi observe --json` emit `axiom.graph.v9`. Each observed dependency includes `violations` and `intentionalViolations` arrays. Graph JSON also includes a top-level `intentionalDebt` ledger so accepted non-edge violations, such as hidden public-surface re-exports, stay visible to PR comments and agents. With `--violations-only`, `--attention`, or `observe`, `observedDependencies` remains a compatibility alias for the shown attention edges, while `allObservedDependencies[]` always carries the full observed graph and `shownObservedDependencies[]` carries the filtered view. `summary.observedDependencies` keeps the full count, `summary.shownObservedDependencies` keeps the shown count, warning guardrails are still shown with details, and the JSON `filters` object marks focused attention output.
 
 If you are building a CI annotation, PR comment, dashboard, or agent integration on top of JSON output, follow [JSON Consumers](guides/json-consumers.md). In short: use `axi check --json` for hard gates, tolerate additive fields, and treat `intentionalDebt[]` as the authoritative accepted-debt ledger for graph / observe output.
 

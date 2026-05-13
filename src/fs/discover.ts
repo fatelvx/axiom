@@ -16,6 +16,7 @@ interface CompiledPattern {
 
 const ignoredDirectories = new Set([
   ".cache",
+  ".benchmark_tmp",
   ".git",
   ".next",
   ".nuxt",

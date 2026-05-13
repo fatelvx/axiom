@@ -275,7 +275,7 @@ function classifyWorkspaceAuxiliarySourceFile(
     return {
       key: groupPath,
       name: toIdentifier(`${packageIdentifier}-${selected.join("-")}`),
-      pathPattern: `${groupPath}/**`
+      pathPattern: directories.length < groupDepth ? `${groupPath}/*` : `${groupPath}/**`
     };
   }
 
@@ -299,7 +299,7 @@ function classifySourceFile(relativePath: string, groupDepth: number): { key: st
       return {
         key: groupPath,
         name: toIdentifier(selected.join("-")),
-        pathPattern: `${groupPath}/**`
+        pathPattern: sourceDirectories.length < groupDepth ? `${groupPath}/*` : `${groupPath}/**`
       };
     }
 
@@ -317,7 +317,7 @@ function classifySourceFile(relativePath: string, groupDepth: number): { key: st
     return {
       key: groupPath,
       name: toIdentifier(selected.join("-")),
-      pathPattern: `${groupPath}/**`
+      pathPattern: sourceDirectories.length < groupDepth ? `${groupPath}/*` : `${groupPath}/**`
     };
   }
 

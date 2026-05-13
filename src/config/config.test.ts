@@ -59,6 +59,20 @@ test("loadConfig reads axiom.config.json from the project root", () => {
   }
 });
 
+test("loadConfig accepts UTF-8 BOM config files", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "axi-config-bom-"));
+
+  try {
+    fs.writeFileSync(path.join(root, "axiom.config.json"), `\uFEFF${JSON.stringify({ include: ["src/**"] })}`);
+
+    const config = loadConfig(root);
+
+    assert.deepEqual(config.include, ["src/**"]);
+  } finally {
+    fs.rmSync(root, { force: true, recursive: true });
+  }
+});
+
 test("loadConfig rejects non-string pattern arrays", () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "axi-config-invalid-"));
 

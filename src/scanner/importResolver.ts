@@ -491,17 +491,22 @@ function readPnpmWorkspacePatterns(root: string): string[] {
   }
 
   const lines = fs.readFileSync(workspacePath, "utf8").split(/\r?\n/);
-  const patterns: string[] = [];
 
   for (let index = 0; index < lines.length; index += 1) {
     const rawLine = lines[index] ?? "";
     const line = stripYamlComment(rawLine);
-    const packagesMatch = line.match(/^(\s*)packages\s*:\s*$/);
+    const packagesMatch = line.match(/^(\s*)packages\s*:\s*(.*)$/);
     if (!packagesMatch) {
       continue;
     }
 
     const baseIndent = packagesMatch[1]?.length ?? 0;
+    const inlineValue = packagesMatch[2]?.trim() ?? "";
+    if (inlineValue.length > 0) {
+      return readYamlStringList(inlineValue);
+    }
+
+    const patterns: string[] = [];
     for (let itemIndex = index + 1; itemIndex < lines.length; itemIndex += 1) {
       const itemRawLine = lines[itemIndex] ?? "";
       const itemLine = stripYamlComment(itemRawLine);
@@ -525,10 +530,10 @@ function readPnpmWorkspacePatterns(root: string): string[] {
       }
     }
 
-    break;
+    return patterns;
   }
 
-  return patterns;
+  return [];
 }
 
 function stripYamlComment(line: string): string {
@@ -560,6 +565,55 @@ function unquoteYamlScalar(value: string): string {
   }
 
   return value;
+}
+
+function readYamlStringList(value: string): string[] {
+  const trimmed = value.trim();
+  const rawItems = trimmed.startsWith("[") && trimmed.endsWith("]")
+    ? splitYamlInlineSequence(trimmed.slice(1, -1))
+    : [trimmed];
+
+  return rawItems
+    .map((item) => unquoteYamlScalar(item.trim()))
+    .filter((item) => item.length > 0 && !item.startsWith("!"));
+}
+
+function splitYamlInlineSequence(value: string): string[] {
+  const items: string[] = [];
+  let current = "";
+  let inQuote: "\"" | "'" | undefined;
+  let escaped = false;
+
+  for (const char of value) {
+    if (escaped) {
+      current += char;
+      escaped = false;
+      continue;
+    }
+
+    if (char === "\\" && inQuote === "\"") {
+      current += char;
+      escaped = true;
+      continue;
+    }
+
+    if (char === "\"" || char === "'") {
+      inQuote = inQuote === char ? undefined : inQuote ?? char;
+      current += char;
+      continue;
+    }
+
+    if (char === "," && !inQuote) {
+      items.push(current);
+      current = "";
+      continue;
+    }
+
+    current += char;
+  }
+
+  items.push(current);
+  return items;
 }
 
 function expandWorkspacePattern(root: string, pattern: string): string[] {

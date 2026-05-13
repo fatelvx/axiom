@@ -36,6 +36,8 @@ Useful inference signals:
 - Broad groups show where the first contract may need better names.
 - Existing observed edges show what the current system already depends on.
 
+If this is a quick external trial, use the shorter [10-Minute Pilot Card](pilot-card.md). If the graph is visible but not obvious to interpret, use [Read The Graph](read-the-graph.md) before deciding whether the result is healthy, noisy, or worth tracking.
+
 ## 2. Draft A Small Advisory Contract
 
 Create a smaller reviewed contract beside the target repo:

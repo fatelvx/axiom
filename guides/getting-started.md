@@ -218,6 +218,8 @@ The inferred contract is a starting point, not a final architecture. The output 
 
 For common project shapes such as React apps, React plus Pixi game clients, TypeScript libraries, and monorepos, compare the inferred graph with [Contract Recipes](contract-recipes.md) before turning the draft into declared intent.
 
+If the graph is useful but hard to interpret, read [Read The Graph](read-the-graph.md). If you are sending Axiom to another developer for a quick trial, use the [10-Minute Pilot Card](pilot-card.md).
+
 ## 7. Try A Monorepo
 
 Axiom discovers common workspace contract locations by default:

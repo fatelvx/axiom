@@ -39,6 +39,7 @@ Files:
 - `results/mirofish-contract-recipes-target-2026-05-13.md`: targeted backtest after adding contract recipes for common adoption shapes and external pilots.
 - `results/mirofish-big-backtest-v3-2026-05-13.md`: larger synthetic backtest after contract recipes, target-pilot follow-up, Mermaid graph output, baseline drift, and real-project smoke evidence.
 - `results/mirofish-graph-interpretation-mcp-target-2026-05-13.md`: targeted backtest after adding graph interpretation output and refreshing the GitHub banner; includes the MCP timing recommendation.
+- `results/mirofish-read-the-graph-pilot-card-target-2026-05-13.md`: targeted backtest after adding the read-the-graph guide, 10-minute pilot card, and v11 interpretation replay evidence.
 - `tools/write-mirofish-env.ps1`: local helper for writing MiroFish credentials to `.env` without pasting secrets into chat.
 
 Live run input snapshot:
@@ -100,6 +101,12 @@ Latest graph interpretation / MCP target snapshot:
 
 ```text
 current master after adding `architectureSummary.interpretation`, a "How To Read A Graph" README section, and the refreshed README banner
+```
+
+Latest read-the-graph / pilot-card target snapshot:
+
+```text
+current working tree after adding `guides/read-the-graph.md`, `guides/pilot-card.md`, and v11 interpretation replays for ofetch and Preact Signals
 ```
 
 Use this experiment as forecast input, not as a replacement for real users. A useful forecast should produce falsifiable adoption risks, concrete messaging changes, and roadmap tradeoffs.

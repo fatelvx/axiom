@@ -623,3 +623,36 @@ Detailed result:
 ```text
 experiments/axiom-forecast/results/mirofish-graph-interpretation-mcp-target-2026-05-13.md
 ```
+
+### Read-The-Graph / Pilot Card Target Backtest
+
+Before this target backtest, Axiom added:
+
+- `guides/read-the-graph.md`
+- `guides/pilot-card.md`
+- README / Getting Started / Pilot Workflow links for those guides
+- v11 interpretation replay smokes for ofetch and Preact Signals
+
+Method:
+
+Used the same local MiroFish `.env` and model configuration through direct `LLMClient`. This was a targeted risk-map prompt, not a full OASIS social simulation rerun.
+
+Primary result:
+
+- The read-the-graph guide and pilot card reduce first-user confusion by giving a concrete review ritual and a 10-minute external pilot path.
+- The three-question flow, hard signals -> graph center -> expected shape, is the strongest improvement.
+- Axiom can still look like a dependency visualizer if users only see command names and never open the guides.
+- React plus Pixi guidance is useful as example review prompts, but must not become hidden framework policy.
+- The replay evidence was accepted as credible and non-overclaiming: ofetch stayed quiet, while Preact Signals produced a concrete `Signals -> SignalsDebug` drift / warning signal.
+- MCP should still hold; the next step should be a small friendly external pilot using the guides, not a broad MCP or public-reception backtest.
+
+Follow-up taken:
+
+- Confirmed `axi infer` already prints a current-graph snapshot notice and authoring checklist.
+- Updated the pilot card to explicitly tell users to read those first generated comments before treating inferred edges as intent.
+
+Detailed result:
+
+```text
+experiments/axiom-forecast/results/mirofish-read-the-graph-pilot-card-target-2026-05-13.md
+```

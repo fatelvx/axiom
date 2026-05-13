@@ -67,6 +67,7 @@
 - Refined quiet graph interpretation so passing scans still suggest comparing the graph center with intended architecture before saving a baseline.
 - Added cycle path samples to collapsed-cycle inference output and bumped infer JSON to `axiom.infer.v5`.
 - Added CLI `--include` and `--exclude` source-scope flags for check, graph, observe, diff, and infer.
+- Added a read-the-graph guide and 10-minute pilot card so external users can interpret diagrams, quiet scans, advisory pressure, and first-run pilot results without treating Axiom like a generic linter.
 
 ## 0.5.8 - Monorepo Spec Discovery
 

@@ -137,6 +137,8 @@ Choose your next step:
 - Existing project: start with `axi infer --root .`, then follow [Adopting Axiom In A Real Project](guides/adoption.md).
 - Contract authoring: start from [Contract Recipes](guides/contract-recipes.md) if you do not want to invent the first `.axi` shape from scratch.
 - Early pilot: keep the first contract outside the target repo with [Pilot Workflow](guides/pilot-workflow.md).
+- First graph review: use [Read The Graph](guides/read-the-graph.md) when the diagram is useful but you are not sure whether it means healthy or drifting.
+- Teammate trial: send [10-Minute Pilot Card](guides/pilot-card.md) when someone wants to try Axiom without adding files to their repo.
 - CI path: read [GitHub Actions And PR Summaries](guides/github-actions.md), then compare it with the dogfooded workflow in [.github/workflows/ci.yml](.github/workflows/ci.yml).
 - Real contract shape: inspect [examples/monorepo-workspace](examples/monorepo-workspace) for package-level contracts.
 - Tool comparison: read [Comparison And Boundaries](guides/comparison.md) if you are asking how Axiom differs from ESLint, Dependency Cruiser, Nx, CodeQL, or custom scripts.
@@ -187,6 +189,8 @@ Start with three questions:
 `axi graph`, `axi observe`, and JSON summaries now include an interpretation layer for this first read. It can say, for example, that the scoped graph is quiet, that a module is becoming a fan-in hub, or that a contract is failing before the diagram should be treated as stable. The interpretation is intentionally conservative: it helps you navigate the graph, but the evidence still lives in the exact violation, warning, drift, and import-site lists.
 
 When a scan is quiet, the next step is not "declare victory". Compare the graph center with the shape you expected, then save an unfiltered `axi graph --json` baseline if that shape is intentional.
+
+For concrete examples of failing contracts, quiet graphs, advisory pressure, and React plus Pixi game clients, read [Read The Graph](guides/read-the-graph.md).
 
 ## What It Does Not Prove
 
@@ -672,6 +676,8 @@ For a fuller PR workflow, use [GitHub Actions And PR Summaries](guides/github-ac
 - [Adopting Axiom In A Real Project](guides/adoption.md)
 - [Contract Recipes](guides/contract-recipes.md)
 - [Pilot Workflow](guides/pilot-workflow.md)
+- [Read The Graph](guides/read-the-graph.md)
+- [10-Minute Pilot Card](guides/pilot-card.md)
 - [Comparison And Boundaries](guides/comparison.md)
 - [GitHub Actions And PR Summaries](guides/github-actions.md)
 - [JSON Consumers](guides/json-consumers.md)

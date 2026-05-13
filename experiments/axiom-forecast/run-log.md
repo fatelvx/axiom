@@ -762,3 +762,39 @@ Detailed result:
 ```text
 experiments/axiom-forecast/results/mirofish-big-backtest-v4-2026-05-13.md
 ```
+
+## 2026-05-14
+
+### Tiered Evidence / Validator Landing Target Backtest
+
+Before this target backtest, Axiom had shipped and pushed:
+
+- pnpm workspace source-mirror resolution for package `exports` / `main` targets under `lib` or `dist`
+- Vite-style type-only declaration resolution for `.d.ts`, `.d.mts`, and `.d.cts` imports
+- the long-term contract-network thesis
+- the calibration-portfolio decision to classify real-project smoke gaps before implementation
+
+Method:
+
+Used the same local MiroFish `.env` and model configuration through direct `LLMClient`. This was a targeted risk-map prompt, not a full OASIS social simulation rerun. No target repository installs, `npx`, dependency refreshes, or target scripts were run.
+
+Primary result:
+
+- The validator-first direction remains credible, but first-version trust depends on keeping hard validation facts separate from heuristics and advisory output.
+- Tiered evidence confidence is useful as an internal taxonomy, but should not be shipped yet as public `confidence` fields, evidence scores, or a dashboard.
+- The pnpm and Vite fixes are positive because they generalized beyond the target repositories, but two infrastructure repos are not enough calibration coverage.
+- The next validator work should expand a diverse calibration portfolio and classify every new gap before code changes.
+- GitHub Actions, VS Code, and MCP should remain thin future surfaces over the same evidence; broad expansion should wait until the hard-gate path is more widely trusted.
+
+Follow-up decision:
+
+- Adopt tiered evidence as an internal design discipline.
+- Keep `axi check` as the only hard gate.
+- Keep baseline drift advisory through `axi diff` and `axi observe --baseline`; do not add a hard `axi check --baseline` drift gate now.
+- Reject premature public confidence scoring and semantic health language.
+
+Detailed result:
+
+```text
+experiments/axiom-forecast/results/mirofish-tiered-evidence-validator-target-2026-05-14.md
+```

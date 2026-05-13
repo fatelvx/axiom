@@ -43,6 +43,7 @@ Files:
 - `results/mirofish-pilot-confidence-mcp-target-2026-05-13.md`: targeted backtest after the Lumina entrypoint-confidence repair plus ofetch / Preact Signals safe pilots; recommends one more review-story refinement before MCP.
 - `results/mirofish-review-story-target-2026-05-13.md`: targeted backtest after adding `architectureSummary.reviewStory`; recommends a larger public-reception / MCP backtest next.
 - `results/mirofish-big-backtest-v4-2026-05-13.md`: larger synthetic backtest after `reviewStory`; recommends a limited read-only MCP preview after baseline lifecycle and agent-loop guardrail docs.
+- `results/mirofish-tiered-evidence-validator-target-2026-05-14.md`: targeted backtest after pnpm / Vite resolver hardening and the calibration-portfolio decision; keeps tiered evidence internal until hard-gate trust is broader.
 - `tools/write-mirofish-env.ps1`: local helper for writing MiroFish credentials to `.env` without pasting secrets into chat.
 
 Live run input snapshot:
@@ -110,6 +111,12 @@ Latest read-the-graph / pilot-card target snapshot:
 
 ```text
 current working tree after adding `guides/read-the-graph.md`, `guides/pilot-card.md`, and v11 interpretation replays for ofetch and Preact Signals
+```
+
+Latest tiered evidence / validator landing target snapshot:
+
+```text
+current master after pnpm workspace source-mirror resolution, Vite type-only declaration resolution, and the calibration-portfolio overfitting guardrail
 ```
 
 Use this experiment as forecast input, not as a replacement for real users. A useful forecast should produce falsifiable adoption risks, concrete messaging changes, and roadmap tradeoffs.

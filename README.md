@@ -164,7 +164,7 @@ Axiom v0.5.8 currently supports:
 - TypeScript/JavaScript import scanning through the TypeScript parser.
 - Relative imports, barrel `index.*` files, dynamic imports, `require`, and multiline imports.
 - TypeScript `paths` aliases from `tsconfig.json`.
-- Package `imports` and workspace package `exports` for internal package-style imports.
+- Package `imports` and workspace package `exports` / `main` for internal package-style imports, including common `lib` or `dist` targets mapped back to existing `src` mirrors in source-only clones.
 - Workspace package discovery from `package.json` workspaces and `pnpm-workspace.yaml`.
 - Common monorepo contract discovery under `apps/*` and `packages/*`.
 - Gradual adoption with default loose mode, `--warn-unowned`, and `--strict`.

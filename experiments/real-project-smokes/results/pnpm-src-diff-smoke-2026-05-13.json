@@ -1,0 +1,3068 @@
+{
+  "kind": "axiom.real-project-diff-smoke.v1",
+  "generatedAt": "2026-05-13T16:07:59.128Z",
+  "repo": "https://github.com/pnpm/pnpm.git",
+  "name": "pnpm-src",
+  "baselineRef": "v10.8.1",
+  "currentRef": "v10.9.0",
+  "groupBy": "workspace",
+  "sourceScope": {
+    "include": [
+      "**/src/**"
+    ],
+    "exclude": [
+      "**/test/**",
+      "**/__tests__/**",
+      "**/example/**",
+      "**/*.test.ts",
+      "**/*.spec.ts",
+      "**/*.test.tsx",
+      "**/*.spec.tsx"
+    ]
+  },
+  "warningFlags": [
+    "--warn-coupling-concentration",
+    "--warn-deep-internal-imports",
+    "--warn-unresolved-imports"
+  ],
+  "node": "v24.14.1",
+  "platform": "win32 x64",
+  "baseline": {
+    "ref": "v10.8.1",
+    "commit": "f337e71",
+    "summary": {
+      "modules": 174,
+      "declaredDependencies": 930,
+      "forbiddenDependencies": 0,
+      "exposedPaths": 0,
+      "hiddenPaths": 0,
+      "observedDependencies": 1502,
+      "shownObservedDependencies": 1502,
+      "violations": 0,
+      "intentionalViolations": 0,
+      "warnings": 124
+    }
+  },
+  "current": {
+    "ref": "v10.9.0",
+    "commit": "a4ba06d",
+    "summary": {
+      "modules": 174,
+      "declaredDependencies": 930,
+      "forbiddenDependencies": 0,
+      "exposedPaths": 0,
+      "hiddenPaths": 0,
+      "observedDependencies": 1499,
+      "shownObservedDependencies": 1499,
+      "violations": 0,
+      "intentionalViolations": 0,
+      "warnings": 124
+    }
+  },
+  "drift": {
+    "kind": "advisory_observed_edge_drift",
+    "baseline": {
+      "schemaVersion": "axiom.graph.v12",
+      "observedDependencies": 1502
+    },
+    "newObservedEdges": [],
+    "removedObservedEdges": [
+      {
+        "fromModule": "Core",
+        "toModule": "WhichVersionIsPinned",
+        "importSites": 1,
+        "firstImport": {
+          "filePath": "pkg-manager/core/src/parseWantedDependencies.ts",
+          "line": 3,
+          "specifier": "@pnpm/which-version-is-pinned",
+          "resolvedPath": "packages/which-version-is-pinned/src/index.ts"
+        },
+        "violationCodes": [],
+        "intentionalViolationCodes": []
+      },
+      {
+        "fromModule": "ManifestUtils",
+        "toModule": "Error",
+        "importSites": 1,
+        "firstImport": {
+          "filePath": "pkg-manifest/manifest-utils/src/getPref.ts",
+          "line": 1,
+          "specifier": "@pnpm/error",
+          "resolvedPath": "packages/error/src/index.ts"
+        },
+        "violationCodes": [],
+        "intentionalViolationCodes": []
+      },
+      {
+        "fromModule": "ResolveDependencies",
+        "toModule": "PickFetcher",
+        "importSites": 1,
+        "firstImport": {
+          "filePath": "pkg-manager/resolve-dependencies/src/updateProjectManifest.ts",
+          "line": 9,
+          "specifier": "@pnpm/pick-fetcher",
+          "resolvedPath": "fetching/pick-fetcher/src/index.ts"
+        },
+        "violationCodes": [],
+        "intentionalViolationCodes": []
+      },
+      {
+        "fromModule": "ResolveDependencies",
+        "toModule": "WhichVersionIsPinned",
+        "importSites": 1,
+        "firstImport": {
+          "filePath": "pkg-manager/resolve-dependencies/src/getWantedDependencies.ts",
+          "line": 8,
+          "specifier": "@pnpm/which-version-is-pinned",
+          "resolvedPath": "packages/which-version-is-pinned/src/index.ts"
+        },
+        "violationCodes": [],
+        "intentionalViolationCodes": []
+      }
+    ]
+  },
+  "warnings": {
+    "byCode": {
+      "coupling_concentration": 124
+    },
+    "details": [
+      {
+        "code": "coupling_concentration",
+        "message": "AssertProject has concentrated fan-out to 4 modules.",
+        "observed": "AssertProject fan-out to 4 modules",
+        "module": "AssertProject",
+        "incomingModules": [
+          "Prepare"
+        ],
+        "outgoingModules": [
+          "AssertStore",
+          "Constants",
+          "Lockfile",
+          "ModulesYaml"
+        ]
+      },
+      {
+        "code": "coupling_concentration",
+        "message": "Audit has concentrated fan-out to 9 modules.",
+        "observed": "Audit fan-out to 9 modules",
+        "module": "Audit",
+        "incomingModules": [
+          "PluginCommandsAudit"
+        ],
+        "outgoingModules": [
+          "Error",
+          "Fetch",
+          "FetchingTypes",
+          "Lockfile",
+          "Lockfile11",
+          "Lockfile4",
+          "Lockfile7",
+          "ReadProjectManifest",
+          "Types"
+        ]
+      },
+      {
+        "code": "coupling_concentration",
+        "message": "BuildModules has concentrated fan-out to 12 modules.",
+        "observed": "BuildModules fan-out to 12 modules",
+        "module": "BuildModules",
+        "incomingModules": [
+          "Core",
+          "Headless"
+        ],
+        "outgoingModules": [
+          "CalcDepState",
+          "CoreLoggers",
+          "Deps2",
+          "Lifecycle",
+          "LinkBins",
+          "Logger",
+          "Patching",
+          "Patching3",
+          "ReadPackageJson",
+          "StoreControllerTypes",
+          "Types",
+          "Worker"
+        ]
+      },
+      {
+        "code": "coupling_concentration",
+        "message": "Cache2 has concentrated fan-out to 6 modules.",
+        "observed": "Cache2 fan-out to 6 modules",
+        "module": "Cache2",
+        "incomingModules": [
+          "Pnpm"
+        ],
+        "outgoingModules": [
+          "Cache",
+          "CliUtils",
+          "Config",
+          "Constants",
+          "Error",
+          "StorePath"
+        ]
+      },
+      {
+        "code": "coupling_concentration",
+        "message": "CafsTypes has concentrated fan-in from 7 modules.",
+        "observed": "CafsTypes fan-in from 7 modules",
+        "module": "CafsTypes",
+        "incomingModules": [
+          "CreateCafsStore",
+          "FetcherBase",
+          "PackageRequester",
+          "Store",
+          "StoreControllerTypes",
+          "TarballFetcher",
+          "Worker"
+        ],
+        "outgoingModules": [
+          "Types"
+        ]
+      },
+      {
+        "code": "coupling_concentration",
+        "message": "CalcDepState has concentrated fan-in from 4 modules and fan-out to 6 modules.",
+        "observed": "CalcDepState fan-in 4, fan-out 6",
+        "module": "CalcDepState",
+        "incomingModules": [
+          "BuildModules",
+          "Core",
+          "Headless",
+          "PluginCommandsRebuild"
+        ],
+        "outgoingModules": [
+          "Constants",
+          "Crypto3",
+          "DependencyPath",
+          "Lockfile",
+          "Object",
+          "Types"
+        ]
+      },
+      {
+        "code": "coupling_concentration",
+        "message": "Catalogs2 has concentrated fan-in from 10 modules.",
+        "observed": "Catalogs2 fan-in from 10 modules",
+        "module": "Catalogs2",
+        "incomingModules": [
+          "Catalogs3",
+          "Catalogs4",
+          "Config",
+          "Core",
+          "ExportableManifest",
+          "Lockfile6",
+          "Outdated",
+          "ParseOverrides",
+          "PluginCommandsPublishing",
+          "ResolveDependencies"
+        ],
+        "outgoingModules": []
+      },
+      {
+        "code": "coupling_concentration",
+        "message": "Catalogs3 has concentrated fan-in from 4 modules.",
+        "observed": "Catalogs3 fan-in from 4 modules",
+        "module": "Catalogs3",
+        "incomingModules": [
+          "ExportableManifest",
+          "Outdated",
+          "ParseOverrides",
+          "ResolveDependencies"
+        ],
+        "outgoingModules": [
+          "Catalogs",
+          "Catalogs2",
+          "Error"
+        ]
+      },
+      {
+        "code": "coupling_concentration",
+        "message": "Client has concentrated fan-in from 8 modules and fan-out to 9 modules.",
+        "observed": "Client fan-in 8, fan-out 9",
+        "module": "Client",
+        "incomingModules": [
+          "Outdated",
+          "PluginCommandsPublishing",
+          "PluginCommandsScriptRunners",
+          "PluginCommandsStoreInspecting",
+          "Pnpm",
+          "StoreConnectionManager",
+          "Testing",
+          "Tools2"
+        ],
+        "outgoingModules": [
+          "DefaultResolver",
+          "DirectoryFetcher",
+          "Fetch",
+          "FetcherBase",
+          "FetchingTypes",
+          "GitFetcher",
+          "Network",
+          "TarballFetcher",
+          "Types"
+        ]
+      },
+      {
+        "code": "coupling_concentration",
+        "message": "CliMeta has concentrated fan-in from 9 modules.",
+        "observed": "CliMeta fan-in from 9 modules",
+        "module": "CliMeta",
+        "incomingModules": [
+          "CliUtils",
+          "DefaultReporter",
+          "Env",
+          "PluginCommandsInit",
+          "PluginCommandsServer",
+          "PluginCommandsSetup",
+          "Pnpm",
+          "StoreConnectionManager",
+          "Tools2"
+        ],
+        "outgoingModules": [
+          "Types"
+        ]
+      },
+      {
+        "code": "coupling_concentration",
+        "message": "CliUtils has concentrated fan-in from 22 modules and fan-out to 12 modules.",
+        "observed": "CliUtils fan-in 22, fan-out 12",
+        "module": "CliUtils",
+        "incomingModules": [
+          "Cache2",
+          "PluginCommandsAudit",
+          "PluginCommandsCompletion",
+          "PluginCommandsConfig",
+          "PluginCommandsDeploy",
+          "PluginCommandsDoctor",
+          "PluginCommandsEnv",
+          "PluginCommandsInit",
+          "PluginCommandsInstallation",
+          "PluginCommandsLicenses",
+          "PluginCommandsListing",
+          "PluginCommandsOutdated",
+          "PluginCommandsPatching",
+          "PluginCommandsPublishing",
+          "PluginCommandsRebuild",
+          "PluginCommandsScriptRunners",
+          "PluginCommandsServer",
+          "PluginCommandsSetup",
+          "PluginCommandsStore",
+          "Pnpm",
+          "Tools2",
+          "Workspace4"
+        ],
+        "outgoingModules": [
+          "CliMeta",
+          "Config",
+          "Config3",
+          "DefaultReporter",
+          "Error",
+          "Logger",
+          "ManifestUtils",
+          "PackageIsInstallable",
+          "Pnpmfile",
+          "ReadProjectManifest",
+          "StoreConnectionManager",
+          "Types"
+        ]
+      },
+      {
+        "code": "coupling_concentration",
+        "message": "Command has concentrated fan-in from 6 modules.",
+        "observed": "Command fan-in from 6 modules",
+        "module": "Command",
+        "incomingModules": [
+          "PluginCommandsCompletion",
+          "PluginCommandsInstallation",
+          "PluginCommandsLicenses",
+          "PluginCommandsOutdated",
+          "PluginCommandsScriptRunners",
+          "Pnpm"
+        ],
+        "outgoingModules": []
+      },
+      {
+        "code": "coupling_concentration",
+        "message": "CommonCliOptionsHelp has concentrated fan-in from 10 modules.",
+        "observed": "CommonCliOptionsHelp fan-in from 10 modules",
+        "module": "CommonCliOptionsHelp",
+        "incomingModules": [
+          "PluginCommandsDeploy",
+          "PluginCommandsInstallation",
+          "PluginCommandsLicenses",
+          "PluginCommandsListing",
+          "PluginCommandsOutdated",
+          "PluginCommandsPublishing",
+          "PluginCommandsRebuild",
+          "PluginCommandsScriptRunners",
+          "PluginCommandsServer",
+          "Pnpm"
+        ],
+        "outgoingModules": []
+      },
+      {
+        "code": "coupling_concentration",
+        "message": "Config has concentrated fan-in from 27 modules and fan-out to 11 modules.",
+        "observed": "Config fan-in 27, fan-out 11",
+        "module": "Config",
+        "incomingModules": [
+          "Cache2",
+          "CliUtils",
+          "DefaultReporter",
+          "Deps3",
+          "Exec2",
+          "MountModules",
+          "PluginCommandsAudit",
+          "PluginCommandsConfig",
+          "PluginCommandsDeploy",
+          "PluginCommandsDoctor",
+          "PluginCommandsEnv",
+          "PluginCommandsInit",
+          "PluginCommandsInstallation",
+          "PluginCommandsLicenses",
+          "PluginCommandsListing",
+          "PluginCommandsOutdated",
+          "PluginCommandsPatching",
+          "PluginCommandsPublishing",
+          "PluginCommandsRebuild",
+          "PluginCommandsScriptRunners",
+          "PluginCommandsServer",
+          "PluginCommandsStore",
+          "PluginCommandsStoreInspecting",
+          "Pnpm",
+          "StoreConnectionManager",
+          "Tools2",
+          "Workspace5"
+        ],
+        "outgoingModules": [
+          "Catalogs2",
+          "Catalogs4",
+          "Constants",
+          "Error",
+          "GitUtils",
+          "Logger",
+          "Matcher",
+          "Pnpmfile",
+          "ReadProjectManifest",
+          "Types",
+          "Workspace"
+        ]
+      },
+      {
+        "code": "coupling_concentration",
+        "message": "Config2 has concentrated fan-in from 5 modules.",
+        "observed": "Config2 fan-in from 5 modules",
+        "module": "Config2",
+        "incomingModules": [
+          "Config3",
+          "Exec2",
+          "PluginCommandsAudit",
+          "PluginCommandsInstallation",
+          "PluginCommandsPatching"
+        ],
+        "outgoingModules": [
+          "ReadProjectManifest",
+          "Types",
+          "Workspace2"
+        ]
+      },
+      {
+        "code": "coupling_concentration",
+        "message": "Config3 has concentrated fan-out to 12 modules.",
+        "observed": "Config3 fan-out to 12 modules",
+        "module": "Config3",
+        "incomingModules": [
+          "CliUtils",
+          "PluginCommandsInstallation"
+        ],
+        "outgoingModules": [
+          "Config2",
+          "CoreLoggers",
+          "Error",
+          "Fetch",
+          "Network",
+          "NpmResolver",
+          "PackageStore",
+          "ParseWantedDependency",
+          "PickRegistryForPackage",
+          "ReadModulesDir",
+          "ReadPackageJson",
+          "Types"
+        ]
+      },
+      {
+        "code": "coupling_concentration",
+        "message": "Constants has concentrated fan-in from 26 modules.",
+        "observed": "Constants fan-in from 26 modules",
+        "module": "Constants",
+        "incomingModules": [
+          "AssertProject",
+          "Cache2",
+          "CalcDepState",
+          "Config",
+          "Core",
+          "Deps",
+          "Deps3",
+          "Error",
+          "GetContext",
+          "Headless",
+          "Hoist",
+          "Lockfile10",
+          "Lockfile3",
+          "Lockfile8",
+          "NpmResolver",
+          "Outdated",
+          "PluginCommandsAudit",
+          "PluginCommandsDeploy",
+          "PluginCommandsInstallation",
+          "PluginCommandsLicenses",
+          "PluginCommandsRebuild",
+          "Pnpm",
+          "StorePath",
+          "Workspace",
+          "Workspace2",
+          "Workspace4"
+        ],
+        "outgoingModules": []
+      },
+      {
+        "code": "coupling_concentration",
+        "message": "Core has concentrated fan-out to 38 modules.",
+        "observed": "Core fan-out to 38 modules",
+        "module": "Core",
+        "incomingModules": [
+          "PluginCommandsInstallation"
+        ],
+        "outgoingModules": [
+          "BuildModules",
+          "CalcDepState",
+          "Catalogs",
+          "Catalogs2",
+          "Constants",
+          "CoreLoggers",
+          "Crypto3",
+          "Error",
+          "GetContext",
+          "Headless",
+          "Hoist",
+          "Hooks",
+          "Hooks2",
+          "Lifecycle",
+          "LinkBins",
+          "Lockfile3",
+          "Lockfile4",
+          "Lockfile5",
+          "Lockfile6",
+          "Lockfile8",
+          "Lockfile9",
+          "LockfileToPnp",
+          "Logger",
+          "ManifestUtils",
+          "ModulesCleaner",
+          "ModulesYaml",
+          "NormalizeRegistries",
+          "ParseOverrides",
+          "ParseWantedDependency",
+          "Patching2",
+          "PkgManager",
+          "ReadProjectManifest",
+          "ResolveDependencies",
+          "ResolverBase",
+          "StoreControllerTypes",
+          "SymlinkDependency",
+          "Types",
+          "Worker"
+        ]
+      },
+      {
+        "code": "coupling_concentration",
+        "message": "CoreLoggers has concentrated fan-in from 25 modules.",
+        "observed": "CoreLoggers fan-in from 25 modules",
+        "module": "CoreLoggers",
+        "incomingModules": [
+          "BuildModules",
+          "Config3",
+          "Core",
+          "DefaultReporter",
+          "Deps",
+          "Fetch",
+          "Fs2",
+          "GetContext",
+          "Headless",
+          "Hoist",
+          "Lifecycle",
+          "ManifestUtils",
+          "ModulesCleaner",
+          "NpmResolver",
+          "PackageIsInstallable",
+          "PackageRequester",
+          "PkgManager",
+          "PluginCommandsRebuild",
+          "PluginCommandsScriptRunners",
+          "Pnpm",
+          "Pnpmfile",
+          "RemoveBins",
+          "ResolveDependencies",
+          "SymlinkDependency",
+          "TarballFetcher"
+        ],
+        "outgoingModules": [
+          "Logger",
+          "Types"
+        ]
+      },
+      {
+        "code": "coupling_concentration",
+        "message": "CreateCafsStore has concentrated fan-out to 4 modules.",
+        "observed": "CreateCafsStore fan-out to 4 modules",
+        "module": "CreateCafsStore",
+        "incomingModules": [
+          "Node",
+          "PackageStore",
+          "Worker"
+        ],
+        "outgoingModules": [
+          "CafsTypes",
+          "Fs2",
+          "Store",
+          "StoreControllerTypes"
+        ]
+      },
+      {
+        "code": "coupling_concentration",
+        "message": "Crypto2 has concentrated fan-in from 8 modules.",
+        "observed": "Crypto2 fan-in from 8 modules",
+        "module": "Crypto2",
+        "incomingModules": [
+          "DependencyPath",
+          "LocalResolver",
+          "Lockfile5",
+          "Lockfile6",
+          "NpmResolver",
+          "PluginCommandsPatching",
+          "PluginCommandsScriptRunners",
+          "Pnpmfile"
+        ],
+        "outgoingModules": [
+          "Crypto",
+          "GracefulFs"
+        ]
+      },
+      {
+        "code": "coupling_concentration",
+        "message": "Dedupe3 has concentrated fan-out to 4 modules.",
+        "observed": "Dedupe3 fan-out to 4 modules",
+        "module": "Dedupe3",
+        "incomingModules": [
+          "PluginCommandsInstallation"
+        ],
+        "outgoingModules": [
+          "Dedupe",
+          "Error",
+          "Lockfile",
+          "Types"
+        ]
+      },
+      {
+        "code": "coupling_concentration",
+        "message": "DefaultReporter has concentrated fan-out to 9 modules.",
+        "observed": "DefaultReporter fan-out to 9 modules",
+        "module": "DefaultReporter",
+        "incomingModules": [
+          "CliUtils",
+          "Pnpm"
+        ],
+        "outgoingModules": [
+          "CliMeta",
+          "Config",
+          "CoreLoggers",
+          "Dedupe",
+          "Dedupe2",
+          "Error",
+          "Logger",
+          "RenderPeerIssues",
+          "Types"
+        ]
+      },
+      {
+        "code": "coupling_concentration",
+        "message": "DefaultResolver has concentrated fan-out to 7 modules.",
+        "observed": "DefaultResolver fan-out to 7 modules",
+        "module": "DefaultResolver",
+        "incomingModules": [
+          "Client"
+        ],
+        "outgoingModules": [
+          "Error",
+          "FetchingTypes",
+          "GitResolver",
+          "LocalResolver",
+          "NpmResolver",
+          "ResolverBase",
+          "TarballResolver"
+        ]
+      },
+      {
+        "code": "coupling_concentration",
+        "message": "DependencyPath has concentrated fan-in from 24 modules.",
+        "observed": "DependencyPath fan-in from 24 modules",
+        "module": "DependencyPath",
+        "incomingModules": [
+          "CalcDepState",
+          "Deps",
+          "Headless",
+          "Hoist",
+          "LicenseScanner",
+          "Lockfile10",
+          "Lockfile11",
+          "Lockfile3",
+          "Lockfile4",
+          "Lockfile6",
+          "Lockfile7",
+          "Lockfile8",
+          "LockfileToPnp",
+          "ModulesCleaner",
+          "MountModules",
+          "Outdated",
+          "PackageRequester",
+          "Patching2",
+          "PluginCommandsDeploy",
+          "PluginCommandsRebuild",
+          "PluginCommandsStore",
+          "RealHoist",
+          "ResolveDependencies",
+          "Reviewing"
+        ],
+        "outgoingModules": [
+          "Crypto2",
+          "Types"
+        ]
+      },
+      {
+        "code": "coupling_concentration",
+        "message": "Deps has concentrated fan-out to 12 modules.",
+        "observed": "Deps fan-out to 12 modules",
+        "module": "Deps",
+        "incomingModules": [
+          "Headless"
+        ],
+        "outgoingModules": [
+          "Constants",
+          "CoreLoggers",
+          "DependencyPath",
+          "Lockfile3",
+          "Lockfile4",
+          "Logger",
+          "ModulesYaml",
+          "PackageIsInstallable",
+          "Patching",
+          "Patching2",
+          "StoreControllerTypes",
+          "Types"
+        ]
+      },
+      {
+        "code": "coupling_concentration",
+        "message": "Deps3 has concentrated fan-out to 16 modules.",
+        "observed": "Deps3 fan-out to 16 modules",
+        "module": "Deps3",
+        "incomingModules": [
+          "PluginCommandsInstallation",
+          "PluginCommandsScriptRunners"
+        ],
+        "outgoingModules": [
+          "Config",
+          "Constants",
+          "Crypto3",
+          "Error",
+          "GetContext",
+          "Lockfile3",
+          "Lockfile5",
+          "Lockfile6",
+          "Logger",
+          "ParseOverrides",
+          "Pnpmfile",
+          "ResolverBase",
+          "Types",
+          "Workspace",
+          "Workspace4",
+          "Workspace5"
+        ]
+      },
+      {
+        "code": "coupling_concentration",
+        "message": "DirectoryFetcher has concentrated fan-in from 5 modules and fan-out to 6 modules.",
+        "observed": "DirectoryFetcher fan-in 5, fan-out 6",
+        "module": "DirectoryFetcher",
+        "incomingModules": [
+          "Client",
+          "LicenseScanner",
+          "Lifecycle",
+          "PluginCommandsDeploy",
+          "Workspace7"
+        ],
+        "outgoingModules": [
+          "Exec",
+          "FetcherBase",
+          "Fs3",
+          "Logger",
+          "ReadProjectManifest",
+          "Types"
+        ]
+      },
+      {
+        "code": "coupling_concentration",
+        "message": "Error has concentrated fan-in from 64 modules.",
+        "observed": "Error fan-in from 64 modules",
+        "module": "Error",
+        "incomingModules": [
+          "Audit",
+          "Cache2",
+          "Catalogs3",
+          "Catalogs4",
+          "CliUtils",
+          "Config",
+          "Config3",
+          "Core",
+          "Dedupe3",
+          "DefaultReporter",
+          "DefaultResolver",
+          "Deps3",
+          "ExportableManifest",
+          "FilterWorkspacePackages",
+          "FindWorkspaceDir",
+          "LicenseScanner",
+          "Lifecycle",
+          "LinkBins",
+          "LocalResolver",
+          "Lockfile3",
+          "Lockfile8",
+          "MakeDedicatedLockfile",
+          "Network",
+          "Node",
+          "NpmResolver",
+          "Outdated",
+          "PackageIsInstallable",
+          "PackageRequester",
+          "ParseCliArgs",
+          "ParseOverrides",
+          "Patching2",
+          "Patching3",
+          "PluginCommandsAudit",
+          "PluginCommandsCompletion",
+          "PluginCommandsConfig",
+          "PluginCommandsDeploy",
+          "PluginCommandsEnv",
+          "PluginCommandsInit",
+          "PluginCommandsInstallation",
+          "PluginCommandsLicenses",
+          "PluginCommandsListing",
+          "PluginCommandsOutdated",
+          "PluginCommandsPatching",
+          "PluginCommandsPublishing",
+          "PluginCommandsRebuild",
+          "PluginCommandsScriptRunners",
+          "PluginCommandsServer",
+          "PluginCommandsStore",
+          "PluginCommandsStoreInspecting",
+          "Pnpm",
+          "Pnpmfile",
+          "PreparePackage",
+          "ReadPackageJson",
+          "ReadProjectManifest",
+          "RealHoist",
+          "RenderPeerIssues",
+          "ResolveDependencies",
+          "StoreConnectionManager",
+          "StorePath",
+          "TarballFetcher",
+          "Tools2",
+          "Worker",
+          "Workspace",
+          "Workspace7"
+        ],
+        "outgoingModules": [
+          "Constants"
+        ]
+      },
+      {
+        "code": "coupling_concentration",
+        "message": "Exec2 has concentrated fan-out to 6 modules.",
+        "observed": "Exec2 fan-out to 6 modules",
+        "module": "Exec2",
+        "incomingModules": [
+          "Pnpm"
+        ],
+        "outgoingModules": [
+          "Config",
+          "Config2",
+          "Logger",
+          "ModulesYaml",
+          "PluginCommandsRebuild",
+          "Types"
+        ]
+      },
+      {
+        "code": "coupling_concentration",
+        "message": "ExportableManifest has concentrated fan-out to 5 modules.",
+        "observed": "ExportableManifest fan-out to 5 modules",
+        "module": "ExportableManifest",
+        "incomingModules": [
+          "MakeDedicatedLockfile",
+          "PluginCommandsPublishing"
+        ],
+        "outgoingModules": [
+          "Catalogs2",
+          "Catalogs3",
+          "Error",
+          "ReadProjectManifest",
+          "Types"
+        ]
+      },
+      {
+        "code": "coupling_concentration",
+        "message": "Fetch has concentrated fan-in from 6 modules.",
+        "observed": "Fetch fan-in from 6 modules",
+        "module": "Fetch",
+        "incomingModules": [
+          "Audit",
+          "Client",
+          "Config3",
+          "GitResolver",
+          "PluginCommandsEnv",
+          "Server"
+        ],
+        "outgoingModules": [
+          "CoreLoggers",
+          "FetchingTypes",
+          "Types"
+        ]
+      },
+      {
+        "code": "coupling_concentration",
+        "message": "FetcherBase has concentrated fan-in from 8 modules.",
+        "observed": "FetcherBase fan-in from 8 modules",
+        "module": "FetcherBase",
+        "incomingModules": [
+          "Client",
+          "DirectoryFetcher",
+          "GitFetcher",
+          "PackageRequester",
+          "PackageStore",
+          "PickFetcher",
+          "Pnpmfile",
+          "TarballFetcher"
+        ],
+        "outgoingModules": [
+          "CafsTypes",
+          "ResolverBase",
+          "Types"
+        ]
+      },
+      {
+        "code": "coupling_concentration",
+        "message": "FetchingTypes has concentrated fan-in from 9 modules.",
+        "observed": "FetchingTypes fan-in from 9 modules",
+        "module": "FetchingTypes",
+        "incomingModules": [
+          "Audit",
+          "Client",
+          "DefaultResolver",
+          "Fetch",
+          "Node",
+          "Node2",
+          "NpmResolver",
+          "TarballFetcher",
+          "TarballResolver"
+        ],
+        "outgoingModules": []
+      },
+      {
+        "code": "coupling_concentration",
+        "message": "FilterWorkspacePackages has concentrated fan-out to 5 modules.",
+        "observed": "FilterWorkspacePackages fan-out to 5 modules",
+        "module": "FilterWorkspacePackages",
+        "incomingModules": [
+          "PluginCommandsInstallation",
+          "Pnpm",
+          "Workspace8"
+        ],
+        "outgoingModules": [
+          "Error",
+          "Matcher",
+          "Types",
+          "Workspace4",
+          "Workspace6"
+        ]
+      },
+      {
+        "code": "coupling_concentration",
+        "message": "Fs2 has concentrated fan-out to 4 modules.",
+        "observed": "Fs2 fan-out to 4 modules",
+        "module": "Fs2",
+        "incomingModules": [
+          "CreateCafsStore",
+          "PluginCommandsDeploy"
+        ],
+        "outgoingModules": [
+          "CoreLoggers",
+          "GracefulFs",
+          "Logger",
+          "StoreControllerTypes"
+        ]
+      },
+      {
+        "code": "coupling_concentration",
+        "message": "Fs3 has concentrated fan-in from 5 modules.",
+        "observed": "Fs3 fan-in from 5 modules",
+        "module": "Fs3",
+        "incomingModules": [
+          "DirectoryFetcher",
+          "GitFetcher",
+          "PluginCommandsPatching",
+          "PluginCommandsPublishing",
+          "TarballFetcher"
+        ],
+        "outgoingModules": []
+      },
+      {
+        "code": "coupling_concentration",
+        "message": "GetContext has concentrated fan-in from 6 modules and fan-out to 8 modules.",
+        "observed": "GetContext fan-in 6, fan-out 8",
+        "module": "GetContext",
+        "incomingModules": [
+          "Core",
+          "Deps3",
+          "Lockfile6",
+          "PluginCommandsInstallation",
+          "PluginCommandsRebuild",
+          "PluginCommandsStore"
+        ],
+        "outgoingModules": [
+          "Constants",
+          "CoreLoggers",
+          "Lockfile3",
+          "Logger",
+          "ModulesYaml",
+          "ReadProjectsContext",
+          "ResolverBase",
+          "Types"
+        ]
+      },
+      {
+        "code": "coupling_concentration",
+        "message": "GitFetcher has concentrated fan-out to 5 modules.",
+        "observed": "GitFetcher fan-out to 5 modules",
+        "module": "GitFetcher",
+        "incomingModules": [
+          "Client"
+        ],
+        "outgoingModules": [
+          "FetcherBase",
+          "Fs3",
+          "Logger",
+          "PreparePackage",
+          "Worker"
+        ]
+      },
+      {
+        "code": "coupling_concentration",
+        "message": "GracefulFs has concentrated fan-in from 10 modules.",
+        "observed": "GracefulFs fan-in from 10 modules",
+        "module": "GracefulFs",
+        "incomingModules": [
+          "Crypto2",
+          "Fs2",
+          "NpmResolver",
+          "PackageRequester",
+          "PluginCommandsInstallation",
+          "PluginCommandsStoreInspecting",
+          "ReadProjectManifest",
+          "Store",
+          "TarballFetcher",
+          "Worker"
+        ],
+        "outgoingModules": []
+      },
+      {
+        "code": "coupling_concentration",
+        "message": "Headless has concentrated fan-out to 26 modules.",
+        "observed": "Headless fan-out to 26 modules",
+        "module": "Headless",
+        "incomingModules": [
+          "Core"
+        ],
+        "outgoingModules": [
+          "BuildModules",
+          "CalcDepState",
+          "Constants",
+          "CoreLoggers",
+          "DependencyPath",
+          "Deps",
+          "Hoist",
+          "Lifecycle",
+          "LinkBins",
+          "Lockfile3",
+          "Lockfile4",
+          "Lockfile8",
+          "LockfileToPnp",
+          "Logger",
+          "ModulesCleaner",
+          "ModulesYaml",
+          "PackageIsInstallable",
+          "Patching2",
+          "PkgManager",
+          "ReadPackageJson",
+          "ReadProjectManifest",
+          "RealHoist",
+          "StoreControllerTypes",
+          "SymlinkDependency",
+          "Types",
+          "Worker"
+        ]
+      },
+      {
+        "code": "coupling_concentration",
+        "message": "Hoist has concentrated fan-out to 9 modules.",
+        "observed": "Hoist fan-out to 9 modules",
+        "module": "Hoist",
+        "incomingModules": [
+          "Core",
+          "Headless"
+        ],
+        "outgoingModules": [
+          "Constants",
+          "CoreLoggers",
+          "DependencyPath",
+          "LinkBins",
+          "Lockfile4",
+          "Lockfile7",
+          "Logger",
+          "Matcher",
+          "Types"
+        ]
+      },
+      {
+        "code": "coupling_concentration",
+        "message": "Hooks2 has concentrated fan-out to 5 modules.",
+        "observed": "Hooks2 fan-out to 5 modules",
+        "module": "Hooks2",
+        "incomingModules": [
+          "Core",
+          "Outdated"
+        ],
+        "outgoingModules": [
+          "Matcher",
+          "ParseOverrides",
+          "ParseWantedDependency",
+          "Semver",
+          "Types"
+        ]
+      },
+      {
+        "code": "coupling_concentration",
+        "message": "LicenseScanner has concentrated fan-out to 12 modules.",
+        "observed": "LicenseScanner fan-out to 12 modules",
+        "module": "LicenseScanner",
+        "incomingModules": [
+          "PluginCommandsLicenses"
+        ],
+        "outgoingModules": [
+          "DependencyPath",
+          "DirectoryFetcher",
+          "Error",
+          "Lockfile",
+          "Lockfile11",
+          "Lockfile3",
+          "Lockfile4",
+          "Lockfile7",
+          "PackageIsInstallable",
+          "ReadPackageJson",
+          "Store",
+          "Types"
+        ]
+      },
+      {
+        "code": "coupling_concentration",
+        "message": "Lifecycle has concentrated fan-in from 7 modules and fan-out to 8 modules.",
+        "observed": "Lifecycle fan-in 7, fan-out 8",
+        "module": "Lifecycle",
+        "incomingModules": [
+          "BuildModules",
+          "Core",
+          "Headless",
+          "PluginCommandsPublishing",
+          "PluginCommandsRebuild",
+          "PluginCommandsScriptRunners",
+          "PreparePackage"
+        ],
+        "outgoingModules": [
+          "CoreLoggers",
+          "DirectoryFetcher",
+          "Error",
+          "LinkBins",
+          "Logger",
+          "ReadPackageJson",
+          "StoreControllerTypes",
+          "Types"
+        ]
+      },
+      {
+        "code": "coupling_concentration",
+        "message": "LinkBins has concentrated fan-in from 7 modules and fan-out to 8 modules.",
+        "observed": "LinkBins fan-in 7, fan-out 8",
+        "module": "LinkBins",
+        "incomingModules": [
+          "BuildModules",
+          "Core",
+          "Headless",
+          "Hoist",
+          "Lifecycle",
+          "PluginCommandsRebuild",
+          "Tools2"
+        ],
+        "outgoingModules": [
+          "Error",
+          "Logger",
+          "ManifestUtils",
+          "PackageBins",
+          "ReadModulesDir",
+          "ReadPackageJson",
+          "ReadProjectManifest",
+          "Types"
+        ]
+      },
+      {
+        "code": "coupling_concentration",
+        "message": "List has concentrated fan-out to 5 modules.",
+        "observed": "List fan-out to 5 modules",
+        "module": "List",
+        "incomingModules": [
+          "PluginCommandsListing"
+        ],
+        "outgoingModules": [
+          "Crypto",
+          "ReadPackageJson",
+          "ReadProjectManifest",
+          "Reviewing",
+          "Types"
+        ]
+      },
+      {
+        "code": "coupling_concentration",
+        "message": "LocalResolver has concentrated fan-out to 6 modules.",
+        "observed": "LocalResolver fan-out to 6 modules",
+        "module": "LocalResolver",
+        "incomingModules": [
+          "DefaultResolver"
+        ],
+        "outgoingModules": [
+          "Crypto2",
+          "Error",
+          "Logger",
+          "ReadProjectManifest",
+          "ResolverBase",
+          "Types"
+        ]
+      },
+      {
+        "code": "coupling_concentration",
+        "message": "Lockfile has concentrated fan-in from 22 modules.",
+        "observed": "Lockfile fan-in from 22 modules",
+        "module": "Lockfile",
+        "incomingModules": [
+          "AssertProject",
+          "Audit",
+          "CalcDepState",
+          "Dedupe3",
+          "Hooks",
+          "LicenseScanner",
+          "Lockfile10",
+          "Lockfile11",
+          "Lockfile2",
+          "Lockfile3",
+          "Lockfile4",
+          "Lockfile5",
+          "Lockfile6",
+          "Lockfile7",
+          "Lockfile8",
+          "ModulesCleaner",
+          "PluginCommandsDeploy",
+          "PluginCommandsInstallation",
+          "PluginCommandsRebuild",
+          "PluginCommandsStoreInspecting",
+          "Pnpmfile",
+          "ResolveDependencies"
+        ],
+        "outgoingModules": [
+          "Patching",
+          "Types"
+        ]
+      },
+      {
+        "code": "coupling_concentration",
+        "message": "Lockfile10 has concentrated fan-out to 4 modules.",
+        "observed": "Lockfile10 fan-out to 4 modules",
+        "module": "Lockfile10",
+        "incomingModules": [
+          "MakeDedicatedLockfile",
+          "ResolveDependencies"
+        ],
+        "outgoingModules": [
+          "Constants",
+          "DependencyPath",
+          "Lockfile",
+          "Types"
+        ]
+      },
+      {
+        "code": "coupling_concentration",
+        "message": "Lockfile3 has concentrated fan-in from 17 modules and fan-out to 9 modules.",
+        "observed": "Lockfile3 fan-in 17, fan-out 9",
+        "module": "Lockfile3",
+        "incomingModules": [
+          "Core",
+          "Deps",
+          "Deps3",
+          "GetContext",
+          "Headless",
+          "LicenseScanner",
+          "LockfileToPnp",
+          "MakeDedicatedLockfile",
+          "MountModules",
+          "Outdated",
+          "PluginCommandsAudit",
+          "PluginCommandsDeploy",
+          "PluginCommandsLicenses",
+          "PluginCommandsPatching",
+          "ReadProjectsContext",
+          "Reviewing",
+          "Updater"
+        ],
+        "outgoingModules": [
+          "Constants",
+          "DependencyPath",
+          "Error",
+          "GitUtils",
+          "Lockfile",
+          "Lockfile2",
+          "Logger",
+          "Object",
+          "Types"
+        ]
+      },
+      {
+        "code": "coupling_concentration",
+        "message": "Lockfile4 has concentrated fan-in from 19 modules and fan-out to 5 modules.",
+        "observed": "Lockfile4 fan-in 19, fan-out 5",
+        "module": "Lockfile4",
+        "incomingModules": [
+          "Audit",
+          "Core",
+          "Deps",
+          "Headless",
+          "Hoist",
+          "LicenseScanner",
+          "Lockfile6",
+          "Lockfile8",
+          "Lockfile9",
+          "LockfileToPnp",
+          "ModulesCleaner",
+          "MountModules",
+          "Outdated",
+          "PluginCommandsPatching",
+          "PluginCommandsRebuild",
+          "PluginCommandsStore",
+          "RealHoist",
+          "ResolveDependencies",
+          "Reviewing"
+        ],
+        "outgoingModules": [
+          "DependencyPath",
+          "Lockfile",
+          "PickFetcher",
+          "ResolverBase",
+          "Types"
+        ]
+      },
+      {
+        "code": "coupling_concentration",
+        "message": "Lockfile6 has concentrated fan-out to 9 modules.",
+        "observed": "Lockfile6 fan-out to 9 modules",
+        "module": "Lockfile6",
+        "incomingModules": [
+          "Core",
+          "Deps3"
+        ],
+        "outgoingModules": [
+          "Catalogs2",
+          "Crypto2",
+          "DependencyPath",
+          "GetContext",
+          "Lockfile",
+          "Lockfile4",
+          "ReadPackageJson",
+          "ResolverBase",
+          "Types"
+        ]
+      },
+      {
+        "code": "coupling_concentration",
+        "message": "Lockfile7 has concentrated fan-in from 5 modules.",
+        "observed": "Lockfile7 fan-in from 5 modules",
+        "module": "Lockfile7",
+        "incomingModules": [
+          "Audit",
+          "Hoist",
+          "LicenseScanner",
+          "Lockfile8",
+          "PluginCommandsRebuild"
+        ],
+        "outgoingModules": [
+          "DependencyPath",
+          "Lockfile",
+          "Types"
+        ]
+      },
+      {
+        "code": "coupling_concentration",
+        "message": "Lockfile8 has concentrated fan-out to 9 modules.",
+        "observed": "Lockfile8 fan-out to 9 modules",
+        "module": "Lockfile8",
+        "incomingModules": [
+          "Core",
+          "Headless",
+          "ModulesCleaner"
+        ],
+        "outgoingModules": [
+          "Constants",
+          "DependencyPath",
+          "Error",
+          "Lockfile",
+          "Lockfile4",
+          "Lockfile7",
+          "Logger",
+          "PackageIsInstallable",
+          "Types"
+        ]
+      },
+      {
+        "code": "coupling_concentration",
+        "message": "Lockfile9 has concentrated fan-out to 4 modules.",
+        "observed": "Lockfile9 fan-out to 4 modules",
+        "module": "Lockfile9",
+        "incomingModules": [
+          "Core",
+          "ResolveDependencies"
+        ],
+        "outgoingModules": [
+          "Lockfile4",
+          "ManifestUtils",
+          "ResolverBase",
+          "Types"
+        ]
+      },
+      {
+        "code": "coupling_concentration",
+        "message": "LockfileToPnp has concentrated fan-out to 4 modules.",
+        "observed": "LockfileToPnp fan-out to 4 modules",
+        "module": "LockfileToPnp",
+        "incomingModules": [
+          "Core",
+          "Headless"
+        ],
+        "outgoingModules": [
+          "DependencyPath",
+          "Lockfile3",
+          "Lockfile4",
+          "Types"
+        ]
+      },
+      {
+        "code": "coupling_concentration",
+        "message": "Logger has concentrated fan-in from 49 modules.",
+        "observed": "Logger fan-in from 49 modules",
+        "module": "Logger",
+        "incomingModules": [
+          "BuildModules",
+          "CliUtils",
+          "Config",
+          "Core",
+          "CoreLoggers",
+          "DefaultReporter",
+          "Deps",
+          "Deps3",
+          "DirectoryFetcher",
+          "Exec2",
+          "Fs",
+          "Fs2",
+          "GetContext",
+          "GitFetcher",
+          "Headless",
+          "Hoist",
+          "Lifecycle",
+          "LinkBins",
+          "LocalResolver",
+          "Lockfile3",
+          "Lockfile8",
+          "ModulesCleaner",
+          "NpmResolver",
+          "PackageRequester",
+          "PackageStore",
+          "Patching2",
+          "Patching3",
+          "PluginCommandsDeploy",
+          "PluginCommandsDoctor",
+          "PluginCommandsEnv",
+          "PluginCommandsInstallation",
+          "PluginCommandsListing",
+          "PluginCommandsPatching",
+          "PluginCommandsPublishing",
+          "PluginCommandsRebuild",
+          "PluginCommandsScriptRunners",
+          "PluginCommandsServer",
+          "PluginCommandsSetup",
+          "PluginCommandsStore",
+          "Pnpm",
+          "Pnpmfile",
+          "ResolveDependencies",
+          "Server",
+          "StoreConnectionManager",
+          "TarballFetcher",
+          "Tools2",
+          "Workspace4",
+          "Workspace5",
+          "Workspace7"
+        ],
+        "outgoingModules": []
+      },
+      {
+        "code": "coupling_concentration",
+        "message": "MakeDedicatedLockfile has concentrated fan-out to 7 modules.",
+        "observed": "MakeDedicatedLockfile fan-out to 7 modules",
+        "module": "MakeDedicatedLockfile",
+        "incomingModules": [],
+        "outgoingModules": [
+          "Error",
+          "ExportableManifest",
+          "FindWorkspaceDir",
+          "Lockfile10",
+          "Lockfile3",
+          "ReadProjectManifest",
+          "Types"
+        ]
+      },
+      {
+        "code": "coupling_concentration",
+        "message": "ManifestUtils has concentrated fan-in from 7 modules.",
+        "observed": "ManifestUtils fan-in from 7 modules",
+        "module": "ManifestUtils",
+        "incomingModules": [
+          "CliUtils",
+          "Core",
+          "LinkBins",
+          "Lockfile9",
+          "Outdated",
+          "PluginCommandsInstallation",
+          "ResolveDependencies"
+        ],
+        "outgoingModules": [
+          "CoreLoggers",
+          "Types"
+        ]
+      },
+      {
+        "code": "coupling_concentration",
+        "message": "Matcher has concentrated fan-in from 8 modules.",
+        "observed": "Matcher fan-in from 8 modules",
+        "module": "Matcher",
+        "incomingModules": [
+          "Config",
+          "FilterWorkspacePackages",
+          "Hoist",
+          "Hooks2",
+          "Outdated",
+          "PluginCommandsInstallation",
+          "RenderPeerIssues",
+          "Reviewing"
+        ],
+        "outgoingModules": []
+      },
+      {
+        "code": "coupling_concentration",
+        "message": "ModulesCleaner has concentrated fan-out to 10 modules.",
+        "observed": "ModulesCleaner fan-out to 10 modules",
+        "module": "ModulesCleaner",
+        "incomingModules": [
+          "Core",
+          "Headless"
+        ],
+        "outgoingModules": [
+          "CoreLoggers",
+          "DependencyPath",
+          "Lockfile",
+          "Lockfile4",
+          "Lockfile8",
+          "Logger",
+          "ReadModulesDir",
+          "RemoveBins",
+          "StoreControllerTypes",
+          "Types"
+        ]
+      },
+      {
+        "code": "coupling_concentration",
+        "message": "ModulesYaml has concentrated fan-in from 12 modules.",
+        "observed": "ModulesYaml fan-in from 12 modules",
+        "module": "ModulesYaml",
+        "incomingModules": [
+          "AssertProject",
+          "Core",
+          "Deps",
+          "Exec2",
+          "GetContext",
+          "Headless",
+          "Outdated",
+          "PluginCommandsPatching",
+          "PluginCommandsRebuild",
+          "ReadProjectsContext",
+          "Reviewing",
+          "Workspace7"
+        ],
+        "outgoingModules": [
+          "Types"
+        ]
+      },
+      {
+        "code": "coupling_concentration",
+        "message": "MountModules has concentrated fan-out to 7 modules.",
+        "observed": "MountModules fan-out to 7 modules",
+        "module": "MountModules",
+        "incomingModules": [],
+        "outgoingModules": [
+          "Config",
+          "DependencyPath",
+          "Lockfile3",
+          "Lockfile4",
+          "Store",
+          "StorePath",
+          "Types"
+        ]
+      },
+      {
+        "code": "coupling_concentration",
+        "message": "Network has concentrated fan-in from 4 modules.",
+        "observed": "Network fan-in from 4 modules",
+        "module": "Network",
+        "incomingModules": [
+          "Client",
+          "Config3",
+          "PluginCommandsAudit",
+          "PluginCommandsPublishing"
+        ],
+        "outgoingModules": [
+          "Error"
+        ]
+      },
+      {
+        "code": "coupling_concentration",
+        "message": "Node has concentrated fan-out to 5 modules.",
+        "observed": "Node fan-out to 5 modules",
+        "module": "Node",
+        "incomingModules": [
+          "PluginCommandsEnv"
+        ],
+        "outgoingModules": [
+          "CreateCafsStore",
+          "Error",
+          "FetchingTypes",
+          "PickFetcher",
+          "TarballFetcher"
+        ]
+      },
+      {
+        "code": "coupling_concentration",
+        "message": "NormalizeRegistries has concentrated fan-in from 5 modules.",
+        "observed": "NormalizeRegistries fan-in from 5 modules",
+        "module": "NormalizeRegistries",
+        "incomingModules": [
+          "Core",
+          "PluginCommandsRebuild",
+          "PluginCommandsStore",
+          "ReadProjectsContext",
+          "Reviewing"
+        ],
+        "outgoingModules": [
+          "Types"
+        ]
+      },
+      {
+        "code": "coupling_concentration",
+        "message": "NpmResolver has concentrated fan-in from 6 modules and fan-out to 12 modules.",
+        "observed": "NpmResolver fan-in 6, fan-out 12",
+        "module": "NpmResolver",
+        "incomingModules": [
+          "Cache",
+          "Config3",
+          "DefaultResolver",
+          "Outdated",
+          "ResolveDependencies",
+          "Workspace6"
+        ],
+        "outgoingModules": [
+          "Constants",
+          "CoreLoggers",
+          "Crypto2",
+          "Error",
+          "FetchingTypes",
+          "GracefulFs",
+          "Logger",
+          "PickRegistryForPackage",
+          "ResolveWorkspaceRange",
+          "ResolverBase",
+          "Types",
+          "Workspace3"
+        ]
+      },
+      {
+        "code": "coupling_concentration",
+        "message": "Object has concentrated fan-in from 6 modules.",
+        "observed": "Object fan-in from 6 modules",
+        "module": "Object",
+        "incomingModules": [
+          "CalcDepState",
+          "Lockfile3",
+          "PluginCommandsConfig",
+          "PluginCommandsInit",
+          "PluginCommandsStoreInspecting",
+          "Updater"
+        ],
+        "outgoingModules": []
+      },
+      {
+        "code": "coupling_concentration",
+        "message": "Outdated has concentrated fan-out to 16 modules.",
+        "observed": "Outdated fan-out to 16 modules",
+        "module": "Outdated",
+        "incomingModules": [
+          "PluginCommandsInstallation",
+          "PluginCommandsOutdated"
+        ],
+        "outgoingModules": [
+          "Catalogs2",
+          "Catalogs3",
+          "Client",
+          "Constants",
+          "DependencyPath",
+          "Error",
+          "Hooks2",
+          "Lockfile3",
+          "Lockfile4",
+          "ManifestUtils",
+          "Matcher",
+          "ModulesYaml",
+          "NpmResolver",
+          "ParseOverrides",
+          "PickRegistryForPackage",
+          "Types"
+        ]
+      },
+      {
+        "code": "coupling_concentration",
+        "message": "PackageBins has concentrated fan-in from 4 modules.",
+        "observed": "PackageBins fan-in from 4 modules",
+        "module": "PackageBins",
+        "incomingModules": [
+          "LinkBins",
+          "PluginCommandsPublishing",
+          "PluginCommandsScriptRunners",
+          "RemoveBins"
+        ],
+        "outgoingModules": [
+          "Types"
+        ]
+      },
+      {
+        "code": "coupling_concentration",
+        "message": "PackageIsInstallable has concentrated fan-in from 6 modules and fan-out to 4 modules.",
+        "observed": "PackageIsInstallable fan-in 6, fan-out 4",
+        "module": "PackageIsInstallable",
+        "incomingModules": [
+          "CliUtils",
+          "Deps",
+          "Headless",
+          "LicenseScanner",
+          "Lockfile8",
+          "PackageRequester"
+        ],
+        "outgoingModules": [
+          "CoreLoggers",
+          "Env",
+          "Error",
+          "Types"
+        ]
+      },
+      {
+        "code": "coupling_concentration",
+        "message": "PackageRequester has concentrated fan-out to 15 modules.",
+        "observed": "PackageRequester fan-out to 15 modules",
+        "module": "PackageRequester",
+        "incomingModules": [
+          "PackageStore"
+        ],
+        "outgoingModules": [
+          "CafsTypes",
+          "CoreLoggers",
+          "DependencyPath",
+          "Error",
+          "FetcherBase",
+          "GracefulFs",
+          "Logger",
+          "PackageIsInstallable",
+          "PickFetcher",
+          "ReadPackageJson",
+          "ResolverBase",
+          "Store",
+          "StoreControllerTypes",
+          "Types",
+          "Worker"
+        ]
+      },
+      {
+        "code": "coupling_concentration",
+        "message": "PackageStore has concentrated fan-in from 4 modules and fan-out to 8 modules.",
+        "observed": "PackageStore fan-in 4, fan-out 8",
+        "module": "PackageStore",
+        "incomingModules": [
+          "Config3",
+          "PluginCommandsInstallation",
+          "StoreConnectionManager",
+          "Testing"
+        ],
+        "outgoingModules": [
+          "CreateCafsStore",
+          "FetcherBase",
+          "Logger",
+          "PackageRequester",
+          "ResolverBase",
+          "Store",
+          "StoreControllerTypes",
+          "Worker"
+        ]
+      },
+      {
+        "code": "coupling_concentration",
+        "message": "ParseOverrides has concentrated fan-in from 7 modules and fan-out to 4 modules.",
+        "observed": "ParseOverrides fan-in 7, fan-out 4",
+        "module": "ParseOverrides",
+        "incomingModules": [
+          "Core",
+          "Deps3",
+          "Hooks2",
+          "Lockfile5",
+          "Outdated",
+          "RenderPeerIssues",
+          "Updater"
+        ],
+        "outgoingModules": [
+          "Catalogs2",
+          "Catalogs3",
+          "Error",
+          "ParseWantedDependency"
+        ]
+      },
+      {
+        "code": "coupling_concentration",
+        "message": "ParseWantedDependency has concentrated fan-in from 9 modules.",
+        "observed": "ParseWantedDependency fan-in from 9 modules",
+        "module": "ParseWantedDependency",
+        "incomingModules": [
+          "Config3",
+          "Core",
+          "Hooks2",
+          "ParseOverrides",
+          "PluginCommandsInstallation",
+          "PluginCommandsPatching",
+          "PluginCommandsScriptRunners",
+          "PluginCommandsStore",
+          "PluginCommandsStoreInspecting"
+        ],
+        "outgoingModules": []
+      },
+      {
+        "code": "coupling_concentration",
+        "message": "Patching has concentrated fan-in from 5 modules.",
+        "observed": "Patching fan-in from 5 modules",
+        "module": "Patching",
+        "incomingModules": [
+          "BuildModules",
+          "Deps",
+          "Lockfile",
+          "Patching2",
+          "ResolveDependencies"
+        ],
+        "outgoingModules": []
+      },
+      {
+        "code": "coupling_concentration",
+        "message": "Patching2 has concentrated fan-in from 4 modules and fan-out to 4 modules.",
+        "observed": "Patching2 fan-in 4, fan-out 4",
+        "module": "Patching2",
+        "incomingModules": [
+          "Core",
+          "Deps",
+          "Headless",
+          "ResolveDependencies"
+        ],
+        "outgoingModules": [
+          "DependencyPath",
+          "Error",
+          "Logger",
+          "Patching"
+        ]
+      },
+      {
+        "code": "coupling_concentration",
+        "message": "PickFetcher has concentrated fan-in from 4 modules.",
+        "observed": "PickFetcher fan-in from 4 modules",
+        "module": "PickFetcher",
+        "incomingModules": [
+          "Lockfile4",
+          "Node",
+          "PackageRequester",
+          "PluginCommandsPatching"
+        ],
+        "outgoingModules": [
+          "FetcherBase",
+          "ResolverBase"
+        ]
+      },
+      {
+        "code": "coupling_concentration",
+        "message": "PickRegistryForPackage has concentrated fan-in from 4 modules.",
+        "observed": "PickRegistryForPackage fan-in from 4 modules",
+        "module": "PickRegistryForPackage",
+        "incomingModules": [
+          "Config3",
+          "NpmResolver",
+          "Outdated",
+          "PluginCommandsPublishing"
+        ],
+        "outgoingModules": [
+          "Types"
+        ]
+      },
+      {
+        "code": "coupling_concentration",
+        "message": "PluginCommandsAudit has concentrated fan-out to 9 modules.",
+        "observed": "PluginCommandsAudit fan-out to 9 modules",
+        "module": "PluginCommandsAudit",
+        "incomingModules": [
+          "Pnpm"
+        ],
+        "outgoingModules": [
+          "Audit",
+          "CliUtils",
+          "Config",
+          "Config2",
+          "Constants",
+          "Error",
+          "Lockfile3",
+          "Network",
+          "Types"
+        ]
+      },
+      {
+        "code": "coupling_concentration",
+        "message": "PluginCommandsCompletion has concentrated fan-out to 7 modules.",
+        "observed": "PluginCommandsCompletion fan-out to 7 modules",
+        "module": "PluginCommandsCompletion",
+        "incomingModules": [
+          "Pnpm"
+        ],
+        "outgoingModules": [
+          "CliUtils",
+          "Command",
+          "Error",
+          "FindWorkspaceDir",
+          "ParseCliArgs",
+          "Workspace",
+          "Workspace4"
+        ]
+      },
+      {
+        "code": "coupling_concentration",
+        "message": "PluginCommandsConfig has concentrated fan-out to 6 modules.",
+        "observed": "PluginCommandsConfig fan-out to 6 modules",
+        "module": "PluginCommandsConfig",
+        "incomingModules": [
+          "Pnpm"
+        ],
+        "outgoingModules": [
+          "CliUtils",
+          "Config",
+          "Error",
+          "Object",
+          "RunNpm",
+          "Workspace2"
+        ]
+      },
+      {
+        "code": "coupling_concentration",
+        "message": "PluginCommandsDeploy has concentrated fan-out to 14 modules.",
+        "observed": "PluginCommandsDeploy fan-out to 14 modules",
+        "module": "PluginCommandsDeploy",
+        "incomingModules": [
+          "Pnpm"
+        ],
+        "outgoingModules": [
+          "CliUtils",
+          "CommonCliOptionsHelp",
+          "Config",
+          "Constants",
+          "DependencyPath",
+          "DirectoryFetcher",
+          "Error",
+          "Fs2",
+          "Fs5",
+          "Lockfile",
+          "Lockfile3",
+          "Logger",
+          "PluginCommandsInstallation",
+          "Types"
+        ]
+      },
+      {
+        "code": "coupling_concentration",
+        "message": "PluginCommandsEnv has concentrated fan-in from 4 modules and fan-out to 11 modules.",
+        "observed": "PluginCommandsEnv fan-in 4, fan-out 11",
+        "module": "PluginCommandsEnv",
+        "incomingModules": [
+          "PluginCommandsInstallation",
+          "PluginCommandsPublishing",
+          "PluginCommandsScriptRunners",
+          "Pnpm"
+        ],
+        "outgoingModules": [
+          "CliUtils",
+          "Config",
+          "Env",
+          "Error",
+          "Fetch",
+          "Logger",
+          "Node",
+          "Node2",
+          "RemoveBins",
+          "StorePath",
+          "Types"
+        ]
+      },
+      {
+        "code": "coupling_concentration",
+        "message": "PluginCommandsInit has concentrated fan-out to 7 modules.",
+        "observed": "PluginCommandsInit fan-out to 7 modules",
+        "module": "PluginCommandsInit",
+        "incomingModules": [
+          "Pnpm"
+        ],
+        "outgoingModules": [
+          "CliMeta",
+          "CliUtils",
+          "Config",
+          "Error",
+          "Object",
+          "Types",
+          "WriteProjectManifest"
+        ]
+      },
+      {
+        "code": "coupling_concentration",
+        "message": "PluginCommandsInstallation has concentrated fan-in from 4 modules and fan-out to 33 modules.",
+        "observed": "PluginCommandsInstallation fan-in 4, fan-out 33",
+        "module": "PluginCommandsInstallation",
+        "incomingModules": [
+          "PluginCommandsDeploy",
+          "PluginCommandsPatching",
+          "PluginCommandsScriptRunners",
+          "Pnpm"
+        ],
+        "outgoingModules": [
+          "CliUtils",
+          "Command",
+          "CommonCliOptionsHelp",
+          "Config",
+          "Config2",
+          "Config3",
+          "Constants",
+          "Core",
+          "Dedupe3",
+          "Deps3",
+          "Error",
+          "FilterWorkspacePackages",
+          "GetContext",
+          "GracefulFs",
+          "Lockfile",
+          "Logger",
+          "ManifestUtils",
+          "Matcher",
+          "Outdated",
+          "PackageStore",
+          "ParseWantedDependency",
+          "PluginCommandsEnv",
+          "PluginCommandsRebuild",
+          "Pnpmfile",
+          "ReadProjectManifest",
+          "ResolverBase",
+          "SortPackages",
+          "StoreConnectionManager",
+          "Types",
+          "Workspace4",
+          "Workspace5",
+          "Workspace6",
+          "WriteProjectManifest"
+        ]
+      },
+      {
+        "code": "coupling_concentration",
+        "message": "PluginCommandsLicenses has concentrated fan-out to 9 modules.",
+        "observed": "PluginCommandsLicenses fan-out to 9 modules",
+        "module": "PluginCommandsLicenses",
+        "incomingModules": [
+          "Pnpm"
+        ],
+        "outgoingModules": [
+          "CliUtils",
+          "Command",
+          "CommonCliOptionsHelp",
+          "Config",
+          "Constants",
+          "Error",
+          "LicenseScanner",
+          "Lockfile3",
+          "StorePath"
+        ]
+      },
+      {
+        "code": "coupling_concentration",
+        "message": "PluginCommandsListing has concentrated fan-out to 7 modules.",
+        "observed": "PluginCommandsListing fan-out to 7 modules",
+        "module": "PluginCommandsListing",
+        "incomingModules": [
+          "Pnpm"
+        ],
+        "outgoingModules": [
+          "CliUtils",
+          "CommonCliOptionsHelp",
+          "Config",
+          "Error",
+          "List",
+          "Logger",
+          "Types"
+        ]
+      },
+      {
+        "code": "coupling_concentration",
+        "message": "PluginCommandsOutdated has concentrated fan-out to 7 modules.",
+        "observed": "PluginCommandsOutdated fan-out to 7 modules",
+        "module": "PluginCommandsOutdated",
+        "incomingModules": [
+          "Pnpm"
+        ],
+        "outgoingModules": [
+          "CliUtils",
+          "Command",
+          "CommonCliOptionsHelp",
+          "Config",
+          "Error",
+          "Outdated",
+          "Types"
+        ]
+      },
+      {
+        "code": "coupling_concentration",
+        "message": "PluginCommandsPatching has concentrated fan-out to 18 modules.",
+        "observed": "PluginCommandsPatching fan-out to 18 modules",
+        "module": "PluginCommandsPatching",
+        "incomingModules": [
+          "Pnpm"
+        ],
+        "outgoingModules": [
+          "CliUtils",
+          "Config",
+          "Config2",
+          "Crypto2",
+          "Error",
+          "Fs3",
+          "Lockfile3",
+          "Lockfile4",
+          "Logger",
+          "ModulesYaml",
+          "ParseWantedDependency",
+          "Patching3",
+          "PickFetcher",
+          "PluginCommandsInstallation",
+          "ReadPackageJson",
+          "StoreConnectionManager",
+          "StorePath",
+          "Types"
+        ]
+      },
+      {
+        "code": "coupling_concentration",
+        "message": "PluginCommandsPublishing has concentrated fan-out to 19 modules.",
+        "observed": "PluginCommandsPublishing fan-out to 19 modules",
+        "module": "PluginCommandsPublishing",
+        "incomingModules": [
+          "Pnpm"
+        ],
+        "outgoingModules": [
+          "Catalogs2",
+          "CliUtils",
+          "Client",
+          "CommonCliOptionsHelp",
+          "Config",
+          "Error",
+          "ExportableManifest",
+          "Fs3",
+          "GitUtils",
+          "Lifecycle",
+          "Logger",
+          "Network",
+          "PackageBins",
+          "PickRegistryForPackage",
+          "PluginCommandsEnv",
+          "ResolverBase",
+          "RunNpm",
+          "SortPackages",
+          "Types"
+        ]
+      },
+      {
+        "code": "coupling_concentration",
+        "message": "PluginCommandsRebuild has concentrated fan-out to 26 modules.",
+        "observed": "PluginCommandsRebuild fan-out to 26 modules",
+        "module": "PluginCommandsRebuild",
+        "incomingModules": [
+          "Exec2",
+          "PluginCommandsInstallation",
+          "Pnpm"
+        ],
+        "outgoingModules": [
+          "CalcDepState",
+          "CliUtils",
+          "CommonCliOptionsHelp",
+          "Config",
+          "Constants",
+          "CoreLoggers",
+          "DependencyPath",
+          "Deps2",
+          "Error",
+          "Exec",
+          "GetContext",
+          "Lifecycle",
+          "LinkBins",
+          "Lockfile",
+          "Lockfile4",
+          "Lockfile7",
+          "Logger",
+          "ModulesYaml",
+          "NormalizeRegistries",
+          "ReadPackageJson",
+          "SortPackages",
+          "Store",
+          "StoreConnectionManager",
+          "StoreControllerTypes",
+          "Types",
+          "Worker"
+        ]
+      },
+      {
+        "code": "coupling_concentration",
+        "message": "PluginCommandsScriptRunners has concentrated fan-out to 22 modules.",
+        "observed": "PluginCommandsScriptRunners fan-out to 22 modules",
+        "module": "PluginCommandsScriptRunners",
+        "incomingModules": [
+          "Pnpm"
+        ],
+        "outgoingModules": [
+          "CliUtils",
+          "Client",
+          "Command",
+          "CommonCliOptionsHelp",
+          "Config",
+          "CoreLoggers",
+          "Crypto2",
+          "Deps3",
+          "Env2",
+          "Error",
+          "Exec3",
+          "Lifecycle",
+          "Logger",
+          "PackageBins",
+          "ParseWantedDependency",
+          "PluginCommandsEnv",
+          "PluginCommandsInstallation",
+          "ReadPackageJson",
+          "ReadProjectManifest",
+          "SortPackages",
+          "Types",
+          "Workspace7"
+        ]
+      },
+      {
+        "code": "coupling_concentration",
+        "message": "PluginCommandsServer has concentrated fan-out to 9 modules.",
+        "observed": "PluginCommandsServer fan-out to 9 modules",
+        "module": "PluginCommandsServer",
+        "incomingModules": [
+          "Pnpm"
+        ],
+        "outgoingModules": [
+          "CliMeta",
+          "CliUtils",
+          "CommonCliOptionsHelp",
+          "Config",
+          "Error",
+          "Logger",
+          "Server",
+          "StoreConnectionManager",
+          "StorePath"
+        ]
+      },
+      {
+        "code": "coupling_concentration",
+        "message": "PluginCommandsStore has concentrated fan-out to 14 modules.",
+        "observed": "PluginCommandsStore fan-out to 14 modules",
+        "module": "PluginCommandsStore",
+        "incomingModules": [
+          "Pnpm"
+        ],
+        "outgoingModules": [
+          "CliUtils",
+          "Config",
+          "DependencyPath",
+          "Error",
+          "GetContext",
+          "Lockfile4",
+          "Logger",
+          "NormalizeRegistries",
+          "ParseWantedDependency",
+          "Store",
+          "StoreConnectionManager",
+          "StoreControllerTypes",
+          "StorePath",
+          "Types"
+        ]
+      },
+      {
+        "code": "coupling_concentration",
+        "message": "PluginCommandsStoreInspecting has concentrated fan-out to 9 modules.",
+        "observed": "PluginCommandsStoreInspecting fan-out to 9 modules",
+        "module": "PluginCommandsStoreInspecting",
+        "incomingModules": [
+          "Pnpm"
+        ],
+        "outgoingModules": [
+          "Client",
+          "Config",
+          "Error",
+          "GracefulFs",
+          "Lockfile",
+          "Object",
+          "ParseWantedDependency",
+          "Store",
+          "StorePath"
+        ]
+      },
+      {
+        "code": "coupling_concentration",
+        "message": "Pnpm has concentrated fan-out to 39 modules.",
+        "observed": "Pnpm fan-out to 39 modules",
+        "module": "Pnpm",
+        "incomingModules": [],
+        "outgoingModules": [
+          "Cache2",
+          "CliMeta",
+          "CliUtils",
+          "Client",
+          "Command",
+          "CommonCliOptionsHelp",
+          "Config",
+          "Constants",
+          "CoreLoggers",
+          "DefaultReporter",
+          "Env2",
+          "Error",
+          "Exec2",
+          "FilterWorkspacePackages",
+          "Logger",
+          "ParseCliArgs",
+          "PluginCommandsAudit",
+          "PluginCommandsCompletion",
+          "PluginCommandsConfig",
+          "PluginCommandsDeploy",
+          "PluginCommandsDoctor",
+          "PluginCommandsEnv",
+          "PluginCommandsInit",
+          "PluginCommandsInstallation",
+          "PluginCommandsLicenses",
+          "PluginCommandsListing",
+          "PluginCommandsOutdated",
+          "PluginCommandsPatching",
+          "PluginCommandsPublishing",
+          "PluginCommandsRebuild",
+          "PluginCommandsScriptRunners",
+          "PluginCommandsServer",
+          "PluginCommandsSetup",
+          "PluginCommandsStore",
+          "PluginCommandsStoreInspecting",
+          "RunNpm",
+          "Tools2",
+          "Types",
+          "Worker"
+        ]
+      },
+      {
+        "code": "coupling_concentration",
+        "message": "Pnpmfile has concentrated fan-in from 4 modules and fan-out to 9 modules.",
+        "observed": "Pnpmfile fan-in 4, fan-out 9",
+        "module": "Pnpmfile",
+        "incomingModules": [
+          "CliUtils",
+          "Config",
+          "Deps3",
+          "PluginCommandsInstallation"
+        ],
+        "outgoingModules": [
+          "CoreLoggers",
+          "Crypto2",
+          "Error",
+          "FetcherBase",
+          "Hooks",
+          "Lockfile",
+          "Logger",
+          "StoreControllerTypes",
+          "Types"
+        ]
+      },
+      {
+        "code": "coupling_concentration",
+        "message": "PreparePackage has concentrated fan-out to 4 modules.",
+        "observed": "PreparePackage fan-out to 4 modules",
+        "module": "PreparePackage",
+        "incomingModules": [
+          "GitFetcher",
+          "TarballFetcher"
+        ],
+        "outgoingModules": [
+          "Error",
+          "Lifecycle",
+          "ReadPackageJson",
+          "Types"
+        ]
+      },
+      {
+        "code": "coupling_concentration",
+        "message": "ReadModulesDir has concentrated fan-in from 5 modules.",
+        "observed": "ReadModulesDir fan-in from 5 modules",
+        "module": "ReadModulesDir",
+        "incomingModules": [
+          "Config3",
+          "LinkBins",
+          "ModulesCleaner",
+          "PkgManager",
+          "Reviewing"
+        ],
+        "outgoingModules": []
+      },
+      {
+        "code": "coupling_concentration",
+        "message": "ReadPackageJson has concentrated fan-in from 16 modules.",
+        "observed": "ReadPackageJson fan-in from 16 modules",
+        "module": "ReadPackageJson",
+        "incomingModules": [
+          "BuildModules",
+          "Config3",
+          "Headless",
+          "LicenseScanner",
+          "Lifecycle",
+          "LinkBins",
+          "List",
+          "Lockfile6",
+          "PackageRequester",
+          "PluginCommandsPatching",
+          "PluginCommandsRebuild",
+          "PluginCommandsScriptRunners",
+          "PreparePackage",
+          "RemoveBins",
+          "ResolveDependencies",
+          "Reviewing"
+        ],
+        "outgoingModules": [
+          "Error",
+          "Types"
+        ]
+      },
+      {
+        "code": "coupling_concentration",
+        "message": "ReadProjectManifest has concentrated fan-in from 16 modules and fan-out to 5 modules.",
+        "observed": "ReadProjectManifest fan-in 16, fan-out 5",
+        "module": "ReadProjectManifest",
+        "incomingModules": [
+          "Audit",
+          "CliUtils",
+          "Config",
+          "Config2",
+          "Core",
+          "DirectoryFetcher",
+          "ExportableManifest",
+          "Fs4",
+          "Headless",
+          "LinkBins",
+          "List",
+          "LocalResolver",
+          "MakeDedicatedLockfile",
+          "PluginCommandsInstallation",
+          "PluginCommandsScriptRunners",
+          "Tools2"
+        ],
+        "outgoingModules": [
+          "Error",
+          "GracefulFs",
+          "Text",
+          "Types",
+          "WriteProjectManifest"
+        ]
+      },
+      {
+        "code": "coupling_concentration",
+        "message": "ReadProjectsContext has concentrated fan-out to 4 modules.",
+        "observed": "ReadProjectsContext fan-out to 4 modules",
+        "module": "ReadProjectsContext",
+        "incomingModules": [
+          "GetContext"
+        ],
+        "outgoingModules": [
+          "Lockfile3",
+          "ModulesYaml",
+          "NormalizeRegistries",
+          "Types"
+        ]
+      },
+      {
+        "code": "coupling_concentration",
+        "message": "RemoveBins has concentrated fan-out to 4 modules.",
+        "observed": "RemoveBins fan-out to 4 modules",
+        "module": "RemoveBins",
+        "incomingModules": [
+          "ModulesCleaner",
+          "PluginCommandsEnv"
+        ],
+        "outgoingModules": [
+          "CoreLoggers",
+          "PackageBins",
+          "ReadPackageJson",
+          "Types"
+        ]
+      },
+      {
+        "code": "coupling_concentration",
+        "message": "RenderPeerIssues has concentrated fan-out to 4 modules.",
+        "observed": "RenderPeerIssues fan-out to 4 modules",
+        "module": "RenderPeerIssues",
+        "incomingModules": [
+          "DefaultReporter"
+        ],
+        "outgoingModules": [
+          "Error",
+          "Matcher",
+          "ParseOverrides",
+          "Types"
+        ]
+      },
+      {
+        "code": "coupling_concentration",
+        "message": "ResolveDependencies has concentrated fan-out to 19 modules.",
+        "observed": "ResolveDependencies fan-out to 19 modules",
+        "module": "ResolveDependencies",
+        "incomingModules": [
+          "Core"
+        ],
+        "outgoingModules": [
+          "Catalogs2",
+          "Catalogs3",
+          "CoreLoggers",
+          "DependencyPath",
+          "Error",
+          "Lockfile",
+          "Lockfile10",
+          "Lockfile4",
+          "Lockfile9",
+          "Logger",
+          "ManifestUtils",
+          "NpmResolver",
+          "Patching",
+          "Patching2",
+          "ReadPackageJson",
+          "ResolverBase",
+          "Semver",
+          "StoreControllerTypes",
+          "Types"
+        ]
+      },
+      {
+        "code": "coupling_concentration",
+        "message": "ResolverBase has concentrated fan-in from 19 modules.",
+        "observed": "ResolverBase fan-in from 19 modules",
+        "module": "ResolverBase",
+        "incomingModules": [
+          "Core",
+          "DefaultResolver",
+          "Deps3",
+          "FetcherBase",
+          "GetContext",
+          "GitResolver",
+          "LocalResolver",
+          "Lockfile4",
+          "Lockfile6",
+          "Lockfile9",
+          "NpmResolver",
+          "PackageRequester",
+          "PackageStore",
+          "PickFetcher",
+          "PluginCommandsInstallation",
+          "PluginCommandsPublishing",
+          "ResolveDependencies",
+          "StoreControllerTypes",
+          "TarballResolver"
+        ],
+        "outgoingModules": [
+          "Types"
+        ]
+      },
+      {
+        "code": "coupling_concentration",
+        "message": "Reviewing has concentrated fan-out to 10 modules.",
+        "observed": "Reviewing fan-out to 10 modules",
+        "module": "Reviewing",
+        "incomingModules": [
+          "List"
+        ],
+        "outgoingModules": [
+          "DependencyPath",
+          "Lockfile11",
+          "Lockfile3",
+          "Lockfile4",
+          "Matcher",
+          "ModulesYaml",
+          "NormalizeRegistries",
+          "ReadModulesDir",
+          "ReadPackageJson",
+          "Types"
+        ]
+      },
+      {
+        "code": "coupling_concentration",
+        "message": "SortPackages has concentrated fan-in from 4 modules.",
+        "observed": "SortPackages fan-in from 4 modules",
+        "module": "SortPackages",
+        "incomingModules": [
+          "PluginCommandsInstallation",
+          "PluginCommandsPublishing",
+          "PluginCommandsRebuild",
+          "PluginCommandsScriptRunners"
+        ],
+        "outgoingModules": [
+          "Deps2",
+          "Types"
+        ]
+      },
+      {
+        "code": "coupling_concentration",
+        "message": "Store has concentrated fan-in from 11 modules.",
+        "observed": "Store fan-in from 11 modules",
+        "module": "Store",
+        "incomingModules": [
+          "AssertStore",
+          "Cache",
+          "CreateCafsStore",
+          "LicenseScanner",
+          "MountModules",
+          "PackageRequester",
+          "PackageStore",
+          "PluginCommandsRebuild",
+          "PluginCommandsStore",
+          "PluginCommandsStoreInspecting",
+          "Worker"
+        ],
+        "outgoingModules": [
+          "CafsTypes",
+          "GracefulFs",
+          "Types"
+        ]
+      },
+      {
+        "code": "coupling_concentration",
+        "message": "StoreConnectionManager has concentrated fan-in from 6 modules and fan-out to 8 modules.",
+        "observed": "StoreConnectionManager fan-in 6, fan-out 8",
+        "module": "StoreConnectionManager",
+        "incomingModules": [
+          "CliUtils",
+          "PluginCommandsInstallation",
+          "PluginCommandsPatching",
+          "PluginCommandsRebuild",
+          "PluginCommandsServer",
+          "PluginCommandsStore"
+        ],
+        "outgoingModules": [
+          "CliMeta",
+          "Client",
+          "Config",
+          "Error",
+          "Logger",
+          "PackageStore",
+          "Server",
+          "StorePath"
+        ]
+      },
+      {
+        "code": "coupling_concentration",
+        "message": "StoreControllerTypes has concentrated fan-in from 16 modules.",
+        "observed": "StoreControllerTypes fan-in from 16 modules",
+        "module": "StoreControllerTypes",
+        "incomingModules": [
+          "BuildModules",
+          "Core",
+          "CreateCafsStore",
+          "Deps",
+          "Fs2",
+          "Headless",
+          "Lifecycle",
+          "ModulesCleaner",
+          "PackageRequester",
+          "PackageStore",
+          "PluginCommandsRebuild",
+          "PluginCommandsStore",
+          "Pnpmfile",
+          "ResolveDependencies",
+          "Server",
+          "Testing"
+        ],
+        "outgoingModules": [
+          "CafsTypes",
+          "ResolverBase",
+          "Types"
+        ]
+      },
+      {
+        "code": "coupling_concentration",
+        "message": "StorePath has concentrated fan-in from 9 modules.",
+        "observed": "StorePath fan-in from 9 modules",
+        "module": "StorePath",
+        "incomingModules": [
+          "Cache2",
+          "MountModules",
+          "PluginCommandsEnv",
+          "PluginCommandsLicenses",
+          "PluginCommandsPatching",
+          "PluginCommandsServer",
+          "PluginCommandsStore",
+          "PluginCommandsStoreInspecting",
+          "StoreConnectionManager"
+        ],
+        "outgoingModules": [
+          "Constants",
+          "Error"
+        ]
+      },
+      {
+        "code": "coupling_concentration",
+        "message": "SymlinkDependency has concentrated fan-in from 4 modules.",
+        "observed": "SymlinkDependency fan-in from 4 modules",
+        "module": "SymlinkDependency",
+        "incomingModules": [
+          "Core",
+          "Headless",
+          "PkgManager",
+          "Worker"
+        ],
+        "outgoingModules": [
+          "CoreLoggers",
+          "Types"
+        ]
+      },
+      {
+        "code": "coupling_concentration",
+        "message": "TarballFetcher has concentrated fan-out to 11 modules.",
+        "observed": "TarballFetcher fan-out to 11 modules",
+        "module": "TarballFetcher",
+        "incomingModules": [
+          "Client",
+          "Node"
+        ],
+        "outgoingModules": [
+          "CafsTypes",
+          "CoreLoggers",
+          "Error",
+          "FetcherBase",
+          "FetchingTypes",
+          "Fs3",
+          "GracefulFs",
+          "Logger",
+          "PreparePackage",
+          "Types",
+          "Worker"
+        ]
+      },
+      {
+        "code": "coupling_concentration",
+        "message": "Tools2 has concentrated fan-out to 10 modules.",
+        "observed": "Tools2 fan-out to 10 modules",
+        "module": "Tools2",
+        "incomingModules": [
+          "Pnpm"
+        ],
+        "outgoingModules": [
+          "CliMeta",
+          "CliUtils",
+          "Client",
+          "Config",
+          "Error",
+          "Exec3",
+          "LinkBins",
+          "Logger",
+          "ReadProjectManifest",
+          "Tools"
+        ]
+      },
+      {
+        "code": "coupling_concentration",
+        "message": "Types has concentrated fan-in from 95 modules.",
+        "observed": "Types fan-in from 95 modules",
+        "module": "Types",
+        "incomingModules": [
+          "Audit",
+          "BuildModules",
+          "CafsTypes",
+          "CalcDepState",
+          "CliMeta",
+          "CliUtils",
+          "Client",
+          "Config",
+          "Config2",
+          "Config3",
+          "Core",
+          "CoreLoggers",
+          "Dedupe3",
+          "DefaultReporter",
+          "DependencyPath",
+          "Deps",
+          "Deps3",
+          "DirectoryFetcher",
+          "Exec",
+          "Exec2",
+          "ExportableManifest",
+          "Fetch",
+          "FetcherBase",
+          "FilterWorkspacePackages",
+          "Fs4",
+          "GetContext",
+          "Headless",
+          "Hoist",
+          "Hooks",
+          "Hooks2",
+          "LicenseScanner",
+          "Lifecycle",
+          "LinkBins",
+          "List",
+          "LocalResolver",
+          "Lockfile",
+          "Lockfile10",
+          "Lockfile11",
+          "Lockfile2",
+          "Lockfile3",
+          "Lockfile4",
+          "Lockfile6",
+          "Lockfile7",
+          "Lockfile8",
+          "Lockfile9",
+          "LockfileToPnp",
+          "MakeDedicatedLockfile",
+          "ManifestUtils",
+          "ModulesCleaner",
+          "ModulesYaml",
+          "MountModules",
+          "NormalizeRegistries",
+          "NpmResolver",
+          "Outdated",
+          "PackageBins",
+          "PackageIsInstallable",
+          "PackageRequester",
+          "PickRegistryForPackage",
+          "PluginCommandsAudit",
+          "PluginCommandsDeploy",
+          "PluginCommandsEnv",
+          "PluginCommandsInit",
+          "PluginCommandsInstallation",
+          "PluginCommandsListing",
+          "PluginCommandsOutdated",
+          "PluginCommandsPatching",
+          "PluginCommandsPublishing",
+          "PluginCommandsRebuild",
+          "PluginCommandsScriptRunners",
+          "PluginCommandsStore",
+          "Pnpm",
+          "Pnpmfile",
+          "Prepare",
+          "PreparePackage",
+          "ReadPackageJson",
+          "ReadProjectManifest",
+          "ReadProjectsContext",
+          "RemoveBins",
+          "RenderPeerIssues",
+          "ResolveDependencies",
+          "ResolverBase",
+          "Reviewing",
+          "SortPackages",
+          "Store",
+          "StoreControllerTypes",
+          "SymlinkDependency",
+          "TarballFetcher",
+          "Updater",
+          "Worker",
+          "Workspace",
+          "Workspace4",
+          "Workspace5",
+          "Workspace6",
+          "Workspace8",
+          "WriteProjectManifest"
+        ],
+        "outgoingModules": []
+      },
+      {
+        "code": "coupling_concentration",
+        "message": "Updater has concentrated fan-out to 5 modules.",
+        "observed": "Updater fan-out to 5 modules",
+        "module": "Updater",
+        "incomingModules": [],
+        "outgoingModules": [
+          "Lockfile3",
+          "Object",
+          "ParseOverrides",
+          "Types",
+          "Workspace"
+        ]
+      },
+      {
+        "code": "coupling_concentration",
+        "message": "Worker has concentrated fan-in from 9 modules and fan-out to 10 modules.",
+        "observed": "Worker fan-in 9, fan-out 10",
+        "module": "Worker",
+        "incomingModules": [
+          "BuildModules",
+          "Core",
+          "GitFetcher",
+          "Headless",
+          "PackageRequester",
+          "PackageStore",
+          "PluginCommandsRebuild",
+          "Pnpm",
+          "TarballFetcher"
+        ],
+        "outgoingModules": [
+          "CafsTypes",
+          "CreateCafsStore",
+          "Crypto",
+          "Error",
+          "Exec",
+          "Fs",
+          "GracefulFs",
+          "Store",
+          "SymlinkDependency",
+          "Types"
+        ]
+      },
+      {
+        "code": "coupling_concentration",
+        "message": "Workspace has concentrated fan-in from 8 modules.",
+        "observed": "Workspace fan-in from 8 modules",
+        "module": "Workspace",
+        "incomingModules": [
+          "Catalogs4",
+          "Config",
+          "Deps3",
+          "PluginCommandsCompletion",
+          "Scripts",
+          "Updater",
+          "Workspace2",
+          "Workspace8"
+        ],
+        "outgoingModules": [
+          "Constants",
+          "Error",
+          "Types"
+        ]
+      },
+      {
+        "code": "coupling_concentration",
+        "message": "Workspace4 has concentrated fan-in from 6 modules and fan-out to 5 modules.",
+        "observed": "Workspace4 fan-in 6, fan-out 5",
+        "module": "Workspace4",
+        "incomingModules": [
+          "Deps3",
+          "FilterWorkspacePackages",
+          "PluginCommandsCompletion",
+          "PluginCommandsInstallation",
+          "Scripts",
+          "Workspace8"
+        ],
+        "outgoingModules": [
+          "CliUtils",
+          "Constants",
+          "Fs4",
+          "Logger",
+          "Types"
+        ]
+      },
+      {
+        "code": "coupling_concentration",
+        "message": "Workspace7 has concentrated fan-out to 4 modules.",
+        "observed": "Workspace7 fan-out to 4 modules",
+        "module": "Workspace7",
+        "incomingModules": [
+          "PluginCommandsScriptRunners"
+        ],
+        "outgoingModules": [
+          "DirectoryFetcher",
+          "Error",
+          "Logger",
+          "ModulesYaml"
+        ]
+      },
+      {
+        "code": "coupling_concentration",
+        "message": "Workspace8 has concentrated fan-out to 4 modules.",
+        "observed": "Workspace8 fan-out to 4 modules",
+        "module": "Workspace8",
+        "incomingModules": [],
+        "outgoingModules": [
+          "FilterWorkspacePackages",
+          "Types",
+          "Workspace",
+          "Workspace4"
+        ]
+      }
+    ]
+  },
+  "timingsMs": {
+    "cloneBaseline": 11182.4,
+    "cloneCurrent": 16019.8,
+    "infer": 9203.9,
+    "baselineGraph": 5934.7,
+    "diffJson": 6815.2,
+    "diffMarkdown": 3567.3,
+    "observeMarkdown": 4347.6,
+    "diffMermaid": 4661.4
+  }
+}

@@ -81,6 +81,8 @@
 - Refined the logo and banner visual system so radar nodes no longer rely on off-center text inside circles.
 - Simplified the logo into a cleaner abstract observability mark and restored the banner's radar-card layout with aligned review-story text.
 - Hardened `pnpm-workspace.yaml` package discovery so workspace package resolution supports inline `packages: [...]` YAML sequences as well as block lists.
+- Mapped workspace package `exports` / `main` targets from common build output directories such as `lib` and `dist` back to existing `src` mirrors, improving source-only monorepo graph completeness.
+- Added no-install pnpm workspace smoke artifacts for Vite and pnpm itself.
 
 ## 0.5.8 - Monorepo Spec Discovery
 

@@ -1,0 +1,299 @@
+## Axiom Architecture Review
+
+Status: needs review
+Review mode: observe (advisory)
+
+### Summary
+- Modules: 3
+- Declared dependencies: 0
+- Shown dependency edges: 0
+- Full observed dependencies: 0
+- Hard violations: 0
+- Intentional violations: 0
+- Advisory warnings: 60
+- Drift: 0 new observed edges, 0 removed observed edges
+
+### Interpretation
+- Headline: No hard contract failures, but 60 advisory warnings need review.
+- Look first:
+  - Hard signals: read `violations[]`, `intentionalDebt[]`, and `warnings[]` before judging the diagram.
+  - Graph center: if no center appears, confirm the scan scope actually covers the architecture you care about.
+  - Shape fit: compare central modules, deep imports, drift, and any intra-file pressure warnings with the architecture you expected for this repository.
+- Central modules:
+  - None observed in this scan scope.
+- Caveat: This is a graph interpretation over static imports, not proof of semantic architecture health. Compare it with the architecture you intended.
+
+### Review Story
+- Summary: No hard gate failures. Start review with unresolved_import around Vite: 60 advisory warnings share this root.
+- Setup: Scanned 3 declared modules and 0 observed import edges. This report is advisory unless you run `axi check` as the gate.
+- Pressures:
+  - `unresolved_import around Vite` (review): 60 advisory warnings share this root.
+- Next step: Inspect unresolved_import around Vite; decide whether to change code, clarify .axi visibility rules, or keep the signal advisory.
+- Caveat: This story is a review aid over static imports. It points to likely pressure, not proof that the architecture is good or bad; a quiet import graph can still hide intra-file responsibility concentration.
+
+### Review Notes
+- This is review output; use `axi check` when you want a CI gate.
+- Hard violations are contract failures.
+- Intentional violations, warnings, and drift are visible debt or advisory signals.
+- Advisory warning counts include only warning checks enabled for this command or config.
+- Axiom does not auto-accept debt; accepted debt must be declared in `.axi` with an expiration date and reason.
+- Expired or invalid intentional violations are hard contract failures in `axi check`.
+- Dependency summaries separate shown attention edges from the full observed graph.
+
+### Hard Violations
+- None
+
+### Visible Intentional Debt
+- None
+
+### Advisory Warnings
+- Likely warning roots:
+  - `unresolved_import` `Vite`: 60 warnings
+- `unresolved_import` at `packages/vite/src/client/client.ts:1`: Vite has an import that Axiom could not resolve into the observed graph.
+  - Observed: Vite unresolved import
+  - Specifier: `#types/hmrPayload`
+  - Fix: Axiom could not map this static import to a source file, so the observed graph may be incomplete. Add the missing file, configure tsconfig/package imports, or exclude generated/runtime paths intentionally.
+- `unresolved_import` at `packages/vite/src/client/client.ts:2`: Vite has an import that Axiom could not resolve into the observed graph.
+  - Observed: Vite unresolved import
+  - Specifier: `#types/hot`
+  - Fix: Axiom could not map this static import to a source file, so the observed graph may be incomplete. Add the missing file, configure tsconfig/package imports, or exclude generated/runtime paths intentionally.
+- `unresolved_import` at `packages/vite/src/client/overlay.ts:1`: Vite has an import that Axiom could not resolve into the observed graph.
+  - Observed: Vite unresolved import
+  - Specifier: `#types/hmrPayload`
+  - Fix: Axiom could not map this static import to a source file, so the observed graph may be incomplete. Add the missing file, configure tsconfig/package imports, or exclude generated/runtime paths intentionally.
+- `unresolved_import` at `packages/vite/src/module-runner/hmrHandler.ts:1`: Vite has an import that Axiom could not resolve into the observed graph.
+  - Observed: Vite unresolved import
+  - Specifier: `#types/hmrPayload`
+  - Fix: Axiom could not map this static import to a source file, so the observed graph may be incomplete. Add the missing file, configure tsconfig/package imports, or exclude generated/runtime paths intentionally.
+- `unresolved_import` at `packages/vite/src/module-runner/runner.ts:1`: Vite has an import that Axiom could not resolve into the observed graph.
+  - Observed: Vite unresolved import
+  - Specifier: `#types/hot`
+  - Fix: Axiom could not map this static import to a source file, so the observed graph may be incomplete. Add the missing file, configure tsconfig/package imports, or exclude generated/runtime paths intentionally.
+- `unresolved_import` at `packages/vite/src/module-runner/types.ts:1`: Vite has an import that Axiom could not resolve into the observed graph.
+  - Observed: Vite unresolved import
+  - Specifier: `#types/hot`
+  - Fix: Axiom could not map this static import to a source file, so the observed graph may be incomplete. Add the missing file, configure tsconfig/package imports, or exclude generated/runtime paths intentionally.
+- `unresolved_import` at `packages/vite/src/node/build.ts:24`: Vite has an import that Axiom could not resolve into the observed graph.
+  - Observed: Vite unresolved import
+  - Specifier: `#dep-types/commonjs`
+  - Fix: Axiom could not map this static import to a source file, so the observed graph may be incomplete. Add the missing file, configure tsconfig/package imports, or exclude generated/runtime paths intentionally.
+- `unresolved_import` at `packages/vite/src/node/build.ts:25`: Vite has an import that Axiom could not resolve into the observed graph.
+  - Observed: Vite unresolved import
+  - Specifier: `#dep-types/dynamicImportVars`
+  - Fix: Axiom could not map this static import to a source file, so the observed graph may be incomplete. Add the missing file, configure tsconfig/package imports, or exclude generated/runtime paths intentionally.
+- `unresolved_import` at `packages/vite/src/node/config.ts:13`: Vite has an import that Axiom could not resolve into the observed graph.
+  - Observed: Vite unresolved import
+  - Specifier: `#dep-types/alias`
+  - Fix: Axiom could not map this static import to a source file, so the observed graph may be incomplete. Add the missing file, configure tsconfig/package imports, or exclude generated/runtime paths intentionally.
+- `unresolved_import` at `packages/vite/src/node/config.ts:14`: Vite has an import that Axiom could not resolve into the observed graph.
+  - Observed: Vite unresolved import
+  - Specifier: `../types/anymatch`
+  - Fix: Axiom could not map this static import to a source file, so the observed graph may be incomplete. Add the missing file, configure tsconfig/package imports, or exclude generated/runtime paths intentionally.
+- `unresolved_import` at `packages/vite/src/node/http.ts:6`: Vite has an import that Axiom could not resolve into the observed graph.
+  - Observed: Vite unresolved import
+  - Specifier: `#dep-types/connect`
+  - Fix: Axiom could not map this static import to a source file, so the observed graph may be incomplete. Add the missing file, configure tsconfig/package imports, or exclude generated/runtime paths intentionally.
+- `unresolved_import` at `packages/vite/src/node/index.ts:220`: Vite has an import that Axiom could not resolve into the observed graph.
+  - Observed: Vite unresolved import
+  - Specifier: `#types/hmrPayload`
+  - Fix: Axiom could not map this static import to a source file, so the observed graph may be incomplete. Add the missing file, configure tsconfig/package imports, or exclude generated/runtime paths intentionally.
+- `unresolved_import` at `packages/vite/src/node/index.ts:231`: Vite has an import that Axiom could not resolve into the observed graph.
+  - Observed: Vite unresolved import
+  - Specifier: `#types/customEvent`
+  - Fix: Axiom could not map this static import to a source file, so the observed graph may be incomplete. Add the missing file, configure tsconfig/package imports, or exclude generated/runtime paths intentionally.
+- `unresolved_import` at `packages/vite/src/node/index.ts:236`: Vite has an import that Axiom could not resolve into the observed graph.
+  - Observed: Vite unresolved import
+  - Specifier: `#types/importGlob`
+  - Fix: Axiom could not map this static import to a source file, so the observed graph may be incomplete. Add the missing file, configure tsconfig/package imports, or exclude generated/runtime paths intentionally.
+- `unresolved_import` at `packages/vite/src/node/index.ts:242`: Vite has an import that Axiom could not resolve into the observed graph.
+  - Observed: Vite unresolved import
+  - Specifier: `#types/metadata`
+  - Fix: Axiom could not map this static import to a source file, so the observed graph may be incomplete. Add the missing file, configure tsconfig/package imports, or exclude generated/runtime paths intentionally.
+- `unresolved_import` at `packages/vite/src/node/index.ts:245`: Vite has an import that Axiom could not resolve into the observed graph.
+  - Observed: Vite unresolved import
+  - Specifier: `#dep-types/alias`
+  - Fix: Axiom could not map this static import to a source file, so the observed graph may be incomplete. Add the missing file, configure tsconfig/package imports, or exclude generated/runtime paths intentionally.
+- `unresolved_import` at `packages/vite/src/node/index.ts:252`: Vite has an import that Axiom could not resolve into the observed graph.
+  - Observed: Vite unresolved import
+  - Specifier: `#dep-types/connect`
+  - Fix: Axiom could not map this static import to a source file, so the observed graph may be incomplete. Add the missing file, configure tsconfig/package imports, or exclude generated/runtime paths intentionally.
+- `unresolved_import` at `packages/vite/src/node/index.ts:253`: Vite has an import that Axiom could not resolve into the observed graph.
+  - Observed: Vite unresolved import
+  - Specifier: `#dep-types/ws`
+  - Fix: Axiom could not map this static import to a source file, so the observed graph may be incomplete. Add the missing file, configure tsconfig/package imports, or exclude generated/runtime paths intentionally.
+- `unresolved_import` at `packages/vite/src/node/index.ts:255`: Vite has an import that Axiom could not resolve into the observed graph.
+  - Observed: Vite unresolved import
+  - Specifier: `#dep-types/chokidar`
+  - Fix: Axiom could not map this static import to a source file, so the observed graph may be incomplete. Add the missing file, configure tsconfig/package imports, or exclude generated/runtime paths intentionally.
+- `unresolved_import` at `packages/vite/src/node/index.ts:256`: Vite has an import that Axiom could not resolve into the observed graph.
+  - Observed: Vite unresolved import
+  - Specifier: `#types/internal/terserOptions`
+  - Fix: Axiom could not map this static import to a source file, so the observed graph may be incomplete. Add the missing file, configure tsconfig/package imports, or exclude generated/runtime paths intentionally.
+- `unresolved_import` at `packages/vite/src/node/index.ts:257`: Vite has an import that Axiom could not resolve into the observed graph.
+  - Observed: Vite unresolved import
+  - Specifier: `#dep-types/commonjs`
+  - Fix: Axiom could not map this static import to a source file, so the observed graph may be incomplete. Add the missing file, configure tsconfig/package imports, or exclude generated/runtime paths intentionally.
+- `unresolved_import` at `packages/vite/src/node/index.ts:258`: Vite has an import that Axiom could not resolve into the observed graph.
+  - Observed: Vite unresolved import
+  - Specifier: `#dep-types/dynamicImportVars`
+  - Fix: Axiom could not map this static import to a source file, so the observed graph may be incomplete. Add the missing file, configure tsconfig/package imports, or exclude generated/runtime paths intentionally.
+- `unresolved_import` at `packages/vite/src/node/index.ts:259`: Vite has an import that Axiom could not resolve into the observed graph.
+  - Observed: Vite unresolved import
+  - Specifier: `#dep-types/anymatch`
+  - Fix: Axiom could not map this static import to a source file, so the observed graph may be incomplete. Add the missing file, configure tsconfig/package imports, or exclude generated/runtime paths intentionally.
+- `unresolved_import` at `packages/vite/src/node/index.ts:260`: Vite has an import that Axiom could not resolve into the observed graph.
+  - Observed: Vite unresolved import
+  - Specifier: `#types/internal/lightningcssOptions`
+  - Fix: Axiom could not map this static import to a source file, so the observed graph may be incomplete. Add the missing file, configure tsconfig/package imports, or exclude generated/runtime paths intentionally.
+- `unresolved_import` at `packages/vite/src/node/plugins/css.ts:32`: Vite has an import that Axiom could not resolve into the observed graph.
+  - Observed: Vite unresolved import
+  - Specifier: `#types/internal/cssPreprocessorOptions`
+  - Fix: Axiom could not map this static import to a source file, so the observed graph may be incomplete. Add the missing file, configure tsconfig/package imports, or exclude generated/runtime paths intentionally.
+- `unresolved_import` at `packages/vite/src/node/plugins/css.ts:37`: Vite has an import that Axiom could not resolve into the observed graph.
+  - Observed: Vite unresolved import
+  - Specifier: `#types/internal/lightningcssOptions`
+  - Fix: Axiom could not map this static import to a source file, so the observed graph may be incomplete. Add the missing file, configure tsconfig/package imports, or exclude generated/runtime paths intentionally.
+- `unresolved_import` at `packages/vite/src/node/plugins/css.ts:38`: Vite has an import that Axiom could not resolve into the observed graph.
+  - Observed: Vite unresolved import
+  - Specifier: `#types/metadata`
+  - Fix: Axiom could not map this static import to a source file, so the observed graph may be incomplete. Add the missing file, configure tsconfig/package imports, or exclude generated/runtime paths intentionally.
+- `unresolved_import` at `packages/vite/src/node/plugins/esbuild.ts:14`: Vite has an import that Axiom could not resolve into the observed graph.
+  - Observed: Vite unresolved import
+  - Specifier: `#dep-types/chokidar`
+  - Fix: Axiom could not map this static import to a source file, so the observed graph may be incomplete. Add the missing file, configure tsconfig/package imports, or exclude generated/runtime paths intentionally.
+- `unresolved_import` at `packages/vite/src/node/plugins/importMetaGlob.ts:18`: Vite has an import that Axiom could not resolve into the observed graph.
+  - Observed: Vite unresolved import
+  - Specifier: `#types/importGlob`
+  - Fix: Axiom could not map this static import to a source file, so the observed graph may be incomplete. Add the missing file, configure tsconfig/package imports, or exclude generated/runtime paths intentionally.
+- `unresolved_import` at `packages/vite/src/node/plugins/terser.ts:3`: Vite has an import that Axiom could not resolve into the observed graph.
+  - Observed: Vite unresolved import
+  - Specifier: `#types/internal/terserOptions`
+  - Fix: Axiom could not map this static import to a source file, so the observed graph may be incomplete. Add the missing file, configure tsconfig/package imports, or exclude generated/runtime paths intentionally.
+- `unresolved_import` at `packages/vite/src/node/preview.ts:7`: Vite has an import that Axiom could not resolve into the observed graph.
+  - Observed: Vite unresolved import
+  - Specifier: `#dep-types/connect`
+  - Fix: Axiom could not map this static import to a source file, so the observed graph may be incomplete. Add the missing file, configure tsconfig/package imports, or exclude generated/runtime paths intentionally.
+- `unresolved_import` at `packages/vite/src/node/server/environment.ts:2`: Vite has an import that Axiom could not resolve into the observed graph.
+  - Observed: Vite unresolved import
+  - Specifier: `#dep-types/chokidar`
+  - Fix: Axiom could not map this static import to a source file, so the observed graph may be incomplete. Add the missing file, configure tsconfig/package imports, or exclude generated/runtime paths intentionally.
+- `unresolved_import` at `packages/vite/src/node/server/hmr.ts:6`: Vite has an import that Axiom could not resolve into the observed graph.
+  - Observed: Vite unresolved import
+  - Specifier: `#types/hmrPayload`
+  - Fix: Axiom could not map this static import to a source file, so the observed graph may be incomplete. Add the missing file, configure tsconfig/package imports, or exclude generated/runtime paths intentionally.
+- `unresolved_import` at `packages/vite/src/node/server/index.ts:15`: Vite has an import that Axiom could not resolve into the observed graph.
+  - Observed: Vite unresolved import
+  - Specifier: `#dep-types/chokidar`
+  - Fix: Axiom could not map this static import to a source file, so the observed graph may be incomplete. Add the missing file, configure tsconfig/package imports, or exclude generated/runtime paths intentionally.
+- `unresolved_import` at `packages/vite/src/node/server/index.ts:16`: Vite has an import that Axiom could not resolve into the observed graph.
+  - Observed: Vite unresolved import
+  - Specifier: `#dep-types/connect`
+  - Fix: Axiom could not map this static import to a source file, so the observed graph may be incomplete. Add the missing file, configure tsconfig/package imports, or exclude generated/runtime paths intentionally.
+- `unresolved_import` at `packages/vite/src/node/server/middlewares/base.ts:1`: Vite has an import that Axiom could not resolve into the observed graph.
+  - Observed: Vite unresolved import
+  - Specifier: `#dep-types/connect`
+  - Fix: Axiom could not map this static import to a source file, so the observed graph may be incomplete. Add the missing file, configure tsconfig/package imports, or exclude generated/runtime paths intentionally.
+- `unresolved_import` at `packages/vite/src/node/server/middlewares/error.ts:5`: Vite has an import that Axiom could not resolve into the observed graph.
+  - Observed: Vite unresolved import
+  - Specifier: `#dep-types/connect`
+  - Fix: Axiom could not map this static import to a source file, so the observed graph may be incomplete. Add the missing file, configure tsconfig/package imports, or exclude generated/runtime paths intentionally.
+- `unresolved_import` at `packages/vite/src/node/server/middlewares/error.ts:6`: Vite has an import that Axiom could not resolve into the observed graph.
+  - Observed: Vite unresolved import
+  - Specifier: `#types/hmrPayload`
+  - Fix: Axiom could not map this static import to a source file, so the observed graph may be incomplete. Add the missing file, configure tsconfig/package imports, or exclude generated/runtime paths intentionally.
+- `unresolved_import` at `packages/vite/src/node/server/middlewares/hostCheck.ts:2`: Vite has an import that Axiom could not resolve into the observed graph.
+  - Observed: Vite unresolved import
+  - Specifier: `#dep-types/connect`
+  - Fix: Axiom could not map this static import to a source file, so the observed graph may be incomplete. Add the missing file, configure tsconfig/package imports, or exclude generated/runtime paths intentionally.
+- `unresolved_import` at `packages/vite/src/node/server/middlewares/htmlFallback.ts:3`: Vite has an import that Axiom could not resolve into the observed graph.
+  - Observed: Vite unresolved import
+  - Specifier: `#dep-types/connect`
+  - Fix: Axiom could not map this static import to a source file, so the observed graph may be incomplete. Add the missing file, configure tsconfig/package imports, or exclude generated/runtime paths intentionally.
+- `unresolved_import` at `packages/vite/src/node/server/middlewares/indexHtml.ts:7`: Vite has an import that Axiom could not resolve into the observed graph.
+  - Observed: Vite unresolved import
+  - Specifier: `#dep-types/connect`
+  - Fix: Axiom could not map this static import to a source file, so the observed graph may be incomplete. Add the missing file, configure tsconfig/package imports, or exclude generated/runtime paths intentionally.
+- `unresolved_import` at `packages/vite/src/node/server/middlewares/notFound.ts:1`: Vite has an import that Axiom could not resolve into the observed graph.
+  - Observed: Vite unresolved import
+  - Specifier: `#dep-types/connect`
+  - Fix: Axiom could not map this static import to a source file, so the observed graph may be incomplete. Add the missing file, configure tsconfig/package imports, or exclude generated/runtime paths intentionally.
+- `unresolved_import` at `packages/vite/src/node/server/middlewares/proxy.ts:4`: Vite has an import that Axiom could not resolve into the observed graph.
+  - Observed: Vite unresolved import
+  - Specifier: `#dep-types/connect`
+  - Fix: Axiom could not map this static import to a source file, so the observed graph may be incomplete. Add the missing file, configure tsconfig/package imports, or exclude generated/runtime paths intentionally.
+- `unresolved_import` at `packages/vite/src/node/server/middlewares/rejectInvalidRequest.ts:1`: Vite has an import that Axiom could not resolve into the observed graph.
+  - Observed: Vite unresolved import
+  - Specifier: `#dep-types/connect`
+  - Fix: Axiom could not map this static import to a source file, so the observed graph may be incomplete. Add the missing file, configure tsconfig/package imports, or exclude generated/runtime paths intentionally.
+- `unresolved_import` at `packages/vite/src/node/server/middlewares/static.ts:6`: Vite has an import that Axiom could not resolve into the observed graph.
+  - Observed: Vite unresolved import
+  - Specifier: `#dep-types/connect`
+  - Fix: Axiom could not map this static import to a source file, so the observed graph may be incomplete. Add the missing file, configure tsconfig/package imports, or exclude generated/runtime paths intentionally.
+- `unresolved_import` at `packages/vite/src/node/server/middlewares/time.ts:2`: Vite has an import that Axiom could not resolve into the observed graph.
+  - Observed: Vite unresolved import
+  - Specifier: `#dep-types/connect`
+  - Fix: Axiom could not map this static import to a source file, so the observed graph may be incomplete. Add the missing file, configure tsconfig/package imports, or exclude generated/runtime paths intentionally.
+- `unresolved_import` at `packages/vite/src/node/server/middlewares/transform.ts:5`: Vite has an import that Axiom could not resolve into the observed graph.
+  - Observed: Vite unresolved import
+  - Specifier: `#dep-types/connect`
+  - Fix: Axiom could not map this static import to a source file, so the observed graph may be incomplete. Add the missing file, configure tsconfig/package imports, or exclude generated/runtime paths intentionally.
+- `unresolved_import` at `packages/vite/src/node/server/pluginContainer.ts:68`: Vite has an import that Axiom could not resolve into the observed graph.
+  - Observed: Vite unresolved import
+  - Specifier: `#dep-types/chokidar`
+  - Fix: Axiom could not map this static import to a source file, so the observed graph may be incomplete. Add the missing file, configure tsconfig/package imports, or exclude generated/runtime paths intentionally.
+- `unresolved_import` at `packages/vite/src/node/server/ws.ts:13`: Vite has an import that Axiom could not resolve into the observed graph.
+  - Observed: Vite unresolved import
+  - Specifier: `#dep-types/ws`
+  - Fix: Axiom could not map this static import to a source file, so the observed graph may be incomplete. Add the missing file, configure tsconfig/package imports, or exclude generated/runtime paths intentionally.
+- `unresolved_import` at `packages/vite/src/node/server/ws.ts:14`: Vite has an import that Axiom could not resolve into the observed graph.
+  - Observed: Vite unresolved import
+  - Specifier: `#types/hmrPayload`
+  - Fix: Axiom could not map this static import to a source file, so the observed graph may be incomplete. Add the missing file, configure tsconfig/package imports, or exclude generated/runtime paths intentionally.
+- `unresolved_import` at `packages/vite/src/node/server/ws.ts:15`: Vite has an import that Axiom could not resolve into the observed graph.
+  - Observed: Vite unresolved import
+  - Specifier: `#types/customEvent`
+  - Fix: Axiom could not map this static import to a source file, so the observed graph may be incomplete. Add the missing file, configure tsconfig/package imports, or exclude generated/runtime paths intentionally.
+- `unresolved_import` at `packages/vite/src/node/ssr/runtime/serverModuleRunner.ts:2`: Vite has an import that Axiom could not resolve into the observed graph.
+  - Observed: Vite unresolved import
+  - Specifier: `#types/hmrPayload`
+  - Fix: Axiom could not map this static import to a source file, so the observed graph may be incomplete. Add the missing file, configure tsconfig/package imports, or exclude generated/runtime paths intentionally.
+- `unresolved_import` at `packages/vite/src/node/utils.ts:24`: Vite has an import that Axiom could not resolve into the observed graph.
+  - Observed: Vite unresolved import
+  - Specifier: `#dep-types/alias`
+  - Fix: Axiom could not map this static import to a source file, so the observed graph may be incomplete. Add the missing file, configure tsconfig/package imports, or exclude generated/runtime paths intentionally.
+- `unresolved_import` at `packages/vite/src/node/utils.ts:25`: Vite has an import that Axiom could not resolve into the observed graph.
+  - Observed: Vite unresolved import
+  - Specifier: `#dep-types/chokidar`
+  - Fix: Axiom could not map this static import to a source file, so the observed graph may be incomplete. Add the missing file, configure tsconfig/package imports, or exclude generated/runtime paths intentionally.
+- `unresolved_import` at `packages/vite/src/node/watch.ts:6`: Vite has an import that Axiom could not resolve into the observed graph.
+  - Observed: Vite unresolved import
+  - Specifier: `#dep-types/chokidar`
+  - Fix: Axiom could not map this static import to a source file, so the observed graph may be incomplete. Add the missing file, configure tsconfig/package imports, or exclude generated/runtime paths intentionally.
+- `unresolved_import` at `packages/vite/src/shared/hmr.ts:1`: Vite has an import that Axiom could not resolve into the observed graph.
+  - Observed: Vite unresolved import
+  - Specifier: `#types/hmrPayload`
+  - Fix: Axiom could not map this static import to a source file, so the observed graph may be incomplete. Add the missing file, configure tsconfig/package imports, or exclude generated/runtime paths intentionally.
+- `unresolved_import` at `packages/vite/src/shared/hmr.ts:2`: Vite has an import that Axiom could not resolve into the observed graph.
+  - Observed: Vite unresolved import
+  - Specifier: `#types/hot`
+  - Fix: Axiom could not map this static import to a source file, so the observed graph may be incomplete. Add the missing file, configure tsconfig/package imports, or exclude generated/runtime paths intentionally.
+- `unresolved_import` at `packages/vite/src/shared/hmr.ts:3`: Vite has an import that Axiom could not resolve into the observed graph.
+  - Observed: Vite unresolved import
+  - Specifier: `#types/customEvent`
+  - Fix: Axiom could not map this static import to a source file, so the observed graph may be incomplete. Add the missing file, configure tsconfig/package imports, or exclude generated/runtime paths intentionally.
+- `unresolved_import` at `packages/vite/src/shared/hmrHandler.ts:1`: Vite has an import that Axiom could not resolve into the observed graph.
+  - Observed: Vite unresolved import
+  - Specifier: `#types/hmrPayload`
+  - Fix: Axiom could not map this static import to a source file, so the observed graph may be incomplete. Add the missing file, configure tsconfig/package imports, or exclude generated/runtime paths intentionally.
+- `unresolved_import` at `packages/vite/src/shared/moduleRunnerTransport.ts:2`: Vite has an import that Axiom could not resolve into the observed graph.
+  - Observed: Vite unresolved import
+  - Specifier: `#types/hmrPayload`
+  - Fix: Axiom could not map this static import to a source file, so the observed graph may be incomplete. Add the missing file, configure tsconfig/package imports, or exclude generated/runtime paths intentionally.
+
+### Architecture Drift (Advisory)
+- Kind: `advisory_observed_edge_drift`
+- Baseline: `C:/Users/邱品丰/AppData/Local/Temp/axiom-real-project-diff-smoke-i74jWL/vite-pnpm-src-v7.3.2-baseline.graph.json` (0 observed dependencies, axiom.graph.v12)
+- New observed edges:
+  - None
+- Removed observed edges:
+  - None

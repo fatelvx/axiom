@@ -1,0 +1,866 @@
+{
+  "kind": "axiom.real-project-diff-smoke.v1",
+  "generatedAt": "2026-05-13T16:00:38.220Z",
+  "repo": "https://github.com/vitejs/vite.git",
+  "name": "vite-pnpm-src",
+  "baselineRef": "v7.3.2",
+  "currentRef": "v7.3.3",
+  "groupBy": "workspace",
+  "sourceScope": {
+    "include": [
+      "packages/*/src/**"
+    ],
+    "exclude": [
+      "packages/*/src/**/__tests__/**",
+      "packages/*/src/**/*.test.ts",
+      "packages/*/src/**/*.spec.ts",
+      "packages/*/src/**/*.test.tsx",
+      "packages/*/src/**/*.spec.tsx"
+    ]
+  },
+  "warningFlags": [
+    "--warn-coupling-concentration",
+    "--warn-deep-internal-imports",
+    "--warn-unresolved-imports"
+  ],
+  "node": "v24.14.1",
+  "platform": "win32 x64",
+  "baseline": {
+    "ref": "v7.3.2",
+    "commit": "cc383e0",
+    "summary": {
+      "modules": 3,
+      "declaredDependencies": 0,
+      "forbiddenDependencies": 0,
+      "exposedPaths": 0,
+      "hiddenPaths": 0,
+      "observedDependencies": 0,
+      "shownObservedDependencies": 0,
+      "violations": 0,
+      "intentionalViolations": 0,
+      "warnings": 60
+    }
+  },
+  "current": {
+    "ref": "v7.3.3",
+    "commit": "ca31424",
+    "summary": {
+      "modules": 3,
+      "declaredDependencies": 0,
+      "forbiddenDependencies": 0,
+      "exposedPaths": 0,
+      "hiddenPaths": 0,
+      "observedDependencies": 0,
+      "shownObservedDependencies": 0,
+      "violations": 0,
+      "intentionalViolations": 0,
+      "warnings": 60
+    }
+  },
+  "drift": {
+    "kind": "advisory_observed_edge_drift",
+    "baseline": {
+      "schemaVersion": "axiom.graph.v12",
+      "observedDependencies": 0
+    },
+    "newObservedEdges": [],
+    "removedObservedEdges": []
+  },
+  "warnings": {
+    "byCode": {
+      "unresolved_import": 60
+    },
+    "details": [
+      {
+        "code": "unresolved_import",
+        "message": "Vite has an import that Axiom could not resolve into the observed graph.",
+        "location": {
+          "filePath": "packages/vite/src/client/client.ts",
+          "line": 1
+        },
+        "observed": "Vite unresolved import",
+        "module": "Vite",
+        "specifier": "#types/hmrPayload",
+        "incomingModules": [],
+        "outgoingModules": []
+      },
+      {
+        "code": "unresolved_import",
+        "message": "Vite has an import that Axiom could not resolve into the observed graph.",
+        "location": {
+          "filePath": "packages/vite/src/client/client.ts",
+          "line": 2
+        },
+        "observed": "Vite unresolved import",
+        "module": "Vite",
+        "specifier": "#types/hot",
+        "incomingModules": [],
+        "outgoingModules": []
+      },
+      {
+        "code": "unresolved_import",
+        "message": "Vite has an import that Axiom could not resolve into the observed graph.",
+        "location": {
+          "filePath": "packages/vite/src/client/overlay.ts",
+          "line": 1
+        },
+        "observed": "Vite unresolved import",
+        "module": "Vite",
+        "specifier": "#types/hmrPayload",
+        "incomingModules": [],
+        "outgoingModules": []
+      },
+      {
+        "code": "unresolved_import",
+        "message": "Vite has an import that Axiom could not resolve into the observed graph.",
+        "location": {
+          "filePath": "packages/vite/src/module-runner/hmrHandler.ts",
+          "line": 1
+        },
+        "observed": "Vite unresolved import",
+        "module": "Vite",
+        "specifier": "#types/hmrPayload",
+        "incomingModules": [],
+        "outgoingModules": []
+      },
+      {
+        "code": "unresolved_import",
+        "message": "Vite has an import that Axiom could not resolve into the observed graph.",
+        "location": {
+          "filePath": "packages/vite/src/module-runner/runner.ts",
+          "line": 1
+        },
+        "observed": "Vite unresolved import",
+        "module": "Vite",
+        "specifier": "#types/hot",
+        "incomingModules": [],
+        "outgoingModules": []
+      },
+      {
+        "code": "unresolved_import",
+        "message": "Vite has an import that Axiom could not resolve into the observed graph.",
+        "location": {
+          "filePath": "packages/vite/src/module-runner/types.ts",
+          "line": 1
+        },
+        "observed": "Vite unresolved import",
+        "module": "Vite",
+        "specifier": "#types/hot",
+        "incomingModules": [],
+        "outgoingModules": []
+      },
+      {
+        "code": "unresolved_import",
+        "message": "Vite has an import that Axiom could not resolve into the observed graph.",
+        "location": {
+          "filePath": "packages/vite/src/node/build.ts",
+          "line": 24
+        },
+        "observed": "Vite unresolved import",
+        "module": "Vite",
+        "specifier": "#dep-types/commonjs",
+        "incomingModules": [],
+        "outgoingModules": []
+      },
+      {
+        "code": "unresolved_import",
+        "message": "Vite has an import that Axiom could not resolve into the observed graph.",
+        "location": {
+          "filePath": "packages/vite/src/node/build.ts",
+          "line": 25
+        },
+        "observed": "Vite unresolved import",
+        "module": "Vite",
+        "specifier": "#dep-types/dynamicImportVars",
+        "incomingModules": [],
+        "outgoingModules": []
+      },
+      {
+        "code": "unresolved_import",
+        "message": "Vite has an import that Axiom could not resolve into the observed graph.",
+        "location": {
+          "filePath": "packages/vite/src/node/config.ts",
+          "line": 13
+        },
+        "observed": "Vite unresolved import",
+        "module": "Vite",
+        "specifier": "#dep-types/alias",
+        "incomingModules": [],
+        "outgoingModules": []
+      },
+      {
+        "code": "unresolved_import",
+        "message": "Vite has an import that Axiom could not resolve into the observed graph.",
+        "location": {
+          "filePath": "packages/vite/src/node/config.ts",
+          "line": 14
+        },
+        "observed": "Vite unresolved import",
+        "module": "Vite",
+        "specifier": "../types/anymatch",
+        "incomingModules": [],
+        "outgoingModules": []
+      },
+      {
+        "code": "unresolved_import",
+        "message": "Vite has an import that Axiom could not resolve into the observed graph.",
+        "location": {
+          "filePath": "packages/vite/src/node/http.ts",
+          "line": 6
+        },
+        "observed": "Vite unresolved import",
+        "module": "Vite",
+        "specifier": "#dep-types/connect",
+        "incomingModules": [],
+        "outgoingModules": []
+      },
+      {
+        "code": "unresolved_import",
+        "message": "Vite has an import that Axiom could not resolve into the observed graph.",
+        "location": {
+          "filePath": "packages/vite/src/node/index.ts",
+          "line": 220
+        },
+        "observed": "Vite unresolved import",
+        "module": "Vite",
+        "specifier": "#types/hmrPayload",
+        "incomingModules": [],
+        "outgoingModules": []
+      },
+      {
+        "code": "unresolved_import",
+        "message": "Vite has an import that Axiom could not resolve into the observed graph.",
+        "location": {
+          "filePath": "packages/vite/src/node/index.ts",
+          "line": 231
+        },
+        "observed": "Vite unresolved import",
+        "module": "Vite",
+        "specifier": "#types/customEvent",
+        "incomingModules": [],
+        "outgoingModules": []
+      },
+      {
+        "code": "unresolved_import",
+        "message": "Vite has an import that Axiom could not resolve into the observed graph.",
+        "location": {
+          "filePath": "packages/vite/src/node/index.ts",
+          "line": 236
+        },
+        "observed": "Vite unresolved import",
+        "module": "Vite",
+        "specifier": "#types/importGlob",
+        "incomingModules": [],
+        "outgoingModules": []
+      },
+      {
+        "code": "unresolved_import",
+        "message": "Vite has an import that Axiom could not resolve into the observed graph.",
+        "location": {
+          "filePath": "packages/vite/src/node/index.ts",
+          "line": 242
+        },
+        "observed": "Vite unresolved import",
+        "module": "Vite",
+        "specifier": "#types/metadata",
+        "incomingModules": [],
+        "outgoingModules": []
+      },
+      {
+        "code": "unresolved_import",
+        "message": "Vite has an import that Axiom could not resolve into the observed graph.",
+        "location": {
+          "filePath": "packages/vite/src/node/index.ts",
+          "line": 245
+        },
+        "observed": "Vite unresolved import",
+        "module": "Vite",
+        "specifier": "#dep-types/alias",
+        "incomingModules": [],
+        "outgoingModules": []
+      },
+      {
+        "code": "unresolved_import",
+        "message": "Vite has an import that Axiom could not resolve into the observed graph.",
+        "location": {
+          "filePath": "packages/vite/src/node/index.ts",
+          "line": 252
+        },
+        "observed": "Vite unresolved import",
+        "module": "Vite",
+        "specifier": "#dep-types/connect",
+        "incomingModules": [],
+        "outgoingModules": []
+      },
+      {
+        "code": "unresolved_import",
+        "message": "Vite has an import that Axiom could not resolve into the observed graph.",
+        "location": {
+          "filePath": "packages/vite/src/node/index.ts",
+          "line": 253
+        },
+        "observed": "Vite unresolved import",
+        "module": "Vite",
+        "specifier": "#dep-types/ws",
+        "incomingModules": [],
+        "outgoingModules": []
+      },
+      {
+        "code": "unresolved_import",
+        "message": "Vite has an import that Axiom could not resolve into the observed graph.",
+        "location": {
+          "filePath": "packages/vite/src/node/index.ts",
+          "line": 255
+        },
+        "observed": "Vite unresolved import",
+        "module": "Vite",
+        "specifier": "#dep-types/chokidar",
+        "incomingModules": [],
+        "outgoingModules": []
+      },
+      {
+        "code": "unresolved_import",
+        "message": "Vite has an import that Axiom could not resolve into the observed graph.",
+        "location": {
+          "filePath": "packages/vite/src/node/index.ts",
+          "line": 256
+        },
+        "observed": "Vite unresolved import",
+        "module": "Vite",
+        "specifier": "#types/internal/terserOptions",
+        "incomingModules": [],
+        "outgoingModules": []
+      },
+      {
+        "code": "unresolved_import",
+        "message": "Vite has an import that Axiom could not resolve into the observed graph.",
+        "location": {
+          "filePath": "packages/vite/src/node/index.ts",
+          "line": 257
+        },
+        "observed": "Vite unresolved import",
+        "module": "Vite",
+        "specifier": "#dep-types/commonjs",
+        "incomingModules": [],
+        "outgoingModules": []
+      },
+      {
+        "code": "unresolved_import",
+        "message": "Vite has an import that Axiom could not resolve into the observed graph.",
+        "location": {
+          "filePath": "packages/vite/src/node/index.ts",
+          "line": 258
+        },
+        "observed": "Vite unresolved import",
+        "module": "Vite",
+        "specifier": "#dep-types/dynamicImportVars",
+        "incomingModules": [],
+        "outgoingModules": []
+      },
+      {
+        "code": "unresolved_import",
+        "message": "Vite has an import that Axiom could not resolve into the observed graph.",
+        "location": {
+          "filePath": "packages/vite/src/node/index.ts",
+          "line": 259
+        },
+        "observed": "Vite unresolved import",
+        "module": "Vite",
+        "specifier": "#dep-types/anymatch",
+        "incomingModules": [],
+        "outgoingModules": []
+      },
+      {
+        "code": "unresolved_import",
+        "message": "Vite has an import that Axiom could not resolve into the observed graph.",
+        "location": {
+          "filePath": "packages/vite/src/node/index.ts",
+          "line": 260
+        },
+        "observed": "Vite unresolved import",
+        "module": "Vite",
+        "specifier": "#types/internal/lightningcssOptions",
+        "incomingModules": [],
+        "outgoingModules": []
+      },
+      {
+        "code": "unresolved_import",
+        "message": "Vite has an import that Axiom could not resolve into the observed graph.",
+        "location": {
+          "filePath": "packages/vite/src/node/plugins/css.ts",
+          "line": 32
+        },
+        "observed": "Vite unresolved import",
+        "module": "Vite",
+        "specifier": "#types/internal/cssPreprocessorOptions",
+        "incomingModules": [],
+        "outgoingModules": []
+      },
+      {
+        "code": "unresolved_import",
+        "message": "Vite has an import that Axiom could not resolve into the observed graph.",
+        "location": {
+          "filePath": "packages/vite/src/node/plugins/css.ts",
+          "line": 37
+        },
+        "observed": "Vite unresolved import",
+        "module": "Vite",
+        "specifier": "#types/internal/lightningcssOptions",
+        "incomingModules": [],
+        "outgoingModules": []
+      },
+      {
+        "code": "unresolved_import",
+        "message": "Vite has an import that Axiom could not resolve into the observed graph.",
+        "location": {
+          "filePath": "packages/vite/src/node/plugins/css.ts",
+          "line": 38
+        },
+        "observed": "Vite unresolved import",
+        "module": "Vite",
+        "specifier": "#types/metadata",
+        "incomingModules": [],
+        "outgoingModules": []
+      },
+      {
+        "code": "unresolved_import",
+        "message": "Vite has an import that Axiom could not resolve into the observed graph.",
+        "location": {
+          "filePath": "packages/vite/src/node/plugins/esbuild.ts",
+          "line": 14
+        },
+        "observed": "Vite unresolved import",
+        "module": "Vite",
+        "specifier": "#dep-types/chokidar",
+        "incomingModules": [],
+        "outgoingModules": []
+      },
+      {
+        "code": "unresolved_import",
+        "message": "Vite has an import that Axiom could not resolve into the observed graph.",
+        "location": {
+          "filePath": "packages/vite/src/node/plugins/importMetaGlob.ts",
+          "line": 18
+        },
+        "observed": "Vite unresolved import",
+        "module": "Vite",
+        "specifier": "#types/importGlob",
+        "incomingModules": [],
+        "outgoingModules": []
+      },
+      {
+        "code": "unresolved_import",
+        "message": "Vite has an import that Axiom could not resolve into the observed graph.",
+        "location": {
+          "filePath": "packages/vite/src/node/plugins/terser.ts",
+          "line": 3
+        },
+        "observed": "Vite unresolved import",
+        "module": "Vite",
+        "specifier": "#types/internal/terserOptions",
+        "incomingModules": [],
+        "outgoingModules": []
+      },
+      {
+        "code": "unresolved_import",
+        "message": "Vite has an import that Axiom could not resolve into the observed graph.",
+        "location": {
+          "filePath": "packages/vite/src/node/preview.ts",
+          "line": 7
+        },
+        "observed": "Vite unresolved import",
+        "module": "Vite",
+        "specifier": "#dep-types/connect",
+        "incomingModules": [],
+        "outgoingModules": []
+      },
+      {
+        "code": "unresolved_import",
+        "message": "Vite has an import that Axiom could not resolve into the observed graph.",
+        "location": {
+          "filePath": "packages/vite/src/node/server/environment.ts",
+          "line": 2
+        },
+        "observed": "Vite unresolved import",
+        "module": "Vite",
+        "specifier": "#dep-types/chokidar",
+        "incomingModules": [],
+        "outgoingModules": []
+      },
+      {
+        "code": "unresolved_import",
+        "message": "Vite has an import that Axiom could not resolve into the observed graph.",
+        "location": {
+          "filePath": "packages/vite/src/node/server/hmr.ts",
+          "line": 6
+        },
+        "observed": "Vite unresolved import",
+        "module": "Vite",
+        "specifier": "#types/hmrPayload",
+        "incomingModules": [],
+        "outgoingModules": []
+      },
+      {
+        "code": "unresolved_import",
+        "message": "Vite has an import that Axiom could not resolve into the observed graph.",
+        "location": {
+          "filePath": "packages/vite/src/node/server/index.ts",
+          "line": 15
+        },
+        "observed": "Vite unresolved import",
+        "module": "Vite",
+        "specifier": "#dep-types/chokidar",
+        "incomingModules": [],
+        "outgoingModules": []
+      },
+      {
+        "code": "unresolved_import",
+        "message": "Vite has an import that Axiom could not resolve into the observed graph.",
+        "location": {
+          "filePath": "packages/vite/src/node/server/index.ts",
+          "line": 16
+        },
+        "observed": "Vite unresolved import",
+        "module": "Vite",
+        "specifier": "#dep-types/connect",
+        "incomingModules": [],
+        "outgoingModules": []
+      },
+      {
+        "code": "unresolved_import",
+        "message": "Vite has an import that Axiom could not resolve into the observed graph.",
+        "location": {
+          "filePath": "packages/vite/src/node/server/middlewares/base.ts",
+          "line": 1
+        },
+        "observed": "Vite unresolved import",
+        "module": "Vite",
+        "specifier": "#dep-types/connect",
+        "incomingModules": [],
+        "outgoingModules": []
+      },
+      {
+        "code": "unresolved_import",
+        "message": "Vite has an import that Axiom could not resolve into the observed graph.",
+        "location": {
+          "filePath": "packages/vite/src/node/server/middlewares/error.ts",
+          "line": 5
+        },
+        "observed": "Vite unresolved import",
+        "module": "Vite",
+        "specifier": "#dep-types/connect",
+        "incomingModules": [],
+        "outgoingModules": []
+      },
+      {
+        "code": "unresolved_import",
+        "message": "Vite has an import that Axiom could not resolve into the observed graph.",
+        "location": {
+          "filePath": "packages/vite/src/node/server/middlewares/error.ts",
+          "line": 6
+        },
+        "observed": "Vite unresolved import",
+        "module": "Vite",
+        "specifier": "#types/hmrPayload",
+        "incomingModules": [],
+        "outgoingModules": []
+      },
+      {
+        "code": "unresolved_import",
+        "message": "Vite has an import that Axiom could not resolve into the observed graph.",
+        "location": {
+          "filePath": "packages/vite/src/node/server/middlewares/hostCheck.ts",
+          "line": 2
+        },
+        "observed": "Vite unresolved import",
+        "module": "Vite",
+        "specifier": "#dep-types/connect",
+        "incomingModules": [],
+        "outgoingModules": []
+      },
+      {
+        "code": "unresolved_import",
+        "message": "Vite has an import that Axiom could not resolve into the observed graph.",
+        "location": {
+          "filePath": "packages/vite/src/node/server/middlewares/htmlFallback.ts",
+          "line": 3
+        },
+        "observed": "Vite unresolved import",
+        "module": "Vite",
+        "specifier": "#dep-types/connect",
+        "incomingModules": [],
+        "outgoingModules": []
+      },
+      {
+        "code": "unresolved_import",
+        "message": "Vite has an import that Axiom could not resolve into the observed graph.",
+        "location": {
+          "filePath": "packages/vite/src/node/server/middlewares/indexHtml.ts",
+          "line": 7
+        },
+        "observed": "Vite unresolved import",
+        "module": "Vite",
+        "specifier": "#dep-types/connect",
+        "incomingModules": [],
+        "outgoingModules": []
+      },
+      {
+        "code": "unresolved_import",
+        "message": "Vite has an import that Axiom could not resolve into the observed graph.",
+        "location": {
+          "filePath": "packages/vite/src/node/server/middlewares/notFound.ts",
+          "line": 1
+        },
+        "observed": "Vite unresolved import",
+        "module": "Vite",
+        "specifier": "#dep-types/connect",
+        "incomingModules": [],
+        "outgoingModules": []
+      },
+      {
+        "code": "unresolved_import",
+        "message": "Vite has an import that Axiom could not resolve into the observed graph.",
+        "location": {
+          "filePath": "packages/vite/src/node/server/middlewares/proxy.ts",
+          "line": 4
+        },
+        "observed": "Vite unresolved import",
+        "module": "Vite",
+        "specifier": "#dep-types/connect",
+        "incomingModules": [],
+        "outgoingModules": []
+      },
+      {
+        "code": "unresolved_import",
+        "message": "Vite has an import that Axiom could not resolve into the observed graph.",
+        "location": {
+          "filePath": "packages/vite/src/node/server/middlewares/rejectInvalidRequest.ts",
+          "line": 1
+        },
+        "observed": "Vite unresolved import",
+        "module": "Vite",
+        "specifier": "#dep-types/connect",
+        "incomingModules": [],
+        "outgoingModules": []
+      },
+      {
+        "code": "unresolved_import",
+        "message": "Vite has an import that Axiom could not resolve into the observed graph.",
+        "location": {
+          "filePath": "packages/vite/src/node/server/middlewares/static.ts",
+          "line": 6
+        },
+        "observed": "Vite unresolved import",
+        "module": "Vite",
+        "specifier": "#dep-types/connect",
+        "incomingModules": [],
+        "outgoingModules": []
+      },
+      {
+        "code": "unresolved_import",
+        "message": "Vite has an import that Axiom could not resolve into the observed graph.",
+        "location": {
+          "filePath": "packages/vite/src/node/server/middlewares/time.ts",
+          "line": 2
+        },
+        "observed": "Vite unresolved import",
+        "module": "Vite",
+        "specifier": "#dep-types/connect",
+        "incomingModules": [],
+        "outgoingModules": []
+      },
+      {
+        "code": "unresolved_import",
+        "message": "Vite has an import that Axiom could not resolve into the observed graph.",
+        "location": {
+          "filePath": "packages/vite/src/node/server/middlewares/transform.ts",
+          "line": 5
+        },
+        "observed": "Vite unresolved import",
+        "module": "Vite",
+        "specifier": "#dep-types/connect",
+        "incomingModules": [],
+        "outgoingModules": []
+      },
+      {
+        "code": "unresolved_import",
+        "message": "Vite has an import that Axiom could not resolve into the observed graph.",
+        "location": {
+          "filePath": "packages/vite/src/node/server/pluginContainer.ts",
+          "line": 68
+        },
+        "observed": "Vite unresolved import",
+        "module": "Vite",
+        "specifier": "#dep-types/chokidar",
+        "incomingModules": [],
+        "outgoingModules": []
+      },
+      {
+        "code": "unresolved_import",
+        "message": "Vite has an import that Axiom could not resolve into the observed graph.",
+        "location": {
+          "filePath": "packages/vite/src/node/server/ws.ts",
+          "line": 13
+        },
+        "observed": "Vite unresolved import",
+        "module": "Vite",
+        "specifier": "#dep-types/ws",
+        "incomingModules": [],
+        "outgoingModules": []
+      },
+      {
+        "code": "unresolved_import",
+        "message": "Vite has an import that Axiom could not resolve into the observed graph.",
+        "location": {
+          "filePath": "packages/vite/src/node/server/ws.ts",
+          "line": 14
+        },
+        "observed": "Vite unresolved import",
+        "module": "Vite",
+        "specifier": "#types/hmrPayload",
+        "incomingModules": [],
+        "outgoingModules": []
+      },
+      {
+        "code": "unresolved_import",
+        "message": "Vite has an import that Axiom could not resolve into the observed graph.",
+        "location": {
+          "filePath": "packages/vite/src/node/server/ws.ts",
+          "line": 15
+        },
+        "observed": "Vite unresolved import",
+        "module": "Vite",
+        "specifier": "#types/customEvent",
+        "incomingModules": [],
+        "outgoingModules": []
+      },
+      {
+        "code": "unresolved_import",
+        "message": "Vite has an import that Axiom could not resolve into the observed graph.",
+        "location": {
+          "filePath": "packages/vite/src/node/ssr/runtime/serverModuleRunner.ts",
+          "line": 2
+        },
+        "observed": "Vite unresolved import",
+        "module": "Vite",
+        "specifier": "#types/hmrPayload",
+        "incomingModules": [],
+        "outgoingModules": []
+      },
+      {
+        "code": "unresolved_import",
+        "message": "Vite has an import that Axiom could not resolve into the observed graph.",
+        "location": {
+          "filePath": "packages/vite/src/node/utils.ts",
+          "line": 24
+        },
+        "observed": "Vite unresolved import",
+        "module": "Vite",
+        "specifier": "#dep-types/alias",
+        "incomingModules": [],
+        "outgoingModules": []
+      },
+      {
+        "code": "unresolved_import",
+        "message": "Vite has an import that Axiom could not resolve into the observed graph.",
+        "location": {
+          "filePath": "packages/vite/src/node/utils.ts",
+          "line": 25
+        },
+        "observed": "Vite unresolved import",
+        "module": "Vite",
+        "specifier": "#dep-types/chokidar",
+        "incomingModules": [],
+        "outgoingModules": []
+      },
+      {
+        "code": "unresolved_import",
+        "message": "Vite has an import that Axiom could not resolve into the observed graph.",
+        "location": {
+          "filePath": "packages/vite/src/node/watch.ts",
+          "line": 6
+        },
+        "observed": "Vite unresolved import",
+        "module": "Vite",
+        "specifier": "#dep-types/chokidar",
+        "incomingModules": [],
+        "outgoingModules": []
+      },
+      {
+        "code": "unresolved_import",
+        "message": "Vite has an import that Axiom could not resolve into the observed graph.",
+        "location": {
+          "filePath": "packages/vite/src/shared/hmr.ts",
+          "line": 1
+        },
+        "observed": "Vite unresolved import",
+        "module": "Vite",
+        "specifier": "#types/hmrPayload",
+        "incomingModules": [],
+        "outgoingModules": []
+      },
+      {
+        "code": "unresolved_import",
+        "message": "Vite has an import that Axiom could not resolve into the observed graph.",
+        "location": {
+          "filePath": "packages/vite/src/shared/hmr.ts",
+          "line": 2
+        },
+        "observed": "Vite unresolved import",
+        "module": "Vite",
+        "specifier": "#types/hot",
+        "incomingModules": [],
+        "outgoingModules": []
+      },
+      {
+        "code": "unresolved_import",
+        "message": "Vite has an import that Axiom could not resolve into the observed graph.",
+        "location": {
+          "filePath": "packages/vite/src/shared/hmr.ts",
+          "line": 3
+        },
+        "observed": "Vite unresolved import",
+        "module": "Vite",
+        "specifier": "#types/customEvent",
+        "incomingModules": [],
+        "outgoingModules": []
+      },
+      {
+        "code": "unresolved_import",
+        "message": "Vite has an import that Axiom could not resolve into the observed graph.",
+        "location": {
+          "filePath": "packages/vite/src/shared/hmrHandler.ts",
+          "line": 1
+        },
+        "observed": "Vite unresolved import",
+        "module": "Vite",
+        "specifier": "#types/hmrPayload",
+        "incomingModules": [],
+        "outgoingModules": []
+      },
+      {
+        "code": "unresolved_import",
+        "message": "Vite has an import that Axiom could not resolve into the observed graph.",
+        "location": {
+          "filePath": "packages/vite/src/shared/moduleRunnerTransport.ts",
+          "line": 2
+        },
+        "observed": "Vite unresolved import",
+        "module": "Vite",
+        "specifier": "#types/hmrPayload",
+        "incomingModules": [],
+        "outgoingModules": []
+      }
+    ]
+  },
+  "timingsMs": {
+    "cloneBaseline": 53385.1,
+    "cloneCurrent": 11952.4,
+    "infer": 2389.4,
+    "baselineGraph": 1787.1,
+    "diffJson": 1932.1,
+    "diffMarkdown": 3026.2,
+    "observeMarkdown": 4019.2,
+    "diffMermaid": 1973.4
+  }
+}

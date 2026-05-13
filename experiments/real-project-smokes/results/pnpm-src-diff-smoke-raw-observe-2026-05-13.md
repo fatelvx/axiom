@@ -1,0 +1,803 @@
+## Axiom Architecture Review
+
+Status: needs review
+Review mode: observe (advisory)
+
+### Summary
+- Modules: 174
+- Declared dependencies: 930
+- Shown dependency edges: 0
+- Full observed dependencies: 1499
+- Hard violations: 0
+- Intentional violations: 0
+- Advisory warnings: 124
+- Drift: 0 new observed edges, 4 removed observed edges
+
+### Interpretation
+- Headline: No hard contract failures, but 124 advisory warnings need review; graph center is Types.
+- Look first:
+  - Hard signals: read `violations[]`, `intentionalDebt[]`, and `warnings[]` before judging the diagram.
+  - Graph center: inspect Types; it carries the strongest observed coupling in this scan.
+  - Shape fit: compare central modules, deep imports, drift, and any intra-file pressure warnings with the architecture you expected for this repository.
+- Central modules:
+  - `Types` (fan in hub): 198 import sites, fan-in 95, fan-out 0
+  - `Error` (fan in hub): 123 import sites, fan-in 64, fan-out 1
+  - `Logger` (fan in hub): 107 import sites, fan-in 49, fan-out 0
+- Caveat: This is a graph interpretation over static imports, not proof of semantic architecture health. Compare it with the architecture you intended.
+
+### Review Story
+- Summary: No hard gate failures. Start review with Coupling concentration around AssertProject: 1 concentration warning suggest this module may be becoming a coordination hub.
+- Setup: Scanned 174 declared modules and 1499 observed import edges. This report is advisory unless you run `axi check` as the gate.
+- Pressures:
+  - `Coupling concentration around AssertProject` (review): 1 concentration warning suggest this module may be becoming a coordination hub.
+  - `Coupling concentration around Audit` (review): 1 concentration warning suggest this module may be becoming a coordination hub.
+  - `Coupling concentration around BuildModules` (review): 1 concentration warning suggest this module may be becoming a coordination hub.
+- Next step: Inspect Coupling concentration around AssertProject; decide whether to change code, clarify .axi visibility rules, or keep the signal advisory.
+- Caveat: This story is a review aid over static imports. It points to likely pressure, not proof that the architecture is good or bad; a quiet import graph can still hide intra-file responsibility concentration.
+
+### Review Notes
+- This is review output; use `axi check` when you want a CI gate.
+- Hard violations are contract failures.
+- Intentional violations, warnings, and drift are visible debt or advisory signals.
+- Advisory warning counts include only warning checks enabled for this command or config.
+- Axiom does not auto-accept debt; accepted debt must be declared in `.axi` with an expiration date and reason.
+- Expired or invalid intentional violations are hard contract failures in `axi check`.
+- Dependency summaries separate shown attention edges from the full observed graph.
+
+### Hard Violations
+- None
+
+### Visible Intentional Debt
+- None
+
+### Advisory Warnings
+- Likely warning roots:
+  - `coupling_concentration` `AssertProject`: 1 warning
+  - `coupling_concentration` `Audit`: 1 warning
+  - `coupling_concentration` `BuildModules`: 1 warning
+  - `coupling_concentration` `Cache2`: 1 warning
+  - `coupling_concentration` `CafsTypes`: 1 warning
+  - `coupling_concentration` `CalcDepState`: 1 warning
+  - `coupling_concentration` `Catalogs2`: 1 warning
+  - `coupling_concentration` `Catalogs3`: 1 warning
+  - 116 more clusters
+- `coupling_concentration`: AssertProject has concentrated fan-out to 4 modules.
+  - Observed: AssertProject fan-out to 4 modules
+  - Threshold: fan-in >= 4 or fan-out >= 4
+  - Fan-in modules: Prepare
+  - Fan-out modules: AssertStore, Constants, Lockfile, ModulesYaml
+  - Fix: Review whether this module is becoming a coordination hub; split responsibilities, narrow public surfaces, or make the boundary explicit before considering enforcement.
+- `coupling_concentration`: Audit has concentrated fan-out to 9 modules.
+  - Observed: Audit fan-out to 9 modules
+  - Threshold: fan-in >= 4 or fan-out >= 4
+  - Fan-in modules: PluginCommandsAudit
+  - Fan-out modules: Error, Fetch, FetchingTypes, Lockfile, Lockfile11, Lockfile4, Lockfile7, ReadProjectManifest, Types
+  - Fix: Review whether this module is becoming a coordination hub; split responsibilities, narrow public surfaces, or make the boundary explicit before considering enforcement.
+- `coupling_concentration`: BuildModules has concentrated fan-out to 12 modules.
+  - Observed: BuildModules fan-out to 12 modules
+  - Threshold: fan-in >= 4 or fan-out >= 4
+  - Fan-in modules: Core, Headless
+  - Fan-out modules: CalcDepState, CoreLoggers, Deps2, Lifecycle, LinkBins, Logger, Patching, Patching3, ReadPackageJson, StoreControllerTypes, Types, Worker
+  - Fix: Review whether this module is becoming a coordination hub; split responsibilities, narrow public surfaces, or make the boundary explicit before considering enforcement.
+- `coupling_concentration`: Cache2 has concentrated fan-out to 6 modules.
+  - Observed: Cache2 fan-out to 6 modules
+  - Threshold: fan-in >= 4 or fan-out >= 4
+  - Fan-in modules: Pnpm
+  - Fan-out modules: Cache, CliUtils, Config, Constants, Error, StorePath
+  - Fix: Review whether this module is becoming a coordination hub; split responsibilities, narrow public surfaces, or make the boundary explicit before considering enforcement.
+- `coupling_concentration`: CafsTypes has concentrated fan-in from 7 modules.
+  - Observed: CafsTypes fan-in from 7 modules
+  - Threshold: fan-in >= 4 or fan-out >= 4
+  - Fan-in modules: CreateCafsStore, FetcherBase, PackageRequester, Store, StoreControllerTypes, TarballFetcher, Worker
+  - Fan-out modules: Types
+  - Fix: Review whether this module is becoming a coordination hub; split responsibilities, narrow public surfaces, or make the boundary explicit before considering enforcement.
+- `coupling_concentration`: CalcDepState has concentrated fan-in from 4 modules and fan-out to 6 modules.
+  - Observed: CalcDepState fan-in 4, fan-out 6
+  - Threshold: fan-in >= 4 or fan-out >= 4
+  - Fan-in modules: BuildModules, Core, Headless, PluginCommandsRebuild
+  - Fan-out modules: Constants, Crypto3, DependencyPath, Lockfile, Object, Types
+  - Fix: Review whether this module is becoming a coordination hub; split responsibilities, narrow public surfaces, or make the boundary explicit before considering enforcement.
+- `coupling_concentration`: Catalogs2 has concentrated fan-in from 10 modules.
+  - Observed: Catalogs2 fan-in from 10 modules
+  - Threshold: fan-in >= 4 or fan-out >= 4
+  - Fan-in modules: Catalogs3, Catalogs4, Config, Core, ExportableManifest, Lockfile6, Outdated, ParseOverrides, PluginCommandsPublishing, ResolveDependencies
+  - Fix: Review whether this module is becoming a coordination hub; split responsibilities, narrow public surfaces, or make the boundary explicit before considering enforcement.
+- `coupling_concentration`: Catalogs3 has concentrated fan-in from 4 modules.
+  - Observed: Catalogs3 fan-in from 4 modules
+  - Threshold: fan-in >= 4 or fan-out >= 4
+  - Fan-in modules: ExportableManifest, Outdated, ParseOverrides, ResolveDependencies
+  - Fan-out modules: Catalogs, Catalogs2, Error
+  - Fix: Review whether this module is becoming a coordination hub; split responsibilities, narrow public surfaces, or make the boundary explicit before considering enforcement.
+- `coupling_concentration`: Client has concentrated fan-in from 8 modules and fan-out to 9 modules.
+  - Observed: Client fan-in 8, fan-out 9
+  - Threshold: fan-in >= 4 or fan-out >= 4
+  - Fan-in modules: Outdated, PluginCommandsPublishing, PluginCommandsScriptRunners, PluginCommandsStoreInspecting, Pnpm, StoreConnectionManager, Testing, Tools2
+  - Fan-out modules: DefaultResolver, DirectoryFetcher, Fetch, FetcherBase, FetchingTypes, GitFetcher, Network, TarballFetcher, Types
+  - Fix: Review whether this module is becoming a coordination hub; split responsibilities, narrow public surfaces, or make the boundary explicit before considering enforcement.
+- `coupling_concentration`: CliMeta has concentrated fan-in from 9 modules.
+  - Observed: CliMeta fan-in from 9 modules
+  - Threshold: fan-in >= 4 or fan-out >= 4
+  - Fan-in modules: CliUtils, DefaultReporter, Env, PluginCommandsInit, PluginCommandsServer, PluginCommandsSetup, Pnpm, StoreConnectionManager, Tools2
+  - Fan-out modules: Types
+  - Fix: Review whether this module is becoming a coordination hub; split responsibilities, narrow public surfaces, or make the boundary explicit before considering enforcement.
+- `coupling_concentration`: CliUtils has concentrated fan-in from 22 modules and fan-out to 12 modules.
+  - Observed: CliUtils fan-in 22, fan-out 12
+  - Threshold: fan-in >= 4 or fan-out >= 4
+  - Fan-in modules: Cache2, PluginCommandsAudit, PluginCommandsCompletion, PluginCommandsConfig, PluginCommandsDeploy, PluginCommandsDoctor, PluginCommandsEnv, PluginCommandsInit, PluginCommandsInstallation, PluginCommandsLicenses, PluginCommandsListing, PluginCommandsOutdated, PluginCommandsPatching, PluginCommandsPublishing, PluginCommandsRebuild, PluginCommandsScriptRunners, PluginCommandsServer, PluginCommandsSetup, PluginCommandsStore, Pnpm, Tools2, Workspace4
+  - Fan-out modules: CliMeta, Config, Config3, DefaultReporter, Error, Logger, ManifestUtils, PackageIsInstallable, Pnpmfile, ReadProjectManifest, StoreConnectionManager, Types
+  - Fix: Review whether this module is becoming a coordination hub; split responsibilities, narrow public surfaces, or make the boundary explicit before considering enforcement.
+- `coupling_concentration`: Command has concentrated fan-in from 6 modules.
+  - Observed: Command fan-in from 6 modules
+  - Threshold: fan-in >= 4 or fan-out >= 4
+  - Fan-in modules: PluginCommandsCompletion, PluginCommandsInstallation, PluginCommandsLicenses, PluginCommandsOutdated, PluginCommandsScriptRunners, Pnpm
+  - Fix: Review whether this module is becoming a coordination hub; split responsibilities, narrow public surfaces, or make the boundary explicit before considering enforcement.
+- `coupling_concentration`: CommonCliOptionsHelp has concentrated fan-in from 10 modules.
+  - Observed: CommonCliOptionsHelp fan-in from 10 modules
+  - Threshold: fan-in >= 4 or fan-out >= 4
+  - Fan-in modules: PluginCommandsDeploy, PluginCommandsInstallation, PluginCommandsLicenses, PluginCommandsListing, PluginCommandsOutdated, PluginCommandsPublishing, PluginCommandsRebuild, PluginCommandsScriptRunners, PluginCommandsServer, Pnpm
+  - Fix: Review whether this module is becoming a coordination hub; split responsibilities, narrow public surfaces, or make the boundary explicit before considering enforcement.
+- `coupling_concentration`: Config has concentrated fan-in from 27 modules and fan-out to 11 modules.
+  - Observed: Config fan-in 27, fan-out 11
+  - Threshold: fan-in >= 4 or fan-out >= 4
+  - Fan-in modules: Cache2, CliUtils, DefaultReporter, Deps3, Exec2, MountModules, PluginCommandsAudit, PluginCommandsConfig, PluginCommandsDeploy, PluginCommandsDoctor, PluginCommandsEnv, PluginCommandsInit, PluginCommandsInstallation, PluginCommandsLicenses, PluginCommandsListing, PluginCommandsOutdated, PluginCommandsPatching, PluginCommandsPublishing, PluginCommandsRebuild, PluginCommandsScriptRunners, PluginCommandsServer, PluginCommandsStore, PluginCommandsStoreInspecting, Pnpm, StoreConnectionManager, Tools2, Workspace5
+  - Fan-out modules: Catalogs2, Catalogs4, Constants, Error, GitUtils, Logger, Matcher, Pnpmfile, ReadProjectManifest, Types, Workspace
+  - Fix: Review whether this module is becoming a coordination hub; split responsibilities, narrow public surfaces, or make the boundary explicit before considering enforcement.
+- `coupling_concentration`: Config2 has concentrated fan-in from 5 modules.
+  - Observed: Config2 fan-in from 5 modules
+  - Threshold: fan-in >= 4 or fan-out >= 4
+  - Fan-in modules: Config3, Exec2, PluginCommandsAudit, PluginCommandsInstallation, PluginCommandsPatching
+  - Fan-out modules: ReadProjectManifest, Types, Workspace2
+  - Fix: Review whether this module is becoming a coordination hub; split responsibilities, narrow public surfaces, or make the boundary explicit before considering enforcement.
+- `coupling_concentration`: Config3 has concentrated fan-out to 12 modules.
+  - Observed: Config3 fan-out to 12 modules
+  - Threshold: fan-in >= 4 or fan-out >= 4
+  - Fan-in modules: CliUtils, PluginCommandsInstallation
+  - Fan-out modules: Config2, CoreLoggers, Error, Fetch, Network, NpmResolver, PackageStore, ParseWantedDependency, PickRegistryForPackage, ReadModulesDir, ReadPackageJson, Types
+  - Fix: Review whether this module is becoming a coordination hub; split responsibilities, narrow public surfaces, or make the boundary explicit before considering enforcement.
+- `coupling_concentration`: Constants has concentrated fan-in from 26 modules.
+  - Observed: Constants fan-in from 26 modules
+  - Threshold: fan-in >= 4 or fan-out >= 4
+  - Fan-in modules: AssertProject, Cache2, CalcDepState, Config, Core, Deps, Deps3, Error, GetContext, Headless, Hoist, Lockfile10, Lockfile3, Lockfile8, NpmResolver, Outdated, PluginCommandsAudit, PluginCommandsDeploy, PluginCommandsInstallation, PluginCommandsLicenses, PluginCommandsRebuild, Pnpm, StorePath, Workspace, Workspace2, Workspace4
+  - Fix: Review whether this module is becoming a coordination hub; split responsibilities, narrow public surfaces, or make the boundary explicit before considering enforcement.
+- `coupling_concentration`: Core has concentrated fan-out to 38 modules.
+  - Observed: Core fan-out to 38 modules
+  - Threshold: fan-in >= 4 or fan-out >= 4
+  - Fan-in modules: PluginCommandsInstallation
+  - Fan-out modules: BuildModules, CalcDepState, Catalogs, Catalogs2, Constants, CoreLoggers, Crypto3, Error, GetContext, Headless, Hoist, Hooks, Hooks2, Lifecycle, LinkBins, Lockfile3, Lockfile4, Lockfile5, Lockfile6, Lockfile8, Lockfile9, LockfileToPnp, Logger, ManifestUtils, ModulesCleaner, ModulesYaml, NormalizeRegistries, ParseOverrides, ParseWantedDependency, Patching2, PkgManager, ReadProjectManifest, ResolveDependencies, ResolverBase, StoreControllerTypes, SymlinkDependency, Types, Worker
+  - Fix: Review whether this module is becoming a coordination hub; split responsibilities, narrow public surfaces, or make the boundary explicit before considering enforcement.
+- `coupling_concentration`: CoreLoggers has concentrated fan-in from 25 modules.
+  - Observed: CoreLoggers fan-in from 25 modules
+  - Threshold: fan-in >= 4 or fan-out >= 4
+  - Fan-in modules: BuildModules, Config3, Core, DefaultReporter, Deps, Fetch, Fs2, GetContext, Headless, Hoist, Lifecycle, ManifestUtils, ModulesCleaner, NpmResolver, PackageIsInstallable, PackageRequester, PkgManager, PluginCommandsRebuild, PluginCommandsScriptRunners, Pnpm, Pnpmfile, RemoveBins, ResolveDependencies, SymlinkDependency, TarballFetcher
+  - Fan-out modules: Logger, Types
+  - Fix: Review whether this module is becoming a coordination hub; split responsibilities, narrow public surfaces, or make the boundary explicit before considering enforcement.
+- `coupling_concentration`: CreateCafsStore has concentrated fan-out to 4 modules.
+  - Observed: CreateCafsStore fan-out to 4 modules
+  - Threshold: fan-in >= 4 or fan-out >= 4
+  - Fan-in modules: Node, PackageStore, Worker
+  - Fan-out modules: CafsTypes, Fs2, Store, StoreControllerTypes
+  - Fix: Review whether this module is becoming a coordination hub; split responsibilities, narrow public surfaces, or make the boundary explicit before considering enforcement.
+- `coupling_concentration`: Crypto2 has concentrated fan-in from 8 modules.
+  - Observed: Crypto2 fan-in from 8 modules
+  - Threshold: fan-in >= 4 or fan-out >= 4
+  - Fan-in modules: DependencyPath, LocalResolver, Lockfile5, Lockfile6, NpmResolver, PluginCommandsPatching, PluginCommandsScriptRunners, Pnpmfile
+  - Fan-out modules: Crypto, GracefulFs
+  - Fix: Review whether this module is becoming a coordination hub; split responsibilities, narrow public surfaces, or make the boundary explicit before considering enforcement.
+- `coupling_concentration`: Dedupe3 has concentrated fan-out to 4 modules.
+  - Observed: Dedupe3 fan-out to 4 modules
+  - Threshold: fan-in >= 4 or fan-out >= 4
+  - Fan-in modules: PluginCommandsInstallation
+  - Fan-out modules: Dedupe, Error, Lockfile, Types
+  - Fix: Review whether this module is becoming a coordination hub; split responsibilities, narrow public surfaces, or make the boundary explicit before considering enforcement.
+- `coupling_concentration`: DefaultReporter has concentrated fan-out to 9 modules.
+  - Observed: DefaultReporter fan-out to 9 modules
+  - Threshold: fan-in >= 4 or fan-out >= 4
+  - Fan-in modules: CliUtils, Pnpm
+  - Fan-out modules: CliMeta, Config, CoreLoggers, Dedupe, Dedupe2, Error, Logger, RenderPeerIssues, Types
+  - Fix: Review whether this module is becoming a coordination hub; split responsibilities, narrow public surfaces, or make the boundary explicit before considering enforcement.
+- `coupling_concentration`: DefaultResolver has concentrated fan-out to 7 modules.
+  - Observed: DefaultResolver fan-out to 7 modules
+  - Threshold: fan-in >= 4 or fan-out >= 4
+  - Fan-in modules: Client
+  - Fan-out modules: Error, FetchingTypes, GitResolver, LocalResolver, NpmResolver, ResolverBase, TarballResolver
+  - Fix: Review whether this module is becoming a coordination hub; split responsibilities, narrow public surfaces, or make the boundary explicit before considering enforcement.
+- `coupling_concentration`: DependencyPath has concentrated fan-in from 24 modules.
+  - Observed: DependencyPath fan-in from 24 modules
+  - Threshold: fan-in >= 4 or fan-out >= 4
+  - Fan-in modules: CalcDepState, Deps, Headless, Hoist, LicenseScanner, Lockfile10, Lockfile11, Lockfile3, Lockfile4, Lockfile6, Lockfile7, Lockfile8, LockfileToPnp, ModulesCleaner, MountModules, Outdated, PackageRequester, Patching2, PluginCommandsDeploy, PluginCommandsRebuild, PluginCommandsStore, RealHoist, ResolveDependencies, Reviewing
+  - Fan-out modules: Crypto2, Types
+  - Fix: Review whether this module is becoming a coordination hub; split responsibilities, narrow public surfaces, or make the boundary explicit before considering enforcement.
+- `coupling_concentration`: Deps has concentrated fan-out to 12 modules.
+  - Observed: Deps fan-out to 12 modules
+  - Threshold: fan-in >= 4 or fan-out >= 4
+  - Fan-in modules: Headless
+  - Fan-out modules: Constants, CoreLoggers, DependencyPath, Lockfile3, Lockfile4, Logger, ModulesYaml, PackageIsInstallable, Patching, Patching2, StoreControllerTypes, Types
+  - Fix: Review whether this module is becoming a coordination hub; split responsibilities, narrow public surfaces, or make the boundary explicit before considering enforcement.
+- `coupling_concentration`: Deps3 has concentrated fan-out to 16 modules.
+  - Observed: Deps3 fan-out to 16 modules
+  - Threshold: fan-in >= 4 or fan-out >= 4
+  - Fan-in modules: PluginCommandsInstallation, PluginCommandsScriptRunners
+  - Fan-out modules: Config, Constants, Crypto3, Error, GetContext, Lockfile3, Lockfile5, Lockfile6, Logger, ParseOverrides, Pnpmfile, ResolverBase, Types, Workspace, Workspace4, Workspace5
+  - Fix: Review whether this module is becoming a coordination hub; split responsibilities, narrow public surfaces, or make the boundary explicit before considering enforcement.
+- `coupling_concentration`: DirectoryFetcher has concentrated fan-in from 5 modules and fan-out to 6 modules.
+  - Observed: DirectoryFetcher fan-in 5, fan-out 6
+  - Threshold: fan-in >= 4 or fan-out >= 4
+  - Fan-in modules: Client, LicenseScanner, Lifecycle, PluginCommandsDeploy, Workspace7
+  - Fan-out modules: Exec, FetcherBase, Fs3, Logger, ReadProjectManifest, Types
+  - Fix: Review whether this module is becoming a coordination hub; split responsibilities, narrow public surfaces, or make the boundary explicit before considering enforcement.
+- `coupling_concentration`: Error has concentrated fan-in from 64 modules.
+  - Observed: Error fan-in from 64 modules
+  - Threshold: fan-in >= 4 or fan-out >= 4
+  - Fan-in modules: Audit, Cache2, Catalogs3, Catalogs4, CliUtils, Config, Config3, Core, Dedupe3, DefaultReporter, DefaultResolver, Deps3, ExportableManifest, FilterWorkspacePackages, FindWorkspaceDir, LicenseScanner, Lifecycle, LinkBins, LocalResolver, Lockfile3, Lockfile8, MakeDedicatedLockfile, Network, Node, NpmResolver, Outdated, PackageIsInstallable, PackageRequester, ParseCliArgs, ParseOverrides, Patching2, Patching3, PluginCommandsAudit, PluginCommandsCompletion, PluginCommandsConfig, PluginCommandsDeploy, PluginCommandsEnv, PluginCommandsInit, PluginCommandsInstallation, PluginCommandsLicenses, PluginCommandsListing, PluginCommandsOutdated, PluginCommandsPatching, PluginCommandsPublishing, PluginCommandsRebuild, PluginCommandsScriptRunners, PluginCommandsServer, PluginCommandsStore, PluginCommandsStoreInspecting, Pnpm, Pnpmfile, PreparePackage, ReadPackageJson, ReadProjectManifest, RealHoist, RenderPeerIssues, ResolveDependencies, StoreConnectionManager, StorePath, TarballFetcher, Tools2, Worker, Workspace, Workspace7
+  - Fan-out modules: Constants
+  - Fix: Review whether this module is becoming a coordination hub; split responsibilities, narrow public surfaces, or make the boundary explicit before considering enforcement.
+- `coupling_concentration`: Exec2 has concentrated fan-out to 6 modules.
+  - Observed: Exec2 fan-out to 6 modules
+  - Threshold: fan-in >= 4 or fan-out >= 4
+  - Fan-in modules: Pnpm
+  - Fan-out modules: Config, Config2, Logger, ModulesYaml, PluginCommandsRebuild, Types
+  - Fix: Review whether this module is becoming a coordination hub; split responsibilities, narrow public surfaces, or make the boundary explicit before considering enforcement.
+- `coupling_concentration`: ExportableManifest has concentrated fan-out to 5 modules.
+  - Observed: ExportableManifest fan-out to 5 modules
+  - Threshold: fan-in >= 4 or fan-out >= 4
+  - Fan-in modules: MakeDedicatedLockfile, PluginCommandsPublishing
+  - Fan-out modules: Catalogs2, Catalogs3, Error, ReadProjectManifest, Types
+  - Fix: Review whether this module is becoming a coordination hub; split responsibilities, narrow public surfaces, or make the boundary explicit before considering enforcement.
+- `coupling_concentration`: Fetch has concentrated fan-in from 6 modules.
+  - Observed: Fetch fan-in from 6 modules
+  - Threshold: fan-in >= 4 or fan-out >= 4
+  - Fan-in modules: Audit, Client, Config3, GitResolver, PluginCommandsEnv, Server
+  - Fan-out modules: CoreLoggers, FetchingTypes, Types
+  - Fix: Review whether this module is becoming a coordination hub; split responsibilities, narrow public surfaces, or make the boundary explicit before considering enforcement.
+- `coupling_concentration`: FetcherBase has concentrated fan-in from 8 modules.
+  - Observed: FetcherBase fan-in from 8 modules
+  - Threshold: fan-in >= 4 or fan-out >= 4
+  - Fan-in modules: Client, DirectoryFetcher, GitFetcher, PackageRequester, PackageStore, PickFetcher, Pnpmfile, TarballFetcher
+  - Fan-out modules: CafsTypes, ResolverBase, Types
+  - Fix: Review whether this module is becoming a coordination hub; split responsibilities, narrow public surfaces, or make the boundary explicit before considering enforcement.
+- `coupling_concentration`: FetchingTypes has concentrated fan-in from 9 modules.
+  - Observed: FetchingTypes fan-in from 9 modules
+  - Threshold: fan-in >= 4 or fan-out >= 4
+  - Fan-in modules: Audit, Client, DefaultResolver, Fetch, Node, Node2, NpmResolver, TarballFetcher, TarballResolver
+  - Fix: Review whether this module is becoming a coordination hub; split responsibilities, narrow public surfaces, or make the boundary explicit before considering enforcement.
+- `coupling_concentration`: FilterWorkspacePackages has concentrated fan-out to 5 modules.
+  - Observed: FilterWorkspacePackages fan-out to 5 modules
+  - Threshold: fan-in >= 4 or fan-out >= 4
+  - Fan-in modules: PluginCommandsInstallation, Pnpm, Workspace8
+  - Fan-out modules: Error, Matcher, Types, Workspace4, Workspace6
+  - Fix: Review whether this module is becoming a coordination hub; split responsibilities, narrow public surfaces, or make the boundary explicit before considering enforcement.
+- `coupling_concentration`: Fs2 has concentrated fan-out to 4 modules.
+  - Observed: Fs2 fan-out to 4 modules
+  - Threshold: fan-in >= 4 or fan-out >= 4
+  - Fan-in modules: CreateCafsStore, PluginCommandsDeploy
+  - Fan-out modules: CoreLoggers, GracefulFs, Logger, StoreControllerTypes
+  - Fix: Review whether this module is becoming a coordination hub; split responsibilities, narrow public surfaces, or make the boundary explicit before considering enforcement.
+- `coupling_concentration`: Fs3 has concentrated fan-in from 5 modules.
+  - Observed: Fs3 fan-in from 5 modules
+  - Threshold: fan-in >= 4 or fan-out >= 4
+  - Fan-in modules: DirectoryFetcher, GitFetcher, PluginCommandsPatching, PluginCommandsPublishing, TarballFetcher
+  - Fix: Review whether this module is becoming a coordination hub; split responsibilities, narrow public surfaces, or make the boundary explicit before considering enforcement.
+- `coupling_concentration`: GetContext has concentrated fan-in from 6 modules and fan-out to 8 modules.
+  - Observed: GetContext fan-in 6, fan-out 8
+  - Threshold: fan-in >= 4 or fan-out >= 4
+  - Fan-in modules: Core, Deps3, Lockfile6, PluginCommandsInstallation, PluginCommandsRebuild, PluginCommandsStore
+  - Fan-out modules: Constants, CoreLoggers, Lockfile3, Logger, ModulesYaml, ReadProjectsContext, ResolverBase, Types
+  - Fix: Review whether this module is becoming a coordination hub; split responsibilities, narrow public surfaces, or make the boundary explicit before considering enforcement.
+- `coupling_concentration`: GitFetcher has concentrated fan-out to 5 modules.
+  - Observed: GitFetcher fan-out to 5 modules
+  - Threshold: fan-in >= 4 or fan-out >= 4
+  - Fan-in modules: Client
+  - Fan-out modules: FetcherBase, Fs3, Logger, PreparePackage, Worker
+  - Fix: Review whether this module is becoming a coordination hub; split responsibilities, narrow public surfaces, or make the boundary explicit before considering enforcement.
+- `coupling_concentration`: GracefulFs has concentrated fan-in from 10 modules.
+  - Observed: GracefulFs fan-in from 10 modules
+  - Threshold: fan-in >= 4 or fan-out >= 4
+  - Fan-in modules: Crypto2, Fs2, NpmResolver, PackageRequester, PluginCommandsInstallation, PluginCommandsStoreInspecting, ReadProjectManifest, Store, TarballFetcher, Worker
+  - Fix: Review whether this module is becoming a coordination hub; split responsibilities, narrow public surfaces, or make the boundary explicit before considering enforcement.
+- `coupling_concentration`: Headless has concentrated fan-out to 26 modules.
+  - Observed: Headless fan-out to 26 modules
+  - Threshold: fan-in >= 4 or fan-out >= 4
+  - Fan-in modules: Core
+  - Fan-out modules: BuildModules, CalcDepState, Constants, CoreLoggers, DependencyPath, Deps, Hoist, Lifecycle, LinkBins, Lockfile3, Lockfile4, Lockfile8, LockfileToPnp, Logger, ModulesCleaner, ModulesYaml, PackageIsInstallable, Patching2, PkgManager, ReadPackageJson, ReadProjectManifest, RealHoist, StoreControllerTypes, SymlinkDependency, Types, Worker
+  - Fix: Review whether this module is becoming a coordination hub; split responsibilities, narrow public surfaces, or make the boundary explicit before considering enforcement.
+- `coupling_concentration`: Hoist has concentrated fan-out to 9 modules.
+  - Observed: Hoist fan-out to 9 modules
+  - Threshold: fan-in >= 4 or fan-out >= 4
+  - Fan-in modules: Core, Headless
+  - Fan-out modules: Constants, CoreLoggers, DependencyPath, LinkBins, Lockfile4, Lockfile7, Logger, Matcher, Types
+  - Fix: Review whether this module is becoming a coordination hub; split responsibilities, narrow public surfaces, or make the boundary explicit before considering enforcement.
+- `coupling_concentration`: Hooks2 has concentrated fan-out to 5 modules.
+  - Observed: Hooks2 fan-out to 5 modules
+  - Threshold: fan-in >= 4 or fan-out >= 4
+  - Fan-in modules: Core, Outdated
+  - Fan-out modules: Matcher, ParseOverrides, ParseWantedDependency, Semver, Types
+  - Fix: Review whether this module is becoming a coordination hub; split responsibilities, narrow public surfaces, or make the boundary explicit before considering enforcement.
+- `coupling_concentration`: LicenseScanner has concentrated fan-out to 12 modules.
+  - Observed: LicenseScanner fan-out to 12 modules
+  - Threshold: fan-in >= 4 or fan-out >= 4
+  - Fan-in modules: PluginCommandsLicenses
+  - Fan-out modules: DependencyPath, DirectoryFetcher, Error, Lockfile, Lockfile11, Lockfile3, Lockfile4, Lockfile7, PackageIsInstallable, ReadPackageJson, Store, Types
+  - Fix: Review whether this module is becoming a coordination hub; split responsibilities, narrow public surfaces, or make the boundary explicit before considering enforcement.
+- `coupling_concentration`: Lifecycle has concentrated fan-in from 7 modules and fan-out to 8 modules.
+  - Observed: Lifecycle fan-in 7, fan-out 8
+  - Threshold: fan-in >= 4 or fan-out >= 4
+  - Fan-in modules: BuildModules, Core, Headless, PluginCommandsPublishing, PluginCommandsRebuild, PluginCommandsScriptRunners, PreparePackage
+  - Fan-out modules: CoreLoggers, DirectoryFetcher, Error, LinkBins, Logger, ReadPackageJson, StoreControllerTypes, Types
+  - Fix: Review whether this module is becoming a coordination hub; split responsibilities, narrow public surfaces, or make the boundary explicit before considering enforcement.
+- `coupling_concentration`: LinkBins has concentrated fan-in from 7 modules and fan-out to 8 modules.
+  - Observed: LinkBins fan-in 7, fan-out 8
+  - Threshold: fan-in >= 4 or fan-out >= 4
+  - Fan-in modules: BuildModules, Core, Headless, Hoist, Lifecycle, PluginCommandsRebuild, Tools2
+  - Fan-out modules: Error, Logger, ManifestUtils, PackageBins, ReadModulesDir, ReadPackageJson, ReadProjectManifest, Types
+  - Fix: Review whether this module is becoming a coordination hub; split responsibilities, narrow public surfaces, or make the boundary explicit before considering enforcement.
+- `coupling_concentration`: List has concentrated fan-out to 5 modules.
+  - Observed: List fan-out to 5 modules
+  - Threshold: fan-in >= 4 or fan-out >= 4
+  - Fan-in modules: PluginCommandsListing
+  - Fan-out modules: Crypto, ReadPackageJson, ReadProjectManifest, Reviewing, Types
+  - Fix: Review whether this module is becoming a coordination hub; split responsibilities, narrow public surfaces, or make the boundary explicit before considering enforcement.
+- `coupling_concentration`: LocalResolver has concentrated fan-out to 6 modules.
+  - Observed: LocalResolver fan-out to 6 modules
+  - Threshold: fan-in >= 4 or fan-out >= 4
+  - Fan-in modules: DefaultResolver
+  - Fan-out modules: Crypto2, Error, Logger, ReadProjectManifest, ResolverBase, Types
+  - Fix: Review whether this module is becoming a coordination hub; split responsibilities, narrow public surfaces, or make the boundary explicit before considering enforcement.
+- `coupling_concentration`: Lockfile has concentrated fan-in from 22 modules.
+  - Observed: Lockfile fan-in from 22 modules
+  - Threshold: fan-in >= 4 or fan-out >= 4
+  - Fan-in modules: AssertProject, Audit, CalcDepState, Dedupe3, Hooks, LicenseScanner, Lockfile10, Lockfile11, Lockfile2, Lockfile3, Lockfile4, Lockfile5, Lockfile6, Lockfile7, Lockfile8, ModulesCleaner, PluginCommandsDeploy, PluginCommandsInstallation, PluginCommandsRebuild, PluginCommandsStoreInspecting, Pnpmfile, ResolveDependencies
+  - Fan-out modules: Patching, Types
+  - Fix: Review whether this module is becoming a coordination hub; split responsibilities, narrow public surfaces, or make the boundary explicit before considering enforcement.
+- `coupling_concentration`: Lockfile10 has concentrated fan-out to 4 modules.
+  - Observed: Lockfile10 fan-out to 4 modules
+  - Threshold: fan-in >= 4 or fan-out >= 4
+  - Fan-in modules: MakeDedicatedLockfile, ResolveDependencies
+  - Fan-out modules: Constants, DependencyPath, Lockfile, Types
+  - Fix: Review whether this module is becoming a coordination hub; split responsibilities, narrow public surfaces, or make the boundary explicit before considering enforcement.
+- `coupling_concentration`: Lockfile3 has concentrated fan-in from 17 modules and fan-out to 9 modules.
+  - Observed: Lockfile3 fan-in 17, fan-out 9
+  - Threshold: fan-in >= 4 or fan-out >= 4
+  - Fan-in modules: Core, Deps, Deps3, GetContext, Headless, LicenseScanner, LockfileToPnp, MakeDedicatedLockfile, MountModules, Outdated, PluginCommandsAudit, PluginCommandsDeploy, PluginCommandsLicenses, PluginCommandsPatching, ReadProjectsContext, Reviewing, Updater
+  - Fan-out modules: Constants, DependencyPath, Error, GitUtils, Lockfile, Lockfile2, Logger, Object, Types
+  - Fix: Review whether this module is becoming a coordination hub; split responsibilities, narrow public surfaces, or make the boundary explicit before considering enforcement.
+- `coupling_concentration`: Lockfile4 has concentrated fan-in from 19 modules and fan-out to 5 modules.
+  - Observed: Lockfile4 fan-in 19, fan-out 5
+  - Threshold: fan-in >= 4 or fan-out >= 4
+  - Fan-in modules: Audit, Core, Deps, Headless, Hoist, LicenseScanner, Lockfile6, Lockfile8, Lockfile9, LockfileToPnp, ModulesCleaner, MountModules, Outdated, PluginCommandsPatching, PluginCommandsRebuild, PluginCommandsStore, RealHoist, ResolveDependencies, Reviewing
+  - Fan-out modules: DependencyPath, Lockfile, PickFetcher, ResolverBase, Types
+  - Fix: Review whether this module is becoming a coordination hub; split responsibilities, narrow public surfaces, or make the boundary explicit before considering enforcement.
+- `coupling_concentration`: Lockfile6 has concentrated fan-out to 9 modules.
+  - Observed: Lockfile6 fan-out to 9 modules
+  - Threshold: fan-in >= 4 or fan-out >= 4
+  - Fan-in modules: Core, Deps3
+  - Fan-out modules: Catalogs2, Crypto2, DependencyPath, GetContext, Lockfile, Lockfile4, ReadPackageJson, ResolverBase, Types
+  - Fix: Review whether this module is becoming a coordination hub; split responsibilities, narrow public surfaces, or make the boundary explicit before considering enforcement.
+- `coupling_concentration`: Lockfile7 has concentrated fan-in from 5 modules.
+  - Observed: Lockfile7 fan-in from 5 modules
+  - Threshold: fan-in >= 4 or fan-out >= 4
+  - Fan-in modules: Audit, Hoist, LicenseScanner, Lockfile8, PluginCommandsRebuild
+  - Fan-out modules: DependencyPath, Lockfile, Types
+  - Fix: Review whether this module is becoming a coordination hub; split responsibilities, narrow public surfaces, or make the boundary explicit before considering enforcement.
+- `coupling_concentration`: Lockfile8 has concentrated fan-out to 9 modules.
+  - Observed: Lockfile8 fan-out to 9 modules
+  - Threshold: fan-in >= 4 or fan-out >= 4
+  - Fan-in modules: Core, Headless, ModulesCleaner
+  - Fan-out modules: Constants, DependencyPath, Error, Lockfile, Lockfile4, Lockfile7, Logger, PackageIsInstallable, Types
+  - Fix: Review whether this module is becoming a coordination hub; split responsibilities, narrow public surfaces, or make the boundary explicit before considering enforcement.
+- `coupling_concentration`: Lockfile9 has concentrated fan-out to 4 modules.
+  - Observed: Lockfile9 fan-out to 4 modules
+  - Threshold: fan-in >= 4 or fan-out >= 4
+  - Fan-in modules: Core, ResolveDependencies
+  - Fan-out modules: Lockfile4, ManifestUtils, ResolverBase, Types
+  - Fix: Review whether this module is becoming a coordination hub; split responsibilities, narrow public surfaces, or make the boundary explicit before considering enforcement.
+- `coupling_concentration`: LockfileToPnp has concentrated fan-out to 4 modules.
+  - Observed: LockfileToPnp fan-out to 4 modules
+  - Threshold: fan-in >= 4 or fan-out >= 4
+  - Fan-in modules: Core, Headless
+  - Fan-out modules: DependencyPath, Lockfile3, Lockfile4, Types
+  - Fix: Review whether this module is becoming a coordination hub; split responsibilities, narrow public surfaces, or make the boundary explicit before considering enforcement.
+- `coupling_concentration`: Logger has concentrated fan-in from 49 modules.
+  - Observed: Logger fan-in from 49 modules
+  - Threshold: fan-in >= 4 or fan-out >= 4
+  - Fan-in modules: BuildModules, CliUtils, Config, Core, CoreLoggers, DefaultReporter, Deps, Deps3, DirectoryFetcher, Exec2, Fs, Fs2, GetContext, GitFetcher, Headless, Hoist, Lifecycle, LinkBins, LocalResolver, Lockfile3, Lockfile8, ModulesCleaner, NpmResolver, PackageRequester, PackageStore, Patching2, Patching3, PluginCommandsDeploy, PluginCommandsDoctor, PluginCommandsEnv, PluginCommandsInstallation, PluginCommandsListing, PluginCommandsPatching, PluginCommandsPublishing, PluginCommandsRebuild, PluginCommandsScriptRunners, PluginCommandsServer, PluginCommandsSetup, PluginCommandsStore, Pnpm, Pnpmfile, ResolveDependencies, Server, StoreConnectionManager, TarballFetcher, Tools2, Workspace4, Workspace5, Workspace7
+  - Fix: Review whether this module is becoming a coordination hub; split responsibilities, narrow public surfaces, or make the boundary explicit before considering enforcement.
+- `coupling_concentration`: MakeDedicatedLockfile has concentrated fan-out to 7 modules.
+  - Observed: MakeDedicatedLockfile fan-out to 7 modules
+  - Threshold: fan-in >= 4 or fan-out >= 4
+  - Fan-out modules: Error, ExportableManifest, FindWorkspaceDir, Lockfile10, Lockfile3, ReadProjectManifest, Types
+  - Fix: Review whether this module is becoming a coordination hub; split responsibilities, narrow public surfaces, or make the boundary explicit before considering enforcement.
+- `coupling_concentration`: ManifestUtils has concentrated fan-in from 7 modules.
+  - Observed: ManifestUtils fan-in from 7 modules
+  - Threshold: fan-in >= 4 or fan-out >= 4
+  - Fan-in modules: CliUtils, Core, LinkBins, Lockfile9, Outdated, PluginCommandsInstallation, ResolveDependencies
+  - Fan-out modules: CoreLoggers, Types
+  - Fix: Review whether this module is becoming a coordination hub; split responsibilities, narrow public surfaces, or make the boundary explicit before considering enforcement.
+- `coupling_concentration`: Matcher has concentrated fan-in from 8 modules.
+  - Observed: Matcher fan-in from 8 modules
+  - Threshold: fan-in >= 4 or fan-out >= 4
+  - Fan-in modules: Config, FilterWorkspacePackages, Hoist, Hooks2, Outdated, PluginCommandsInstallation, RenderPeerIssues, Reviewing
+  - Fix: Review whether this module is becoming a coordination hub; split responsibilities, narrow public surfaces, or make the boundary explicit before considering enforcement.
+- `coupling_concentration`: ModulesCleaner has concentrated fan-out to 10 modules.
+  - Observed: ModulesCleaner fan-out to 10 modules
+  - Threshold: fan-in >= 4 or fan-out >= 4
+  - Fan-in modules: Core, Headless
+  - Fan-out modules: CoreLoggers, DependencyPath, Lockfile, Lockfile4, Lockfile8, Logger, ReadModulesDir, RemoveBins, StoreControllerTypes, Types
+  - Fix: Review whether this module is becoming a coordination hub; split responsibilities, narrow public surfaces, or make the boundary explicit before considering enforcement.
+- `coupling_concentration`: ModulesYaml has concentrated fan-in from 12 modules.
+  - Observed: ModulesYaml fan-in from 12 modules
+  - Threshold: fan-in >= 4 or fan-out >= 4
+  - Fan-in modules: AssertProject, Core, Deps, Exec2, GetContext, Headless, Outdated, PluginCommandsPatching, PluginCommandsRebuild, ReadProjectsContext, Reviewing, Workspace7
+  - Fan-out modules: Types
+  - Fix: Review whether this module is becoming a coordination hub; split responsibilities, narrow public surfaces, or make the boundary explicit before considering enforcement.
+- `coupling_concentration`: MountModules has concentrated fan-out to 7 modules.
+  - Observed: MountModules fan-out to 7 modules
+  - Threshold: fan-in >= 4 or fan-out >= 4
+  - Fan-out modules: Config, DependencyPath, Lockfile3, Lockfile4, Store, StorePath, Types
+  - Fix: Review whether this module is becoming a coordination hub; split responsibilities, narrow public surfaces, or make the boundary explicit before considering enforcement.
+- `coupling_concentration`: Network has concentrated fan-in from 4 modules.
+  - Observed: Network fan-in from 4 modules
+  - Threshold: fan-in >= 4 or fan-out >= 4
+  - Fan-in modules: Client, Config3, PluginCommandsAudit, PluginCommandsPublishing
+  - Fan-out modules: Error
+  - Fix: Review whether this module is becoming a coordination hub; split responsibilities, narrow public surfaces, or make the boundary explicit before considering enforcement.
+- `coupling_concentration`: Node has concentrated fan-out to 5 modules.
+  - Observed: Node fan-out to 5 modules
+  - Threshold: fan-in >= 4 or fan-out >= 4
+  - Fan-in modules: PluginCommandsEnv
+  - Fan-out modules: CreateCafsStore, Error, FetchingTypes, PickFetcher, TarballFetcher
+  - Fix: Review whether this module is becoming a coordination hub; split responsibilities, narrow public surfaces, or make the boundary explicit before considering enforcement.
+- `coupling_concentration`: NormalizeRegistries has concentrated fan-in from 5 modules.
+  - Observed: NormalizeRegistries fan-in from 5 modules
+  - Threshold: fan-in >= 4 or fan-out >= 4
+  - Fan-in modules: Core, PluginCommandsRebuild, PluginCommandsStore, ReadProjectsContext, Reviewing
+  - Fan-out modules: Types
+  - Fix: Review whether this module is becoming a coordination hub; split responsibilities, narrow public surfaces, or make the boundary explicit before considering enforcement.
+- `coupling_concentration`: NpmResolver has concentrated fan-in from 6 modules and fan-out to 12 modules.
+  - Observed: NpmResolver fan-in 6, fan-out 12
+  - Threshold: fan-in >= 4 or fan-out >= 4
+  - Fan-in modules: Cache, Config3, DefaultResolver, Outdated, ResolveDependencies, Workspace6
+  - Fan-out modules: Constants, CoreLoggers, Crypto2, Error, FetchingTypes, GracefulFs, Logger, PickRegistryForPackage, ResolveWorkspaceRange, ResolverBase, Types, Workspace3
+  - Fix: Review whether this module is becoming a coordination hub; split responsibilities, narrow public surfaces, or make the boundary explicit before considering enforcement.
+- `coupling_concentration`: Object has concentrated fan-in from 6 modules.
+  - Observed: Object fan-in from 6 modules
+  - Threshold: fan-in >= 4 or fan-out >= 4
+  - Fan-in modules: CalcDepState, Lockfile3, PluginCommandsConfig, PluginCommandsInit, PluginCommandsStoreInspecting, Updater
+  - Fix: Review whether this module is becoming a coordination hub; split responsibilities, narrow public surfaces, or make the boundary explicit before considering enforcement.
+- `coupling_concentration`: Outdated has concentrated fan-out to 16 modules.
+  - Observed: Outdated fan-out to 16 modules
+  - Threshold: fan-in >= 4 or fan-out >= 4
+  - Fan-in modules: PluginCommandsInstallation, PluginCommandsOutdated
+  - Fan-out modules: Catalogs2, Catalogs3, Client, Constants, DependencyPath, Error, Hooks2, Lockfile3, Lockfile4, ManifestUtils, Matcher, ModulesYaml, NpmResolver, ParseOverrides, PickRegistryForPackage, Types
+  - Fix: Review whether this module is becoming a coordination hub; split responsibilities, narrow public surfaces, or make the boundary explicit before considering enforcement.
+- `coupling_concentration`: PackageBins has concentrated fan-in from 4 modules.
+  - Observed: PackageBins fan-in from 4 modules
+  - Threshold: fan-in >= 4 or fan-out >= 4
+  - Fan-in modules: LinkBins, PluginCommandsPublishing, PluginCommandsScriptRunners, RemoveBins
+  - Fan-out modules: Types
+  - Fix: Review whether this module is becoming a coordination hub; split responsibilities, narrow public surfaces, or make the boundary explicit before considering enforcement.
+- `coupling_concentration`: PackageIsInstallable has concentrated fan-in from 6 modules and fan-out to 4 modules.
+  - Observed: PackageIsInstallable fan-in 6, fan-out 4
+  - Threshold: fan-in >= 4 or fan-out >= 4
+  - Fan-in modules: CliUtils, Deps, Headless, LicenseScanner, Lockfile8, PackageRequester
+  - Fan-out modules: CoreLoggers, Env, Error, Types
+  - Fix: Review whether this module is becoming a coordination hub; split responsibilities, narrow public surfaces, or make the boundary explicit before considering enforcement.
+- `coupling_concentration`: PackageRequester has concentrated fan-out to 15 modules.
+  - Observed: PackageRequester fan-out to 15 modules
+  - Threshold: fan-in >= 4 or fan-out >= 4
+  - Fan-in modules: PackageStore
+  - Fan-out modules: CafsTypes, CoreLoggers, DependencyPath, Error, FetcherBase, GracefulFs, Logger, PackageIsInstallable, PickFetcher, ReadPackageJson, ResolverBase, Store, StoreControllerTypes, Types, Worker
+  - Fix: Review whether this module is becoming a coordination hub; split responsibilities, narrow public surfaces, or make the boundary explicit before considering enforcement.
+- `coupling_concentration`: PackageStore has concentrated fan-in from 4 modules and fan-out to 8 modules.
+  - Observed: PackageStore fan-in 4, fan-out 8
+  - Threshold: fan-in >= 4 or fan-out >= 4
+  - Fan-in modules: Config3, PluginCommandsInstallation, StoreConnectionManager, Testing
+  - Fan-out modules: CreateCafsStore, FetcherBase, Logger, PackageRequester, ResolverBase, Store, StoreControllerTypes, Worker
+  - Fix: Review whether this module is becoming a coordination hub; split responsibilities, narrow public surfaces, or make the boundary explicit before considering enforcement.
+- `coupling_concentration`: ParseOverrides has concentrated fan-in from 7 modules and fan-out to 4 modules.
+  - Observed: ParseOverrides fan-in 7, fan-out 4
+  - Threshold: fan-in >= 4 or fan-out >= 4
+  - Fan-in modules: Core, Deps3, Hooks2, Lockfile5, Outdated, RenderPeerIssues, Updater
+  - Fan-out modules: Catalogs2, Catalogs3, Error, ParseWantedDependency
+  - Fix: Review whether this module is becoming a coordination hub; split responsibilities, narrow public surfaces, or make the boundary explicit before considering enforcement.
+- `coupling_concentration`: ParseWantedDependency has concentrated fan-in from 9 modules.
+  - Observed: ParseWantedDependency fan-in from 9 modules
+  - Threshold: fan-in >= 4 or fan-out >= 4
+  - Fan-in modules: Config3, Core, Hooks2, ParseOverrides, PluginCommandsInstallation, PluginCommandsPatching, PluginCommandsScriptRunners, PluginCommandsStore, PluginCommandsStoreInspecting
+  - Fix: Review whether this module is becoming a coordination hub; split responsibilities, narrow public surfaces, or make the boundary explicit before considering enforcement.
+- `coupling_concentration`: Patching has concentrated fan-in from 5 modules.
+  - Observed: Patching fan-in from 5 modules
+  - Threshold: fan-in >= 4 or fan-out >= 4
+  - Fan-in modules: BuildModules, Deps, Lockfile, Patching2, ResolveDependencies
+  - Fix: Review whether this module is becoming a coordination hub; split responsibilities, narrow public surfaces, or make the boundary explicit before considering enforcement.
+- `coupling_concentration`: Patching2 has concentrated fan-in from 4 modules and fan-out to 4 modules.
+  - Observed: Patching2 fan-in 4, fan-out 4
+  - Threshold: fan-in >= 4 or fan-out >= 4
+  - Fan-in modules: Core, Deps, Headless, ResolveDependencies
+  - Fan-out modules: DependencyPath, Error, Logger, Patching
+  - Fix: Review whether this module is becoming a coordination hub; split responsibilities, narrow public surfaces, or make the boundary explicit before considering enforcement.
+- `coupling_concentration`: PickFetcher has concentrated fan-in from 4 modules.
+  - Observed: PickFetcher fan-in from 4 modules
+  - Threshold: fan-in >= 4 or fan-out >= 4
+  - Fan-in modules: Lockfile4, Node, PackageRequester, PluginCommandsPatching
+  - Fan-out modules: FetcherBase, ResolverBase
+  - Fix: Review whether this module is becoming a coordination hub; split responsibilities, narrow public surfaces, or make the boundary explicit before considering enforcement.
+- `coupling_concentration`: PickRegistryForPackage has concentrated fan-in from 4 modules.
+  - Observed: PickRegistryForPackage fan-in from 4 modules
+  - Threshold: fan-in >= 4 or fan-out >= 4
+  - Fan-in modules: Config3, NpmResolver, Outdated, PluginCommandsPublishing
+  - Fan-out modules: Types
+  - Fix: Review whether this module is becoming a coordination hub; split responsibilities, narrow public surfaces, or make the boundary explicit before considering enforcement.
+- `coupling_concentration`: PluginCommandsAudit has concentrated fan-out to 9 modules.
+  - Observed: PluginCommandsAudit fan-out to 9 modules
+  - Threshold: fan-in >= 4 or fan-out >= 4
+  - Fan-in modules: Pnpm
+  - Fan-out modules: Audit, CliUtils, Config, Config2, Constants, Error, Lockfile3, Network, Types
+  - Fix: Review whether this module is becoming a coordination hub; split responsibilities, narrow public surfaces, or make the boundary explicit before considering enforcement.
+- `coupling_concentration`: PluginCommandsCompletion has concentrated fan-out to 7 modules.
+  - Observed: PluginCommandsCompletion fan-out to 7 modules
+  - Threshold: fan-in >= 4 or fan-out >= 4
+  - Fan-in modules: Pnpm
+  - Fan-out modules: CliUtils, Command, Error, FindWorkspaceDir, ParseCliArgs, Workspace, Workspace4
+  - Fix: Review whether this module is becoming a coordination hub; split responsibilities, narrow public surfaces, or make the boundary explicit before considering enforcement.
+- `coupling_concentration`: PluginCommandsConfig has concentrated fan-out to 6 modules.
+  - Observed: PluginCommandsConfig fan-out to 6 modules
+  - Threshold: fan-in >= 4 or fan-out >= 4
+  - Fan-in modules: Pnpm
+  - Fan-out modules: CliUtils, Config, Error, Object, RunNpm, Workspace2
+  - Fix: Review whether this module is becoming a coordination hub; split responsibilities, narrow public surfaces, or make the boundary explicit before considering enforcement.
+- `coupling_concentration`: PluginCommandsDeploy has concentrated fan-out to 14 modules.
+  - Observed: PluginCommandsDeploy fan-out to 14 modules
+  - Threshold: fan-in >= 4 or fan-out >= 4
+  - Fan-in modules: Pnpm
+  - Fan-out modules: CliUtils, CommonCliOptionsHelp, Config, Constants, DependencyPath, DirectoryFetcher, Error, Fs2, Fs5, Lockfile, Lockfile3, Logger, PluginCommandsInstallation, Types
+  - Fix: Review whether this module is becoming a coordination hub; split responsibilities, narrow public surfaces, or make the boundary explicit before considering enforcement.
+- `coupling_concentration`: PluginCommandsEnv has concentrated fan-in from 4 modules and fan-out to 11 modules.
+  - Observed: PluginCommandsEnv fan-in 4, fan-out 11
+  - Threshold: fan-in >= 4 or fan-out >= 4
+  - Fan-in modules: PluginCommandsInstallation, PluginCommandsPublishing, PluginCommandsScriptRunners, Pnpm
+  - Fan-out modules: CliUtils, Config, Env, Error, Fetch, Logger, Node, Node2, RemoveBins, StorePath, Types
+  - Fix: Review whether this module is becoming a coordination hub; split responsibilities, narrow public surfaces, or make the boundary explicit before considering enforcement.
+- `coupling_concentration`: PluginCommandsInit has concentrated fan-out to 7 modules.
+  - Observed: PluginCommandsInit fan-out to 7 modules
+  - Threshold: fan-in >= 4 or fan-out >= 4
+  - Fan-in modules: Pnpm
+  - Fan-out modules: CliMeta, CliUtils, Config, Error, Object, Types, WriteProjectManifest
+  - Fix: Review whether this module is becoming a coordination hub; split responsibilities, narrow public surfaces, or make the boundary explicit before considering enforcement.
+- `coupling_concentration`: PluginCommandsInstallation has concentrated fan-in from 4 modules and fan-out to 33 modules.
+  - Observed: PluginCommandsInstallation fan-in 4, fan-out 33
+  - Threshold: fan-in >= 4 or fan-out >= 4
+  - Fan-in modules: PluginCommandsDeploy, PluginCommandsPatching, PluginCommandsScriptRunners, Pnpm
+  - Fan-out modules: CliUtils, Command, CommonCliOptionsHelp, Config, Config2, Config3, Constants, Core, Dedupe3, Deps3, Error, FilterWorkspacePackages, GetContext, GracefulFs, Lockfile, Logger, ManifestUtils, Matcher, Outdated, PackageStore, ParseWantedDependency, PluginCommandsEnv, PluginCommandsRebuild, Pnpmfile, ReadProjectManifest, ResolverBase, SortPackages, StoreConnectionManager, Types, Workspace4, Workspace5, Workspace6, WriteProjectManifest
+  - Fix: Review whether this module is becoming a coordination hub; split responsibilities, narrow public surfaces, or make the boundary explicit before considering enforcement.
+- `coupling_concentration`: PluginCommandsLicenses has concentrated fan-out to 9 modules.
+  - Observed: PluginCommandsLicenses fan-out to 9 modules
+  - Threshold: fan-in >= 4 or fan-out >= 4
+  - Fan-in modules: Pnpm
+  - Fan-out modules: CliUtils, Command, CommonCliOptionsHelp, Config, Constants, Error, LicenseScanner, Lockfile3, StorePath
+  - Fix: Review whether this module is becoming a coordination hub; split responsibilities, narrow public surfaces, or make the boundary explicit before considering enforcement.
+- `coupling_concentration`: PluginCommandsListing has concentrated fan-out to 7 modules.
+  - Observed: PluginCommandsListing fan-out to 7 modules
+  - Threshold: fan-in >= 4 or fan-out >= 4
+  - Fan-in modules: Pnpm
+  - Fan-out modules: CliUtils, CommonCliOptionsHelp, Config, Error, List, Logger, Types
+  - Fix: Review whether this module is becoming a coordination hub; split responsibilities, narrow public surfaces, or make the boundary explicit before considering enforcement.
+- `coupling_concentration`: PluginCommandsOutdated has concentrated fan-out to 7 modules.
+  - Observed: PluginCommandsOutdated fan-out to 7 modules
+  - Threshold: fan-in >= 4 or fan-out >= 4
+  - Fan-in modules: Pnpm
+  - Fan-out modules: CliUtils, Command, CommonCliOptionsHelp, Config, Error, Outdated, Types
+  - Fix: Review whether this module is becoming a coordination hub; split responsibilities, narrow public surfaces, or make the boundary explicit before considering enforcement.
+- `coupling_concentration`: PluginCommandsPatching has concentrated fan-out to 18 modules.
+  - Observed: PluginCommandsPatching fan-out to 18 modules
+  - Threshold: fan-in >= 4 or fan-out >= 4
+  - Fan-in modules: Pnpm
+  - Fan-out modules: CliUtils, Config, Config2, Crypto2, Error, Fs3, Lockfile3, Lockfile4, Logger, ModulesYaml, ParseWantedDependency, Patching3, PickFetcher, PluginCommandsInstallation, ReadPackageJson, StoreConnectionManager, StorePath, Types
+  - Fix: Review whether this module is becoming a coordination hub; split responsibilities, narrow public surfaces, or make the boundary explicit before considering enforcement.
+- `coupling_concentration`: PluginCommandsPublishing has concentrated fan-out to 19 modules.
+  - Observed: PluginCommandsPublishing fan-out to 19 modules
+  - Threshold: fan-in >= 4 or fan-out >= 4
+  - Fan-in modules: Pnpm
+  - Fan-out modules: Catalogs2, CliUtils, Client, CommonCliOptionsHelp, Config, Error, ExportableManifest, Fs3, GitUtils, Lifecycle, Logger, Network, PackageBins, PickRegistryForPackage, PluginCommandsEnv, ResolverBase, RunNpm, SortPackages, Types
+  - Fix: Review whether this module is becoming a coordination hub; split responsibilities, narrow public surfaces, or make the boundary explicit before considering enforcement.
+- `coupling_concentration`: PluginCommandsRebuild has concentrated fan-out to 26 modules.
+  - Observed: PluginCommandsRebuild fan-out to 26 modules
+  - Threshold: fan-in >= 4 or fan-out >= 4
+  - Fan-in modules: Exec2, PluginCommandsInstallation, Pnpm
+  - Fan-out modules: CalcDepState, CliUtils, CommonCliOptionsHelp, Config, Constants, CoreLoggers, DependencyPath, Deps2, Error, Exec, GetContext, Lifecycle, LinkBins, Lockfile, Lockfile4, Lockfile7, Logger, ModulesYaml, NormalizeRegistries, ReadPackageJson, SortPackages, Store, StoreConnectionManager, StoreControllerTypes, Types, Worker
+  - Fix: Review whether this module is becoming a coordination hub; split responsibilities, narrow public surfaces, or make the boundary explicit before considering enforcement.
+- `coupling_concentration`: PluginCommandsScriptRunners has concentrated fan-out to 22 modules.
+  - Observed: PluginCommandsScriptRunners fan-out to 22 modules
+  - Threshold: fan-in >= 4 or fan-out >= 4
+  - Fan-in modules: Pnpm
+  - Fan-out modules: CliUtils, Client, Command, CommonCliOptionsHelp, Config, CoreLoggers, Crypto2, Deps3, Env2, Error, Exec3, Lifecycle, Logger, PackageBins, ParseWantedDependency, PluginCommandsEnv, PluginCommandsInstallation, ReadPackageJson, ReadProjectManifest, SortPackages, Types, Workspace7
+  - Fix: Review whether this module is becoming a coordination hub; split responsibilities, narrow public surfaces, or make the boundary explicit before considering enforcement.
+- `coupling_concentration`: PluginCommandsServer has concentrated fan-out to 9 modules.
+  - Observed: PluginCommandsServer fan-out to 9 modules
+  - Threshold: fan-in >= 4 or fan-out >= 4
+  - Fan-in modules: Pnpm
+  - Fan-out modules: CliMeta, CliUtils, CommonCliOptionsHelp, Config, Error, Logger, Server, StoreConnectionManager, StorePath
+  - Fix: Review whether this module is becoming a coordination hub; split responsibilities, narrow public surfaces, or make the boundary explicit before considering enforcement.
+- `coupling_concentration`: PluginCommandsStore has concentrated fan-out to 14 modules.
+  - Observed: PluginCommandsStore fan-out to 14 modules
+  - Threshold: fan-in >= 4 or fan-out >= 4
+  - Fan-in modules: Pnpm
+  - Fan-out modules: CliUtils, Config, DependencyPath, Error, GetContext, Lockfile4, Logger, NormalizeRegistries, ParseWantedDependency, Store, StoreConnectionManager, StoreControllerTypes, StorePath, Types
+  - Fix: Review whether this module is becoming a coordination hub; split responsibilities, narrow public surfaces, or make the boundary explicit before considering enforcement.
+- `coupling_concentration`: PluginCommandsStoreInspecting has concentrated fan-out to 9 modules.
+  - Observed: PluginCommandsStoreInspecting fan-out to 9 modules
+  - Threshold: fan-in >= 4 or fan-out >= 4
+  - Fan-in modules: Pnpm
+  - Fan-out modules: Client, Config, Error, GracefulFs, Lockfile, Object, ParseWantedDependency, Store, StorePath
+  - Fix: Review whether this module is becoming a coordination hub; split responsibilities, narrow public surfaces, or make the boundary explicit before considering enforcement.
+- `coupling_concentration`: Pnpm has concentrated fan-out to 39 modules.
+  - Observed: Pnpm fan-out to 39 modules
+  - Threshold: fan-in >= 4 or fan-out >= 4
+  - Fan-out modules: Cache2, CliMeta, CliUtils, Client, Command, CommonCliOptionsHelp, Config, Constants, CoreLoggers, DefaultReporter, Env2, Error, Exec2, FilterWorkspacePackages, Logger, ParseCliArgs, PluginCommandsAudit, PluginCommandsCompletion, PluginCommandsConfig, PluginCommandsDeploy, PluginCommandsDoctor, PluginCommandsEnv, PluginCommandsInit, PluginCommandsInstallation, PluginCommandsLicenses, PluginCommandsListing, PluginCommandsOutdated, PluginCommandsPatching, PluginCommandsPublishing, PluginCommandsRebuild, PluginCommandsScriptRunners, PluginCommandsServer, PluginCommandsSetup, PluginCommandsStore, PluginCommandsStoreInspecting, RunNpm, Tools2, Types, Worker
+  - Fix: Review whether this module is becoming a coordination hub; split responsibilities, narrow public surfaces, or make the boundary explicit before considering enforcement.
+- `coupling_concentration`: Pnpmfile has concentrated fan-in from 4 modules and fan-out to 9 modules.
+  - Observed: Pnpmfile fan-in 4, fan-out 9
+  - Threshold: fan-in >= 4 or fan-out >= 4
+  - Fan-in modules: CliUtils, Config, Deps3, PluginCommandsInstallation
+  - Fan-out modules: CoreLoggers, Crypto2, Error, FetcherBase, Hooks, Lockfile, Logger, StoreControllerTypes, Types
+  - Fix: Review whether this module is becoming a coordination hub; split responsibilities, narrow public surfaces, or make the boundary explicit before considering enforcement.
+- `coupling_concentration`: PreparePackage has concentrated fan-out to 4 modules.
+  - Observed: PreparePackage fan-out to 4 modules
+  - Threshold: fan-in >= 4 or fan-out >= 4
+  - Fan-in modules: GitFetcher, TarballFetcher
+  - Fan-out modules: Error, Lifecycle, ReadPackageJson, Types
+  - Fix: Review whether this module is becoming a coordination hub; split responsibilities, narrow public surfaces, or make the boundary explicit before considering enforcement.
+- `coupling_concentration`: ReadModulesDir has concentrated fan-in from 5 modules.
+  - Observed: ReadModulesDir fan-in from 5 modules
+  - Threshold: fan-in >= 4 or fan-out >= 4
+  - Fan-in modules: Config3, LinkBins, ModulesCleaner, PkgManager, Reviewing
+  - Fix: Review whether this module is becoming a coordination hub; split responsibilities, narrow public surfaces, or make the boundary explicit before considering enforcement.
+- `coupling_concentration`: ReadPackageJson has concentrated fan-in from 16 modules.
+  - Observed: ReadPackageJson fan-in from 16 modules
+  - Threshold: fan-in >= 4 or fan-out >= 4
+  - Fan-in modules: BuildModules, Config3, Headless, LicenseScanner, Lifecycle, LinkBins, List, Lockfile6, PackageRequester, PluginCommandsPatching, PluginCommandsRebuild, PluginCommandsScriptRunners, PreparePackage, RemoveBins, ResolveDependencies, Reviewing
+  - Fan-out modules: Error, Types
+  - Fix: Review whether this module is becoming a coordination hub; split responsibilities, narrow public surfaces, or make the boundary explicit before considering enforcement.
+- `coupling_concentration`: ReadProjectManifest has concentrated fan-in from 16 modules and fan-out to 5 modules.
+  - Observed: ReadProjectManifest fan-in 16, fan-out 5
+  - Threshold: fan-in >= 4 or fan-out >= 4
+  - Fan-in modules: Audit, CliUtils, Config, Config2, Core, DirectoryFetcher, ExportableManifest, Fs4, Headless, LinkBins, List, LocalResolver, MakeDedicatedLockfile, PluginCommandsInstallation, PluginCommandsScriptRunners, Tools2
+  - Fan-out modules: Error, GracefulFs, Text, Types, WriteProjectManifest
+  - Fix: Review whether this module is becoming a coordination hub; split responsibilities, narrow public surfaces, or make the boundary explicit before considering enforcement.
+- `coupling_concentration`: ReadProjectsContext has concentrated fan-out to 4 modules.
+  - Observed: ReadProjectsContext fan-out to 4 modules
+  - Threshold: fan-in >= 4 or fan-out >= 4
+  - Fan-in modules: GetContext
+  - Fan-out modules: Lockfile3, ModulesYaml, NormalizeRegistries, Types
+  - Fix: Review whether this module is becoming a coordination hub; split responsibilities, narrow public surfaces, or make the boundary explicit before considering enforcement.
+- `coupling_concentration`: RemoveBins has concentrated fan-out to 4 modules.
+  - Observed: RemoveBins fan-out to 4 modules
+  - Threshold: fan-in >= 4 or fan-out >= 4
+  - Fan-in modules: ModulesCleaner, PluginCommandsEnv
+  - Fan-out modules: CoreLoggers, PackageBins, ReadPackageJson, Types
+  - Fix: Review whether this module is becoming a coordination hub; split responsibilities, narrow public surfaces, or make the boundary explicit before considering enforcement.
+- `coupling_concentration`: RenderPeerIssues has concentrated fan-out to 4 modules.
+  - Observed: RenderPeerIssues fan-out to 4 modules
+  - Threshold: fan-in >= 4 or fan-out >= 4
+  - Fan-in modules: DefaultReporter
+  - Fan-out modules: Error, Matcher, ParseOverrides, Types
+  - Fix: Review whether this module is becoming a coordination hub; split responsibilities, narrow public surfaces, or make the boundary explicit before considering enforcement.
+- `coupling_concentration`: ResolveDependencies has concentrated fan-out to 19 modules.
+  - Observed: ResolveDependencies fan-out to 19 modules
+  - Threshold: fan-in >= 4 or fan-out >= 4
+  - Fan-in modules: Core
+  - Fan-out modules: Catalogs2, Catalogs3, CoreLoggers, DependencyPath, Error, Lockfile, Lockfile10, Lockfile4, Lockfile9, Logger, ManifestUtils, NpmResolver, Patching, Patching2, ReadPackageJson, ResolverBase, Semver, StoreControllerTypes, Types
+  - Fix: Review whether this module is becoming a coordination hub; split responsibilities, narrow public surfaces, or make the boundary explicit before considering enforcement.
+- `coupling_concentration`: ResolverBase has concentrated fan-in from 19 modules.
+  - Observed: ResolverBase fan-in from 19 modules
+  - Threshold: fan-in >= 4 or fan-out >= 4
+  - Fan-in modules: Core, DefaultResolver, Deps3, FetcherBase, GetContext, GitResolver, LocalResolver, Lockfile4, Lockfile6, Lockfile9, NpmResolver, PackageRequester, PackageStore, PickFetcher, PluginCommandsInstallation, PluginCommandsPublishing, ResolveDependencies, StoreControllerTypes, TarballResolver
+  - Fan-out modules: Types
+  - Fix: Review whether this module is becoming a coordination hub; split responsibilities, narrow public surfaces, or make the boundary explicit before considering enforcement.
+- `coupling_concentration`: Reviewing has concentrated fan-out to 10 modules.
+  - Observed: Reviewing fan-out to 10 modules
+  - Threshold: fan-in >= 4 or fan-out >= 4
+  - Fan-in modules: List
+  - Fan-out modules: DependencyPath, Lockfile11, Lockfile3, Lockfile4, Matcher, ModulesYaml, NormalizeRegistries, ReadModulesDir, ReadPackageJson, Types
+  - Fix: Review whether this module is becoming a coordination hub; split responsibilities, narrow public surfaces, or make the boundary explicit before considering enforcement.
+- `coupling_concentration`: SortPackages has concentrated fan-in from 4 modules.
+  - Observed: SortPackages fan-in from 4 modules
+  - Threshold: fan-in >= 4 or fan-out >= 4
+  - Fan-in modules: PluginCommandsInstallation, PluginCommandsPublishing, PluginCommandsRebuild, PluginCommandsScriptRunners
+  - Fan-out modules: Deps2, Types
+  - Fix: Review whether this module is becoming a coordination hub; split responsibilities, narrow public surfaces, or make the boundary explicit before considering enforcement.
+- `coupling_concentration`: Store has concentrated fan-in from 11 modules.
+  - Observed: Store fan-in from 11 modules
+  - Threshold: fan-in >= 4 or fan-out >= 4
+  - Fan-in modules: AssertStore, Cache, CreateCafsStore, LicenseScanner, MountModules, PackageRequester, PackageStore, PluginCommandsRebuild, PluginCommandsStore, PluginCommandsStoreInspecting, Worker
+  - Fan-out modules: CafsTypes, GracefulFs, Types
+  - Fix: Review whether this module is becoming a coordination hub; split responsibilities, narrow public surfaces, or make the boundary explicit before considering enforcement.
+- `coupling_concentration`: StoreConnectionManager has concentrated fan-in from 6 modules and fan-out to 8 modules.
+  - Observed: StoreConnectionManager fan-in 6, fan-out 8
+  - Threshold: fan-in >= 4 or fan-out >= 4
+  - Fan-in modules: CliUtils, PluginCommandsInstallation, PluginCommandsPatching, PluginCommandsRebuild, PluginCommandsServer, PluginCommandsStore
+  - Fan-out modules: CliMeta, Client, Config, Error, Logger, PackageStore, Server, StorePath
+  - Fix: Review whether this module is becoming a coordination hub; split responsibilities, narrow public surfaces, or make the boundary explicit before considering enforcement.
+- `coupling_concentration`: StoreControllerTypes has concentrated fan-in from 16 modules.
+  - Observed: StoreControllerTypes fan-in from 16 modules
+  - Threshold: fan-in >= 4 or fan-out >= 4
+  - Fan-in modules: BuildModules, Core, CreateCafsStore, Deps, Fs2, Headless, Lifecycle, ModulesCleaner, PackageRequester, PackageStore, PluginCommandsRebuild, PluginCommandsStore, Pnpmfile, ResolveDependencies, Server, Testing
+  - Fan-out modules: CafsTypes, ResolverBase, Types
+  - Fix: Review whether this module is becoming a coordination hub; split responsibilities, narrow public surfaces, or make the boundary explicit before considering enforcement.
+- `coupling_concentration`: StorePath has concentrated fan-in from 9 modules.
+  - Observed: StorePath fan-in from 9 modules
+  - Threshold: fan-in >= 4 or fan-out >= 4
+  - Fan-in modules: Cache2, MountModules, PluginCommandsEnv, PluginCommandsLicenses, PluginCommandsPatching, PluginCommandsServer, PluginCommandsStore, PluginCommandsStoreInspecting, StoreConnectionManager
+  - Fan-out modules: Constants, Error
+  - Fix: Review whether this module is becoming a coordination hub; split responsibilities, narrow public surfaces, or make the boundary explicit before considering enforcement.
+- `coupling_concentration`: SymlinkDependency has concentrated fan-in from 4 modules.
+  - Observed: SymlinkDependency fan-in from 4 modules
+  - Threshold: fan-in >= 4 or fan-out >= 4
+  - Fan-in modules: Core, Headless, PkgManager, Worker
+  - Fan-out modules: CoreLoggers, Types
+  - Fix: Review whether this module is becoming a coordination hub; split responsibilities, narrow public surfaces, or make the boundary explicit before considering enforcement.
+- `coupling_concentration`: TarballFetcher has concentrated fan-out to 11 modules.
+  - Observed: TarballFetcher fan-out to 11 modules
+  - Threshold: fan-in >= 4 or fan-out >= 4
+  - Fan-in modules: Client, Node
+  - Fan-out modules: CafsTypes, CoreLoggers, Error, FetcherBase, FetchingTypes, Fs3, GracefulFs, Logger, PreparePackage, Types, Worker
+  - Fix: Review whether this module is becoming a coordination hub; split responsibilities, narrow public surfaces, or make the boundary explicit before considering enforcement.
+- `coupling_concentration`: Tools2 has concentrated fan-out to 10 modules.
+  - Observed: Tools2 fan-out to 10 modules
+  - Threshold: fan-in >= 4 or fan-out >= 4
+  - Fan-in modules: Pnpm
+  - Fan-out modules: CliMeta, CliUtils, Client, Config, Error, Exec3, LinkBins, Logger, ReadProjectManifest, Tools
+  - Fix: Review whether this module is becoming a coordination hub; split responsibilities, narrow public surfaces, or make the boundary explicit before considering enforcement.
+- `coupling_concentration`: Types has concentrated fan-in from 95 modules.
+  - Observed: Types fan-in from 95 modules
+  - Threshold: fan-in >= 4 or fan-out >= 4
+  - Fan-in modules: Audit, BuildModules, CafsTypes, CalcDepState, CliMeta, CliUtils, Client, Config, Config2, Config3, Core, CoreLoggers, Dedupe3, DefaultReporter, DependencyPath, Deps, Deps3, DirectoryFetcher, Exec, Exec2, ExportableManifest, Fetch, FetcherBase, FilterWorkspacePackages, Fs4, GetContext, Headless, Hoist, Hooks, Hooks2, LicenseScanner, Lifecycle, LinkBins, List, LocalResolver, Lockfile, Lockfile10, Lockfile11, Lockfile2, Lockfile3, Lockfile4, Lockfile6, Lockfile7, Lockfile8, Lockfile9, LockfileToPnp, MakeDedicatedLockfile, ManifestUtils, ModulesCleaner, ModulesYaml, MountModules, NormalizeRegistries, NpmResolver, Outdated, PackageBins, PackageIsInstallable, PackageRequester, PickRegistryForPackage, PluginCommandsAudit, PluginCommandsDeploy, PluginCommandsEnv, PluginCommandsInit, PluginCommandsInstallation, PluginCommandsListing, PluginCommandsOutdated, PluginCommandsPatching, PluginCommandsPublishing, PluginCommandsRebuild, PluginCommandsScriptRunners, PluginCommandsStore, Pnpm, Pnpmfile, Prepare, PreparePackage, ReadPackageJson, ReadProjectManifest, ReadProjectsContext, RemoveBins, RenderPeerIssues, ResolveDependencies, ResolverBase, Reviewing, SortPackages, Store, StoreControllerTypes, SymlinkDependency, TarballFetcher, Updater, Worker, Workspace, Workspace4, Workspace5, Workspace6, Workspace8, WriteProjectManifest
+  - Fix: Review whether this module is becoming a coordination hub; split responsibilities, narrow public surfaces, or make the boundary explicit before considering enforcement.
+- `coupling_concentration`: Updater has concentrated fan-out to 5 modules.
+  - Observed: Updater fan-out to 5 modules
+  - Threshold: fan-in >= 4 or fan-out >= 4
+  - Fan-out modules: Lockfile3, Object, ParseOverrides, Types, Workspace
+  - Fix: Review whether this module is becoming a coordination hub; split responsibilities, narrow public surfaces, or make the boundary explicit before considering enforcement.
+- `coupling_concentration`: Worker has concentrated fan-in from 9 modules and fan-out to 10 modules.
+  - Observed: Worker fan-in 9, fan-out 10
+  - Threshold: fan-in >= 4 or fan-out >= 4
+  - Fan-in modules: BuildModules, Core, GitFetcher, Headless, PackageRequester, PackageStore, PluginCommandsRebuild, Pnpm, TarballFetcher
+  - Fan-out modules: CafsTypes, CreateCafsStore, Crypto, Error, Exec, Fs, GracefulFs, Store, SymlinkDependency, Types
+  - Fix: Review whether this module is becoming a coordination hub; split responsibilities, narrow public surfaces, or make the boundary explicit before considering enforcement.
+- `coupling_concentration`: Workspace has concentrated fan-in from 8 modules.
+  - Observed: Workspace fan-in from 8 modules
+  - Threshold: fan-in >= 4 or fan-out >= 4
+  - Fan-in modules: Catalogs4, Config, Deps3, PluginCommandsCompletion, Scripts, Updater, Workspace2, Workspace8
+  - Fan-out modules: Constants, Error, Types
+  - Fix: Review whether this module is becoming a coordination hub; split responsibilities, narrow public surfaces, or make the boundary explicit before considering enforcement.
+- `coupling_concentration`: Workspace4 has concentrated fan-in from 6 modules and fan-out to 5 modules.
+  - Observed: Workspace4 fan-in 6, fan-out 5
+  - Threshold: fan-in >= 4 or fan-out >= 4
+  - Fan-in modules: Deps3, FilterWorkspacePackages, PluginCommandsCompletion, PluginCommandsInstallation, Scripts, Workspace8
+  - Fan-out modules: CliUtils, Constants, Fs4, Logger, Types
+  - Fix: Review whether this module is becoming a coordination hub; split responsibilities, narrow public surfaces, or make the boundary explicit before considering enforcement.
+- `coupling_concentration`: Workspace7 has concentrated fan-out to 4 modules.
+  - Observed: Workspace7 fan-out to 4 modules
+  - Threshold: fan-in >= 4 or fan-out >= 4
+  - Fan-in modules: PluginCommandsScriptRunners
+  - Fan-out modules: DirectoryFetcher, Error, Logger, ModulesYaml
+  - Fix: Review whether this module is becoming a coordination hub; split responsibilities, narrow public surfaces, or make the boundary explicit before considering enforcement.
+- `coupling_concentration`: Workspace8 has concentrated fan-out to 4 modules.
+  - Observed: Workspace8 fan-out to 4 modules
+  - Threshold: fan-in >= 4 or fan-out >= 4
+  - Fan-out modules: FilterWorkspacePackages, Types, Workspace, Workspace4
+  - Fix: Review whether this module is becoming a coordination hub; split responsibilities, narrow public surfaces, or make the boundary explicit before considering enforcement.
+
+### Architecture Drift (Advisory)
+- Kind: `advisory_observed_edge_drift`
+- Baseline: `C:/Users/邱品丰/AppData/Local/Temp/axiom-real-project-diff-smoke-WAfxJI/pnpm-src-v10.8.1-baseline.graph.json` (1502 observed dependencies, axiom.graph.v12)
+- New observed edges:
+  - None
+- Removed observed edges:
+  - `Core -> WhichVersionIsPinned`
+    - previously via `pkg-manager/core/src/parseWantedDependencies.ts:3` importing `@pnpm/which-version-is-pinned`
+  - `ManifestUtils -> Error`
+    - previously via `pkg-manifest/manifest-utils/src/getPref.ts:1` importing `@pnpm/error`
+  - `ResolveDependencies -> PickFetcher`
+    - previously via `pkg-manager/resolve-dependencies/src/updateProjectManifest.ts:9` importing `@pnpm/pick-fetcher`
+  - `ResolveDependencies -> WhichVersionIsPinned`
+    - previously via `pkg-manager/resolve-dependencies/src/getWantedDependencies.ts:8` importing `@pnpm/which-version-is-pinned`

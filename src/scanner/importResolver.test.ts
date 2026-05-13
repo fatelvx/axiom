@@ -176,6 +176,76 @@ test("resolver supports package exports and workspace package subpaths", () => {
   }
 });
 
+test("resolver maps workspace package build exports back to source files", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "axi-resolver-workspace-source-mirror-"));
+
+  try {
+    writeFile(
+      root,
+      "package.json",
+      JSON.stringify({
+        name: "@demo/root",
+        workspaces: ["packages/*"]
+      })
+    );
+    writeFile(
+      root,
+      "packages/shared/package.json",
+      JSON.stringify({
+        name: "@demo/shared",
+        main: "lib/index.js",
+        exports: {
+          ".": "./lib/index.js",
+          "./tools/*": "./dist/tools/*.mjs"
+        }
+      })
+    );
+    writeFile(root, "apps/web/src/main.ts", "export const app = true;\n");
+    writeFile(root, "packages/shared/src/index.ts", "export const shared = true;\n");
+    writeFile(root, "packages/shared/src/tools/button.mts", "export const button = true;\n");
+
+    const resolver = createImportResolver({ root });
+    const fromFile = path.join(root, "apps/web/src/main.ts");
+
+    assert.equal(normalize(root, resolver.resolve(fromFile, "@demo/shared")), "packages/shared/src/index.ts");
+    assert.equal(normalize(root, resolver.resolve(fromFile, "@demo/shared/tools/button")), "packages/shared/src/tools/button.mts");
+  } finally {
+    fs.rmSync(root, { force: true, recursive: true });
+  }
+});
+
+test("resolver uses package main when workspace package exports are absent", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "axi-resolver-workspace-main-"));
+
+  try {
+    writeFile(
+      root,
+      "package.json",
+      JSON.stringify({
+        name: "@demo/root",
+        workspaces: ["packages/*"]
+      })
+    );
+    writeFile(
+      root,
+      "packages/shared/package.json",
+      JSON.stringify({
+        name: "@demo/shared",
+        main: "lib/index.js"
+      })
+    );
+    writeFile(root, "apps/web/src/main.ts", "export const app = true;\n");
+    writeFile(root, "packages/shared/src/index.ts", "export const shared = true;\n");
+
+    const resolver = createImportResolver({ root });
+    const fromFile = path.join(root, "apps/web/src/main.ts");
+
+    assert.equal(normalize(root, resolver.resolve(fromFile, "@demo/shared")), "packages/shared/src/index.ts");
+  } finally {
+    fs.rmSync(root, { force: true, recursive: true });
+  }
+});
+
 test("resolver discovers workspace packages from pnpm-workspace.yaml", () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "axi-resolver-pnpm-workspace-"));
 

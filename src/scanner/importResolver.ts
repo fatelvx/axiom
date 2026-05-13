@@ -194,7 +194,7 @@ export function loadPackageResolver(root: string): PackageResolver {
     const metadata: PackageMetadata = {
       directory: resolvedDirectory,
       name: typeof packageJson.name === "string" ? packageJson.name : undefined,
-      exports: compilePackageExports(packageJson.exports),
+      exports: compilePackageExports(packageJson.exports, packageJson.main),
       imports: compilePackageImports(packageJson.imports)
     };
 
@@ -346,7 +346,7 @@ function substituteCaptures(target: string, captures: string[]): string {
   return target.replace(/\*/g, () => captures[index++] ?? "");
 }
 
-function compilePackageExports(value: unknown): PackageSubpathMapping[] {
+function compilePackageExports(value: unknown, mainValue?: unknown): PackageSubpathMapping[] {
   if (typeof value === "string" || Array.isArray(value)) {
     return compileSubpathMappings([[".", value]]);
   }
@@ -354,7 +354,7 @@ function compilePackageExports(value: unknown): PackageSubpathMapping[] {
   const object = readObject(value);
   const entries = Object.entries(object);
   if (entries.length === 0) {
-    return [];
+    return compilePackageMain(mainValue);
   }
 
   const hasSubpathKeys = entries.some(([key]) => key === "." || key.startsWith("./"));
@@ -363,6 +363,15 @@ function compilePackageExports(value: unknown): PackageSubpathMapping[] {
   }
 
   return compileSubpathMappings(entries.filter(([key]) => key === "." || key.startsWith("./")));
+}
+
+function compilePackageMain(value: unknown): PackageSubpathMapping[] {
+  if (typeof value !== "string" || value.length === 0) {
+    return [];
+  }
+
+  const target = value.startsWith("./") ? value : `./${value}`;
+  return compileSubpathMappings([[".", target]]);
 }
 
 function compilePackageImports(value: unknown): PackageSubpathMapping[] {
@@ -425,7 +434,7 @@ function resolvePackageSubpath(directory: string, mappings: PackageSubpathMappin
         continue;
       }
 
-      const resolved = resolveFileCandidate(basePath);
+      const resolved = resolveFileCandidate(basePath) ?? resolvePackageSourceMirror(directory, basePath);
       if (resolved) {
         return resolved;
       }
@@ -433,6 +442,35 @@ function resolvePackageSubpath(directory: string, mappings: PackageSubpathMappin
   }
 
   return undefined;
+}
+
+function resolvePackageSourceMirror(directory: string, basePath: string): string | undefined {
+  const relative = normalizePackagePath(path.relative(directory, basePath));
+
+  for (const outputDirectory of ["lib", "dist"]) {
+    if (relative !== outputDirectory && !relative.startsWith(`${outputDirectory}/`)) {
+      continue;
+    }
+
+    const sourceRelative = relative === outputDirectory
+      ? "src"
+      : `src/${relative.slice(outputDirectory.length + 1)}`;
+    const sourceBasePath = path.resolve(directory, sourceRelative);
+    if (!isInsideDirectory(sourceBasePath, directory)) {
+      continue;
+    }
+
+    const resolved = resolveFileCandidate(sourceBasePath);
+    if (resolved) {
+      return resolved;
+    }
+  }
+
+  return undefined;
+}
+
+function normalizePackagePath(value: string): string {
+  return value.replace(/\\/g, "/");
 }
 
 function parsePackageSpecifier(specifier: string): { packageName: string; subpath: string } | undefined {

@@ -106,3 +106,4 @@ npm run real-project:diff-smoke -- \
 - [hono source-scoped diff architecture smoke, 2026-05-13](results/hono-src-diff-smoke-2026-05-13.md)
 - [ofetch, ky, and Preact Signals diff smokes, 2026-05-13](results/2026-05-13-ofetch-ky-preact-signals.md)
 - [v11 graph interpretation replay, 2026-05-13](results/2026-05-13-v11-graph-interpretation-replay.md)
+- [pnpm workspace resolver smokes, 2026-05-13](results/2026-05-13-pnpm-workspace-smokes.md)

@@ -196,7 +196,7 @@ Use this migration path instead:
 3. Add `hides` for internal folders that should not be imported directly.
 4. If the team specifically wants to review public entrypoint growth, run `axi observe --root . --warn-public-api-surface` and treat each broad-barrel or entrypoint-coupling warning as a review item, not a merge blocker.
 5. Replace broad barrels with named exports or narrower entry points over time.
-6. If a real hidden-path leak or temporary visibility breach appears during migration, use `accepts ... until ... because ...` for that concrete violation only.
+6. If a real hidden-path leak or temporary visibility breach appears during migration, use `accepts ... [at "path"] until ... because ...` for that concrete violation only.
 7. Remove the intentional violation when the migration is done.
 
 This keeps the debt visible without pretending Axiom can prove full symbol-level API health in v0. Public wrappers around hidden implementation imports are still a valid pattern; the hard violation is the explicit leak of a hidden symbol into an exposed surface.
@@ -271,6 +271,14 @@ accepts forbidden_dependency to ServicesInternal until 2027-06-30 because "legac
 ```
 
 Active intentional violations let `axi check` pass but remain visible in human output, JSON output, and focused graph output. Entries expiring within 30 days are warnings, expired intentional violations fail the check, and unused entries are warnings, so old architecture debt does not become invisible policy.
+
+Add `at "<path-or-glob>"` before `until` when the debt should be scoped to one import site or exposed surface:
+
+```axi
+accepts hidden_reexport to Services at "src/services/index.ts" until 2027-06-30 because "legacy public barrel cleanup"
+```
+
+For `hidden_reexport`, the path scope matches the exposed file that leaked the hidden path. Other matching violations outside that path still fail.
 
 Use `axi observe --root .` or `axi observe --root . --markdown` when reviewing accepted debt. The observe output includes a visible intentional debt ledger that also covers accepted non-edge surface violations, such as a temporary `hidden_reexport` from an exposed entry point.
 

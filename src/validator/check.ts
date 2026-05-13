@@ -120,6 +120,7 @@ export function runCheck(options: CheckOptions): CheckResult {
     ...validateModuleSurfaceConsistency(spec, imports, localExports, ownership, root)
   ];
   const observedValidation = applySuppressions(spec, observedViolations, {
+    root,
     today: options.today
   });
   violations.push(...observedValidation.violations);

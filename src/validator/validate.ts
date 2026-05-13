@@ -30,6 +30,7 @@ const couplingConcentrationModuleThreshold = 4;
 const publicEntrypointInternalTargetThreshold = 4;
 
 interface DateValidationOptions {
+  root?: string;
   today?: string;
   intentionalViolationExpiryWarningDays?: number;
 }
@@ -248,8 +249,9 @@ export function findUnusedSuppressions(
           target: suppression.target.name,
           suppressedCode: suppression.code,
           expiresOn: suppression.expiresOn,
+          ...(suppression.pathScope ? { pathScope: suppression.pathScope.pattern } : {}),
           reason: suppression.reason,
-          rule: `${module.name} accepts ${suppression.code} to ${suppression.target.name} until ${suppression.expiresOn}`,
+          rule: formatSuppressionRule(module.name, suppression),
           ruleLocation: suppression.location,
           suggestion:
             "Remove the intentional violation if the architecture debt is gone, or keep it only while a matching violation is expected."
@@ -295,8 +297,9 @@ export function findExpiringSuppressions(
         suppressedCode: suppression.code,
         expiresOn: suppression.expiresOn,
         daysUntilExpiration,
+        ...(suppression.pathScope ? { pathScope: suppression.pathScope } : {}),
         reason: suppression.reason,
-        rule: `${suppression.fromModule} accepts ${suppression.code} to ${suppression.toModule} until ${suppression.expiresOn}`,
+        rule: formatSuppressionInfoRule(suppression),
         ruleLocation: suppression.location,
         suggestion:
           "Review this intentional violation before it expires; remove it if the debt is fixed, or extend it with a fresh reason if the debt remains."
@@ -1327,7 +1330,8 @@ function findActiveSuppression(
       suppression.target.name === toModule &&
       suppression.reason.trim().length > 0 &&
       isValidIsoDate(suppression.expiresOn) &&
-      !isExpiredDate(suppression.expiresOn, options.today)
+      !isExpiredDate(suppression.expiresOn, options.today) &&
+      suppressionMatchesViolationScope(suppression, violation, options.root)
   );
 
   if (!rule) {
@@ -1347,10 +1351,43 @@ function toSuppressionInfo(
     fromModule,
     toModule,
     code,
+    ...(rule.pathScope ? { pathScope: rule.pathScope.pattern } : {}),
     expiresOn: rule.expiresOn,
     reason: rule.reason,
     location: rule.location
   };
+}
+
+function suppressionMatchesViolationScope(
+  suppression: SuppressionRule,
+  violation: Violation,
+  root: string | undefined
+): boolean {
+  if (!suppression.pathScope) {
+    return true;
+  }
+
+  if (!root || !violation.location) {
+    return false;
+  }
+
+  return pathRuleMatches(root, violation.location.filePath, suppression.pathScope);
+}
+
+function formatSuppressionInfoRule(suppression: SuppressionInfo): string {
+  return `${suppression.fromModule} accepts ${suppression.code} to ${suppression.toModule}${formatPathScopeText(
+    suppression.pathScope
+  )} until ${suppression.expiresOn}`;
+}
+
+function formatSuppressionRule(moduleName: string, suppression: SuppressionRule): string {
+  return `${moduleName} accepts ${suppression.code} to ${suppression.target.name}${formatPathScopeText(
+    suppression.pathScope?.pattern
+  )} until ${suppression.expiresOn}`;
+}
+
+function formatPathScopeText(pathScope: string | undefined): string {
+  return pathScope ? ` at "${pathScope}"` : "";
 }
 
 function readString(value: unknown): string | undefined {

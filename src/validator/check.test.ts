@@ -684,6 +684,34 @@ test("intentional violations can accept exposed hidden re-exports", () => {
   });
 });
 
+test("path-scoped intentional violations only accept matching violation locations", () => {
+  const root = path.join(repoRoot, "fixtures/accepted-hidden-reexport-scoped");
+  const result = runCheck({ root });
+
+  assert.equal(result.suppressedViolations.length, 1);
+  assert.equal(result.suppressedViolations[0]?.violation.code, "hidden_reexport");
+  assert.equal(
+    path.relative(root, result.suppressedViolations[0]?.violation.location?.filePath ?? "").replace(/\\/g, "/"),
+    "src/services/index.ts"
+  );
+  assert.deepEqual(result.suppressedViolations[0]?.suppression, {
+    fromModule: "Services",
+    toModule: "Services",
+    code: "hidden_reexport",
+    pathScope: "src/services/index.ts",
+    expiresOn: "2099-01-01",
+    reason: "legacy index barrel cleanup",
+    location: {
+      filePath: path.join(root, "axiom/main.axi"),
+      line: 6
+    }
+  });
+
+  assert.equal(result.violations.length, 1);
+  assert.equal(result.violations[0]?.code, "hidden_reexport");
+  assert.equal(path.relative(root, result.violations[0]?.location?.filePath ?? "").replace(/\\/g, "/"), "src/services/public.ts");
+});
+
 test("active intentional violations near expiration are reported as warnings", () => {
   const result = runCheck({ root: path.join(repoRoot, "fixtures/suppressed-dependency"), today: "2098-12-15" });
 

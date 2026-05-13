@@ -532,6 +532,14 @@ accepts forbidden_dependency to ServicesInternal until 2027-06-30 because "legac
 
 Intentional violations only apply to observed dependency and visibility violations. Expired intentional violations fail the check, invalid entries cannot hide violations, entries expiring within 30 days become warnings, and unused entries are warnings so old architecture debt stays visible after the code is cleaned up.
 
+Use `at "<path-or-glob>"` before `until` when the debt should only apply to one import or exposed surface:
+
+```axi
+accepts hidden_reexport to Services at "src/services/index.ts" until 2027-06-30 because "legacy public barrel cleanup"
+```
+
+For import violations, `at` matches the importing file. For `hidden_reexport`, it matches the exposed file that leaked the hidden path. Same-code violations elsewhere still fail.
+
 `axi observe` and `axi observe --markdown` show a dedicated visible debt ledger. That ledger is not limited to dependency edges, so accepted surface violations such as `hidden_reexport` still appear even when the focused observed graph has no edge to show.
 
 Tune the warning window per project with `intentionalViolationExpiryWarningDays` in `axiom.config.json`, or for one command with `--intentional-violation-warning-days <n>`.

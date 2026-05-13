@@ -78,6 +78,26 @@ accepts forbidden_dependency to Rendering until 2099-01-01 because "legacy rende
   assert.equal(result.modules[0]?.suppressions[0]?.reason, "legacy renderer migration");
 });
 
+test("parses path-scoped intentional violation accepts syntax", () => {
+  const result = parseAxiomText(
+    "main.axi",
+    `
+module Services
+path "src/services/**"
+accepts hidden_reexport to Services at "src/services/index.ts" until 2099-01-01 because "legacy public barrel cleanup"
+`
+  );
+
+  assert.deepEqual(result.violations, []);
+  assert.deepEqual(result.modules[0]?.suppressions[0]?.pathScope, {
+    pattern: "src/services/index.ts",
+    location: {
+      filePath: "main.axi",
+      line: 4
+    }
+  });
+});
+
 test("parses layer order", () => {
   const result = parseAxiomText(
     "main.axi",

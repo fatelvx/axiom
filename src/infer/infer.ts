@@ -133,7 +133,7 @@ export const inferStarterContractAuthoringChecklist = [
   "Review each `depends on` edge and its evidence comments as intended architecture; remove or refactor accidental edges before using this as a gate.",
   "Turn commented `exposes` and `hides` suggestions into real rules only after confirming the public/internal boundary.",
   "Add `layers` and `layer` statements only when dependency direction is clear enough to enforce.",
-  "Use `accepts ... until ... because ...` only for reviewed migration debt; do not blanket-accept first-run problems.",
+  "Use `accepts ... [at \"path\"] until ... because ...` only for reviewed migration debt; do not blanket-accept first-run problems.",
   "Save an unfiltered graph JSON baseline when the draft is useful so future runs can show drift over time."
 ];
 

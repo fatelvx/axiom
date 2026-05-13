@@ -9,6 +9,7 @@
 - Added expiring intentional violation warnings 30 days before accepted debt reaches its deadline.
 - Added project config and CLI controls for the intentional violation expiry warning window.
 - Added `accepts ... until ... because ...` as the preferred `.axi` syntax for visible intentional violations.
+- Added optional `at "<path-or-glob>"` scopes for `.axi` intentional violations so accepted debt can be limited to one import site or exposed surface.
 - Included warning guardrails in focused graph output so `axi graph --violations-only` acts more like an architecture attention view.
 - Added `axi graph --attention` as a product-facing alias for the focused architecture attention view.
 - Added pnpm workspace package discovery for internal package export resolution.

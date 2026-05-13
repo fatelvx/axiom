@@ -152,6 +152,26 @@ test("check JSON exposes accepted intentional violations", () => {
   });
 });
 
+test("check JSON exposes path-scoped intentional violation contracts", () => {
+  const result = runCheck({ root: path.join(repoRoot, "fixtures/accepted-hidden-reexport-scoped") });
+  const payload = toCheckJson(result);
+
+  assert.equal(payload.summary.violations, 1);
+  assert.equal(payload.summary.intentionalViolations, 1);
+  assert.deepEqual(payload.modules[0]?.suppressions[0], {
+    code: "hidden_reexport",
+    toModule: "Services",
+    pathScope: "src/services/index.ts",
+    expiresOn: "2099-01-01",
+    reason: "legacy index barrel cleanup",
+    location: {
+      filePath: "axiom/main.axi",
+      line: 6
+    }
+  });
+  assert.equal(payload.intentionalViolations[0]?.contract.pathScope, "src/services/index.ts");
+});
+
 test("check JSON exposes expiring intentional violations as warnings", () => {
   const result = runCheck({ root: path.join(repoRoot, "fixtures/suppressed-dependency"), today: "2098-12-15" });
   const payload = toCheckJson(result);

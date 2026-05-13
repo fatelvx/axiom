@@ -96,7 +96,7 @@ export function parseAxiomText(filePath: string, text: string): ParseResult {
     }
 
     const suppressionMatch = line.match(
-      /^(?:accepts|suppresses)\s+([A-Za-z][A-Za-z0-9_]*)\s+to\s+([A-Za-z][A-Za-z0-9_]*)\s+until\s+(\d{4}-\d{2}-\d{2})\s+because\s+"([^"]*)"$/u
+      /^(?:accepts|suppresses)\s+([A-Za-z][A-Za-z0-9_]*)\s+to\s+([A-Za-z][A-Za-z0-9_]*)(?:\s+at\s+"([^"]+)")?\s+until\s+(\d{4}-\d{2}-\d{2})\s+because\s+"([^"]*)"$/u
     );
     if (suppressionMatch) {
       current.suppressions.push({
@@ -105,8 +105,9 @@ export function parseAxiomText(filePath: string, text: string): ParseResult {
           name: suppressionMatch[2] ?? "",
           location
         },
-        expiresOn: suppressionMatch[3] ?? "",
-        reason: suppressionMatch[4] ?? "",
+        ...(suppressionMatch[3] ? { pathScope: { pattern: suppressionMatch[3], location } } : {}),
+        expiresOn: suppressionMatch[4] ?? "",
+        reason: suppressionMatch[5] ?? "",
         location
       });
       continue;
@@ -116,7 +117,7 @@ export function parseAxiomText(filePath: string, text: string): ParseResult {
       violations.push({
         code: "parse_error",
         message:
-          'Invalid intentional violation statement. Use: accepts <violation_code> to <Module> until <YYYY-MM-DD> because "<reason>".',
+          'Invalid intentional violation statement. Use: accepts <violation_code> to <Module> [at "<path-or-glob>"] until <YYYY-MM-DD> because "<reason>".',
         location
       });
       continue;

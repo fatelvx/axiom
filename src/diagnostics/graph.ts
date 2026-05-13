@@ -68,6 +68,7 @@ interface GraphJsonIntentionalDependencyViolation extends GraphJsonDependencyVio
   contract: {
     acceptedUntil: string;
     reason: string;
+    pathScope?: string;
     ruleLocation: GraphJsonLocation;
   };
 }
@@ -80,6 +81,7 @@ interface GraphJsonIntentionalDebt {
   toModule: string;
   acceptedUntil: string;
   reason: string;
+  pathScope?: string;
   contractLocation: GraphJsonLocation;
   location?: GraphJsonLocation;
   details?: Record<string, unknown>;
@@ -925,7 +927,7 @@ function formatReviewStoryNextStep(
   }
 
   if (input.violations.length > 0) {
-    return "Fix hard violations first, or add visible temporary `accepts ... until ... because ...` debt only after review.";
+    return "Fix hard violations first, or add visible temporary `accepts ... [at \"path\"] until ... because ...` debt only after review.";
   }
 
   if (input.intentionalDebt.length > 0 || input.warnings.length > 0) {
@@ -1420,7 +1422,9 @@ function formatArchitectureSummaryNextActions(input: {
   const actions: string[] = [];
   if (input.violations.length > 0) {
     actions.push("Use `axi check --json` as the hard gate and repair the listed `violations[]` first.");
-    actions.push("If a violation is truly temporary, propose a visible `.axi` `accepts ... until ... because ...` entry for review.");
+    actions.push(
+      "If a violation is truly temporary, propose a visible `.axi` `accepts ... [at \"path\"] until ... because ...` entry for review."
+    );
   }
 
   if (input.intentionalDebt.length > 0) {
@@ -1687,6 +1691,9 @@ function formatMarkdownIntentionalDebt(graph: GraphJsonResult): string[] {
       appendMarkdownDetail(lines, "Rule", `${rule}${suffix}`);
     }
     lines.push(`  - Accepted until: ${markdownCode(debt.acceptedUntil)}`);
+    if (debt.pathScope) {
+      lines.push(`  - Scope: ${markdownCode(debt.pathScope)}`);
+    }
     lines.push(`  - Contract: ${markdownCode(formatLocation(debt.contractLocation))}`);
     lines.push(`  - Reason: ${debt.reason}`);
     if (debt.suggestion) {
@@ -2028,6 +2035,9 @@ function formatIntentionalDebt(graph: GraphJsonResult): string[] {
       const suffix = ruleLocation ? ` (${ruleLocation.filePath}:${ruleLocation.line})` : "";
       lines.push(`    rule: ${rule}${suffix}`);
     }
+    if (debt.pathScope) {
+      lines.push(`    scope: ${debt.pathScope}`);
+    }
     lines.push(
       `    contract: accepted until ${debt.acceptedUntil} (${debt.contractLocation.filePath}:${debt.contractLocation.line})`
     );
@@ -2214,6 +2224,11 @@ function formatWarnings(graph: GraphJsonResult): string[] {
     const scope = readString(warning.details?.scope);
     if (scope) {
       lines.push(`  scope: ${scope}`);
+    }
+
+    const pathScope = readString(warning.details?.pathScope);
+    if (pathScope) {
+      lines.push(`  path scope: ${pathScope}`);
     }
 
     const incomingModules = readStringArray(warning.details?.incomingModules);
@@ -2640,7 +2655,9 @@ function diagnosticKey(violation: GraphJsonDependencyViolation): string {
 }
 
 function intentionalDiagnosticKey(violation: GraphJsonIntentionalDependencyViolation): string {
-  return `${diagnosticKey(violation)}\0${violation.contract.acceptedUntil}\0${violation.contract.reason}\0${violation.contract.ruleLocation.filePath}:${violation.contract.ruleLocation.line}`;
+  return `${diagnosticKey(violation)}\0${violation.contract.acceptedUntil}\0${violation.contract.reason}\0${
+    violation.contract.pathScope ?? ""
+  }\0${violation.contract.ruleLocation.filePath}:${violation.contract.ruleLocation.line}`;
 }
 
 function compareDriftEdges(left: GraphJsonDriftEdge, right: GraphJsonDriftEdge): number {
@@ -2648,8 +2665,8 @@ function compareDriftEdges(left: GraphJsonDriftEdge, right: GraphJsonDriftEdge):
 }
 
 function compareIntentionalDebt(left: GraphJsonIntentionalDebt, right: GraphJsonIntentionalDebt): number {
-  return `${left.acceptedUntil}\0${left.fromModule}->${left.toModule}\0${left.code}`.localeCompare(
-    `${right.acceptedUntil}\0${right.fromModule}->${right.toModule}\0${right.code}`
+  return `${left.acceptedUntil}\0${left.fromModule}->${left.toModule}\0${left.code}\0${left.pathScope ?? ""}`.localeCompare(
+    `${right.acceptedUntil}\0${right.fromModule}->${right.toModule}\0${right.code}\0${right.pathScope ?? ""}`
   );
 }
 
@@ -2678,6 +2695,7 @@ function toIntentionalDebt(
     toModule: suppression.toModule,
     acceptedUntil: suppression.expiresOn,
     reason: suppression.reason,
+    ...(suppression.pathScope ? { pathScope: suppression.pathScope } : {}),
     contractLocation: toJsonLocation(root, suppression.location),
     ...(violation.location ? { location: toJsonLocation(root, violation.location) } : {}),
     ...(violation.details ? { details: normalizeDetails(root, violation.details) } : {}),
@@ -2970,6 +2988,9 @@ function toObservedDependency(
         contract: {
           acceptedUntil: suppressedViolation.suppression.expiresOn,
           reason: suppressedViolation.suppression.reason,
+          ...(suppressedViolation.suppression.pathScope
+            ? { pathScope: suppressedViolation.suppression.pathScope }
+            : {}),
           ruleLocation: toJsonLocation(root, suppressedViolation.suppression.location)
         }
       }))

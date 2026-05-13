@@ -26,6 +26,7 @@ export interface CheckJsonModule {
 export interface CheckJsonSuppression {
   code: string;
   toModule: string;
+  pathScope?: string;
   expiresOn: string;
   reason: string;
   location: CheckJsonLocation;
@@ -55,6 +56,7 @@ export interface CheckJsonIntentionalViolation extends CheckJsonViolation {
     fromModule: string;
     toModule: string;
     code: ViolationCode;
+    pathScope?: string;
     acceptedUntil: string;
     reason: string;
     location: CheckJsonLocation;
@@ -139,6 +141,7 @@ function toJsonModule(root: string, module: AxiomModule): CheckJsonModule {
     suppressions: module.suppressions.map((suppression) => ({
       code: suppression.code,
       toModule: suppression.target.name,
+      ...(suppression.pathScope ? { pathScope: suppression.pathScope.pattern } : {}),
       expiresOn: suppression.expiresOn,
       reason: suppression.reason,
       location: toJsonLocation(root, suppression.location)
@@ -164,6 +167,7 @@ function toJsonIntentionalViolation(root: string, suppressedViolation: Suppresse
       fromModule: suppressedViolation.suppression.fromModule,
       toModule: suppressedViolation.suppression.toModule,
       code: suppressedViolation.suppression.code,
+      ...(suppressedViolation.suppression.pathScope ? { pathScope: suppressedViolation.suppression.pathScope } : {}),
       acceptedUntil: suppressedViolation.suppression.expiresOn,
       reason: suppressedViolation.suppression.reason,
       location: toJsonLocation(root, suppressedViolation.suppression.location)

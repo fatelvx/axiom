@@ -88,13 +88,19 @@ function formatIntentionalViolations(root: string, diagnostics: SuppressedViolat
     lines.push(`  ${diagnostic.violation.message}`);
     lines.push(...formatDetails(root, diagnostic.violation));
     lines.push(
-      `  contract: ${diagnostic.suppression.fromModule} intentionally accepts ${diagnostic.suppression.code} to ${diagnostic.suppression.toModule} until ${diagnostic.suppression.expiresOn} (${ruleLocation})`
+      `  contract: ${diagnostic.suppression.fromModule} intentionally accepts ${diagnostic.suppression.code} to ${diagnostic.suppression.toModule}${formatPathScopeText(
+        diagnostic.suppression.pathScope
+      )} until ${diagnostic.suppression.expiresOn} (${ruleLocation})`
     );
     lines.push(`  reason: ${diagnostic.suppression.reason}`);
     lines.push("");
   }
 
   return lines;
+}
+
+function formatPathScopeText(pathScope: string | undefined): string {
+  return pathScope ? ` at "${pathScope}"` : "";
 }
 
 function formatDiagnostic(root: string, violation: Violation, severity: "error" | "warning"): string {
@@ -253,6 +259,11 @@ function formatDetails(root: string, violation: Violation): string[] {
   const scope = readString(violation.details.scope);
   if (scope) {
     lines.push(`  scope: ${scope}`);
+  }
+
+  const pathScope = readString(violation.details.pathScope);
+  if (pathScope) {
+    lines.push(`  path scope: ${pathScope}`);
   }
 
   const reviewKind = readString(violation.details.reviewKind);

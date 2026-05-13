@@ -45,6 +45,7 @@ export interface PathRef {
 export interface SuppressionRule {
   code: string;
   target: ModuleRef;
+  pathScope?: PathRef;
   expiresOn: string;
   reason: string;
   location: SourceLocation;
@@ -135,6 +136,7 @@ export interface SuppressionInfo {
   fromModule: string;
   toModule: string;
   code: ViolationCode;
+  pathScope?: string;
   expiresOn: string;
   reason: string;
   location: SourceLocation;

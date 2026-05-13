@@ -93,7 +93,7 @@ test("graph JSON exposes declared, forbidden, visibility, and observed edges", (
         }
       ],
       nextStep:
-        "Fix hard violations first, or add visible temporary `accepts ... until ... because ...` debt only after review.",
+        "Fix hard violations first, or add visible temporary `accepts ... [at \"path\"] until ... because ...` debt only after review.",
       caveat:
         "This story is a review aid over static imports. It points to likely pressure, not proof that the architecture is good or bad; a quiet import graph can still hide intra-file responsibility concentration."
     },
@@ -127,7 +127,7 @@ test("graph JSON exposes declared, forbidden, visibility, and observed edges", (
     ],
     suggestedNextActions: [
       "Use `axi check --json` as the hard gate and repair the listed `violations[]` first.",
-      "If a violation is truly temporary, propose a visible `.axi` `accepts ... until ... because ...` entry for review."
+      "If a violation is truly temporary, propose a visible `.axi` `accepts ... [at \"path\"] until ... because ...` entry for review."
     ]
   });
   assert.deepEqual(payload.summary, {
@@ -508,6 +508,19 @@ test("markdown review includes non-edge intentional debt", () => {
   assert.match(output, /Accepted until: `2099-01-01`/);
   assert.match(output, /Contract: `axiom\/main\.axi:5`/);
   assert.match(output, /Reason: legacy public barrel cleanup/);
+});
+
+test("review output shows path-scoped intentional debt", () => {
+  const result = runCheck({ root: path.join(repoRoot, "fixtures/accepted-hidden-reexport-scoped") });
+  const human = formatGraphResult(result, { violationsOnly: true, attention: true });
+  const markdown = formatGraphMarkdown(result, { violationsOnly: true, attention: true, observe: true });
+  const payload = toGraphJson(result, { violationsOnly: true, attention: true });
+
+  assert.match(human, /scope: src\/services\/index\.ts/);
+  assert.match(markdown, /Scope: `src\/services\/index\.ts`/);
+  assert.equal(payload.intentionalDebt[0]?.pathScope, "src/services/index.ts");
+  assert.equal(payload.summary.violations, 1);
+  assert.equal(payload.summary.intentionalViolations, 1);
 });
 
 test("violations-only graph output includes warning guardrails", () => {

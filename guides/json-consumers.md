@@ -101,7 +101,7 @@ Warning counts only include advisory checks enabled for that command or config. 
 
 `deep_internal_import` warning details can include `entrypointConfidence`, `entrypointReason`, `deepImportGroup`, `sourceGroup`, `publicEntrypoints[]`, and `moduleEntrypoints[]`. `publicEntrypoints[]` is same-source-group advice. `moduleEntrypoints[]` lists other entry points in the broad module that were not used as direct advice. Agents should not rewrite imports to `moduleEntrypoints[]` when `entrypointConfidence` is `ambiguous_entrypoints`.
 
-The top-level `intentionalDebt[]` ledger is the authoritative list for accepted debt review. Per-edge `intentionalViolations[]` entries are useful annotations, but some accepted debt is not a cross-module observed edge. For example, an accepted `hidden_reexport` from an exposed entry point can appear in `intentionalDebt[]` even when there is no `observedDependencies[]` edge to show.
+The top-level `intentionalDebt[]` ledger is the authoritative list for accepted debt review. Per-edge `intentionalViolations[]` entries are useful annotations, but some accepted debt is not a cross-module observed edge. For example, an accepted `hidden_reexport` from an exposed entry point can appear in `intentionalDebt[]` even when there is no `observedDependencies[]` edge to show. When the `.axi` entry uses `at "<path-or-glob>"`, JSON contract objects expose `pathScope` so agents can see that the debt was accepted only for that violation location.
 
 `architectureSummary` is a convenience surface for agents and dashboards. It does not add validation semantics. Use it to decide what to show first, then read the underlying `violations[]`, `intentionalDebt[]`, `warnings[]`, `drift`, and observed dependency arrays for exact evidence.
 
@@ -168,7 +168,7 @@ Agents should prefer this loop:
 
 1. Run `axi check --json` after editing.
 2. Repair hard `violations[]`.
-3. If a temporary exception is genuinely intended, propose a `.axi` `accepts ... until ... because ...` change for human review.
+3. If a temporary exception is genuinely intended, propose a `.axi` `accepts ... [at "path"] until ... because ...` change for human review.
 4. Run `axi observe --json` or `axi observe --markdown` to summarize visible debt, warnings, and drift.
 
 Axiom does not auto-accept debt. Accepted debt must be declared in `.axi` with an expiration date and reason. Expired or invalid intentional violations remain hard failures in `axi check`.

@@ -47,6 +47,7 @@
 - Added a real-project smoke report for nanoid and zod, and fixed workspace inference so package root files do not overlap package `src/**` modules.
 - Added opt-in `--warn-deep-internal-imports` advisory warnings for relative cross-module imports that bypass likely `index.*` entry points.
 - Added a real-project version smoke harness for comparing architecture pressure across repository tags.
+- Added a real-project diff smoke harness for repeatable `axi infer` -> graph baseline -> `axi diff` calibration across two repository refs.
 - Added `--spec <path>` for check, graph, and observe so external pilot contracts can scan a target repo without writing `.axi` files into it.
 - Added a pilot workflow guide that separates code-health audits from Axiom boundary-drift scans and keeps early adoption observe-first.
 - Added `axi diff` as a first-class advisory baseline-drift command over the existing graph model, with human, JSON, Markdown, and Mermaid output.

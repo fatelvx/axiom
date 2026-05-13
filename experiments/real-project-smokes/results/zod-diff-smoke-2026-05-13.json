@@ -1,0 +1,118 @@
+{
+  "kind": "axiom.real-project-diff-smoke.v1",
+  "generatedAt": "2026-05-13T00:58:11.836Z",
+  "repo": "https://github.com/colinhacks/zod.git",
+  "name": "zod",
+  "baselineRef": "v4.0.1",
+  "currentRef": "v4.4.3",
+  "groupBy": "workspace",
+  "warningFlags": [
+    "--warn-coupling-concentration",
+    "--warn-deep-internal-imports",
+    "--warn-unresolved-imports"
+  ],
+  "node": "v24.14.1",
+  "platform": "win32 x64",
+  "baseline": {
+    "ref": "v4.0.1",
+    "commit": "b259211",
+    "summary": {
+      "modules": 15,
+      "declaredDependencies": 6,
+      "forbiddenDependencies": 0,
+      "exposedPaths": 0,
+      "hiddenPaths": 0,
+      "observedDependencies": 51,
+      "shownObservedDependencies": 51,
+      "violations": 0,
+      "intentionalViolations": 0,
+      "warnings": 2
+    }
+  },
+  "current": {
+    "ref": "v4.4.3",
+    "commit": "1fb56a5",
+    "summary": {
+      "modules": 15,
+      "declaredDependencies": 6,
+      "forbiddenDependencies": 0,
+      "exposedPaths": 0,
+      "hiddenPaths": 0,
+      "observedDependencies": 54,
+      "shownObservedDependencies": 54,
+      "violations": 0,
+      "intentionalViolations": 0,
+      "warnings": 2
+    }
+  },
+  "drift": {
+    "kind": "advisory_observed_edge_drift",
+    "baseline": {
+      "schemaVersion": "axiom.graph.v9",
+      "observedDependencies": 51
+    },
+    "newObservedEdges": [],
+    "removedObservedEdges": [
+      {
+        "fromModule": "ZodVitest",
+        "toModule": "Vitest",
+        "importSites": 1,
+        "firstImport": {
+          "filePath": "packages/zod/vitest.config.ts",
+          "line": 2,
+          "specifier": "../../vitest.root.mjs",
+          "resolvedPath": "vitest.root.mts"
+        },
+        "violationCodes": [],
+        "intentionalViolationCodes": []
+      }
+    ]
+  },
+  "warnings": {
+    "byCode": {
+      "coupling_concentration": 1,
+      "deep_internal_import": 1
+    },
+    "details": [
+      {
+        "code": "coupling_concentration",
+        "message": "Zod has concentrated fan-in from 5 modules.",
+        "observed": "Zod fan-in from 5 modules",
+        "module": "Zod",
+        "incomingModules": [
+          "Benchmarks",
+          "Play",
+          "Resolution",
+          "Scripts",
+          "Treeshaking"
+        ],
+        "outgoingModules": []
+      },
+      {
+        "code": "deep_internal_import",
+        "message": "Scripts imports Zod through a deep relative path instead of a likely entry point.",
+        "location": {
+          "filePath": "scripts/check-versions.ts",
+          "line": 4
+        },
+        "observed": "Scripts -> Zod deep internal import",
+        "fromModule": "Scripts",
+        "toModule": "Zod",
+        "specifier": "../packages/zod/src/v4/core/versions.js",
+        "importedPath": "packages/zod/src/v4/core/versions.ts",
+        "incomingModules": [],
+        "outgoingModules": []
+      }
+    ]
+  },
+  "timingsMs": {
+    "cloneBaseline": 3284.7,
+    "cloneCurrent": 3900.2,
+    "infer": 1452.4,
+    "baselineGraph": 1432.2,
+    "diffJson": 1696.2,
+    "diffMarkdown": 1964.5,
+    "observeMarkdown": 1679.2,
+    "diffMermaid": 1636.4
+  }
+}

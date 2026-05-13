@@ -40,6 +40,25 @@ Treat this as drift calibration, not an architecture verdict. The inferred contr
 
 Public API surface warnings require active `exposes` rules. Raw inferred contracts usually leave `exposes` suggestions as comments, so public API pressure should be calibrated with a declared or probe contract when that is the question being tested.
 
+## Diff Smoke Harness
+
+Use the diff smoke harness when the question is whether one baseline contract can make version-to-version architecture drift reviewable:
+
+```bash
+npm run real-project:diff-smoke -- \
+  --repo https://github.com/colinhacks/zod.git \
+  --name zod \
+  --baseline-ref v4.0.1 \
+  --current-ref v4.4.3 \
+  --warnings coupling,deep,unresolved \
+  --json-out experiments/real-project-smokes/results/zod-diff-smoke-2026-05-13.json \
+  --markdown-out experiments/real-project-smokes/results/zod-diff-smoke-2026-05-13.md
+```
+
+The script clones the baseline and current refs, runs `axi infer --group-by <mode>` on the baseline ref, saves an `axi graph --json` baseline, then runs `axi diff` and `axi observe --baseline --markdown` against the current ref with the inferred contract as an external `--spec`.
+
+This is closer to an Axiom pilot workflow than the version smoke harness. It asks: "If this was the contract snapshot we cared about, what architecture edges and advisory signals changed later?" The answer is still a smoke calibration result, not a maintainer-intent claim.
+
 ## Recorded Runs
 
 - [nanoid and zod smoke, 2026-05-13](results/2026-05-13-nanoid-zod.md)
@@ -47,3 +66,4 @@ Public API surface warnings require active `exposes` rules. Raw inferred contrac
 - [zod version architecture smoke with public API flag, 2026-05-13](results/zod-version-smoke-public-api-2026-05-13.md)
 - [public API surface pilot, 2026-05-13](results/public-api-pilot-2026-05-13.md)
 - [zod `axi diff` baseline pilot, 2026-05-13](results/zod-diff-pilot-2026-05-13.md)
+- [zod diff architecture smoke from the repeatable harness, 2026-05-13](results/zod-diff-smoke-2026-05-13.md)

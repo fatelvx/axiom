@@ -302,12 +302,42 @@ test("deep internal import warnings are opt-in advisory diagnostics", () => {
       importedPath: "src/lib/internal/secret.ts",
       publicEntrypoints: ["src/lib/index.ts"],
       publicEntrypointCount: 1,
+      publicEntrypointsTruncated: false,
+      entrypointConfidence: "single_likely_entrypoint",
       importKind: "import",
       observed: "App -> Lib deep internal import",
       scope: "relative_cross_module_non_entrypoint",
       suggestion:
         "Import a public entry point from Lib, or declare explicit exposes/hides rules if this deep path is intentional."
     }
+  });
+});
+
+test("deep internal import warnings soften entrypoint advice for broad inferred modules", () => {
+  const root = path.join(repoRoot, "fixtures/deep-internal-ambiguous-entrypoint");
+  const result = runCheck({ root, warnDeepInternalImports: true });
+
+  assert.deepEqual(result.violations, []);
+  assert.equal(result.warnings.length, 1);
+  assert.equal(result.warnings[0]?.code, "deep_internal_import");
+  assert.equal(
+    result.warnings[0]?.message,
+    "App imports ServicesCycle through a deep relative path while ServicesCycle has multiple likely entry points."
+  );
+  assert.deepEqual(result.warnings[0]?.details, {
+    fromModule: "App",
+    toModule: "ServicesCycle",
+    specifier: "../services/tools/internal/tool",
+    importedPath: "src/services/tools/internal/tool.ts",
+    publicEntrypoints: ["src/services/index.ts", "src/services/tools/index.ts", "src/store/index.ts"],
+    publicEntrypointCount: 3,
+    publicEntrypointsTruncated: false,
+    entrypointConfidence: "ambiguous_entrypoints",
+    importKind: "import",
+    observed: "App -> ServicesCycle deep internal import",
+    scope: "relative_cross_module_non_entrypoint",
+    suggestion:
+      "Review the likely entry points for ServicesCycle; this inferred module may be too broad, so declare explicit exposes/hides rules or split the module before treating one index file as the public boundary."
   });
 });
 

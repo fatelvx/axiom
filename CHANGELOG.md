@@ -68,6 +68,9 @@
 - Added cycle path samples to collapsed-cycle inference output and bumped infer JSON to `axiom.infer.v5`.
 - Added CLI `--include` and `--exclude` source-scope flags for check, graph, observe, diff, and infer.
 - Added a read-the-graph guide and 10-minute pilot card so external users can interpret diagrams, quiet scans, advisory pressure, and first-run pilot results without treating Axiom like a generic linter.
+- Clarified focused graph output by separating shown dependency edges from full observed dependencies in human, Markdown, and Mermaid summaries.
+- Added warning-scope notes and warning clusters so advisory-heavy pilots surface likely root causes before listing individual files.
+- Softened `deep_internal_import` entrypoint advice for broad or collapsed modules with multiple likely entry points instead of pretending one index file is authoritative.
 
 ## 0.5.8 - Monorepo Spec Discovery
 

@@ -177,6 +177,7 @@ test("human graph output includes readable sections", () => {
   assert.match(output, /declared dependencies:\n  Simulation -> Physics \(axiom\/main\.axi:12\)/);
   assert.match(output, /forbidden dependencies:\n  Simulation -X-> Rendering \(axiom\/main\.axi:13\)/);
   assert.match(output, /observed dependencies:/);
+  assert.match(output, /warning scope: advisory warning counts include only checks enabled for this command or config/);
   assert.match(output, /Simulation -> Physics via src\/simulation\/step\.ts:1 "\.\.\/physics\/math"/);
   assert.match(output, /Simulation -> Rendering via src\/simulation\/step\.ts:2 "\.\.\/rendering\/draw"/);
 });
@@ -201,7 +202,8 @@ test("violations-only graph output focuses observed edges with diagnostics", () 
   assert.match(output, /Axiom graph \(violations only\)\./);
   assert.match(output, /review mode: violations-only graph \(presentation filter\)/);
   assert.match(output, /model: declared \.axi intent vs observed source imports/);
-  assert.match(output, /observed dependencies: 2 of 3/);
+  assert.match(output, /shown dependency edges: 2/);
+  assert.match(output, /full observed dependencies: 3/);
   assert.match(output, /focus: showing 2 of 3 observed dependency edges with hard violations or accepted debt; clean edges omitted/);
   assert.doesNotMatch(output, /src\/ui\/view\.ts:1 "\.\.\/services"/);
   assert.match(output, /src\/ui\/view\.ts:2 "\.\.\/services\/feature"/);
@@ -219,7 +221,8 @@ test("attention graph output uses awareness-oriented heading", () => {
 
   assert.match(output, /Axiom graph \(attention\)\./);
   assert.match(output, /review mode: graph attention \(advisory\)/);
-  assert.match(output, /observed dependencies: 2 of 3/);
+  assert.match(output, /shown dependency edges: 2/);
+  assert.match(output, /full observed dependencies: 3/);
 });
 
 test("violations-only graph JSON filters observed dependencies but keeps total counts", () => {
@@ -359,7 +362,8 @@ test("markdown graph output summarizes reviewable architecture signals", () => {
   assert.match(output, /## Axiom Architecture Review/);
   assert.match(output, /Status: failing contract/);
   assert.match(output, /Review mode: observe \(advisory\)/);
-  assert.match(output, /- Observed dependencies: 1 of 2/);
+  assert.match(output, /- Shown dependency edges: 1/);
+  assert.match(output, /- Full observed dependencies: 2/);
   assert.match(output, /Axiom does not auto-accept debt/);
   assert.match(output, /Expired or invalid intentional violations are hard contract failures in `axi check`/);
   assert.match(output, /### Hard Violations/);
@@ -392,7 +396,7 @@ test("attention mermaid graph respects the focused observed edge filter", () => 
   const result = runCheck({ root: path.join(repoRoot, "fixtures/visibility-rules") });
   const output = formatGraphMermaid(result, { violationsOnly: true, attention: true });
 
-  assert.match(output, /observedDependencies=2 of 3/);
+  assert.match(output, /shownDependencyEdges=2, fullObservedDependencies=3/);
   assert.match(output, /FILTERED graph view: 2 of 3 observed dependency edges shown<br\/>Clean observed dependencies are omitted/);
   assert.match(output, /module_UI -->\|2 imports; hidden_import, unexposed_import\| module_Services/);
   assert.doesNotMatch(output, /3 imports/);
@@ -418,7 +422,8 @@ test("attention output includes intentional debt without an observed dependency 
   const result = runCheck({ root: path.join(repoRoot, "fixtures/accepted-hidden-reexport") });
   const output = formatGraphResult(result, { violationsOnly: true, attention: true });
 
-  assert.match(output, /observed dependencies: 0 of 0/);
+  assert.match(output, /shown dependency edges: 0/);
+  assert.match(output, /full observed dependencies: 0/);
   assert.match(output, /intentional violations: 1/);
   assert.match(output, /violating dependencies:\n  none/);
   assert.match(output, /visible intentional debt:\n  hidden_reexport src\/services\/index\.ts:1: Services re-exports a hidden path through an exposed file\./);
@@ -484,6 +489,20 @@ test("attention graph output explains deep internal import warnings", () => {
   assert.match(output, /observed: App -> Lib deep internal import/);
   assert.match(output, /imported path: src\/lib\/internal\/secret\.ts/);
   assert.match(output, /likely entry points: src\/lib\/index\.ts/);
+  assert.match(output, /entrypoint confidence: single_likely_entrypoint/);
+});
+
+test("attention graph output clusters repeated warning root causes", () => {
+  const result = runCheck({
+    root: path.join(repoRoot, "fixtures/deep-internal-warning-clusters"),
+    warnDeepInternalImports: true
+  });
+  const output = formatGraphResult(result, { violationsOnly: true, attention: true });
+
+  assert.match(output, /warnings: 2/);
+  assert.match(output, /clusters:\n    deep_internal_import App -> Lib: 2 warnings/);
+  assert.match(output, /deep_internal_import src\/app\/a\.ts:1/);
+  assert.match(output, /deep_internal_import src\/app\/b\.ts:1/);
 });
 
 test("violations-only graph output includes non-edge surface violations", () => {

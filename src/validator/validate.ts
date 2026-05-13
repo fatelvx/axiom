@@ -910,9 +910,14 @@ export function findDeepInternalImportWarnings(
       continue;
     }
 
+    const entrypointConfidence = publicEntrypoints.length === 1 ? "single_likely_entrypoint" : "ambiguous_entrypoints";
+
     warnings.push({
       code: "deep_internal_import",
-      message: `${dependency.fromModule} imports ${dependency.toModule} through a deep relative path instead of a likely entry point.`,
+      message:
+        entrypointConfidence === "single_likely_entrypoint"
+          ? `${dependency.fromModule} imports ${dependency.toModule} through a deep relative path instead of a likely entry point.`
+          : `${dependency.fromModule} imports ${dependency.toModule} through a deep relative path while ${dependency.toModule} has multiple likely entry points.`,
       location: {
         filePath: dependency.importRecord.filePath,
         line: dependency.importRecord.line
@@ -924,11 +929,15 @@ export function findDeepInternalImportWarnings(
         importedPath,
         publicEntrypoints: publicEntrypoints.slice(0, 5),
         publicEntrypointCount: publicEntrypoints.length,
+        publicEntrypointsTruncated: publicEntrypoints.length > 5,
+        entrypointConfidence,
         importKind: dependency.importRecord.kind,
         observed: `${dependency.fromModule} -> ${dependency.toModule} deep internal import`,
         scope: "relative_cross_module_non_entrypoint",
         suggestion:
-          `Import a public entry point from ${dependency.toModule}, or declare explicit exposes/hides rules if this deep path is intentional.`
+          entrypointConfidence === "single_likely_entrypoint"
+            ? `Import a public entry point from ${dependency.toModule}, or declare explicit exposes/hides rules if this deep path is intentional.`
+            : `Review the likely entry points for ${dependency.toModule}; this inferred module may be too broad, so declare explicit exposes/hides rules or split the module before treating one index file as the public boundary.`
       }
     });
   }

@@ -100,6 +100,10 @@ Advisory warnings are review prompts, not proof of bad architecture.
 
 `deep_internal_import` means one module imported another module through a relative non-entry file while the target module appears to have an `index.*` entry point. That may be a public-entry bypass, or it may mean the contract needs a more precise public surface.
 
+If Axiom says the entry point is ambiguous, do not blindly rewrite imports to the first `index.ts` it found. Broad inferred modules and collapsed cycles often contain several plausible entry points. Treat that as a contract-authoring signal: split the module, declare `exposes` / `hides`, or ask the maintainer which entry point is real.
+
+Focused graph views can also say they are showing few or zero dependency edges while warnings are present. That is not a contradiction. The focused view hides clean edges, while warnings can still point at files, public surfaces, unresolved imports, or graph pressure. Use the `full observed dependencies` count to see how much graph data was scanned.
+
 How to respond:
 
 - Inspect the import sites listed in the warning.

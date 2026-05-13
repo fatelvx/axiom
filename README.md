@@ -580,6 +580,8 @@ axi graph --root . --attention --warn-deep-internal-imports
 
 Today this flags relative cross-module imports that target a non-`index.*` file when the target module has a likely `index.*` entry point. It is advisory: the check still exits `0` unless there are real violations. Treat it as a prompt to import through a public entry point, or to add explicit `exposes` / `hides` rules when a deep path is intentional.
 
+When an inferred or broad module has multiple likely `index.*` files, Axiom marks the entry point advice as ambiguous instead of pretending one file is the public boundary. That usually means the contract should split the module, declare a narrower public surface, or keep the warning as a review prompt until the team names the boundary.
+
 ## JSON And Markdown Output
 
 `axi check --json` emits `axiom.check.v4`:
@@ -617,6 +619,8 @@ Today this flags relative cross-module imports that target a non-`index.*` file 
 ```
 
 `axi graph --json` and `axi observe --json` emit `axiom.graph.v11`. Each observed dependency includes `violations` and `intentionalViolations` arrays. Graph JSON also includes `architectureSummary` so agents, dashboards, and future MCP adapters can read the review mode, status, top signals, suggested next actions, and a short interpretation layer without parsing Markdown. `architectureSummary.interpretation` gives a headline, quick-read notes, first things to inspect, and central modules by observed import pressure. It is guidance over the same static import graph, not a health score or semantic architecture proof. The top-level `intentionalDebt` ledger keeps accepted non-edge violations, such as hidden public-surface re-exports, visible to PR comments and agents. With `--violations-only`, `--attention`, or `observe`, `observedDependencies` remains a compatibility alias for the shown attention edges, while `allObservedDependencies[]` always carries the full observed graph and `shownObservedDependencies[]` carries the filtered view. `summary.observedDependencies` keeps the full count, `summary.shownObservedDependencies` keeps the shown count, warning guardrails are still shown with details, and the JSON `filters` object marks focused attention output.
+
+Human, Markdown, and Mermaid output use the same distinction: focused views say `shown dependency edges` separately from `full observed dependencies`, so an attention view can show zero edges while still reporting advisory warnings. Warning counts only include advisory checks enabled for that command or config; use the same `--warn-*` flags when comparing `observe`, `graph`, Markdown, and Mermaid output.
 
 If you are building a CI annotation, PR comment, dashboard, or agent integration on top of JSON output, follow [JSON Consumers](guides/json-consumers.md). In short: use `axi check --json` for hard gates, tolerate additive fields, and treat `intentionalDebt[]` as the authoritative accepted-debt ledger for graph / observe output.
 

@@ -35,12 +35,23 @@ Then render the graph:
 ```bash
 axi graph --root ../target-app \
   --spec contracts/target-app.inferred.axi \
-  --mermaid
+  --mermaid \
+  --warn-coupling-concentration \
+  --warn-deep-internal-imports
 ```
 
 The inferred contract mirrors the current graph. It is not maintainer-declared architecture. Before using it as intent, rename modules, inspect inferred dependency evidence comments, and delete or split anything that does not match how the project should evolve.
 
 Before reading individual `depends on` edges, read the first comments in the generated draft. `axi infer` prints a snapshot notice, an authoring checklist, and suggested next commands at the top of the file because that draft is evidence for review, not a contract to commit unchanged.
+
+When comparing Markdown and Mermaid output, use the same `--warn-*` flags. Warning counts only include checks enabled for that command, so a plain graph command can honestly show `warnings=0` while an observe command with warning flags reports advisory pressure.
+
+On Windows PowerShell, `>` may save redirected JSON or Markdown as UTF-16LE. Axiom reads PowerShell-created `.axi` specs and graph baselines, but UTF-8 is easier to share with other tools:
+
+```powershell
+axi graph --root ../target-app --spec contracts/target-app.inferred.axi --json |
+  Out-File -Encoding utf8 axiom-baseline.json
+```
 
 ## Look At These First
 
@@ -55,6 +66,7 @@ If the graph is quiet, still ask whether the center and scope are right before s
 - `axi infer` collapses a large cycle. It is showing that the current source graph is tangled, not saying the code is broken.
 - The first inferred module names are awkward. Rename them into the team's vocabulary before treating the contract as intent.
 - Advisory warnings appear. They are review prompts and do not fail `axi observe`.
+- Focused output says it is showing `0` dependency edges while warnings are present. That means the attention view did not need to show any dependency edge; the full observed graph count still tells you how much import graph was scanned.
 - The graph center is a shared module. Shared modules can be healthy when they have a clear public surface.
 - `no_spec_files` appears. That means Axiom needs a contract path or `--spec`; it is not a codebase judgment.
 

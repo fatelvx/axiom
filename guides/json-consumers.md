@@ -95,6 +95,10 @@ Important fields:
 - `warnings[]`: advisory warnings with normalized details.
 - `drift`: optional advisory baseline-drift result when `--baseline` is provided.
 
+`summary.observedDependencies` is always the full observed edge count. `summary.shownObservedDependencies` is the count for the current view. In attention or violations-only output those counts can differ, and `observedDependencies[]` remains the shown-view compatibility array. Use `allObservedDependencies[]` when a machine consumer needs the complete graph.
+
+Warning counts only include advisory checks enabled for that command or config. If a dashboard compares `observe`, `graph`, Markdown, and Mermaid output, run them with the same `--warn-*` flags or label the difference as warning-scope, not drift.
+
 The top-level `intentionalDebt[]` ledger is the authoritative list for accepted debt review. Per-edge `intentionalViolations[]` entries are useful annotations, but some accepted debt is not a cross-module observed edge. For example, an accepted `hidden_reexport` from an exposed entry point can appear in `intentionalDebt[]` even when there is no `observedDependencies[]` edge to show.
 
 `architectureSummary` is a convenience surface for agents and dashboards. It does not add validation semantics. Use it to decide what to show first, then read the underlying `violations[]`, `intentionalDebt[]`, `warnings[]`, `drift`, and observed dependency arrays for exact evidence.

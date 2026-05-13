@@ -70,6 +70,7 @@ module CLI
 path "src/cli.ts"
 layer Interface
 depends on Diagnostics
+depends on Discovery
 depends on CheckRunner
 depends on Infer
 purpose "provide command line entry points"

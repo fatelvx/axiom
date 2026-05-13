@@ -662,6 +662,29 @@ test("cli check --spec uses an external contract file instead of root discovery"
   );
 });
 
+test("cli check --spec accepts PowerShell UTF-16LE redirected .axi contracts", () => {
+  const directory = mkdtempSync(path.join(tmpdir(), "axiom-spec-encoding-"));
+  const specPath = path.join(directory, "main.axi");
+
+  try {
+    const specText = readFileSync(path.join(repoRoot, "fixtures/external-contracts/basic-main.axi"), "utf8");
+    writeFileSync(specPath, Buffer.concat([Buffer.from([0xff, 0xfe]), Buffer.from(specText, "utf16le")]));
+
+    const result = spawnSync(
+      process.execPath,
+      [cliPath, "check", "--root", "fixtures/basic-ts-valid", "--spec", specPath, "--json"],
+      { cwd: repoRoot, encoding: "utf8" }
+    );
+
+    assert.equal(result.status, 0, result.stderr);
+    const payload = JSON.parse(result.stdout);
+    assert.equal(payload.ok, true);
+    assert.equal(payload.summary.modules, 3);
+  } finally {
+    rmSync(directory, { recursive: true, force: true });
+  }
+});
+
 test("cli infer rejects --spec because inference stays read-only and spec-free", () => {
   const result = spawnSync(
     process.execPath,

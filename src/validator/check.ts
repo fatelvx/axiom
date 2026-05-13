@@ -11,6 +11,7 @@ import type {
 import { parseAxiomText } from "../axi/parser.js";
 import { loadConfig } from "../config/config.js";
 import { findAxiomFiles, findSourceFiles } from "../fs/discover.js";
+import { readTextFile } from "../fs/text.js";
 import { createImportResolver } from "../scanner/importResolver.js";
 import { scanSourceFile } from "../scanner/importScanner.js";
 import { createOwnershipIndex, validateOwnership } from "./ownership.js";
@@ -85,7 +86,7 @@ export function runCheck(options: CheckOptions): CheckResult {
   }
 
   for (const specFile of specFiles) {
-    const text = fs.readFileSync(specFile, "utf8");
+    const text = readTextFile(specFile);
     const parsed = parseAxiomText(specFile, text);
     spec.modules.push(...parsed.modules);
     spec.layerOrders.push(...parsed.layerOrders);

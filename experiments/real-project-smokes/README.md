@@ -46,3 +46,4 @@ Public API surface warnings require active `exposes` rules. Raw inferred contrac
 - [zod version architecture smoke, 2026-05-13](results/zod-version-smoke-2026-05-13.md)
 - [zod version architecture smoke with public API flag, 2026-05-13](results/zod-version-smoke-public-api-2026-05-13.md)
 - [public API surface pilot, 2026-05-13](results/public-api-pilot-2026-05-13.md)
+- [zod `axi diff` baseline pilot, 2026-05-13](results/zod-diff-pilot-2026-05-13.md)

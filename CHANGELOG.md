@@ -51,7 +51,7 @@
 - Added a pilot workflow guide that separates code-health audits from Axiom boundary-drift scans and keeps early adoption observe-first.
 - Added `axi diff` as a first-class advisory baseline-drift command over the existing graph model, with human, JSON, Markdown, and Mermaid output.
 - Added contract recipes and updated onboarding docs so pilots can move from inferred starter contracts to graph baselines and `axi diff` before adopting CI gates.
-- Made baseline graph loading accept PowerShell UTF-16LE redirected JSON, so Windows users can save `axi graph --json > axiom-baseline.json` and feed it to `axi diff` or `axi observe --baseline`.
+- Made generated CLI artifacts round-trip through Windows PowerShell redirection: baseline graph JSON and external `.axi` specs can now be read when saved as UTF-16LE.
 
 ## 0.5.8 - Monorepo Spec Discovery
 

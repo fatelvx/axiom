@@ -125,3 +125,5 @@ npm run real-project:diff-smoke -- \
 - [pnpm workspace resolver smokes, 2026-05-13](results/2026-05-13-pnpm-workspace-smokes.md)
 - [Vite type-only package imports smoke, 2026-05-14](results/2026-05-14-vite-type-imports.md)
 - [yargs production diff smoke, 2026-05-14](results/yargs-prod-diff-smoke-2026-05-14.md)
+- [Vue core evidence artifact calibration, 2026-05-14](results/2026-05-14-vue-core-evidence-artifact.md)
+- [Vue core source-scoped diff smoke, 2026-05-14](results/vue-core-src-diff-smoke-2026-05-14.md)

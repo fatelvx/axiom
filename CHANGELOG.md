@@ -87,6 +87,7 @@
 - Mapped workspace package `exports` / `main` targets from common build output directories such as `lib` and `dist` back to existing `src` mirrors, improving source-only monorepo graph completeness.
 - Added no-install pnpm workspace smoke artifacts for Vite and pnpm itself.
 - Resolved `.d.ts`, `.d.mts`, and `.d.cts` targets for scanner-confirmed type-only imports and exports, fixing Vite-style `#types/*` / `#dep-types/*` unresolved warnings without masking runtime imports to declaration files.
+- Added a Vue core source-scoped evidence artifact calibration showing the `.axi + baseline + reviewStory + intentionalDebt` loop can make minor-version workspace drift reviewable without target installs or validator changes.
 
 ## 0.5.8 - Monorepo Spec Discovery
 

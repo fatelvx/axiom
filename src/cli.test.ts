@@ -1,5 +1,7 @@
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
 import path from "node:path";
 import test from "node:test";
 
@@ -411,6 +413,34 @@ test("cli diff --json exposes the same advisory drift payload as graph JSON", ()
     payload.drift.newObservedEdges.map((edge: { fromModule: string; toModule: string }) => `${edge.fromModule}->${edge.toModule}`),
     ["Simulation->Rendering"]
   );
+});
+
+test("cli diff accepts PowerShell UTF-16LE redirected graph baselines", () => {
+  const directory = mkdtempSync(path.join(tmpdir(), "axiom-diff-baseline-"));
+  const baselinePath = path.join(directory, "axiom-baseline.json");
+
+  try {
+    const baselineText = readFileSync(path.join(repoRoot, "fixtures/baseline-drift/basic-valid.graph.json"), "utf8");
+    writeFileSync(baselinePath, Buffer.concat([Buffer.from([0xff, 0xfe]), Buffer.from(baselineText, "utf16le")]));
+
+    const result = spawnSync(
+      process.execPath,
+      [
+        cliPath,
+        "diff",
+        baselinePath,
+        "--root",
+        "fixtures/basic-ts-invalid"
+      ],
+      { cwd: repoRoot, encoding: "utf8" }
+    );
+
+    assert.equal(result.status, 0, result.stderr);
+    assert.match(result.stdout, /Axiom diff\./);
+    assert.match(result.stdout, /drift: 1 new observed edge, 1 removed observed edge/);
+  } finally {
+    rmSync(directory, { recursive: true, force: true });
+  }
 });
 
 test("cli diff --markdown prints a drift-focused review artifact", () => {

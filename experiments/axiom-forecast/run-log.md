@@ -556,3 +556,38 @@ Detailed result:
 ```text
 experiments/axiom-forecast/results/mirofish-big-backtest-v3-2026-05-13.md
 ```
+
+### `axi diff` Target Pilot
+
+After adding `axi diff`, a focused local pilot tested the first-value workflow:
+
+```text
+axi graph --json > axiom-baseline.json
+make or review a change
+axi diff axiom-baseline.json
+```
+
+Method:
+
+- Copied `fixtures/basic-ts-valid` into a temporary pilot directory.
+- Saved the baseline through normal PowerShell redirection.
+- Added one new cross-module import so `Physics` imports `Rendering`.
+- Ran `axi diff` in human, Markdown, Mermaid, and JSON modes.
+
+Primary result:
+
+- The first run failed because the PowerShell-created baseline was UTF-16LE and the baseline loader read UTF-8 only.
+- This is a real first-value adoption bug, because Windows users can naturally create baselines with `>`.
+- After adding encoding-aware baseline loading, the same pilot reported one new advisory edge: `Physics -> Rendering`.
+- Markdown and Mermaid preserved the drift-only review model.
+
+Follow-up taken:
+
+- Added UTF-8 / UTF-8 BOM / UTF-16LE baseline JSON decoding.
+- Added a regression test for PowerShell UTF-16LE redirected graph baselines.
+
+Detailed result:
+
+```text
+experiments/axiom-forecast/results/axi-diff-target-pilot-2026-05-13.md
+```

@@ -89,6 +89,12 @@ Latest big backtest V3 snapshot:
 current master after contract recipes, gate-readiness guidance, Mermaid graph output, external specs, baseline drift, and real-project smoke evidence
 ```
 
+Latest `axi diff` target pilot snapshot:
+
+```text
+current master after adding `axi diff`, then fixing PowerShell UTF-16LE redirected baseline graph loading
+```
+
 Use this experiment as forecast input, not as a replacement for real users. A useful forecast should produce falsifiable adoption risks, concrete messaging changes, and roadmap tradeoffs.
 
 Public sharing rule:

@@ -413,7 +413,7 @@ function hasPresentationOutput(options: Pick<CliOptions, "json" | "markdown" | "
 
 function loadGraphBaseline(baselinePath: string, root: string): GraphBaseline {
   const resolvedPath = resolveBaselinePath(baselinePath, root);
-  const rawText = fs.readFileSync(resolvedPath, "utf8");
+  const rawText = readJsonFileText(resolvedPath);
   const payload = JSON.parse(rawText) as unknown;
 
   if (!payload || typeof payload !== "object") {
@@ -443,6 +443,43 @@ function loadGraphBaseline(baselinePath: string, root: string): GraphBaseline {
     ...(typeof record.schemaVersion === "string" ? { schemaVersion: record.schemaVersion } : {}),
     observedDependencies: observedDependencies.map((dependency, index) => parseBaselineDependency(dependency, index))
   };
+}
+
+function readJsonFileText(filePath: string): string {
+  const buffer = fs.readFileSync(filePath);
+
+  if (buffer.length >= 2 && buffer[0] === 0xff && buffer[1] === 0xfe) {
+    return buffer.subarray(2).toString("utf16le");
+  }
+
+  if (buffer.length >= 3 && buffer[0] === 0xef && buffer[1] === 0xbb && buffer[2] === 0xbf) {
+    return buffer.subarray(3).toString("utf8");
+  }
+
+  if (looksLikeUtf16Le(buffer)) {
+    return buffer.toString("utf16le").replace(/^\uFEFF/u, "");
+  }
+
+  return buffer.toString("utf8").replace(/^\uFEFF/u, "");
+}
+
+function looksLikeUtf16Le(buffer: Buffer): boolean {
+  const sampleLength = Math.min(buffer.length, 128);
+  let asciiEvenBytes = 0;
+  let nullOddBytes = 0;
+
+  for (let index = 0; index + 1 < sampleLength; index += 2) {
+    const evenByte = buffer[index];
+    const oddByte = buffer[index + 1];
+    if (evenByte >= 0x20 && evenByte <= 0x7e) {
+      asciiEvenBytes += 1;
+    }
+    if (oddByte === 0x00) {
+      nullOddBytes += 1;
+    }
+  }
+
+  return asciiEvenBytes >= 2 && nullOddBytes >= 4;
 }
 
 function parseBaselineDependency(value: unknown, index: number): GraphBaseline["observedDependencies"][number] {

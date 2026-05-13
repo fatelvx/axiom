@@ -204,6 +204,32 @@ function formatDetails(root: string, violation: Violation): string[] {
     }
   }
 
+  const scopeHints = readRecordArray(violation.details.scopeHints);
+  if (scopeHints.length > 0) {
+    lines.push("  scope guidance:");
+    for (const hint of scopeHints) {
+      const message = readString(hint.message);
+      if (message) {
+        lines.push(`    ${message}`);
+      }
+
+      const matchedFolders = readStringArray(hint.matchedFolders);
+      if (matchedFolders.length > 0) {
+        lines.push(`    matched folders: ${matchedFolders.join(", ")}`);
+      }
+
+      const samplePaths = readStringArray(hint.samplePaths);
+      if (samplePaths.length > 0) {
+        lines.push(`    examples: ${samplePaths.join(", ")}`);
+      }
+
+      const suggestion = readString(hint.suggestion);
+      if (suggestion) {
+        lines.push(`    try: ${suggestion}`);
+      }
+    }
+  }
+
   const lineCount = readNumber(violation.details.lineCount);
   if (lineCount !== undefined) {
     lines.push(`  line count: ${lineCount}`);

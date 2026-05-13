@@ -54,6 +54,11 @@ if (!isCommand(commandValue)) {
   process.exit(1);
 }
 
+if (args.slice(1).some(isHelpOption)) {
+  printCommandHelp(commandValue);
+  process.exit(0);
+}
+
 const command = commandValue;
 const options = parseOptions(args.slice(1), command);
 
@@ -145,6 +150,10 @@ try {
 
 function isCommand(value: string | undefined): value is CliCommand {
   return value === "check" || value === "graph" || value === "infer" || value === "observe" || value === "diff";
+}
+
+function isHelpOption(value: string): boolean {
+  return value === "--help" || value === "-h";
 }
 
 function parseOptions(values: string[], command: CliCommand): CliOptions {
@@ -616,4 +625,110 @@ Adoption:
   --warn-large-files
                    Warn when large source files may hide intra-file responsibility concentration.
 `);
+}
+
+function printCommandHelp(command: CliCommand): void {
+  switch (command) {
+    case "check":
+      console.log(`Axiom check
+
+Validate source dependencies against .axi architecture specs. This is the CI gate: hard violations exit 1.
+
+Usage:
+  axi check [--root <path>] [--config <path>] [--include <glob>] [--exclude <glob>] [--spec <path>] [--json] [--warn-unowned] [--strict] [--intentional-violation-warning-days <n>] [--warn-unresolved-imports] [--warn-public-api-surface] [--warn-coupling-concentration] [--warn-deep-internal-imports] [--warn-large-files]
+
+Options:
+  --root <path>      Project root. Defaults to the current working directory.
+  --config <path>    Discovery config path. Defaults to axiom.config.json when present.
+  --include <glob>   Add source include glob(s) for this run. Comma lists and repeated flags are supported.
+  --exclude <glob>   Add source exclude glob(s) for this run. Comma lists and repeated flags are supported.
+  --spec <path>      Use explicit .axi file(s) or directories instead of root discovery.
+  --json             Print axiom.check JSON.
+  --warn-unowned     Report unowned source files as warnings.
+  --strict           Report unowned source files as violations.
+  --intentional-violation-warning-days <n>
+                     Warn when accepted debt expires within n days.
+  --warn-unresolved-imports
+                     Warn when static relative or # imports cannot be resolved.
+  --warn-public-api-surface
+                     Warn about broad exposed barrels and entry point coupling.
+  --warn-coupling-concentration
+                     Warn when one module has high observed fan-in or fan-out.
+  --warn-deep-internal-imports
+                     Warn about relative cross-module imports that bypass likely entry points.
+  --warn-large-files
+                     Warn about large files that may hide intra-file responsibility pressure.
+`);
+      return;
+    case "graph":
+      console.log(`Axiom graph
+
+Print declared and observed architecture graphs. This is a review surface and exits 0 even when violations exist.
+
+Usage:
+  axi graph [--root <path>] [--config <path>] [--include <glob>] [--exclude <glob>] [--spec <path>] [--json|--markdown|--mermaid] [--warn-unowned] [--strict] [--violations-only|--attention] [--baseline <graph-json>] [--intentional-violation-warning-days <n>] [--warn-unresolved-imports] [--warn-public-api-surface] [--warn-coupling-concentration] [--warn-deep-internal-imports] [--warn-large-files]
+
+Options:
+  --json             Print axiom.graph JSON.
+  --markdown         Print a PR/agent-friendly review summary.
+  --mermaid          Print a Mermaid observed dependency diagram.
+  --violations-only  Show only observed dependency edges with violations or accepted debt.
+  --attention        Product-facing alias for the focused architecture attention view.
+  --baseline <json>  Compare observed module edges against an unfiltered axi graph --json baseline.
+  --root, --config, --include, --exclude, --spec, --warn-* and adoption flags match axi check.
+`);
+      return;
+    case "observe":
+      console.log(`Axiom observe
+
+Show the architecture attention surface: hard violations, visible accepted debt, warnings, review story, and optional drift. This is advisory and exits 0.
+
+Usage:
+  axi observe [--root <path>] [--config <path>] [--include <glob>] [--exclude <glob>] [--spec <path>] [--json|--markdown|--mermaid] [--warn-unowned] [--strict] [--baseline <graph-json>] [--intentional-violation-warning-days <n>] [--warn-unresolved-imports] [--warn-public-api-surface] [--warn-coupling-concentration] [--warn-deep-internal-imports] [--warn-large-files]
+
+Options:
+  --json             Print axiom.graph JSON with the attention filter enabled.
+  --markdown         Print a PR/agent-friendly architecture review.
+  --mermaid          Print a focused Mermaid diagram.
+  --baseline <json>  Add advisory observed-edge drift against an unfiltered graph baseline.
+  --root, --config, --include, --exclude, --spec, --warn-* and adoption flags match axi check.
+`);
+      return;
+    case "diff":
+      console.log(`Axiom diff
+
+Compare current observed module edges against an unfiltered axi graph --json baseline. This is advisory and exits 0.
+
+Usage:
+  axi diff <baseline-json> [--root <path>] [--config <path>] [--include <glob>] [--exclude <glob>] [--spec <path>] [--json|--markdown|--mermaid] [--warn-unowned] [--strict] [--intentional-violation-warning-days <n>] [--warn-unresolved-imports] [--warn-public-api-surface] [--warn-coupling-concentration] [--warn-deep-internal-imports] [--warn-large-files]
+  axi diff --baseline <graph-json> [--root <path>] [--json|--markdown|--mermaid]
+
+Options:
+  --baseline <json>  Baseline graph JSON. Equivalent to the positional baseline argument.
+  --json             Print axiom.graph JSON with drift.
+  --markdown         Print a drift-focused review artifact.
+  --mermaid          Print a drift-focused Mermaid diagram.
+  --root, --config, --include, --exclude, --spec, --warn-* and adoption flags match axi check.
+`);
+      return;
+    case "infer":
+      console.log(`Axiom infer
+
+Print a starter .axi contract inferred from current imports. The draft mirrors today's graph; it is not a recommended architecture.
+
+Usage:
+  axi infer [--root <path>] [--config <path>] [--include <glob>] [--exclude <glob>] [--json] [--group-depth <n>] [--group-by folder|workspace]
+
+Options:
+  --root <path>      Project root. Defaults to the current working directory.
+  --config <path>    Discovery config path. Defaults to axiom.config.json when present.
+  --include <glob>   Add source include glob(s) for this run. Comma lists and repeated flags are supported.
+  --exclude <glob>   Add source exclude glob(s) for this run. Comma lists and repeated flags are supported.
+  --json             Print axiom.infer JSON.
+  --group-depth <n>  Group by a deeper folder depth for starter contracts.
+  --group-by folder|workspace
+                     Group by source folders or workspace package boundaries.
+`);
+      return;
+  }
 }

@@ -57,6 +57,28 @@ test("missing path fixture reports missing module path", () => {
   assert.ok(codes.includes("missing_module_path"));
 });
 
+test("no-spec first runs surface likely scan scope noise", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "axiom-no-spec-scope-"));
+
+  try {
+    fs.mkdirSync(path.join(root, ".agent-runtime/profile"), { recursive: true });
+    fs.mkdirSync(path.join(root, "src"), { recursive: true });
+    fs.writeFileSync(path.join(root, ".agent-runtime/profile/runtime_background.js"), "export const runtimeState = 1;\n");
+    fs.writeFileSync(path.join(root, "src/app.ts"), "export const app = 1;\n");
+
+    const result = runCheck({ root });
+    const noSpecViolation = result.violations.find((violation) => violation.code === "no_spec_files");
+    const scopeHints = noSpecViolation?.details?.scopeHints as Array<Record<string, unknown>> | undefined;
+
+    assert.equal(noSpecViolation?.code, "no_spec_files");
+    assert.deepEqual(scopeHints?.[0]?.matchedFolders, [".agent-runtime"]);
+    assert.deepEqual(scopeHints?.[0]?.samplePaths, [".agent-runtime/profile/runtime_background.js"]);
+    assert.match(String(scopeHints?.[0]?.suggestion), /--include "src\/\*\*"/);
+  } finally {
+    fs.rmSync(root, { force: true, recursive: true });
+  }
+});
+
 test("layer valid fixture permits dependencies toward inner layers", () => {
   const result = runCheck({ root: path.join(repoRoot, "fixtures/layer-valid") });
 

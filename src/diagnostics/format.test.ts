@@ -1,4 +1,6 @@
 import assert from "node:assert/strict";
+import fs from "node:fs";
+import os from "node:os";
 import path from "node:path";
 import test from "node:test";
 import { formatCheckResult } from "./format.js";
@@ -47,6 +49,27 @@ test("human diagnostics tell no-spec projects how to start", () => {
   assert.match(output, /quiet import graph can still hide intra-file responsibility concentration/);
   assert.match(output, /fix: Run `axi infer --root \. > axiom\/main\.axi` from the project root/);
   assert.match(output, /--spec <path-to-contract\.axi>/);
+});
+
+test("human no-spec diagnostics flag likely generated or runtime scan scope", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "axiom-format-scope-"));
+
+  try {
+    fs.mkdirSync(path.join(root, ".agent-runtime/profile"), { recursive: true });
+    fs.mkdirSync(path.join(root, "src"), { recursive: true });
+    fs.writeFileSync(path.join(root, ".agent-runtime/profile/runtime_background.js"), "export const runtimeState = 1;\n");
+    fs.writeFileSync(path.join(root, "src/app.ts"), "export const app = 1;\n");
+
+    const output = formatCheckResult(runCheck({ root }));
+
+    assert.match(output, /scope guidance:/);
+    assert.match(output, /hidden, generated, runtime, profile, smoke, or benchmark-looking folders/);
+    assert.match(output, /matched folders: \.agent-runtime/);
+    assert.match(output, /examples: \.agent-runtime\/profile\/runtime_background\.js/);
+    assert.match(output, /try: `axi check --root \. --include "src\/\*\*"`/);
+  } finally {
+    fs.rmSync(root, { force: true, recursive: true });
+  }
 });
 
 test("human diagnostics include layer breach rule details", () => {

@@ -167,6 +167,8 @@ function buildNoSpecFilesViolation(
   importCount: number,
   sourceFileMetrics: SourceFileMetric[]
 ): Violation {
+  const scopeHints = detectFirstRunScopeHints(root, sourceFiles);
+
   return {
     code: "no_spec_files",
     message: `No .axi files found under ${root}.`,
@@ -175,6 +177,7 @@ function buildNoSpecFilesViolation(
       importsScanned: importCount,
       topLargestFiles: topLargestFiles(root, sourceFileMetrics),
       inferredModuleCandidates: inferModuleCandidates(root, sourceFiles),
+      ...(scopeHints.length > 0 ? { scopeHints } : {}),
       note:
         "Axiom can scan imports before a contract, but it cannot compare declared-vs-observed architecture intent yet. A quiet import graph can still hide intra-file responsibility concentration.",
       suggestion:
@@ -201,6 +204,87 @@ function topLargestFiles(root: string, sourceFileMetrics: SourceFileMetric[]): A
       functions: metric.functionLikeCount,
       classes: metric.classCount
     }));
+}
+
+function detectFirstRunScopeHints(root: string, sourceFiles: string[]): Array<Record<string, unknown>> {
+  const matchedFolders: string[] = [];
+  const samplePaths: string[] = [];
+
+  for (const sourceFile of sourceFiles) {
+    const relativeFilePath = relativePath(root, sourceFile);
+    const segments = relativeFilePath.split("/").filter(Boolean);
+    const scopeNoise = findLikelyScopeNoise(segments);
+    if (!scopeNoise) {
+      continue;
+    }
+
+    if (!matchedFolders.includes(scopeNoise.folder)) {
+      matchedFolders.push(scopeNoise.folder);
+    }
+
+    if (!samplePaths.includes(relativeFilePath)) {
+      samplePaths.push(relativeFilePath);
+    }
+  }
+
+  if (samplePaths.length === 0) {
+    return [];
+  }
+
+  return [
+    {
+      kind: "possible_scan_scope_noise",
+      message:
+        "This first run included files under hidden, generated, runtime, profile, smoke, or benchmark-looking folders. Confirm the scan scope before turning the result into a contract.",
+      matchedFolders: matchedFolders.slice(0, 8),
+      samplePaths: samplePaths.slice(0, 8),
+      suggestion:
+        '`axi check --root . --include "src/**"` for a source-only pilot, or add project-specific `exclude` entries in axiom.config.json for runtime/generated/profile folders.'
+    }
+  ];
+}
+
+function findLikelyScopeNoise(segments: string[]): { folder: string } | undefined {
+  const directorySegments = segments.slice(0, -1);
+  const firstSegment = directorySegments[0];
+  const insideCommonSourceRoot = firstSegment === "src" || firstSegment === "apps" || firstSegment === "packages";
+
+  for (let index = 0; index < directorySegments.length; index += 1) {
+    const segment = directorySegments[index] ?? "";
+    const lowerSegment = segment.toLowerCase();
+
+    if (isHiddenDirectorySegment(segment)) {
+      return { folder: directorySegments.slice(0, index + 1).join("/") };
+    }
+
+    if (hasGeneratedIndicator(lowerSegment)) {
+      return { folder: directorySegments.slice(0, index + 1).join("/") };
+    }
+
+    if (!insideCommonSourceRoot && hasRuntimeScopeIndicator(lowerSegment)) {
+      return { folder: directorySegments.slice(0, index + 1).join("/") };
+    }
+  }
+
+  return undefined;
+}
+
+function isHiddenDirectorySegment(segment: string): boolean {
+  return segment.startsWith(".") && segment.length > 1;
+}
+
+function hasGeneratedIndicator(segment: string): boolean {
+  return segment.includes("generated") || segment.includes("codegen");
+}
+
+function hasRuntimeScopeIndicator(segment: string): boolean {
+  return (
+    segment.includes("runtime") ||
+    segment.includes("profile") ||
+    segment.includes("smoke") ||
+    segment.includes("benchmark") ||
+    segment.includes("artifact")
+  );
 }
 
 function inferModuleCandidates(root: string, sourceFiles: string[]): Array<Record<string, number | string>> {

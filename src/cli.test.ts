@@ -8,6 +8,40 @@ import test from "node:test";
 const repoRoot = process.cwd();
 const cliPath = path.join(repoRoot, "dist/cli.js");
 
+const commandHelpExpectations: Array<[string, RegExp, RegExp]> = [
+  ["check", /Usage:\n  axi check /, /Validate source dependencies against \.axi architecture specs/],
+  ["graph", /Usage:\n  axi graph /, /Print declared and observed architecture graphs/],
+  ["observe", /Usage:\n  axi observe /, /architecture attention surface/],
+  ["diff", /Usage:\n  axi diff <baseline-json> /, /Compare current observed module edges/],
+  ["infer", /Usage:\n  axi infer /, /starter \.axi contract inferred from current imports/]
+];
+
+for (const [command, usagePattern, purposePattern] of commandHelpExpectations) {
+  test(`cli ${command} --help prints command help`, () => {
+    const result = spawnSync(process.execPath, [cliPath, command, "--help"], {
+      cwd: repoRoot,
+      encoding: "utf8"
+    });
+
+    assert.equal(result.status, 0);
+    assert.equal(result.stderr, "");
+    assert.match(result.stdout, usagePattern);
+    assert.match(result.stdout, purposePattern);
+    assert.doesNotMatch(result.stdout, /Unknown option/);
+  });
+}
+
+test("cli infer -h prints command help", () => {
+  const result = spawnSync(process.execPath, [cliPath, "infer", "-h"], {
+    cwd: repoRoot,
+    encoding: "utf8"
+  });
+
+  assert.equal(result.status, 0);
+  assert.match(result.stdout, /Usage:\n  axi infer /);
+  assert.doesNotMatch(result.stdout, /Unknown option/);
+});
+
 test("cli --json returns parseable success output", () => {
   const result = spawnSync(
     process.execPath,

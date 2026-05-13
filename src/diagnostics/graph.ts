@@ -2100,6 +2100,32 @@ function formatGraphDiagnosticDetails(violation: GraphJsonViolation, indent: str
     }
   }
 
+  const scopeHints = readRecordArray(details.scopeHints);
+  if (scopeHints.length > 0) {
+    lines.push(`${indent}scope guidance:`);
+    for (const hint of scopeHints) {
+      const message = readString(hint.message);
+      if (message) {
+        lines.push(`${indent}  ${message}`);
+      }
+
+      const matchedFolders = readStringArray(hint.matchedFolders);
+      if (matchedFolders.length > 0) {
+        lines.push(`${indent}  matched folders: ${matchedFolders.join(", ")}`);
+      }
+
+      const samplePaths = readStringArray(hint.samplePaths);
+      if (samplePaths.length > 0) {
+        lines.push(`${indent}  examples: ${samplePaths.join(", ")}`);
+      }
+
+      const suggestion = readString(hint.suggestion);
+      if (suggestion) {
+        lines.push(`${indent}  try: ${suggestion}`);
+      }
+    }
+  }
+
   const note = readString(details.note);
   if (note) {
     lines.push(`${indent}note: ${note}`);

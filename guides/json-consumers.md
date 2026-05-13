@@ -13,7 +13,7 @@ Each JSON payload starts with a `schemaVersion`:
 ```text
 axiom.check.v4
 axiom.graph.v12
-axiom.infer.v6
+axiom.infer.v7
 ```
 
 Treat the prefix as the command family:
@@ -156,6 +156,7 @@ Treat `drift.newObservedEdges[]` and `drift.removedObservedEdges[]` as review co
 - `modules[].dependencyEvidence[]` with the target module, observed import-site count, and sample import sites for each inferred dependency.
 - `observedDependencies[]` with counts and sample import sites behind inferred edges.
 - `collapsedCycles[].cyclePathSamples[]` with a compact source-group path such as `Services -> Tools -> Services` explaining why inference merged a cycle.
+- `collapsedCycles[].cycleBreakingCandidates[]` with evidence-backed edges to inspect first when deciding whether a collapsed cycle should stay merged or be split.
 - `architecturePressureNotes[]` with advisory context such as large source files that may hide responsibilities outside the import graph.
 - `axi` containing the generated starter contract text.
 

@@ -46,6 +46,7 @@ export interface CollapsedCycle {
   sourceGroups: string[];
   cyclePathSamples: CollapsedCyclePathSample[];
   internalDependencies: CollapsedCycleDependency[];
+  cycleBreakingCandidates: CollapsedCycleBreakingCandidate[];
 }
 
 export interface CollapsedCyclePathSample {
@@ -57,6 +58,14 @@ export interface CollapsedCycleDependency {
   toGroup: string;
   count: number;
   samples: InferredImportSample[];
+}
+
+export interface CollapsedCycleBreakingCandidate {
+  fromGroup: string;
+  toGroup: string;
+  count: number;
+  samples: InferredImportSample[];
+  rationale: string;
 }
 
 export interface InferStarterContract {
@@ -111,6 +120,7 @@ interface Component {
 }
 
 const sampleLimit = 5;
+const cycleBreakingCandidateLimit = 5;
 
 export const inferStarterContractNotice = [
   "This starter contract mirrors the current dependency graph; it is not a recommended architecture.",
@@ -742,13 +752,43 @@ function buildCollapsedCycle(
     .sort((left, right) =>
       `${left.fromGroup}\0${left.toGroup}`.localeCompare(`${right.fromGroup}\0${right.toGroup}`)
     );
+  const cycleBreakingCandidates = buildCycleBreakingCandidates(internalDependencies);
 
   return {
     module: component.name,
     sourceGroups: component.keys.map((key) => candidateName(candidateGroups, key)).sort(),
     cyclePathSamples,
-    internalDependencies
+    internalDependencies,
+    cycleBreakingCandidates
   };
+}
+
+function buildCycleBreakingCandidates(
+  internalDependencies: CollapsedCycleDependency[]
+): CollapsedCycleBreakingCandidate[] {
+  return internalDependencies
+    .map((dependency) => ({
+      fromGroup: dependency.fromGroup,
+      toGroup: dependency.toGroup,
+      count: dependency.count,
+      samples: dependency.samples,
+      rationale:
+        `${dependency.fromGroup} -> ${dependency.toGroup} participates in the collapsed cycle with ${formatImportSiteCount(
+          dependency.count
+        )}; inspect whether this edge should become an explicit boundary, interface, event, or accepted merged responsibility.`
+    }))
+    .sort((left, right) => {
+      if (right.count !== left.count) {
+        return right.count - left.count;
+      }
+
+      return `${left.fromGroup}\0${left.toGroup}`.localeCompare(`${right.fromGroup}\0${right.toGroup}`);
+    })
+    .slice(0, cycleBreakingCandidateLimit);
+}
+
+function formatImportSiteCount(count: number): string {
+  return count === 1 ? "1 import site" : `${count} import sites`;
 }
 
 function buildCyclePathSamples(

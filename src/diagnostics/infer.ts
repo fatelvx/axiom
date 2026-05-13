@@ -1,6 +1,6 @@
 import type { InferArchitecturePressureNote, InferResult, InferredDependency, InferredModule } from "../infer/infer.js";
 
-export const inferJsonSchemaVersion = "axiom.infer.v6";
+export const inferJsonSchemaVersion = "axiom.infer.v7";
 
 export interface InferJsonModule extends InferredModule {
   dependencyEvidence: InferJsonDependencyEvidence[];
@@ -92,6 +92,17 @@ export function formatInferResult(result: InferResult): string {
       for (const sample of cycle.cyclePathSamples.slice(0, 3)) {
         lines.push(`# - ${sample.groups.join(" -> ")}`);
       }
+    }
+    if (cycle.cycleBreakingCandidates.length > 0) {
+      lines.push("# cycle-breaking candidates:");
+      for (const candidate of cycle.cycleBreakingCandidates.slice(0, 5)) {
+        lines.push(`# - ${candidate.fromGroup} -> ${candidate.toGroup} (${formatImportSiteCount(candidate.count)})`);
+        const sample = candidate.samples[0];
+        if (sample) {
+          lines.push(`#   sample: ${sample.filePath}:${sample.line} imports "${sample.specifier}" -> ${sample.resolvedPath}`);
+        }
+      }
+      lines.push("# review: candidates are inspection points, not automatic refactor instructions.");
     }
     lines.push("# reason: inferred groups form a circular dependency, so this starter contract keeps them together.");
     lines.push("# review: rename this merged module after deciding whether the cycle should be split.");

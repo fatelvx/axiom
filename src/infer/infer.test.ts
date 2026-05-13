@@ -76,6 +76,38 @@ test("infer collapses cyclic candidate groups into one starter module", () => {
             }
           ]
         }
+      ],
+      cycleBreakingCandidates: [
+        {
+          fromGroup: "A",
+          toGroup: "B",
+          count: 1,
+          samples: [
+            {
+              filePath: "src/a/index.ts",
+              line: 1,
+              specifier: "../b",
+              resolvedPath: "src/b/index.ts"
+            }
+          ],
+          rationale:
+            "A -> B participates in the collapsed cycle with 1 import site; inspect whether this edge should become an explicit boundary, interface, event, or accepted merged responsibility."
+        },
+        {
+          fromGroup: "B",
+          toGroup: "A",
+          count: 1,
+          samples: [
+            {
+              filePath: "src/b/index.ts",
+              line: 1,
+              specifier: "../a",
+              resolvedPath: "src/a/index.ts"
+            }
+          ],
+          rationale:
+            "B -> A participates in the collapsed cycle with 1 import site; inspect whether this edge should become an explicit boundary, interface, event, or accepted merged responsibility."
+        }
       ]
     }
   ]);
@@ -95,8 +127,22 @@ test("infer collapses cyclic candidate groups into one starter module", () => {
   assert.match(output, /# includes: A, B/);
   assert.match(output, /# - A -> B \(1\)/);
   assert.match(output, /# cycle path sample:\n# - A -> B -> A/);
+  assert.match(output, /# cycle-breaking candidates:\n# - A -> B \(1 import site\)/);
+  assert.match(output, /#   sample: src\/a\/index\.ts:1 imports "\.\.\/b" -> src\/b\/index\.ts/);
+  assert.match(output, /candidates are inspection points, not automatic refactor instructions/);
   assert.match(output, /# reason: inferred groups form a circular dependency/);
   assert.match(output, /Review collapsed cycles as boundary tangles/);
+
+  const payload = toInferJson(result);
+  assert.equal(payload.schemaVersion, "axiom.infer.v7");
+  assert.deepEqual(payload.collapsedCycles[0]?.cycleBreakingCandidates?.map((candidate) => ({
+    fromGroup: candidate.fromGroup,
+    toGroup: candidate.toGroup,
+    count: candidate.count
+  })), [
+    { fromGroup: "A", toGroup: "B", count: 1 },
+    { fromGroup: "B", toGroup: "A", count: 1 }
+  ]);
 });
 
 test("infer gives long collapsed cycles a readable module name", () => {
@@ -152,7 +198,7 @@ test("infer JSON includes the generated .axi draft", () => {
   const result = runInfer({ root: path.join(repoRoot, "fixtures/basic-ts-valid") });
   const payload = toInferJson(result);
 
-  assert.equal(payload.schemaVersion, "axiom.infer.v6");
+  assert.equal(payload.schemaVersion, "axiom.infer.v7");
   assert.deepEqual(payload.starterContract, {
     kind: "current_graph_snapshot",
     notice: [

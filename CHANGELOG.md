@@ -78,6 +78,7 @@
 - Added an Agent And MCP Integration guide covering read-only agent loops, baseline lifecycle, review-story consumption, and MCP v0 guardrails.
 - Added no-contract scan summaries and opt-in `--warn-large-files` advisory warnings so quiet import graphs do not hide intra-file responsibility pressure.
 - Added advisory architecture pressure notes to `axi infer` and bumped infer JSON to `axiom.infer.v6`.
+- Added cycle-breaking candidates to collapsed-cycle inference output and bumped infer JSON to `axiom.infer.v7`.
 - Refined the logo and banner visual system so radar nodes no longer rely on off-center text inside circles.
 - Simplified the logo into a cleaner abstract observability mark and restored the banner's radar-card layout with aligned review-story text.
 - Hardened `pnpm-workspace.yaml` package discovery so workspace package resolution supports inline `packages: [...]` YAML sequences as well as block lists.

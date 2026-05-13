@@ -298,6 +298,42 @@ test("coupling concentration warnings are opt-in advisory diagnostics", () => {
   });
 });
 
+test("coupling concentration labels likely composition root fan-out without suppressing it", () => {
+  const root = path.join(repoRoot, "fixtures/composition-root-fan-out");
+  const result = runCheck({ root, warnCouplingConcentration: true });
+
+  assert.deepEqual(result.violations, []);
+  assert.equal(result.warnings.length, 1);
+  assert.deepEqual(result.warnings[0], {
+    code: "coupling_concentration",
+    message: "AppEntry has composition-root fan-out to 4 modules.",
+    details: {
+      module: "AppEntry",
+      direction: "fan_out",
+      fanInModules: 0,
+      fanOutModules: 4,
+      incomingModules: [],
+      outgoingModules: ["Engine", "Phases", "Render", "Ui"],
+      incomingImportSites: 0,
+      outgoingImportSites: 4,
+      threshold: {
+        fanInModules: 4,
+        fanOutModules: 4
+      },
+      observed: "AppEntry composition-root fan-out to 4 modules",
+      reviewKind: "composition_root_pressure",
+      roleHint: "composition_root",
+      entryFiles: ["src/main.ts"],
+      entryFileFanOutModules: 4,
+      entryFileImportSites: 4,
+      note:
+        "This may be legitimate app or package bootstrap wiring when the entry file only composes modules; review whether it is also accumulating product logic.",
+      suggestion:
+        "Review whether the entry file is only wiring dependencies together. If yes, keep this as visible composition-root pressure; if it owns behavior too, split bootstrap from product logic or make the boundary explicit."
+    }
+  });
+});
+
 test("large file warnings are opt-in advisory diagnostics", () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "axi-large-file-"));
 

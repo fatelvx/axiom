@@ -1003,6 +1003,21 @@ function warningClusterToReviewPressure(cluster: WarningCluster): GraphJsonArchi
   }
 
   if (cluster.code === "coupling_concentration") {
+    if (cluster.subject.includes("composition root fan-out")) {
+      const moduleName = modules[0] ?? cluster.subject.replace(" composition root fan-out", "");
+      return {
+        kind: "advisory_warning_root",
+        title: `Composition root pressure in ${moduleName}`,
+        description: `${cluster.count} concentration warning${pluralize(
+          cluster.count
+        )} likely comes from entry-point wiring; review whether the entry file only composes modules or is also accumulating product logic.`,
+        severity: "review",
+        count: cluster.count,
+        code: cluster.code,
+        modules
+      };
+    }
+
     return {
       kind: "advisory_warning_root",
       title: `Coupling concentration around ${cluster.subject}`,
@@ -1061,7 +1076,8 @@ function readWarningClusterModules(cluster: WarningCluster): string[] {
     " state/store leakage",
     " tool boundary pressure",
     " ambiguous public boundary",
-    " public-entry bypass"
+    " public-entry bypass",
+    " composition root fan-out"
   ];
   for (const marker of markers) {
     const index = subject.indexOf(marker);
@@ -1808,6 +1824,33 @@ function appendMarkdownWarningDetails(lines: string[], warning: GraphJsonViolati
     appendMarkdownDetail(lines, "Fan-out modules", outgoingModules.join(", "));
   }
 
+  const reviewKind = readString(warning.details?.reviewKind);
+  if (reviewKind) {
+    appendMarkdownDetail(lines, "Review kind", markdownCode(reviewKind));
+  }
+
+  const roleHint = readString(warning.details?.roleHint);
+  if (roleHint) {
+    appendMarkdownDetail(lines, "Role hint", markdownCode(roleHint));
+  }
+
+  const entryFiles = readStringArray(warning.details?.entryFiles);
+  if (entryFiles.length > 0) {
+    appendMarkdownDetail(lines, "Entry files", entryFiles.map(markdownCode).join(", "));
+  }
+
+  const entryFileFanOutModules = readNumber(warning.details?.entryFileFanOutModules);
+  const entryFileImportSites = readNumber(warning.details?.entryFileImportSites);
+  if (entryFileFanOutModules !== undefined || entryFileImportSites !== undefined) {
+    appendMarkdownDetail(
+      lines,
+      "Entry file fan-out",
+      `${entryFileFanOutModules ?? "unknown"} modules, ${entryFileImportSites ?? "unknown"} import sites`
+    );
+  }
+
+  appendMarkdownDetail(lines, "Note", readString(warning.details?.note));
+
   const expiresOn = readString(warning.details?.expiresOn);
   const daysUntilExpiration = readNumber(warning.details?.daysUntilExpiration);
   if (expiresOn) {
@@ -2183,6 +2226,36 @@ function formatWarnings(graph: GraphJsonResult): string[] {
       lines.push(`  fan-out modules: ${outgoingModules.join(", ")}`);
     }
 
+    const reviewKind = readString(warning.details?.reviewKind);
+    if (reviewKind) {
+      lines.push(`  review kind: ${reviewKind}`);
+    }
+
+    const roleHint = readString(warning.details?.roleHint);
+    if (roleHint) {
+      lines.push(`  role hint: ${roleHint}`);
+    }
+
+    const entryFiles = readStringArray(warning.details?.entryFiles);
+    if (entryFiles.length > 0) {
+      lines.push(`  entry files: ${entryFiles.join(", ")}`);
+    }
+
+    const entryFileFanOutModules = readNumber(warning.details?.entryFileFanOutModules);
+    const entryFileImportSites = readNumber(warning.details?.entryFileImportSites);
+    if (entryFileFanOutModules !== undefined || entryFileImportSites !== undefined) {
+      lines.push(
+        `  entry file fan-out: ${entryFileFanOutModules ?? "unknown"} modules, ${
+          entryFileImportSites ?? "unknown"
+        } import sites`
+      );
+    }
+
+    const note = readString(warning.details?.note);
+    if (note) {
+      lines.push(`  note: ${note}`);
+    }
+
     const expiresOn = readString(warning.details?.expiresOn);
     const daysUntilExpiration = readNumber(warning.details?.daysUntilExpiration);
     if (expiresOn) {
@@ -2353,6 +2426,14 @@ function warningClusterSubject(warning: GraphJsonViolation): string {
 
   if (warning.code === "large_module_file") {
     return "intra-file responsibility pressure";
+  }
+
+  if (
+    warning.code === "coupling_concentration" &&
+    readString(warning.details?.reviewKind) === "composition_root_pressure"
+  ) {
+    const moduleName = readString(warning.details?.module);
+    return moduleName ? `${moduleName} composition root fan-out` : "composition root fan-out";
   }
 
   const fromModule = readString(warning.details?.fromModule);

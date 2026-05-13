@@ -138,7 +138,7 @@ export function runCheck(options: CheckOptions): CheckResult {
     warnings.push(...findPublicApiSurfaceWarnings(spec, imports, ownership, root));
   }
   if (warnCouplingConcentration) {
-    warnings.push(...findCouplingConcentrationWarnings(observedDependencies));
+    warnings.push(...findCouplingConcentrationWarnings(observedDependencies, root));
   }
   if (warnDeepInternalImports) {
     warnings.push(...findDeepInternalImportWarnings(spec, observedDependencies, sourceFiles, ownership, root));

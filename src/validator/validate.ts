@@ -39,6 +39,8 @@ interface CouplingStats {
   outgoingModules: Set<string>;
   incomingImportSites: number;
   outgoingImportSites: number;
+  outgoingRuntimeImportFiles: Map<string, number>;
+  outgoingRuntimeModulesByFile: Map<string, Set<string>>;
 }
 
 interface PublicEntrypointCouplingStats {
@@ -823,7 +825,7 @@ export function findUnresolvedImportWarnings(
     });
 }
 
-export function findCouplingConcentrationWarnings(observedDependencies: ObservedDependency[]): Violation[] {
+export function findCouplingConcentrationWarnings(observedDependencies: ObservedDependency[], root: string): Violation[] {
   const statsByModule = new Map<string, CouplingStats>();
 
   for (const dependency of observedDependencies) {
@@ -836,6 +838,10 @@ export function findCouplingConcentrationWarnings(observedDependencies: Observed
 
     fromStats.outgoingModules.add(dependency.toModule);
     fromStats.outgoingImportSites += 1;
+    if (isRuntimeCompositionImport(dependency.importRecord)) {
+      incrementMapCount(fromStats.outgoingRuntimeImportFiles, dependency.importRecord.filePath);
+      ensureMapSet(fromStats.outgoingRuntimeModulesByFile, dependency.importRecord.filePath).add(dependency.toModule);
+    }
     toStats.incomingModules.add(dependency.fromModule);
     toStats.incomingImportSites += 1;
   }
@@ -854,10 +860,18 @@ export function findCouplingConcentrationWarnings(observedDependencies: Observed
         return [];
       }
 
+      const compositionRootHint =
+        hasConcentratedFanOut && !hasConcentratedFanIn
+          ? describeCompositionRootFanOut(stats, root)
+          : undefined;
+      const suggestion =
+        compositionRootHint?.suggestion ??
+        "Review whether this module is becoming a coordination hub; split responsibilities, narrow public surfaces, or make the boundary explicit before considering enforcement.";
+
       return [
         {
           code: "coupling_concentration" as const,
-          message: formatCouplingConcentrationMessage(moduleName, fanInModules, fanOutModules),
+          message: formatCouplingConcentrationMessage(moduleName, fanInModules, fanOutModules, Boolean(compositionRootHint)),
           details: {
             module: moduleName,
             direction: formatCouplingConcentrationDirection(hasConcentratedFanIn, hasConcentratedFanOut),
@@ -871,9 +885,14 @@ export function findCouplingConcentrationWarnings(observedDependencies: Observed
               fanInModules: couplingConcentrationModuleThreshold,
               fanOutModules: couplingConcentrationModuleThreshold
             },
-            observed: formatCouplingConcentrationObserved(moduleName, fanInModules, fanOutModules),
-            suggestion:
-              "Review whether this module is becoming a coordination hub; split responsibilities, narrow public surfaces, or make the boundary explicit before considering enforcement."
+            observed: formatCouplingConcentrationObserved(
+              moduleName,
+              fanInModules,
+              fanOutModules,
+              Boolean(compositionRootHint)
+            ),
+            ...(compositionRootHint ?? {}),
+            suggestion
           }
         }
       ];
@@ -1087,15 +1106,26 @@ function ensureCouplingStats(
     incomingModules: new Set<string>(),
     outgoingModules: new Set<string>(),
     incomingImportSites: 0,
-    outgoingImportSites: 0
+    outgoingImportSites: 0,
+    outgoingRuntimeImportFiles: new Map<string, number>(),
+    outgoingRuntimeModulesByFile: new Map<string, Set<string>>()
   };
   statsByModule.set(moduleName, created);
   return created;
 }
 
-function formatCouplingConcentrationMessage(moduleName: string, fanInModules: number, fanOutModules: number): string {
+function formatCouplingConcentrationMessage(
+  moduleName: string,
+  fanInModules: number,
+  fanOutModules: number,
+  isCompositionRootFanOut = false
+): string {
   const hasConcentratedFanIn = fanInModules >= couplingConcentrationModuleThreshold;
   const hasConcentratedFanOut = fanOutModules >= couplingConcentrationModuleThreshold;
+
+  if (isCompositionRootFanOut && hasConcentratedFanOut) {
+    return `${moduleName} has composition-root fan-out to ${fanOutModules} modules.`;
+  }
 
   if (hasConcentratedFanIn && hasConcentratedFanOut) {
     return `${moduleName} has concentrated fan-in from ${fanInModules} modules and fan-out to ${fanOutModules} modules.`;
@@ -1116,9 +1146,18 @@ function formatCouplingConcentrationDirection(hasConcentratedFanIn: boolean, has
   return hasConcentratedFanIn ? "fan_in" : "fan_out";
 }
 
-function formatCouplingConcentrationObserved(moduleName: string, fanInModules: number, fanOutModules: number): string {
+function formatCouplingConcentrationObserved(
+  moduleName: string,
+  fanInModules: number,
+  fanOutModules: number,
+  isCompositionRootFanOut = false
+): string {
   const hasConcentratedFanIn = fanInModules >= couplingConcentrationModuleThreshold;
   const hasConcentratedFanOut = fanOutModules >= couplingConcentrationModuleThreshold;
+
+  if (isCompositionRootFanOut && hasConcentratedFanOut) {
+    return `${moduleName} composition-root fan-out to ${fanOutModules} modules`;
+  }
 
   if (hasConcentratedFanIn && hasConcentratedFanOut) {
     return `${moduleName} fan-in ${fanInModules}, fan-out ${fanOutModules}`;
@@ -1129,6 +1168,89 @@ function formatCouplingConcentrationObserved(moduleName: string, fanInModules: n
   }
 
   return `${moduleName} fan-out to ${fanOutModules} modules`;
+}
+
+function describeCompositionRootFanOut(
+  stats: CouplingStats,
+  root: string
+):
+  | {
+      reviewKind: string;
+      roleHint: string;
+      entryFiles: string[];
+      entryFileFanOutModules: number;
+      entryFileImportSites: number;
+      note: string;
+      suggestion: string;
+    }
+  | undefined {
+  const entryFiles = [...stats.outgoingRuntimeModulesByFile.entries()]
+    .map(([filePath, modules]) => ({
+      filePath,
+      relativeFilePath: relativePath(root, filePath),
+      modules,
+      importSites: stats.outgoingRuntimeImportFiles.get(filePath) ?? 0
+    }))
+    .filter((entry) => isLikelyCompositionRootFile(entry.relativeFilePath) && entry.modules.size > 0)
+    .sort((left, right) => left.relativeFilePath.localeCompare(right.relativeFilePath));
+  const entryFanOutModules = new Set(entryFiles.flatMap((entry) => [...entry.modules]));
+
+  if (entryFanOutModules.size < couplingConcentrationModuleThreshold) {
+    return undefined;
+  }
+
+  return {
+    reviewKind: "composition_root_pressure",
+    roleHint: "composition_root",
+    entryFiles: entryFiles.map((entry) => entry.relativeFilePath),
+    entryFileFanOutModules: entryFanOutModules.size,
+    entryFileImportSites: entryFiles.reduce((total, entry) => total + entry.importSites, 0),
+    note:
+      "This may be legitimate app or package bootstrap wiring when the entry file only composes modules; review whether it is also accumulating product logic.",
+    suggestion:
+      "Review whether the entry file is only wiring dependencies together. If yes, keep this as visible composition-root pressure; if it owns behavior too, split bootstrap from product logic or make the boundary explicit."
+  };
+}
+
+function isRuntimeCompositionImport(importRecord: ImportRecord): boolean {
+  return importRecord.kind !== "export" && importRecord.kind !== "import_type" && importRecord.isTypeOnly !== true;
+}
+
+function isLikelyCompositionRootFile(relativeFilePath: string): boolean {
+  const normalized = normalizePathForMatch(relativeFilePath).toLowerCase();
+  const fileName = normalized.split("/").pop() ?? "";
+  const stem = fileName.replace(/\.(c|m)?[jt]sx?$/, "");
+  const segments = normalized.split("/").filter(Boolean);
+
+  if (stem === "main" || stem === "bootstrap" || stem === "entry" || stem === "startup" || stem === "start") {
+    return true;
+  }
+
+  if (stem === "app" && /\.(jsx?|tsx?)$/.test(fileName)) {
+    return true;
+  }
+
+  return (
+    stem === "index" &&
+    segments.length === 2 &&
+    segments[0] === "src" &&
+    /\.(jsx?|tsx?)$/.test(fileName)
+  );
+}
+
+function incrementMapCount(map: Map<string, number>, key: string): void {
+  map.set(key, (map.get(key) ?? 0) + 1);
+}
+
+function ensureMapSet<TKey, TValue>(map: Map<TKey, Set<TValue>>, key: TKey): Set<TValue> {
+  const existing = map.get(key);
+  if (existing) {
+    return existing;
+  }
+
+  const created = new Set<TValue>();
+  map.set(key, created);
+  return created;
 }
 
 function formatExportKind(importRecord: ImportRecord): string {

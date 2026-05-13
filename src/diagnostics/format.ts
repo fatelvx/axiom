@@ -255,6 +255,31 @@ function formatDetails(root: string, violation: Violation): string[] {
     lines.push(`  scope: ${scope}`);
   }
 
+  const reviewKind = readString(violation.details.reviewKind);
+  if (reviewKind) {
+    lines.push(`  review kind: ${reviewKind}`);
+  }
+
+  const roleHint = readString(violation.details.roleHint);
+  if (roleHint) {
+    lines.push(`  role hint: ${roleHint}`);
+  }
+
+  const entryFiles = readStringArray(violation.details.entryFiles);
+  if (entryFiles.length > 0) {
+    lines.push(`  entry files: ${entryFiles.join(", ")}`);
+  }
+
+  const entryFileFanOutModules = readNumber(violation.details.entryFileFanOutModules);
+  const entryFileImportSites = readNumber(violation.details.entryFileImportSites);
+  if (entryFileFanOutModules !== undefined || entryFileImportSites !== undefined) {
+    lines.push(
+      `  entry file fan-out: ${entryFileFanOutModules ?? "unknown"} modules, ${
+        entryFileImportSites ?? "unknown"
+      } import sites`
+    );
+  }
+
   const note = readString(violation.details.note);
   if (note) {
     lines.push(`  note: ${note}`);

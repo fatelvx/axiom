@@ -1,77 +1,45 @@
 <svg width="256" height="256" viewBox="0 0 256 256" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
   <title id="title">Axiom logo</title>
-  <desc id="desc">A circular architecture observability mark with an A-shaped scan line, declared and observed rings, and a highlighted drift edge.</desc>
+  <desc id="desc">A minimal circular Axiom mark with an abstract A, an observability ring, and a small drift signal.</desc>
   <defs>
-    <linearGradient id="shell" x1="35" y1="24" x2="222" y2="232" gradientUnits="userSpaceOnUse">
+    <linearGradient id="shell" x1="38" y1="28" x2="218" y2="228" gradientUnits="userSpaceOnUse">
       <stop stop-color="#0B1B1F"/>
       <stop offset="1" stop-color="#071014"/>
     </linearGradient>
-    <linearGradient id="teal" x1="50" y1="42" x2="210" y2="214" gradientUnits="userSpaceOnUse">
+    <linearGradient id="aStroke" x1="74" y1="183" x2="181" y2="68" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#8BFFD8"/>
+      <stop offset="0.52" stop-color="#5CF4F0"/>
+      <stop offset="1" stop-color="#3AD7FF"/>
+    </linearGradient>
+    <linearGradient id="ring" x1="46" y1="46" x2="210" y2="214" gradientUnits="userSpaceOnUse">
       <stop stop-color="#8BFFD8"/>
       <stop offset="0.55" stop-color="#3AD7FF"/>
       <stop offset="1" stop-color="#7FA2FF"/>
     </linearGradient>
-    <linearGradient id="drift" x1="86" y1="94" x2="166" y2="166" gradientUnits="userSpaceOnUse">
+    <linearGradient id="drift" x1="98" y1="86" x2="157" y2="150" gradientUnits="userSpaceOnUse">
       <stop stop-color="#FFD166"/>
       <stop offset="1" stop-color="#FF5F7E"/>
     </linearGradient>
-    <linearGradient id="scan" x1="75" y1="184" x2="181" y2="70" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#8BFFD8"/>
-      <stop offset="1" stop-color="#3AD7FF"/>
-    </linearGradient>
-    <radialGradient id="radarFade" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(128 128) rotate(90) scale(108)">
-      <stop stop-color="#37D6FF" stop-opacity="0.18"/>
-      <stop offset="1" stop-color="#37D6FF" stop-opacity="0"/>
-    </radialGradient>
-    <filter id="softGlow" x="-45%" y="-45%" width="190%" height="190%">
-      <feGaussianBlur stdDeviation="3.2" result="blur"/>
-      <feColorMatrix in="blur" type="matrix" values="0 0 0 0 0.22 0 0 0 0 0.84 0 0 0 0 0.95 0 0 0 0.42 0"/>
+    <filter id="softGlow" x="-35%" y="-35%" width="170%" height="170%">
+      <feGaussianBlur stdDeviation="3" result="blur"/>
+      <feColorMatrix in="blur" type="matrix" values="0 0 0 0 0.29 0 0 0 0 0.95 0 0 0 0 0.88 0 0 0 0.34 0"/>
       <feBlend in="SourceGraphic" mode="screen"/>
     </filter>
   </defs>
 
-  <circle cx="128" cy="128" r="120" fill="url(#shell)"/>
-  <circle cx="128" cy="128" r="119" stroke="#1F3F48" stroke-width="2"/>
-  <circle cx="128" cy="128" r="108" fill="url(#radarFade)"/>
+  <circle cx="128" cy="128" r="118" fill="url(#shell)"/>
+  <circle cx="128" cy="128" r="116" stroke="#1E4049" stroke-width="2"/>
+  <circle cx="128" cy="128" r="92" stroke="#234B55" stroke-width="2" opacity="0.62"/>
+  <circle cx="128" cy="128" r="72" stroke="url(#ring)" stroke-width="3.4"/>
+  <path d="M67 128A61 61 0 0 1 128 67" stroke="#8BFFD8" stroke-width="3.2" stroke-linecap="round" opacity="0.72"/>
+  <path d="M189 128A61 61 0 0 1 128 189" stroke="#7FA2FF" stroke-width="3.2" stroke-linecap="round" opacity="0.72"/>
 
-  <circle cx="128" cy="128" r="94" stroke="#28505B" stroke-width="1.8"/>
-  <circle cx="128" cy="128" r="67" stroke="#1F4049" stroke-width="1.5"/>
-  <circle cx="128" cy="128" r="39" stroke="#18343E" stroke-width="1.5"/>
-  <circle cx="120" cy="132" r="78" stroke="#3AD7FF" stroke-width="2.4" stroke-dasharray="9 9" opacity="0.48"/>
-  <circle cx="136" cy="121" r="78" stroke="url(#teal)" stroke-width="3.2"/>
+  <path d="M104 96L148 145" stroke="url(#drift)" stroke-width="5.6" stroke-linecap="round" opacity="0.86"/>
+  <circle cx="148" cy="145" r="5" fill="#FF5F7E"/>
 
-  <path d="M128 128L193 83" stroke="#3AD7FF" stroke-width="2.2" stroke-linecap="round" opacity="0.72"/>
-  <path d="M128 128L185 91L158 155Z" fill="#3AD7FF" opacity="0.08"/>
+  <path d="M82 180L119 75C122 67 134 67 137 75L174 180" stroke="url(#aStroke)" stroke-width="12.5" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M104 143H152" stroke="#EFFFFA" stroke-width="8.5" stroke-linecap="round"/>
+  <path d="M104 143H152" stroke="#8BFFD8" stroke-width="3.2" stroke-linecap="round"/>
 
-  <g stroke="#315C68" stroke-width="2.7" stroke-linecap="round" stroke-linejoin="round">
-    <path d="M78 121L119 80L166 104L209 77"/>
-    <path d="M88 168L130 133L172 155L214 130"/>
-  </g>
-  <path d="M119 80L172 155" stroke="url(#drift)" stroke-width="5" stroke-linecap="round" filter="url(#softGlow)"/>
-
-  <g fill="#071014" stroke-width="3">
-    <circle cx="78" cy="121" r="8.5" stroke="#8BFFD8"/>
-    <circle cx="119" cy="80" r="9.5" stroke="#FFD166"/>
-    <circle cx="166" cy="104" r="9.5" stroke="#3AD7FF"/>
-    <circle cx="209" cy="77" r="8.5" stroke="#8BFFD8"/>
-    <circle cx="88" cy="168" r="8.5" stroke="#7FA2FF"/>
-    <circle cx="172" cy="155" r="9.5" stroke="#FF5F7E"/>
-    <circle cx="214" cy="130" r="8.5" stroke="#3AD7FF"/>
-  </g>
-  <g fill="#F4FFFB">
-    <circle cx="78" cy="121" r="2.5"/>
-    <circle cx="119" cy="80" r="2.8"/>
-    <circle cx="166" cy="104" r="2.8"/>
-    <circle cx="209" cy="77" r="2.5"/>
-    <circle cx="88" cy="168" r="2.5"/>
-    <circle cx="172" cy="155" r="2.8"/>
-    <circle cx="214" cy="130" r="2.5"/>
-  </g>
-
-  <path d="M76 184L117 71C120 63 136 63 139 71L180 184" stroke="url(#scan)" stroke-width="11.5" stroke-linecap="round" stroke-linejoin="round" filter="url(#softGlow)"/>
-  <path d="M101 144H155" stroke="#E9FFF8" stroke-width="8.5" stroke-linecap="round"/>
-  <path d="M101 144H155" stroke="#8BFFD8" stroke-width="3.2" stroke-linecap="round"/>
-
-  <path d="M38 128H53M203 128H218M128 38V53M128 203V218" stroke="#3AD7FF" stroke-width="2.2" stroke-linecap="round" opacity="0.5"/>
-  <circle cx="128" cy="128" r="117" stroke="url(#teal)" stroke-width="2.7" opacity="0.78"/>
+  <circle cx="128" cy="128" r="117" stroke="url(#ring)" stroke-width="2.5" opacity="0.7"/>
 </svg>

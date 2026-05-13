@@ -79,6 +79,7 @@
 - Added no-contract scan summaries and opt-in `--warn-large-files` advisory warnings so quiet import graphs do not hide intra-file responsibility pressure.
 - Added advisory architecture pressure notes to `axi infer` and bumped infer JSON to `axiom.infer.v6`.
 - Refined the logo and banner visual system so radar nodes no longer rely on off-center text inside circles.
+- Simplified the logo and banner into a cleaner abstract observability mark with aligned review-story text.
 
 ## 0.5.8 - Monorepo Spec Discovery
 

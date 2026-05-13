@@ -44,6 +44,8 @@ The inferred contract mirrors the current graph. It is not maintainer-declared a
 
 Before reading individual `depends on` edges, read the first comments in the generated draft. `axi infer` prints a snapshot notice, an authoring checklist, and suggested next commands at the top of the file because that draft is evidence for review, not a contract to commit unchanged.
 
+If inference collapses a cycle, keep that section with the pilot notes. Once the groups are merged into one starter module, graph and diff output will not show the internal edges anymore; the cycle path samples and cycle-breaking candidates are the review evidence.
+
 When comparing Markdown and Mermaid output, use the same `--warn-*` flags. Warning counts only include checks enabled for that command, so a plain graph command can honestly show `warnings=0` while an observe command with warning flags reports advisory pressure.
 
 On Windows PowerShell, `>` may save redirected JSON or Markdown as UTF-16LE. Axiom reads PowerShell-created `.axi` specs and graph baselines, but UTF-8 is easier to share with other tools:

@@ -127,3 +127,5 @@ npm run real-project:diff-smoke -- \
 - [yargs production diff smoke, 2026-05-14](results/yargs-prod-diff-smoke-2026-05-14.md)
 - [Vue core evidence artifact calibration, 2026-05-14](results/2026-05-14-vue-core-evidence-artifact.md)
 - [Vue core source-scoped diff smoke, 2026-05-14](results/vue-core-src-diff-smoke-2026-05-14.md)
+- [Headless UI React calibration, 2026-05-14](results/2026-05-14-headlessui-react-calibration.md)
+- [Headless UI React source-scoped diff smoke, 2026-05-14](results/headlessui-react-src-depth4-diff-smoke-2026-05-14.md)

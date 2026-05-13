@@ -30,6 +30,7 @@ Each smoke should answer two questions before any implementation change:
 | Vite type-only package imports smoke | pnpm workspace with declaration aliases | `#types/*` and `#dep-types/*` point to `.d.ts` files for type-only imports | general-resolver-scanner | Implemented declaration resolution only for scanner-confirmed type-only imports |
 | yargs production diff smoke | CLI parser library with TypeScript source and ESM/Deno shims | Deno platform shim imports clone-missing `build/lib/yerror.js` while `lib/yerror.ts` exists | common-ecosystem-convention candidate | Do not change code yet; track relative build-output source mirrors for repeated evidence |
 | Vue core evidence artifact calibration | framework/compiler/runtime TypeScript workspace | inferred baseline plus graph baseline surfaced one precise minor-version edge drift and zero unresolved imports | quiet-control / advisory-signal-calibration | Do not change code; keep as artifact-loop evidence and continue portfolio coverage |
+| Headless UI React calibration | UI component library package with public facade | inferred starter collapsed six source groups into one cycle; public-surface probe exposed broad barrel/facade pressure | advisory-signal-calibration | Do not change validator behavior; preserve infer cycle evidence and keep public API probes explicit |
 
 ## Missing Coverage
 
@@ -40,7 +41,7 @@ The current portfolio is still too infrastructure- and library-heavy. Before bro
 - package with mixed CJS and ESM entry points
 - generated-code-heavy repo where source scope matters
 - non-pnpm workspace, such as npm workspaces, Yarn workspaces, or Lerna-style packages
-- UI component library with barrel exports and design-system entry points
+- UI component library with barrel exports and design-system entry points beyond the first Headless UI React probe
 
 ## New Smoke Record Template
 

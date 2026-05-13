@@ -1,0 +1,87 @@
+{
+  "kind": "axiom.real-project-diff-smoke.v1",
+  "generatedAt": "2026-05-13T20:16:53.175Z",
+  "repo": "https://github.com/tailwindlabs/headlessui.git",
+  "name": "headlessui-react-src-depth4",
+  "baselineRef": "@headlessui/react@v2.2.8",
+  "currentRef": "@headlessui/react@v2.2.9",
+  "groupBy": "folder",
+  "groupDepth": 4,
+  "sourceScope": {
+    "include": [
+      "packages/@headlessui-react/src/**"
+    ],
+    "exclude": [
+      "packages/@headlessui-react/src/**/*.test.ts",
+      "packages/@headlessui-react/src/**/*.test.tsx",
+      "packages/@headlessui-react/src/**/*.spec.ts",
+      "packages/@headlessui-react/src/**/*.spec.tsx",
+      "packages/@headlessui-react/src/test-utils/**"
+    ]
+  },
+  "warningFlags": [
+    "--warn-coupling-concentration",
+    "--warn-deep-internal-imports",
+    "--warn-public-api-surface",
+    "--warn-unresolved-imports"
+  ],
+  "node": "v24.14.1",
+  "platform": "win32 x64",
+  "baseline": {
+    "ref": "@headlessui/react@v2.2.8",
+    "commit": "8759a5c",
+    "packageVersion": "0.0.0",
+    "summary": {
+      "modules": 1,
+      "declaredDependencies": 0,
+      "forbiddenDependencies": 0,
+      "exposedPaths": 0,
+      "hiddenPaths": 0,
+      "observedDependencies": 0,
+      "shownObservedDependencies": 0,
+      "violations": 0,
+      "intentionalViolations": 0,
+      "warnings": 0
+    }
+  },
+  "current": {
+    "ref": "@headlessui/react@v2.2.9",
+    "commit": "589ea90",
+    "packageVersion": "0.0.0",
+    "summary": {
+      "modules": 1,
+      "declaredDependencies": 0,
+      "forbiddenDependencies": 0,
+      "exposedPaths": 0,
+      "hiddenPaths": 0,
+      "observedDependencies": 0,
+      "shownObservedDependencies": 0,
+      "violations": 0,
+      "intentionalViolations": 0,
+      "warnings": 0
+    }
+  },
+  "drift": {
+    "kind": "advisory_observed_edge_drift",
+    "baseline": {
+      "schemaVersion": "axiom.graph.v12",
+      "observedDependencies": 0
+    },
+    "newObservedEdges": [],
+    "removedObservedEdges": []
+  },
+  "warnings": {
+    "byCode": {},
+    "details": []
+  },
+  "timingsMs": {
+    "cloneBaseline": 1949.2,
+    "cloneCurrent": 5554.9,
+    "infer": 1230.1,
+    "baselineGraph": 1179.1,
+    "diffJson": 1364.7,
+    "diffMarkdown": 1214.7,
+    "observeMarkdown": 1161.5,
+    "diffMermaid": 1185.6
+  }
+}

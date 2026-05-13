@@ -88,6 +88,7 @@
 - Added no-install pnpm workspace smoke artifacts for Vite and pnpm itself.
 - Resolved `.d.ts`, `.d.mts`, and `.d.cts` targets for scanner-confirmed type-only imports and exports, fixing Vite-style `#types/*` / `#dep-types/*` unresolved warnings without masking runtime imports to declaration files.
 - Added a Vue core source-scoped evidence artifact calibration showing the `.axi + baseline + reviewStory + intentionalDebt` loop can make minor-version workspace drift reviewable without target installs or validator changes.
+- Added a Headless UI React calibration and updated the evidence artifact guidance to preserve inferred collapsed-cycle evidence before saving a graph baseline.
 
 ## 0.5.8 - Monorepo Spec Discovery
 

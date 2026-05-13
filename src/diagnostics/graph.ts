@@ -779,10 +779,10 @@ function formatArchitectureHeadline(
   }
 
   if (input.summary.observedDependencies === 0) {
-    return "No hard contract failures were reported, and this scoped scan did not observe cross-module imports.";
+    return "No hard contract failures were reported, and this scoped scan did not observe cross-module imports. Confirm the scan scope covers the architecture you care about, then save a baseline if this shape is intended.";
   }
 
-  return `This scoped graph is quiet: no hard failures, visible debt, advisory warnings, or baseline drift were reported${formatCentralHeadlineSuffix(
+  return `This scoped graph is quiet: no hard failures, visible debt, advisory warnings, or baseline drift were reported${formatCentralHeadlineReviewPrompt(
     centralModules
   )}.`;
 }
@@ -957,6 +957,13 @@ function formatCentralModuleMetrics(module: GraphJsonArchitectureCentralModule):
 function formatCentralHeadlineSuffix(centralModules: GraphJsonArchitectureCentralModule[]): string {
   const module = centralModules[0];
   return module ? `; graph center is ${module.module}` : "";
+}
+
+function formatCentralHeadlineReviewPrompt(centralModules: GraphJsonArchitectureCentralModule[]): string {
+  const module = centralModules[0];
+  return module
+    ? `; graph center is ${module.module}, so compare that center with your intended architecture before saving a baseline`
+    : "; confirm the scan scope covers the architecture you care about before saving a baseline";
 }
 
 function formatReviewSignalCount(intentionalDebt: number, warnings: number): string {

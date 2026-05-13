@@ -186,6 +186,8 @@ Start with three questions:
 
 `axi graph`, `axi observe`, and JSON summaries now include an interpretation layer for this first read. It can say, for example, that the scoped graph is quiet, that a module is becoming a fan-in hub, or that a contract is failing before the diagram should be treated as stable. The interpretation is intentionally conservative: it helps you navigate the graph, but the evidence still lives in the exact violation, warning, drift, and import-site lists.
 
+When a scan is quiet, the next step is not "declare victory". Compare the graph center with the shape you expected, then save an unfiltered `axi graph --json` baseline if that shape is intentional.
+
 ## What It Does Not Prove
 
 Axiom v0 is intentionally honest about its blind spots:

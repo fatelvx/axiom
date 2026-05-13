@@ -181,6 +181,19 @@ test("human graph output includes readable sections", () => {
   assert.match(output, /Simulation -> Rendering via src\/simulation\/step\.ts:2 "\.\.\/rendering\/draw"/);
 });
 
+test("quiet graph interpretation still gives a next review step", () => {
+  const result = runCheck({ root: path.join(repoRoot, "fixtures/basic-ts-valid") });
+  const payload = toGraphJson(result);
+  const output = formatGraphResult(result);
+
+  assert.equal(payload.architectureSummary.status, "clear");
+  assert.match(payload.architectureSummary.interpretation.headline, /This scoped graph is quiet/);
+  assert.match(payload.architectureSummary.interpretation.headline, /compare that center with your intended architecture/);
+  assert.match(payload.architectureSummary.interpretation.headline, /saving a baseline/);
+  assert.match(output, /interpretation: This scoped graph is quiet/);
+  assert.match(output, /look first:/);
+});
+
 test("violations-only graph output focuses observed edges with diagnostics", () => {
   const result = runCheck({ root: path.join(repoRoot, "fixtures/visibility-rules") });
   const output = formatGraphResult(result, { violationsOnly: true });

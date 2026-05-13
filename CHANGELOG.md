@@ -64,6 +64,7 @@
 - Added `architectureSummary` to graph / observe / diff JSON and bumped graph JSON to `axiom.graph.v10` for agent, dashboard, and future MCP consumers.
 - Added a GitHub Actions summary helper that renders `axi observe --json` `architectureSummary` into a job summary while keeping `axi check` as the only gate.
 - Added `architectureSummary.interpretation` and bumped graph JSON to `axiom.graph.v11` so graph output can say what to inspect first, which modules are central, and why the result is advisory rather than a semantic health score.
+- Refined quiet graph interpretation so passing scans still suggest comparing the graph center with intended architecture before saving a baseline.
 - Added cycle path samples to collapsed-cycle inference output and bumped infer JSON to `axiom.infer.v5`.
 - Added CLI `--include` and `--exclude` source-scope flags for check, graph, observe, diff, and infer.
 

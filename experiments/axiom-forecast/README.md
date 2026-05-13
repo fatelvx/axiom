@@ -38,6 +38,7 @@ Files:
 - `results/mirofish-big-backtest-v2-2026-05-13.md`: larger synthetic backtest after the Mermaid legend repair, including the rejected blanket-adopt recommendation.
 - `results/mirofish-contract-recipes-target-2026-05-13.md`: targeted backtest after adding contract recipes for common adoption shapes and external pilots.
 - `results/mirofish-big-backtest-v3-2026-05-13.md`: larger synthetic backtest after contract recipes, target-pilot follow-up, Mermaid graph output, baseline drift, and real-project smoke evidence.
+- `results/mirofish-graph-interpretation-mcp-target-2026-05-13.md`: targeted backtest after adding graph interpretation output and refreshing the GitHub banner; includes the MCP timing recommendation.
 - `tools/write-mirofish-env.ps1`: local helper for writing MiroFish credentials to `.env` without pasting secrets into chat.
 
 Live run input snapshot:
@@ -93,6 +94,12 @@ Latest `axi diff` target pilot snapshot:
 
 ```text
 current master after adding `axi diff`, then fixing PowerShell UTF-16LE redirected baseline graph loading
+```
+
+Latest graph interpretation / MCP target snapshot:
+
+```text
+current master after adding `architectureSummary.interpretation`, a "How To Read A Graph" README section, and the refreshed README banner
 ```
 
 Use this experiment as forecast input, not as a replacement for real users. A useful forecast should produce falsifiable adoption risks, concrete messaging changes, and roadmap tradeoffs.

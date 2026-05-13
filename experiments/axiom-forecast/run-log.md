@@ -591,3 +591,35 @@ Detailed result:
 ```text
 experiments/axiom-forecast/results/axi-diff-target-pilot-2026-05-13.md
 ```
+
+### Graph Interpretation / MCP Target Backtest
+
+Before this target backtest, Axiom had shipped and pushed:
+
+- `architectureSummary.interpretation` in graph / observe / diff JSON
+- human, Markdown, and GitHub Actions summary output for headline, look-first checklist, and central modules
+- a README "How To Read A Graph" section
+- a refreshed README banner around declared intent, observed imports, visible drift, and reading the graph
+
+Method:
+
+Used the same local MiroFish `.env` and model configuration through direct `LLMClient`. This was a targeted risk-map prompt, not a full OASIS social simulation rerun.
+
+Primary result:
+
+- The interpretation layer meaningfully reduces the "did I use this correctly?" confusion for small AI-assisted projects.
+- The "look first" checklist is the strongest improvement because it gives users a repeatable inspection routine.
+- `centralModules` must remain a coupling navigation aid, not a health score.
+- The strongest remaining hole is the quiet / passing scan moment: once violations are gone, users still need a next step rather than a bland green state.
+- MCP is promising for AI-agent adoption, but the backtest recommends delaying a public MCP surface until JSON/CLI surfaces are stable through more feedback.
+
+Follow-up taken:
+
+- Updated quiet graph interpretation so passing scans say to compare the graph center with intended architecture before saving a baseline.
+- Kept MCP as a later read-only adapter direction, not the next implementation step.
+
+Detailed result:
+
+```text
+experiments/axiom-forecast/results/mirofish-graph-interpretation-mcp-target-2026-05-13.md
+```

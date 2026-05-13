@@ -55,7 +55,7 @@ axi diff axiom-baseline.json --root . --spec axiom-starter.axi
 
 The starter contract mirrors current imports. Treat it as evidence, not approval. Use the saved baseline to review future drift with `axi diff` for a short drift-only view or `axi observe --baseline` for a fuller review artifact, then tighten only the boundaries that produce reliable signal.
 
-The generated comments are part of the onboarding surface. They remind reviewers to rename modules into team vocabulary, review every `depends on` edge as architecture intent, turn visibility suggestions into rules only after review, and avoid blanket debt acceptance. This is one of the main differences from a linter config: the first artifact is a negotiation aid for declared architecture intent, not just a list of rules to appease.
+The generated comments are part of the onboarding surface. They remind reviewers to rename modules into team vocabulary, review every `depends on` edge as architecture intent, inspect the import-site evidence that caused each edge, turn visibility suggestions into rules only after review, and avoid blanket debt acceptance. This is one of the main differences from a linter config: the first artifact is a negotiation aid for declared architecture intent, not just a list of rules to appease.
 
 If the inferred draft is too raw, use [Contract Recipes](contract-recipes.md) as a reviewed starting shape. Recipes lower authoring cost without making Axiom decide your architecture for you.
 

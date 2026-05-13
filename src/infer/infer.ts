@@ -99,7 +99,7 @@ export const inferStarterContractNotice = [
 
 export const inferStarterContractAuthoringChecklist = [
   "Rename modules so they match the team's architecture vocabulary, not only folder names.",
-  "Review each `depends on` edge as intended architecture; remove or refactor accidental edges before using this as a gate.",
+  "Review each `depends on` edge and its evidence comments as intended architecture; remove or refactor accidental edges before using this as a gate.",
   "Turn commented `exposes` and `hides` suggestions into real rules only after confirming the public/internal boundary.",
   "Add `layers` and `layer` statements only when dependency direction is clear enough to enforce.",
   "Use `accepts ... until ... because ...` only for reviewed migration debt; do not blanket-accept first-run problems.",

@@ -31,6 +31,8 @@ test("infer creates a starter contract from source folders", () => {
   assert.match(output, /# axi diff --root \. --spec <draft\.axi> axiom-baseline\.json/);
   assert.match(output, /module Simulation/);
   assert.match(output, /path "src\/simulation\/\*\*"/);
+  assert.match(output, /# evidence: 1 import site observed for Simulation -> Physics/);
+  assert.match(output, /# sample: src\/simulation\/step\.ts:1 imports "\.\.\/physics\/math" -> src\/physics\/math\.ts/);
   assert.match(output, /depends on Physics/);
 });
 
@@ -139,7 +141,7 @@ test("infer JSON includes the generated .axi draft", () => {
     ],
     authoringChecklist: [
       "Rename modules so they match the team's architecture vocabulary, not only folder names.",
-      "Review each `depends on` edge as intended architecture; remove or refactor accidental edges before using this as a gate.",
+      "Review each `depends on` edge and its evidence comments as intended architecture; remove or refactor accidental edges before using this as a gate.",
       "Turn commented `exposes` and `hides` suggestions into real rules only after confirming the public/internal boundary.",
       "Add `layers` and `layer` statements only when dependency direction is clear enough to enforce.",
       "Use `accepts ... until ... because ...` only for reviewed migration debt; do not blanket-accept first-run problems.",

@@ -124,6 +124,7 @@ Treat `drift.newObservedEdges[]` and `drift.removedObservedEdges[]` as review co
 - `starterContract.kind: "current_graph_snapshot"` to mark the output as a mirror of today's dependency graph.
 - `starterContract.notice[]` with the same human-facing warning printed in `.axi` comments.
 - `starterContract.authoringChecklist[]` and `starterContract.nextCommands[]` for tools that want to guide first-contract review.
+- `observedDependencies[]` with counts and sample import sites behind inferred edges.
 - `axi` containing the generated starter contract text.
 
 Do not treat inferred modules, collapsed cycles, or dependencies as maintainer intent until a human reviews and edits the contract. They are onboarding material for authoring a real `.axi` contract.

@@ -3,7 +3,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import test from "node:test";
-import { defaultSpecPatterns, loadConfig } from "./config.js";
+import { applyDiscoveryOverrides, defaultSpecPatterns, loadConfig } from "./config.js";
 
 test("loadConfig returns defaults when no config file exists", () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "axi-config-default-"));
@@ -71,6 +71,30 @@ test("loadConfig accepts UTF-8 BOM config files", () => {
   } finally {
     fs.rmSync(root, { force: true, recursive: true });
   }
+});
+
+test("applyDiscoveryOverrides appends CLI source scope patterns", () => {
+  const config = {
+    include: ["src/**"],
+    exclude: ["src/generated/**"],
+    specs: defaultSpecPatterns,
+    warnUnresolvedImports: false,
+    warnPublicApiSurface: false,
+    warnCouplingConcentration: false,
+    warnDeepInternalImports: false
+  };
+
+  assert.deepEqual(
+    applyDiscoveryOverrides(config, {
+      include: ["packages/*/src/**"],
+      exclude: ["src/**/*.test.ts"]
+    }),
+    {
+      ...config,
+      include: ["src/**", "packages/*/src/**"],
+      exclude: ["src/generated/**", "src/**/*.test.ts"]
+    }
+  );
 });
 
 test("loadConfig rejects non-string pattern arrays", () => {

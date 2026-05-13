@@ -97,6 +97,14 @@ Use `axiom.config.json` to keep source discovery focused:
 `include` and `exclude` control source scanning. `specs` controls `.axi` discovery.
 `intentionalViolationExpiryWarningDays` controls how early active intentional violations become warnings before their expiration date. `warnUnresolvedImports`, `warnPublicApiSurface`, `warnCouplingConcentration`, and `warnDeepInternalImports` enable advisory signals without turning them into gates.
 
+For a one-off pilot, you can pass source scope directly on the CLI before writing config:
+
+```bash
+axi observe --root . --include "src/**" --exclude "src/**/*.test.ts,src/**/*.test.tsx,src/**/*.spec.ts,src/**/*.spec.tsx"
+```
+
+Inline `--include` and `--exclude` patterns are added to config patterns for that run. They are scan-scope controls, not architecture rules.
+
 ## Performance Comfort
 
 Large repositories should start with explicit scan scope. Axiom includes a synthetic smoke harness for local evidence:

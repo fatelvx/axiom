@@ -9,7 +9,7 @@ import type {
   Violation
 } from "../axi/types.js";
 import { parseAxiomText } from "../axi/parser.js";
-import { loadConfig } from "../config/config.js";
+import { applyDiscoveryOverrides, loadConfig } from "../config/config.js";
 import { findAxiomFiles, findSourceFiles } from "../fs/discover.js";
 import { readTextFile } from "../fs/text.js";
 import { createImportResolver } from "../scanner/importResolver.js";
@@ -34,6 +34,8 @@ export type AdoptionMode = "loose" | "warn-unowned" | "strict";
 export interface CheckOptions {
   root: string;
   configPath?: string;
+  include?: string[];
+  exclude?: string[];
   specPaths?: string[];
   adoptionMode?: AdoptionMode;
   today?: string;
@@ -59,7 +61,10 @@ export interface CheckResult {
 export function runCheck(options: CheckOptions): CheckResult {
   const root = path.resolve(options.root);
   const adoptionMode = options.adoptionMode ?? "loose";
-  const config = loadConfig(root, options.configPath);
+  const config = applyDiscoveryOverrides(loadConfig(root, options.configPath), {
+    include: options.include,
+    exclude: options.exclude
+  });
   const intentionalViolationExpiryWarningDays =
     options.intentionalViolationExpiryWarningDays ?? config.intentionalViolationExpiryWarningDays;
   const warnUnresolvedImports = options.warnUnresolvedImports ?? config.warnUnresolvedImports;

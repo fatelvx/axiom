@@ -27,6 +27,11 @@ export interface LoadedAxiomConfig {
   warnDeepInternalImports: boolean;
 }
 
+export interface ConfigDiscoveryOverrides {
+  include?: string[];
+  exclude?: string[];
+}
+
 export const defaultSpecPatterns = [
   "axiom/**/*.axi",
   "*.axi",
@@ -63,6 +68,17 @@ export function loadConfig(root: string, configPath?: string): LoadedAxiomConfig
     ...(config.intentionalViolationExpiryWarningDays === undefined
       ? {}
       : { intentionalViolationExpiryWarningDays: config.intentionalViolationExpiryWarningDays })
+  };
+}
+
+export function applyDiscoveryOverrides(
+  config: LoadedAxiomConfig,
+  overrides: ConfigDiscoveryOverrides = {}
+): LoadedAxiomConfig {
+  return {
+    ...config,
+    include: [...config.include, ...(overrides.include ?? [])],
+    exclude: [...config.exclude, ...(overrides.exclude ?? [])]
   };
 }
 

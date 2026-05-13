@@ -1,6 +1,6 @@
 import path from "node:path";
 import type { ImportRecord } from "../axi/types.js";
-import { loadConfig } from "../config/config.js";
+import { applyDiscoveryOverrides, loadConfig } from "../config/config.js";
 import { findSourceFiles } from "../fs/discover.js";
 import { createImportResolver, loadPackageResolver, type PackageMetadata } from "../scanner/importResolver.js";
 import { scanImports } from "../scanner/importScanner.js";
@@ -11,6 +11,8 @@ export type InferGroupBy = "folder" | "workspace";
 export interface InferOptions {
   root: string;
   configPath?: string;
+  include?: string[];
+  exclude?: string[];
   groupDepth?: number;
   groupBy?: InferGroupBy;
 }
@@ -120,7 +122,10 @@ export const inferStarterContractNextCommands = [
 
 export function runInfer(options: InferOptions): InferResult {
   const root = path.resolve(options.root);
-  const config = loadConfig(root, options.configPath);
+  const config = applyDiscoveryOverrides(loadConfig(root, options.configPath), {
+    include: options.include,
+    exclude: options.exclude
+  });
   const groupBy = options.groupBy ?? "folder";
   const packages = groupBy === "workspace" ? loadPackageResolver(root).packagesByDirectory : [];
   const allSourceFiles = findSourceFiles(root, config);

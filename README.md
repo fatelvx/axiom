@@ -364,7 +364,7 @@ For monorepos:
 axi infer --root . --group-by workspace
 ```
 
-Inference prints a draft to stdout and does not write files. The output says up front that it mirrors the current dependency graph, not recommended architecture. It also includes an authoring checklist, next commands, and evidence comments before each inferred `depends on` edge so reviewers can see which import sites created the edge. Treat it as a starting point: rename modules, add layers, tighten `depends on`, and add `exposes` or `hides` after review. When `axi infer` collapses cyclic candidate groups, it lists the included groups and observed internal edges so the cycle is useful architecture feedback instead of just a strange generated name.
+Inference prints a draft to stdout and does not write files. The output says up front that it mirrors the current dependency graph, not recommended architecture. It also includes an authoring checklist, next commands, and evidence comments before each inferred `depends on` edge so reviewers can see which import sites created the edge. Treat it as a starting point: rename modules, add layers, tighten `depends on`, and add `exposes` or `hides` after review. When `axi infer` collapses cyclic candidate groups, it lists the included groups, a cycle path sample, and observed internal edges so the cycle is useful architecture feedback instead of just a strange generated name.
 
 For a quick first-value loop, save a baseline and then use `axi diff` after a change:
 
@@ -414,6 +414,17 @@ axi check --root ../some-app --spec ./contracts/some-app.axi
 ```
 
 `--spec` accepts a `.axi` file or a directory containing `.axi` files. Repeat it for multiple files. Source paths inside those contracts are still relative to `--root`, so this is useful when you want to scan a repo without adding `axiom/main.axi` yet.
+
+For one-off pilots, inline source scope can keep the scan focused without writing config first:
+
+```bash
+axi observe --root ../some-app --spec ./contracts/some-app.axi \
+  --include "src/**" \
+  --exclude "src/**/*.test.ts,src/**/*.test.tsx,src/**/*.spec.ts,src/**/*.spec.tsx" \
+  --warn-deep-internal-imports
+```
+
+`--include` and `--exclude` add source discovery patterns for that run. They support comma lists and repeated flags. Use `axiom.config.json` once the scope becomes stable enough to keep.
 
 ## Project Config
 

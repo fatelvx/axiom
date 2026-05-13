@@ -18,12 +18,21 @@ When a living project is not ready to adopt Axiom formally, keep the first contr
 axi infer --root ../target-app --group-depth 2 > contracts/target-app.inferred.axi
 ```
 
+Keep the first scan scoped to the question you want answered. For production-source architecture, exclude tests and benchmarks instead of letting test-only imports dominate the first signal:
+
+```bash
+axi infer --root ../target-app \
+  --include "src/**" \
+  --exclude "src/**/*.test.ts,src/**/*.test.tsx,src/**/*.spec.ts,src/**/*.spec.tsx,src/**/__tests__/**" \
+  --group-depth 2 > contracts/target-app.inferred.axi
+```
+
 Review the inferred draft. Do not treat it as architecture truth. It mirrors today's graph, including messy cycles, and the generated output labels itself as a current-graph snapshot rather than recommended architecture.
 
 Useful inference signals:
 
 - Collapsed cycle groups show modules that are not cleanly separated yet.
-- Collapsed cycle comments include the source groups and observed internal edges that made inference merge them.
+- Collapsed cycle comments include the source groups, a cycle path sample, and observed internal edges that made inference merge them.
 - Broad groups show where the first contract may need better names.
 - Existing observed edges show what the current system already depends on.
 
@@ -58,6 +67,8 @@ Run the first scans as review output:
 
 ```bash
 axi observe --root ../target-app --spec contracts/target-app.axi --markdown \
+  --include "src/**" \
+  --exclude "src/**/*.test.ts,src/**/*.test.tsx,src/**/*.spec.ts,src/**/*.spec.tsx,src/**/__tests__/**" \
   --warn-unowned \
   --warn-unresolved-imports \
   --warn-coupling-concentration \

@@ -21,6 +21,8 @@ interface CliOptions {
   markdown: boolean;
   mermaid: boolean;
   configPath?: string;
+  include: string[];
+  exclude: string[];
   specPaths: string[];
   adoptionMode: AdoptionMode;
   groupDepth?: number;
@@ -59,6 +61,8 @@ try {
     const result = runInfer({
       root: options.root,
       configPath: options.configPath,
+      include: options.include,
+      exclude: options.exclude,
       groupDepth: options.groupDepth,
       groupBy: options.groupBy
     });
@@ -73,6 +77,8 @@ try {
   const result = runCheck({
     root: options.root,
     configPath: options.configPath,
+    include: options.include,
+    exclude: options.exclude,
     specPaths: options.specPaths,
     adoptionMode: options.adoptionMode,
     intentionalViolationExpiryWarningDays: options.intentionalViolationExpiryWarningDays,
@@ -145,6 +151,8 @@ function parseOptions(values: string[], command: CliCommand): CliOptions {
     json: false,
     markdown: false,
     mermaid: false,
+    include: [],
+    exclude: [],
     specPaths: [],
     adoptionMode: "loose",
     graphViolationsOnly: command === "observe",
@@ -234,6 +242,28 @@ function parseOptions(values: string[], command: CliCommand): CliOptions {
         process.exit(1);
       }
       options.configPath = configPath;
+      index += 1;
+      continue;
+    }
+
+    if (value === "--include") {
+      const includePattern = values[index + 1];
+      if (!includePattern) {
+        console.error("Missing value for --include.");
+        process.exit(1);
+      }
+      options.include.push(...parsePatternList(includePattern));
+      index += 1;
+      continue;
+    }
+
+    if (value === "--exclude") {
+      const excludePattern = values[index + 1];
+      if (!excludePattern) {
+        console.error("Missing value for --exclude.");
+        process.exit(1);
+      }
+      options.exclude.push(...parsePatternList(excludePattern));
       index += 1;
       continue;
     }
@@ -412,6 +442,20 @@ function hasPresentationOutput(options: Pick<CliOptions, "json" | "markdown" | "
   return options.json || options.markdown || options.mermaid;
 }
 
+function parsePatternList(value: string): string[] {
+  const patterns = value
+    .split(",")
+    .map((pattern) => pattern.trim())
+    .filter((pattern) => pattern.length > 0);
+
+  if (patterns.length === 0) {
+    console.error("Source scope patterns cannot be empty.");
+    process.exit(1);
+  }
+
+  return patterns;
+}
+
 function loadGraphBaseline(baselinePath: string, root: string): GraphBaseline {
   const resolvedPath = resolveBaselinePath(baselinePath, root);
   const rawText = readTextFile(resolvedPath);
@@ -513,11 +557,11 @@ function printHelp(): void {
   console.log(`Axiom
 
 Usage:
-  axi check [--root <path>] [--config <path>] [--spec <path>] [--json] [--warn-unowned] [--strict] [--intentional-violation-warning-days <n>] [--warn-unresolved-imports] [--warn-public-api-surface] [--warn-coupling-concentration] [--warn-deep-internal-imports]
-  axi graph [--root <path>] [--config <path>] [--spec <path>] [--json|--markdown|--mermaid] [--warn-unowned] [--strict] [--violations-only|--attention] [--baseline <graph-json>] [--intentional-violation-warning-days <n>] [--warn-unresolved-imports] [--warn-public-api-surface] [--warn-coupling-concentration] [--warn-deep-internal-imports]
-  axi observe [--root <path>] [--config <path>] [--spec <path>] [--json|--markdown|--mermaid] [--warn-unowned] [--strict] [--baseline <graph-json>] [--intentional-violation-warning-days <n>] [--warn-unresolved-imports] [--warn-public-api-surface] [--warn-coupling-concentration] [--warn-deep-internal-imports]
-  axi diff <baseline-json> [--root <path>] [--config <path>] [--spec <path>] [--json|--markdown|--mermaid] [--warn-unowned] [--strict] [--intentional-violation-warning-days <n>] [--warn-unresolved-imports] [--warn-public-api-surface] [--warn-coupling-concentration] [--warn-deep-internal-imports]
-  axi infer [--root <path>] [--config <path>] [--json] [--group-depth <n>] [--group-by folder|workspace]
+  axi check [--root <path>] [--config <path>] [--include <glob>] [--exclude <glob>] [--spec <path>] [--json] [--warn-unowned] [--strict] [--intentional-violation-warning-days <n>] [--warn-unresolved-imports] [--warn-public-api-surface] [--warn-coupling-concentration] [--warn-deep-internal-imports]
+  axi graph [--root <path>] [--config <path>] [--include <glob>] [--exclude <glob>] [--spec <path>] [--json|--markdown|--mermaid] [--warn-unowned] [--strict] [--violations-only|--attention] [--baseline <graph-json>] [--intentional-violation-warning-days <n>] [--warn-unresolved-imports] [--warn-public-api-surface] [--warn-coupling-concentration] [--warn-deep-internal-imports]
+  axi observe [--root <path>] [--config <path>] [--include <glob>] [--exclude <glob>] [--spec <path>] [--json|--markdown|--mermaid] [--warn-unowned] [--strict] [--baseline <graph-json>] [--intentional-violation-warning-days <n>] [--warn-unresolved-imports] [--warn-public-api-surface] [--warn-coupling-concentration] [--warn-deep-internal-imports]
+  axi diff <baseline-json> [--root <path>] [--config <path>] [--include <glob>] [--exclude <glob>] [--spec <path>] [--json|--markdown|--mermaid] [--warn-unowned] [--strict] [--intentional-violation-warning-days <n>] [--warn-unresolved-imports] [--warn-public-api-surface] [--warn-coupling-concentration] [--warn-deep-internal-imports]
+  axi infer [--root <path>] [--config <path>] [--include <glob>] [--exclude <glob>] [--json] [--group-depth <n>] [--group-by folder|workspace]
 
 Commands:
   check    Validate source dependencies against .axi architecture specs.
@@ -541,6 +585,8 @@ Graph:
 Adoption:
   --spec <path>    Use an explicit .axi file or directory instead of discovering specs under --root.
                    Repeat the flag for multiple external contract files.
+  --include <glob> Add source include glob(s) for this run. Comma lists and repeated flags are supported.
+  --exclude <glob> Add source exclude glob(s) for this run. Comma lists and repeated flags are supported.
   default          Ignore source files not owned by any module path.
   --warn-unowned  Report unowned source files as warnings without failing check.
   --strict        Report unowned source files as violations.

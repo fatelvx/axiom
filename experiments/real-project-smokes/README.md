@@ -20,6 +20,21 @@ node dist/cli.js observe --root <repo> --markdown
 
 When a hand-written contract is used, keep it small and state what it is trying to observe. Do not treat the result as a judgment about the whole project.
 
+## Safety Rules
+
+Real-project smokes should prefer repositories that are not part of an active supply-chain incident or active malware remediation window.
+
+For every external repo smoke:
+
+- Clone source only with shallow `git clone`.
+- Do not run `npm install`, package-manager lifecycle scripts, build scripts, tests, or repo-provided GitHub Actions.
+- Do not run `npx` inside the target repository.
+- Do not enable submodules unless a run explicitly justifies it.
+- Avoid repos or package namespaces currently named in public compromise advisories, even if the smoke would only inspect source.
+- Treat results as architecture calibration, not an endorsement of repository or package safety.
+
+This keeps product evidence from being mixed with avoidable local or CI security risk.
+
 ## Version Smoke Harness
 
 Use the version smoke harness when the question is how architecture pressure changes across tags or branches:

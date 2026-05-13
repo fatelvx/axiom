@@ -33,11 +33,14 @@ try {
   const contractPath = path.join(workRoot, `${safeSegment(options.name)}-${safeSegment(options.baselineRef)}-inferred.axi`);
   const baselineGraphPath = path.join(workRoot, `${safeSegment(options.name)}-${safeSegment(options.baselineRef)}-baseline.graph.json`);
 
-  const infer = timedCapture(
-    process.execPath,
-    [cliPath, "infer", "--root", baseline.root, ...configArgs, "--group-by", options.groupBy],
-    { label: `axi infer ${options.baselineRef}` }
-  );
+  const inferArgs = [cliPath, "infer", "--root", baseline.root, ...configArgs, "--group-by", options.groupBy];
+  if (options.groupDepth !== undefined) {
+    inferArgs.push("--group-depth", String(options.groupDepth));
+  }
+
+  const infer = timedCapture(process.execPath, inferArgs, {
+    label: `axi infer ${options.baselineRef}`
+  });
   writeTextFile(contractPath, ensureTrailingNewline(infer.stdout));
 
   const baselineGraph = timedCapture(
@@ -90,6 +93,7 @@ try {
     baselineRef: options.baselineRef,
     currentRef: options.currentRef,
     groupBy: options.groupBy,
+    groupDepth: options.groupDepth,
     sourceScope: {
       include: options.include,
       exclude: options.exclude
@@ -196,6 +200,7 @@ function parseArgs(args) {
     baselineRef: defaultBaselineRef,
     currentRef: defaultCurrentRef,
     groupBy: "workspace",
+    groupDepth: undefined,
     include: [],
     exclude: [],
     warnings: [...defaultWarnings],
@@ -236,6 +241,16 @@ function parseArgs(args) {
         throw new Error("--group-by must be either folder or workspace.");
       }
       parsed.groupBy = value;
+      index += 1;
+      continue;
+    }
+
+    if (arg === "--group-depth") {
+      const value = Number.parseInt(readRequiredValue(args, index, arg), 10);
+      if (!Number.isInteger(value) || value < 1) {
+        throw new Error("--group-depth must be a positive integer.");
+      }
+      parsed.groupDepth = value;
       index += 1;
       continue;
     }
@@ -520,6 +535,7 @@ function formatMarkdownReport(report) {
     `Baseline: ${report.baseline.ref} (${report.baseline.commit})`,
     `Current: ${report.current.ref} (${report.current.commit})`,
     `Source scope: ${formatSourceScope(report.sourceScope)}`,
+    `Inference: ${formatInferenceScope(report)}`,
     "",
     "This is a smoke test, not a verdict. The baseline contract is inferred from the baseline ref and reused as an external `--spec` against the current ref.",
     "",
@@ -593,7 +609,6 @@ function formatMarkdownReport(report) {
   lines.push("- New or removed edges are advisory drift signals, not automatic good/bad judgments.");
   lines.push("- Warning counts are advisory pressure signals and do not fail CI by themselves.");
   lines.push("- Use this harness to calibrate Axiom behavior before turning any signal into a hard gate.");
-  lines.push("");
 
   return `${lines.join("\n")}\n`;
 }
@@ -602,6 +617,14 @@ function formatSourceScope(sourceScope) {
   const include = sourceScope.include.length > 0 ? `include ${sourceScope.include.join(", ")}` : "include all supported source";
   const exclude = sourceScope.exclude.length > 0 ? `exclude ${sourceScope.exclude.join(", ")}` : "default excludes only";
   return `${include}; ${exclude}`;
+}
+
+function formatInferenceScope(report) {
+  const parts = [`group-by ${report.groupBy}`];
+  if (report.groupDepth !== undefined) {
+    parts.push(`group-depth ${report.groupDepth}`);
+  }
+  return parts.join(", ");
 }
 
 function appendEdgeList(lines, edges, prefix) {
@@ -673,6 +696,7 @@ Defaults:
   --baseline-ref ${defaultBaselineRef}
   --current-ref ${defaultCurrentRef}
   --group-by workspace
+  --group-depth omitted
   --warnings ${defaultWarnings.join(",")}
 
 Options:
@@ -681,6 +705,7 @@ Options:
   --baseline-ref <ref>          Git tag or branch used to infer the baseline contract.
   --current-ref <ref>           Git tag or branch checked against the baseline contract.
   --group-by <mode>             infer grouping mode: folder or workspace.
+  --group-depth <n>             Optional infer folder depth for finer source grouping.
   --include <patterns>          Comma list of source include globs for both refs.
   --exclude <patterns>          Comma list of source exclude globs for both refs.
   --warnings <list>             Comma list: coupling,deep,public-api,unresolved, or none.

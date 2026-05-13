@@ -1,0 +1,80 @@
+{
+  "kind": "axiom.real-project-diff-smoke.v1",
+  "generatedAt": "2026-05-13T02:07:54.982Z",
+  "repo": "https://github.com/sindresorhus/ky.git",
+  "name": "ky-src",
+  "baselineRef": "v1.14.0",
+  "currentRef": "v1.14.3",
+  "groupBy": "folder",
+  "groupDepth": 2,
+  "sourceScope": {
+    "include": [
+      "source/**"
+    ],
+    "exclude": []
+  },
+  "warningFlags": [
+    "--warn-coupling-concentration",
+    "--warn-deep-internal-imports",
+    "--warn-unresolved-imports"
+  ],
+  "node": "v24.14.1",
+  "platform": "win32 x64",
+  "baseline": {
+    "ref": "v1.14.0",
+    "commit": "c52a694",
+    "packageVersion": "1.14.0",
+    "summary": {
+      "modules": 1,
+      "declaredDependencies": 0,
+      "forbiddenDependencies": 0,
+      "exposedPaths": 0,
+      "hiddenPaths": 0,
+      "observedDependencies": 0,
+      "shownObservedDependencies": 0,
+      "violations": 0,
+      "intentionalViolations": 0,
+      "warnings": 0
+    }
+  },
+  "current": {
+    "ref": "v1.14.3",
+    "commit": "eb5c3eb",
+    "packageVersion": "1.14.3",
+    "summary": {
+      "modules": 1,
+      "declaredDependencies": 0,
+      "forbiddenDependencies": 0,
+      "exposedPaths": 0,
+      "hiddenPaths": 0,
+      "observedDependencies": 0,
+      "shownObservedDependencies": 0,
+      "violations": 0,
+      "intentionalViolations": 0,
+      "warnings": 0
+    }
+  },
+  "drift": {
+    "kind": "advisory_observed_edge_drift",
+    "baseline": {
+      "schemaVersion": "axiom.graph.v9",
+      "observedDependencies": 0
+    },
+    "newObservedEdges": [],
+    "removedObservedEdges": []
+  },
+  "warnings": {
+    "byCode": {},
+    "details": []
+  },
+  "timingsMs": {
+    "cloneBaseline": 1144,
+    "cloneCurrent": 1270.2,
+    "infer": 487.9,
+    "baselineGraph": 472,
+    "diffJson": 473,
+    "diffMarkdown": 477.7,
+    "observeMarkdown": 483,
+    "diffMermaid": 599.3
+  }
+}

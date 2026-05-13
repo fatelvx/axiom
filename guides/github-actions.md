@@ -4,7 +4,7 @@ This guide shows the recommended split for GitHub Actions:
 
 - `axi check --json` is the hard gate.
 - GitHub annotations should come from hard `violations[]`.
-- `axi observe --json` can feed a PR or job-summary review artifact through `architectureSummary`.
+- `axi observe --json` can feed a PR or job-summary review artifact through `architectureSummary`, including a short graph interpretation that tells reviewers what to inspect first.
 - `axi observe --markdown` remains useful when you want a full human-readable review body.
 - `axi graph --mermaid` can be attached or pasted when a visual observed dependency graph helps review.
 - Advisory warnings, visible debt, and drift should stay review context unless your team deliberately promotes a signal into policy.
@@ -33,7 +33,7 @@ The workflow does three things:
 
 1. Runs `axi check --root . --json` and keeps the exit code as the gate.
 2. Converts hard violations into GitHub `error` annotations.
-3. Runs `axi observe --root . --json` and appends its `architectureSummary` to the GitHub step summary so reviewers and agents can see visible debt, warnings, and drift separately from the gate.
+3. Runs `axi observe --root . --json` and appends its `architectureSummary` to the GitHub step summary so reviewers and agents can see visible debt, warnings, drift, and a "look first" graph interpretation separately from the gate.
 
 From this repository, you can smoke-test the example integration locally:
 
@@ -41,7 +41,7 @@ From this repository, you can smoke-test the example integration locally:
 npm run github-actions:smoke
 ```
 
-The smoke test runs the real built CLI against `examples/basic-app`, verifies that hard violations become GitHub error annotations, verifies that a passing check becomes a notice, and verifies that `axi observe --json` plus `architectureSummary` produces PR review context without changing the gate.
+The smoke test runs the real built CLI against `examples/basic-app`, verifies that hard violations become GitHub error annotations, verifies that a passing check becomes a notice, and verifies that `axi observe --json` plus `architectureSummary` produces PR review context and graph interpretation without changing the gate.
 
 ## Annotation Helper
 

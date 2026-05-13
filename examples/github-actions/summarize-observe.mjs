@@ -28,11 +28,12 @@ if (
 
 const architectureSummary = readRecord(payload.architectureSummary);
 if (!architectureSummary) {
-  console.error("Expected graph JSON with architectureSummary. Re-run with Axiom graph JSON v10 or newer.");
+  console.error("Expected graph JSON with architectureSummary. Re-run with Axiom graph JSON v11 or newer.");
   process.exit(2);
 }
 
 const summary = readRecord(payload.summary) ?? {};
+const interpretation = readRecord(architectureSummary.interpretation);
 const topSignals = Array.isArray(architectureSummary.topSignals) ? architectureSummary.topSignals : [];
 const nextActions = Array.isArray(architectureSummary.suggestedNextActions)
   ? architectureSummary.suggestedNextActions
@@ -52,6 +53,9 @@ const lines = [
   `- Hard violations: ${formatNumber(summary.violations)}`,
   `- Intentional violations: ${formatNumber(summary.intentionalViolations)}`,
   `- Advisory warnings: ${formatNumber(summary.warnings)}`,
+  "",
+  "### Interpretation",
+  ...formatInterpretation(interpretation),
   "",
   "### Top Signals",
   ...formatTopSignals(topSignals),
@@ -110,6 +114,41 @@ function formatNextActions(actions) {
   }
 
   return actions.map((action) => `- ${formatText(action)}`);
+}
+
+function formatInterpretation(interpretation) {
+  if (!interpretation) {
+    return ["- No interpretation available."];
+  }
+
+  const lines = [`- Headline: ${formatText(interpretation.headline)}`];
+  const lookFirst = Array.isArray(interpretation.lookFirst) ? interpretation.lookFirst : [];
+  if (lookFirst.length > 0) {
+    lines.push("- Look first:");
+    for (const item of lookFirst) {
+      lines.push(`  - ${formatText(item)}`);
+    }
+  }
+
+  const centralModules = Array.isArray(interpretation.centralModules) ? interpretation.centralModules : [];
+  lines.push("- Central modules:");
+  if (centralModules.length === 0) {
+    lines.push("  - None observed in this scan scope.");
+  } else {
+    for (const module of centralModules.slice(0, 3)) {
+      const record = readRecord(module) ?? {};
+      const name = typeof record.module === "string" ? record.module : "unknown";
+      const role = formatLabel(record.role);
+      const totalImportSites = formatNumber(record.totalImportSites);
+      const incomingModules = formatNumber(record.incomingModules);
+      const outgoingModules = formatNumber(record.outgoingModules);
+      lines.push(
+        `  - \`${name}\` (${role}): ${totalImportSites} import sites, fan-in ${incomingModules}, fan-out ${outgoingModules}`
+      );
+    }
+  }
+
+  return lines;
 }
 
 function formatLocation(location) {

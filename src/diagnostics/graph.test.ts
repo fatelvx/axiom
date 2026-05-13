@@ -40,6 +40,42 @@ test("graph JSON exposes declared, forbidden, visibility, and observed edges", (
       hardViolationsFailCheck: true
     },
     reviewFocus: "Full declared and observed module graph.",
+    interpretation: {
+      headline:
+        "Contract is failing: 2 hard violations should be repaired or explicitly accepted before treating the graph as stable.",
+      quickRead: [
+        "Contract: 2 hard violations.",
+        "Graph center: Services (3 import sites, fan-in 1, fan-out 0), UI (3 import sites, fan-in 0, fan-out 1).",
+        "Review pressure: no visible debt or advisory warnings."
+      ],
+      lookFirst: [
+        "Hard signals: read `violations[]`, `intentionalDebt[]`, and `warnings[]` before judging the diagram.",
+        "Graph center: inspect Services; it carries the strongest observed coupling in this scan.",
+        "Shape fit: compare central modules, deep imports, and drift with the architecture you expected for this repository."
+      ],
+      centralModules: [
+        {
+          module: "Services",
+          role: "fan_in_hub",
+          incomingModules: 1,
+          outgoingModules: 0,
+          incomingImportSites: 3,
+          outgoingImportSites: 0,
+          totalImportSites: 3
+        },
+        {
+          module: "UI",
+          role: "fan_out_hub",
+          incomingModules: 0,
+          outgoingModules: 1,
+          incomingImportSites: 0,
+          outgoingImportSites: 3,
+          totalImportSites: 3
+        }
+      ],
+      caveat:
+        "This is a graph interpretation over static imports, not proof of semantic architecture health. Compare it with the architecture you intended."
+    },
     topSignals: [
       {
         kind: "hard_violation",

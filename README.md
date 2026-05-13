@@ -168,13 +168,23 @@ Axiom v0.5.8 currently supports:
 - Module `purpose` text surfaced in graph and JSON output for lightweight intent awareness.
 - Human output and stable JSON output for CI and agents.
 - Markdown architecture review summaries for PRs and agent repair loops with `axi observe --markdown`.
-- Agent-friendly graph JSON summaries with `architectureSummary` for CI dashboards, PR bots, and future MCP adapters.
+- Agent-friendly graph JSON summaries with `architectureSummary.interpretation` for CI dashboards, PR bots, and future MCP adapters.
 - Mermaid dependency diagrams for observed module graphs with `axi graph --mermaid` or `axi observe --mermaid`.
 - Starter contract inference with `axi infer`, explicitly marked as a current-graph snapshot rather than recommended architecture, with an authoring checklist and next commands.
 - Architecture attention output with `axi observe`, including a visible review model that separates advisory review from CI gates.
 - Baseline-aware observed edge drift with `axi observe --baseline <graph-json>`.
 - Focused graph output with `axi graph --violations-only`.
 - Scan summaries with module, source-file, import, and observed-dependency counts.
+
+## How To Read A Graph
+
+Start with three questions:
+
+1. Are there hard violations, visible accepted debt, or advisory warnings?
+2. Which module is the graph center by observed import pressure?
+3. Does that shape match the architecture you expected?
+
+`axi graph`, `axi observe`, and JSON summaries now include an interpretation layer for this first read. It can say, for example, that the scoped graph is quiet, that a module is becoming a fan-in hub, or that a contract is failing before the diagram should be treated as stable. The interpretation is intentionally conservative: it helps you navigate the graph, but the evidence still lives in the exact violation, warning, drift, and import-site lists.
 
 ## What It Does Not Prove
 
@@ -600,7 +610,7 @@ Today this flags relative cross-module imports that target a non-`index.*` file 
 }
 ```
 
-`axi graph --json` and `axi observe --json` emit `axiom.graph.v10`. Each observed dependency includes `violations` and `intentionalViolations` arrays. Graph JSON also includes `architectureSummary` so agents, dashboards, and future MCP adapters can read the review mode, status, top signals, and suggested next actions without parsing Markdown. The top-level `intentionalDebt` ledger keeps accepted non-edge violations, such as hidden public-surface re-exports, visible to PR comments and agents. With `--violations-only`, `--attention`, or `observe`, `observedDependencies` remains a compatibility alias for the shown attention edges, while `allObservedDependencies[]` always carries the full observed graph and `shownObservedDependencies[]` carries the filtered view. `summary.observedDependencies` keeps the full count, `summary.shownObservedDependencies` keeps the shown count, warning guardrails are still shown with details, and the JSON `filters` object marks focused attention output.
+`axi graph --json` and `axi observe --json` emit `axiom.graph.v11`. Each observed dependency includes `violations` and `intentionalViolations` arrays. Graph JSON also includes `architectureSummary` so agents, dashboards, and future MCP adapters can read the review mode, status, top signals, suggested next actions, and a short interpretation layer without parsing Markdown. `architectureSummary.interpretation` gives a headline, quick-read notes, first things to inspect, and central modules by observed import pressure. It is guidance over the same static import graph, not a health score or semantic architecture proof. The top-level `intentionalDebt` ledger keeps accepted non-edge violations, such as hidden public-surface re-exports, visible to PR comments and agents. With `--violations-only`, `--attention`, or `observe`, `observedDependencies` remains a compatibility alias for the shown attention edges, while `allObservedDependencies[]` always carries the full observed graph and `shownObservedDependencies[]` carries the filtered view. `summary.observedDependencies` keeps the full count, `summary.shownObservedDependencies` keeps the shown count, warning guardrails are still shown with details, and the JSON `filters` object marks focused attention output.
 
 If you are building a CI annotation, PR comment, dashboard, or agent integration on top of JSON output, follow [JSON Consumers](guides/json-consumers.md). In short: use `axi check --json` for hard gates, tolerate additive fields, and treat `intentionalDebt[]` as the authoritative accepted-debt ledger for graph / observe output.
 

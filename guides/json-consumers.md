@@ -12,7 +12,7 @@ Each JSON payload starts with a `schemaVersion`:
 
 ```text
 axiom.check.v4
-axiom.graph.v10
+axiom.graph.v11
 axiom.infer.v5
 ```
 
@@ -85,7 +85,7 @@ Do not hard-gate on `axi graph`, `axi observe`, or Markdown output unless your o
 
 Important fields:
 
-- `architectureSummary`: agent-friendly status, review mode, top signals, and suggested next actions over the same graph result.
+- `architectureSummary`: agent-friendly status, review mode, interpretation, top signals, and suggested next actions over the same graph result.
 - `summary`: counts for modules, observed dependencies, violations, intentional violations, and warnings.
 - `filters`: tells whether output is full graph, attention, or violations-only.
 - `allObservedDependencies[]`: the full observed module graph.
@@ -98,6 +98,16 @@ Important fields:
 The top-level `intentionalDebt[]` ledger is the authoritative list for accepted debt review. Per-edge `intentionalViolations[]` entries are useful annotations, but some accepted debt is not a cross-module observed edge. For example, an accepted `hidden_reexport` from an exposed entry point can appear in `intentionalDebt[]` even when there is no `observedDependencies[]` edge to show.
 
 `architectureSummary` is a convenience surface for agents and dashboards. It does not add validation semantics. Use it to decide what to show first, then read the underlying `violations[]`, `intentionalDebt[]`, `warnings[]`, `drift`, and observed dependency arrays for exact evidence.
+
+`architectureSummary.interpretation` is the human-navigation layer for graph output. It includes:
+
+- `headline`: one short reading of the current scan.
+- `quickRead[]`: compact facts such as contract status, graph center, review pressure, and drift.
+- `lookFirst[]`: a stable checklist for new users: hard signals, graph center, then shape fit against expected architecture.
+- `centralModules[]`: the modules with the strongest observed import pressure in this scan, with fan-in/fan-out and import-site counts.
+- `caveat`: a reminder that this is static import graph interpretation, not semantic architecture proof.
+
+Consumers should treat the interpretation as a navigation aid, not a gate. For exact evidence, read the raw arrays that produced it.
 
 ## Baseline Drift
 

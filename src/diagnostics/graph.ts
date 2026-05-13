@@ -2,7 +2,7 @@ import path from "node:path";
 import type { ModuleRef, PathRef, SourceLocation, Violation, ViolationCode } from "../axi/types.js";
 import type { CheckResult } from "../validator/check.js";
 
-export const graphJsonSchemaVersion = "axiom.graph.v10";
+export const graphJsonSchemaVersion = "axiom.graph.v11";
 
 interface GraphJsonLocation {
   filePath: string;
@@ -135,8 +135,27 @@ interface GraphJsonArchitectureSummary {
     hardViolationsFailCheck: true;
   };
   reviewFocus: string;
+  interpretation: GraphJsonArchitectureInterpretation;
   topSignals: GraphJsonArchitectureSignal[];
   suggestedNextActions: string[];
+}
+
+interface GraphJsonArchitectureInterpretation {
+  headline: string;
+  quickRead: string[];
+  lookFirst: string[];
+  centralModules: GraphJsonArchitectureCentralModule[];
+  caveat: string;
+}
+
+interface GraphJsonArchitectureCentralModule {
+  module: string;
+  role: "fan_in_hub" | "fan_out_hub" | "mixed_hub";
+  incomingModules: number;
+  outgoingModules: number;
+  incomingImportSites: number;
+  outgoingImportSites: number;
+  totalImportSites: number;
 }
 
 interface GraphJsonArchitectureSignal {
@@ -191,6 +210,7 @@ export function formatGraphResult(result: CheckResult, options: GraphFormatOptio
   const lines = [
     formatGraphHeader(options),
     ...formatGraphReviewModel(graph, options),
+    ...formatGraphInterpretation(graph),
     `modules: ${graph.summary.modules}`,
     `declared dependencies: ${graph.summary.declaredDependencies}`,
     `forbidden dependencies: ${graph.summary.forbiddenDependencies}`,
@@ -318,6 +338,22 @@ function formatGraphReviewModel(graph: GraphJsonResult, options: GraphFormatOpti
   return [];
 }
 
+function formatGraphInterpretation(graph: GraphJsonResult): string[] {
+  const interpretation = graph.architectureSummary.interpretation;
+  const lines = [`interpretation: ${interpretation.headline}`];
+
+  if (interpretation.centralModules.length > 0) {
+    lines.push(`center: ${formatCentralModulesInline(interpretation.centralModules)}`);
+  }
+
+  lines.push("look first:");
+  interpretation.lookFirst.forEach((item, index) => {
+    lines.push(`  ${index + 1}. ${item}`);
+  });
+
+  return lines;
+}
+
 function formatAttentionFocus(graph: GraphJsonResult): string {
   if (!graph.filters.violationsOnly) {
     return "showing the full observed module graph";
@@ -384,6 +420,8 @@ export function formatGraphMarkdown(result: CheckResult, options: GraphFormatOpt
   }
 
   lines.push("");
+  lines.push(...formatMarkdownInterpretation(graph));
+  lines.push("");
   lines.push(...formatMarkdownReviewNotes(graph));
   lines.push("");
   lines.push(...formatMarkdownHardViolations(graph));
@@ -425,6 +463,8 @@ function formatGraphDiffMarkdown(graph: GraphJsonResult): string {
     );
   }
 
+  lines.push("");
+  lines.push(...formatMarkdownInterpretation(graph));
   lines.push("");
   lines.push("### Review Notes");
   lines.push("- This is review output; use `axi check` when you want a CI gate.");
@@ -558,6 +598,7 @@ export function toGraphJson(result: CheckResult, options: GraphFormatOptions = {
     architectureSummary: buildArchitectureSummary({
       filters,
       summary,
+      allObservedDependencies,
       violations,
       intentionalDebt,
       warnings,
@@ -593,6 +634,7 @@ export function toGraphJson(result: CheckResult, options: GraphFormatOptions = {
 function buildArchitectureSummary(input: {
   filters: GraphJsonResult["filters"];
   summary: GraphJsonResult["summary"];
+  allObservedDependencies: GraphJsonObservedDependency[];
   violations: GraphJsonViolation[];
   intentionalDebt: GraphJsonIntentionalDebt[];
   warnings: GraphJsonViolation[];
@@ -609,6 +651,7 @@ function buildArchitectureSummary(input: {
       hardViolationsFailCheck: true
     },
     reviewFocus: formatArchitectureSummaryFocus(input),
+    interpretation: buildArchitectureInterpretation(input),
     topSignals: formatArchitectureSummarySignals(input),
     suggestedNextActions: formatArchitectureSummaryNextActions(input)
   };
@@ -679,6 +722,254 @@ function formatArchitectureSummaryFocus(input: {
   }
 
   return "Full declared and observed module graph.";
+}
+
+function buildArchitectureInterpretation(input: {
+  summary: GraphJsonResult["summary"];
+  allObservedDependencies: GraphJsonObservedDependency[];
+  violations: GraphJsonViolation[];
+  intentionalDebt: GraphJsonIntentionalDebt[];
+  warnings: GraphJsonViolation[];
+  drift?: GraphJsonDrift;
+}): GraphJsonArchitectureInterpretation {
+  const centralModules = findCentralModules(input.allObservedDependencies);
+
+  return {
+    headline: formatArchitectureHeadline(input, centralModules),
+    quickRead: formatArchitectureQuickRead(input, centralModules),
+    lookFirst: formatArchitectureLookFirst(centralModules),
+    centralModules,
+    caveat:
+      "This is a graph interpretation over static imports, not proof of semantic architecture health. Compare it with the architecture you intended."
+  };
+}
+
+function formatArchitectureHeadline(
+  input: {
+    summary: GraphJsonResult["summary"];
+    violations: GraphJsonViolation[];
+    intentionalDebt: GraphJsonIntentionalDebt[];
+    warnings: GraphJsonViolation[];
+    drift?: GraphJsonDrift;
+  },
+  centralModules: GraphJsonArchitectureCentralModule[]
+): string {
+  if (input.violations.some((violation) => violation.code === "no_spec_files")) {
+    return "No `.axi` contract was found, so Axiom can scan the code but cannot compare it with declared architecture intent yet.";
+  }
+
+  if (input.violations.length > 0) {
+    return `Contract is failing: ${input.violations.length} hard violation${pluralize(
+      input.violations.length
+    )} should be repaired or explicitly accepted before treating the graph as stable.`;
+  }
+
+  if (input.intentionalDebt.length > 0 || input.warnings.length > 0) {
+    return `No hard contract failures, but ${formatReviewSignalCount(
+      input.intentionalDebt.length,
+      input.warnings.length
+    )} need review${formatCentralHeadlineSuffix(centralModules)}.`;
+  }
+
+  const driftCount = readDriftCount(input.drift);
+  if (driftCount > 0) {
+    return `No hard contract failures, but baseline drift changed ${driftCount} observed module edge${pluralize(
+      driftCount
+    )}${formatCentralHeadlineSuffix(centralModules)}.`;
+  }
+
+  if (input.summary.observedDependencies === 0) {
+    return "No hard contract failures were reported, and this scoped scan did not observe cross-module imports.";
+  }
+
+  return `This scoped graph is quiet: no hard failures, visible debt, advisory warnings, or baseline drift were reported${formatCentralHeadlineSuffix(
+    centralModules
+  )}.`;
+}
+
+function formatArchitectureQuickRead(
+  input: {
+    summary: GraphJsonResult["summary"];
+    violations: GraphJsonViolation[];
+    intentionalDebt: GraphJsonIntentionalDebt[];
+    warnings: GraphJsonViolation[];
+    drift?: GraphJsonDrift;
+  },
+  centralModules: GraphJsonArchitectureCentralModule[]
+): string[] {
+  const lines: string[] = [];
+
+  if (input.violations.some((violation) => violation.code === "no_spec_files")) {
+    lines.push("Contract: missing; run `axi infer` or pass `--spec` before judging declared-vs-observed drift.");
+  } else if (input.violations.length > 0) {
+    lines.push(`Contract: ${input.violations.length} hard violation${pluralize(input.violations.length)}.`);
+  } else {
+    lines.push("Contract: no hard failures in this command output.");
+  }
+
+  const centralSummary = formatCentralModulesInline(centralModules);
+  lines.push(
+    centralSummary
+      ? `Graph center: ${centralSummary}.`
+      : "Graph center: no cross-module import center was observed in this scope."
+  );
+
+  if (input.intentionalDebt.length > 0 || input.warnings.length > 0) {
+    lines.push(`Review pressure: ${formatReviewSignalCount(input.intentionalDebt.length, input.warnings.length)}.`);
+  } else {
+    lines.push("Review pressure: no visible debt or advisory warnings.");
+  }
+
+  const driftCount = readDriftCount(input.drift);
+  if (driftCount > 0 && input.drift) {
+    lines.push(
+      `Baseline drift: ${input.drift.newObservedEdges.length} new and ${input.drift.removedObservedEdges.length} removed observed module edge${pluralize(
+        driftCount
+      )}.`
+    );
+  }
+
+  return lines;
+}
+
+function formatArchitectureLookFirst(centralModules: GraphJsonArchitectureCentralModule[]): string[] {
+  return [
+    "Hard signals: read `violations[]`, `intentionalDebt[]`, and `warnings[]` before judging the diagram.",
+    centralModules.length > 0
+      ? `Graph center: inspect ${centralModules[0]?.module}; it carries the strongest observed coupling in this scan.`
+      : "Graph center: if no center appears, confirm the scan scope actually covers the architecture you care about.",
+    "Shape fit: compare central modules, deep imports, and drift with the architecture you expected for this repository."
+  ];
+}
+
+function findCentralModules(
+  dependencies: GraphJsonObservedDependency[]
+): GraphJsonArchitectureCentralModule[] {
+  const modules = new Map<
+    string,
+    {
+      incomingModules: Set<string>;
+      outgoingModules: Set<string>;
+      incomingImportSites: number;
+      outgoingImportSites: number;
+    }
+  >();
+
+  for (const dependency of dependencies) {
+    const from = readCentrality(modules, dependency.fromModule);
+    from.outgoingModules.add(dependency.toModule);
+    from.outgoingImportSites += 1;
+
+    const to = readCentrality(modules, dependency.toModule);
+    to.incomingModules.add(dependency.fromModule);
+    to.incomingImportSites += 1;
+  }
+
+  return [...modules.entries()]
+    .map(([module, metrics]) => ({
+      module,
+      role: formatCentralRole(metrics.incomingModules.size, metrics.outgoingModules.size),
+      incomingModules: metrics.incomingModules.size,
+      outgoingModules: metrics.outgoingModules.size,
+      incomingImportSites: metrics.incomingImportSites,
+      outgoingImportSites: metrics.outgoingImportSites,
+      totalImportSites: metrics.incomingImportSites + metrics.outgoingImportSites
+    }))
+    .filter((module) => module.totalImportSites > 0)
+    .sort(compareCentralModules)
+    .slice(0, 3);
+}
+
+function readCentrality(
+  modules: Map<
+    string,
+    {
+      incomingModules: Set<string>;
+      outgoingModules: Set<string>;
+      incomingImportSites: number;
+      outgoingImportSites: number;
+    }
+  >,
+  moduleName: string
+): {
+  incomingModules: Set<string>;
+  outgoingModules: Set<string>;
+  incomingImportSites: number;
+  outgoingImportSites: number;
+} {
+  const existing = modules.get(moduleName);
+  if (existing) {
+    return existing;
+  }
+
+  const created = {
+    incomingModules: new Set<string>(),
+    outgoingModules: new Set<string>(),
+    incomingImportSites: 0,
+    outgoingImportSites: 0
+  };
+  modules.set(moduleName, created);
+  return created;
+}
+
+function formatCentralRole(
+  incomingModules: number,
+  outgoingModules: number
+): GraphJsonArchitectureCentralModule["role"] {
+  if (incomingModules > outgoingModules) {
+    return "fan_in_hub";
+  }
+
+  if (outgoingModules > incomingModules) {
+    return "fan_out_hub";
+  }
+
+  return "mixed_hub";
+}
+
+function compareCentralModules(
+  left: GraphJsonArchitectureCentralModule,
+  right: GraphJsonArchitectureCentralModule
+): number {
+  const scoreDifference = scoreCentralModule(right) - scoreCentralModule(left);
+  if (scoreDifference !== 0) {
+    return scoreDifference;
+  }
+
+  return left.module.localeCompare(right.module);
+}
+
+function scoreCentralModule(module: GraphJsonArchitectureCentralModule): number {
+  return module.totalImportSites + (module.incomingModules + module.outgoingModules) * 4;
+}
+
+function formatCentralModulesInline(centralModules: GraphJsonArchitectureCentralModule[]): string {
+  return centralModules
+    .slice(0, 2)
+    .map((module) => `${module.module} (${formatCentralModuleMetrics(module)})`)
+    .join(", ");
+}
+
+function formatCentralModuleMetrics(module: GraphJsonArchitectureCentralModule): string {
+  return `${module.totalImportSites} import site${pluralize(module.totalImportSites)}, fan-in ${module.incomingModules}, fan-out ${module.outgoingModules}`;
+}
+
+function formatCentralHeadlineSuffix(centralModules: GraphJsonArchitectureCentralModule[]): string {
+  const module = centralModules[0];
+  return module ? `; graph center is ${module.module}` : "";
+}
+
+function formatReviewSignalCount(intentionalDebt: number, warnings: number): string {
+  const parts = [
+    intentionalDebt > 0 ? `${intentionalDebt} visible debt item${pluralize(intentionalDebt)}` : undefined,
+    warnings > 0 ? `${warnings} advisory warning${pluralize(warnings)}` : undefined
+  ].filter((item): item is string => item !== undefined);
+
+  return parts.join(" and ");
+}
+
+function readDriftCount(drift: GraphJsonDrift | undefined): number {
+  return (drift?.newObservedEdges.length ?? 0) + (drift?.removedObservedEdges.length ?? 0);
 }
 
 function formatArchitectureSummarySignals(input: {
@@ -853,6 +1144,29 @@ function formatMarkdownReviewMode(options: GraphFormatOptions): string {
   }
 
   return "graph summary (advisory)";
+}
+
+function formatMarkdownInterpretation(graph: GraphJsonResult): string[] {
+  const interpretation = graph.architectureSummary.interpretation;
+  const lines = ["### Interpretation", `- Headline: ${interpretation.headline}`, "- Look first:"];
+
+  for (const item of interpretation.lookFirst) {
+    lines.push(`  - ${item}`);
+  }
+
+  lines.push("- Central modules:");
+  if (interpretation.centralModules.length === 0) {
+    lines.push("  - None observed in this scan scope.");
+  } else {
+    for (const module of interpretation.centralModules) {
+      lines.push(
+        `  - ${markdownCode(module.module)} (${module.role.replace(/_/g, " ")}): ${formatCentralModuleMetrics(module)}`
+      );
+    }
+  }
+
+  lines.push(`- Caveat: ${interpretation.caveat}`);
+  return lines;
 }
 
 function formatMarkdownReviewNotes(graph: GraphJsonResult): string[] {

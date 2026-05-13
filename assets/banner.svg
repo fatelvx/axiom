@@ -1,113 +1,140 @@
 <svg width="1200" height="360" viewBox="0 0 1200 360" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
   <title id="title">Axiom architecture observability banner</title>
-  <desc id="desc">A dark developer-tool banner with the Axiom radar logo, declared intent and observed drift rings, and concise product positioning.</desc>
+  <desc id="desc">A polished dark developer-tool banner showing declared intent, observed imports, visible drift, and graph interpretation for Axiom.</desc>
   <defs>
     <linearGradient id="bg" x1="0" y1="0" x2="1200" y2="360" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#071014"/>
-      <stop offset="0.58" stop-color="#0A1418"/>
-      <stop offset="1" stop-color="#0B1016"/>
+      <stop stop-color="#061014"/>
+      <stop offset="0.58" stop-color="#08171B"/>
+      <stop offset="1" stop-color="#071018"/>
     </linearGradient>
-    <linearGradient id="accent" x1="0" y1="0" x2="310" y2="0" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#7CFFC7"/>
-      <stop offset="0.52" stop-color="#39D7FF"/>
-      <stop offset="1" stop-color="#6AA7FF"/>
+    <linearGradient id="teal" x1="0" y1="0" x2="260" y2="0" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#85FFD4"/>
+      <stop offset="0.54" stop-color="#37D6FF"/>
+      <stop offset="1" stop-color="#7B9BFF"/>
     </linearGradient>
-    <linearGradient id="warning" x1="0" y1="0" x2="110" y2="80" gradientUnits="userSpaceOnUse">
+    <linearGradient id="drift" x1="0" y1="0" x2="120" y2="120" gradientUnits="userSpaceOnUse">
       <stop stop-color="#FFD166"/>
       <stop offset="1" stop-color="#FF5F7E"/>
     </linearGradient>
-    <linearGradient id="logo-shell" x1="62" y1="42" x2="278" y2="278" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#0B171A"/>
-      <stop offset="1" stop-color="#071014"/>
+    <linearGradient id="panel" x1="682" y1="48" x2="1130" y2="312" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#0D2024"/>
+      <stop offset="1" stop-color="#09151D"/>
     </linearGradient>
-    <filter id="glow" x="-30%" y="-30%" width="160%" height="160%">
+    <filter id="signal-glow" x="-40%" y="-40%" width="180%" height="180%">
       <feGaussianBlur stdDeviation="3" result="blur"/>
-      <feColorMatrix in="blur" type="matrix" values="0 0 0 0 0.29 0 0 0 0 0.92 0 0 0 0 0.78 0 0 0 0.38 0"/>
+      <feColorMatrix in="blur" type="matrix" values="0 0 0 0 0.25 0 0 0 0 0.88 0 0 0 0 0.93 0 0 0 0.4 0"/>
       <feBlend in="SourceGraphic" mode="screen"/>
     </filter>
-    <pattern id="grid" width="42" height="42" patternUnits="userSpaceOnUse">
-      <path d="M42 0H0V42" stroke="#183039" stroke-width="1"/>
+    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+      <path d="M40 0H0V40" stroke="#17313A" stroke-width="1"/>
+    </pattern>
+    <pattern id="dots" width="26" height="26" patternUnits="userSpaceOnUse">
+      <circle cx="2" cy="2" r="1" fill="#21424A"/>
     </pattern>
   </defs>
 
   <rect width="1200" height="360" fill="url(#bg)"/>
-  <rect width="1200" height="360" fill="url(#grid)" opacity="0.42"/>
-  <path d="M0 286C146 252 254 258 405 284C586 316 722 312 897 269C1010 241 1095 239 1200 260" stroke="#17323C" stroke-width="2" opacity="0.55"/>
-  <path d="M0 78C136 100 272 97 407 73C570 44 739 45 904 82C1011 106 1104 109 1200 91" stroke="#102A32" stroke-width="2" opacity="0.7"/>
+  <rect width="1200" height="360" fill="url(#grid)" opacity="0.32"/>
+  <rect width="1200" height="360" fill="url(#dots)" opacity="0.25"/>
+  <path d="M0 292C122 260 244 261 382 292C545 329 692 324 854 278C1009 233 1101 244 1200 271" stroke="#17323A" stroke-width="2" opacity="0.54"/>
+  <path d="M0 78C145 105 268 101 420 68C589 31 754 43 901 82C1035 117 1124 111 1200 92" stroke="#102C34" stroke-width="2" opacity="0.7"/>
 
-  <g transform="translate(70 52)">
-    <circle cx="128" cy="128" r="120" fill="url(#logo-shell)"/>
-    <circle cx="128" cy="128" r="119" stroke="#1E3A40" stroke-width="2"/>
-    <circle cx="128" cy="128" r="99" stroke="#173137" stroke-width="1.5"/>
-    <circle cx="128" cy="128" r="72" stroke="#15303A" stroke-width="1.5"/>
-    <circle cx="128" cy="128" r="39" stroke="#142C35" stroke-width="1.5"/>
+  <g transform="translate(78 68)" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, Liberation Mono, monospace">
+    <text x="0" y="64" fill="#F4FFFB" font-size="72" font-weight="800" letter-spacing="0">AXIOM</text>
+    <rect x="3" y="83" width="286" height="5" rx="2.5" fill="url(#teal)"/>
+    <text x="2" y="126" fill="#DCECF0" font-size="21" font-weight="700">Architecture observability for AI codebases</text>
+    <text x="2" y="162" fill="#A8BBC4" font-size="16" font-weight="500">Turn imports into drift signals, visible debt, and next steps.</text>
 
-    <path d="M128 128L194 82" stroke="#39D7FF" stroke-width="2" stroke-linecap="round" opacity="0.85"/>
-    <path d="M128 128L187 91L156 157Z" fill="#39D7FF" opacity="0.08"/>
-
-    <circle cx="122" cy="130" r="77" stroke="#39D7FF" stroke-width="2.5" stroke-dasharray="9 9" opacity="0.5"/>
-    <circle cx="135" cy="122" r="77" stroke="url(#accent)" stroke-width="3" opacity="0.95"/>
-
-    <g stroke="#315966" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" opacity="0.8">
-      <path d="M91 106L121 88L159 107L176 145L142 164L101 147Z"/>
-      <path d="M121 88L142 164"/>
-      <path d="M91 106L159 107"/>
-      <path d="M101 147L176 145"/>
-    </g>
-    <path d="M91 106L142 164" stroke="url(#warning)" stroke-width="4" stroke-linecap="round" filter="url(#glow)"/>
-
-    <g fill="#071014" stroke-width="3">
-      <circle cx="91" cy="106" r="7" stroke="#FFD166"/>
-      <circle cx="121" cy="88" r="7" stroke="#7CFFC7"/>
-      <circle cx="159" cy="107" r="7" stroke="#39D7FF"/>
-      <circle cx="176" cy="145" r="7" stroke="#6AA7FF"/>
-      <circle cx="142" cy="164" r="7" stroke="#FF5F7E"/>
-      <circle cx="101" cy="147" r="7" stroke="#7CFFC7"/>
-    </g>
-
-    <path d="M79 183L118 71C121 63 135 63 138 71L177 183" stroke="url(#accent)" stroke-width="11" stroke-linecap="round" stroke-linejoin="round" filter="url(#glow)"/>
-    <path d="M103 143H153" stroke="#E9FFF8" stroke-width="8" stroke-linecap="round"/>
-    <path d="M103 143H153" stroke="#7CFFC7" stroke-width="3" stroke-linecap="round"/>
-    <path d="M38 128H52M204 128H218M128 38V52M128 204V218" stroke="#39D7FF" stroke-width="2" stroke-linecap="round" opacity="0.5"/>
-    <circle cx="128" cy="128" r="117" stroke="url(#accent)" stroke-width="2.5" opacity="0.75"/>
-  </g>
-
-  <g transform="translate(360 80)" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, Liberation Mono, monospace">
-    <text x="0" y="58" fill="#F5FFFC" font-size="68" font-weight="800" letter-spacing="0">AXIOM</text>
-    <rect x="2" y="78" width="318" height="5" rx="2.5" fill="url(#accent)"/>
-    <text x="2" y="122" fill="#DCE9EF" font-size="24" font-weight="700">Architecture observability for AI-era codebases</text>
-    <text x="2" y="156" fill="#9FB2BD" font-size="18" font-weight="500">Declared intent meets observed imports, drift signals, and visible debt.</text>
-
-    <g transform="translate(2 202)" fill="none" stroke-linecap="round" stroke-linejoin="round">
-      <path d="M0 0H122" stroke="#2E5B64" stroke-width="2"/>
-      <path d="M0 0H122" stroke="#7CFFC7" stroke-width="2" stroke-dasharray="8 8"/>
-      <text x="0" y="30" fill="#A7FFF0" font-size="14" font-weight="700">.axi intent</text>
-
-      <path d="M175 0H297" stroke="#39D7FF" stroke-width="2"/>
-      <circle cx="236" cy="0" r="7" stroke="#39D7FF" stroke-width="2"/>
-      <text x="175" y="30" fill="#CBEFFF" font-size="14" font-weight="700">source graph</text>
-
-      <path d="M350 0H472" stroke="url(#warning)" stroke-width="3"/>
-      <circle cx="410" cy="0" r="7" fill="#FF5F7E"/>
-      <text x="350" y="30" fill="#FFE2D6" font-size="14" font-weight="700">drift surfaced</text>
+    <g transform="translate(0 202)" font-size="14" font-weight="700">
+      <g>
+        <rect x="0" y="-16" width="170" height="34" rx="7" fill="#0C2025" stroke="#21434B"/>
+        <path d="M18 1H58" stroke="#85FFD4" stroke-width="2" stroke-dasharray="6 6"/>
+        <text x="72" y="5" fill="#BAFFF0">.axi intent</text>
+      </g>
+      <g transform="translate(194 0)">
+        <rect x="0" y="-16" width="190" height="34" rx="7" fill="#0C2025" stroke="#21434B"/>
+        <path d="M18 1H58" stroke="#37D6FF" stroke-width="2"/>
+        <circle cx="38" cy="1" r="5" stroke="#37D6FF" stroke-width="2"/>
+        <text x="72" y="5" fill="#C7F1FF">source graph</text>
+      </g>
+      <g transform="translate(408 0)">
+        <rect x="0" y="-16" width="188" height="34" rx="7" fill="#0C2025" stroke="#21434B"/>
+        <path d="M18 1H58" stroke="url(#drift)" stroke-width="3"/>
+        <circle cx="58" cy="1" r="5" fill="#FF5F7E"/>
+        <text x="72" y="5" fill="#FFE3D6">visible drift</text>
+      </g>
     </g>
   </g>
 
-  <g transform="translate(892 62)" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, Liberation Mono, monospace">
-    <circle cx="122" cy="122" r="94" stroke="#39D7FF" stroke-width="2.5" stroke-dasharray="11 10" opacity="0.46"/>
-    <circle cx="137" cy="111" r="94" stroke="url(#accent)" stroke-width="3"/>
-    <path d="M56 130L98 86L143 111L194 74" stroke="#335866" stroke-width="2.5" stroke-linecap="round"/>
-    <path d="M77 177L118 135L158 151L204 116" stroke="#335866" stroke-width="2.5" stroke-linecap="round"/>
-    <path d="M98 86L158 151" stroke="url(#warning)" stroke-width="4" stroke-linecap="round" filter="url(#glow)"/>
-    <g fill="#071014" stroke-width="3">
-      <circle cx="98" cy="86" r="8" stroke="#FFD166"/>
-      <circle cx="143" cy="111" r="8" stroke="#39D7FF"/>
-      <circle cx="194" cy="74" r="8" stroke="#7CFFC7"/>
-      <circle cx="118" cy="135" r="8" stroke="#6AA7FF"/>
-      <circle cx="158" cy="151" r="8" stroke="#FF5F7E"/>
-      <circle cx="77" cy="177" r="8" stroke="#7CFFC7"/>
-      <circle cx="204" cy="116" r="8" stroke="#39D7FF"/>
+  <g transform="translate(676 45)">
+    <rect x="0" y="0" width="456" height="270" rx="20" fill="url(#panel)" stroke="#1E3D46" stroke-width="1.5"/>
+    <rect x="18" y="18" width="420" height="234" rx="16" fill="#071217" stroke="#142F37"/>
+
+    <g transform="translate(46 34)">
+      <circle cx="130" cy="112" r="92" stroke="#28505B" stroke-width="1.4"/>
+      <circle cx="130" cy="112" r="66" stroke="#1F4049" stroke-width="1.2"/>
+      <circle cx="130" cy="112" r="38" stroke="#18343E" stroke-width="1.2"/>
+      <circle cx="122" cy="115" r="80" stroke="#37D6FF" stroke-width="2.5" stroke-dasharray="10 10" opacity="0.58"/>
+      <circle cx="140" cy="104" r="80" stroke="url(#teal)" stroke-width="3"/>
+      <path d="M130 112L194 74" stroke="#37D6FF" stroke-width="2" stroke-linecap="round" opacity="0.7"/>
+      <path d="M130 112L184 82L166 143Z" fill="#37D6FF" opacity="0.08"/>
+
+      <path d="M73 118L118 78L166 103L211 70" stroke="#315C68" stroke-width="2.4" stroke-linecap="round"/>
+      <path d="M84 170L130 132L171 154L218 128" stroke="#315C68" stroke-width="2.4" stroke-linecap="round"/>
+      <path d="M118 78L171 154" stroke="url(#drift)" stroke-width="4.5" stroke-linecap="round" filter="url(#signal-glow)"/>
+
+      <g font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, Liberation Mono, monospace" font-size="11" font-weight="800">
+        <g>
+          <circle cx="73" cy="118" r="14" fill="#0B191E" stroke="#85FFD4" stroke-width="2"/>
+          <text x="61" y="122" fill="#CBFFF2">UI</text>
+        </g>
+        <g>
+          <circle cx="118" cy="78" r="15" fill="#0B191E" stroke="#FFD166" stroke-width="2"/>
+          <text x="104" y="82" fill="#FFE3A6">API</text>
+        </g>
+        <g>
+          <circle cx="166" cy="103" r="15" fill="#0B191E" stroke="#37D6FF" stroke-width="2"/>
+          <text x="151" y="107" fill="#C7F1FF">CORE</text>
+        </g>
+        <g>
+          <circle cx="211" cy="70" r="14" fill="#0B191E" stroke="#85FFD4" stroke-width="2"/>
+          <text x="198" y="74" fill="#CBFFF2">DB</text>
+        </g>
+        <g>
+          <circle cx="84" cy="170" r="14" fill="#0B191E" stroke="#7B9BFF" stroke-width="2"/>
+          <text x="71" y="174" fill="#D4DEFF">GAME</text>
+        </g>
+        <g>
+          <circle cx="171" cy="154" r="15" fill="#0B191E" stroke="#FF5F7E" stroke-width="2"/>
+          <text x="156" y="158" fill="#FFD7DF">UTIL</text>
+        </g>
+        <g>
+          <circle cx="218" cy="128" r="14" fill="#0B191E" stroke="#37D6FF" stroke-width="2"/>
+          <text x="205" y="132" fill="#C7F1FF">FX</text>
+        </g>
+      </g>
     </g>
-    <text x="28" y="256" fill="#9FB2BD" font-size="13" font-weight="700">declared vs observed</text>
+
+    <g transform="translate(302 57)" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, Liberation Mono, monospace">
+      <text x="0" y="0" fill="#F3FFFC" font-size="16" font-weight="800">READ THE GRAPH</text>
+      <rect x="0" y="15" width="96" height="3" rx="1.5" fill="url(#teal)"/>
+
+      <g transform="translate(0 52)" font-size="12" font-weight="700">
+        <circle cx="7" cy="-4" r="5" fill="#FF5F7E"/>
+        <text x="21" y="0" fill="#FFE1E8">red signals first</text>
+
+        <circle cx="7" cy="36" r="5" fill="#37D6FF"/>
+        <text x="21" y="40" fill="#C7F1FF">find the center</text>
+
+        <circle cx="7" cy="76" r="5" fill="#85FFD4"/>
+        <text x="21" y="80" fill="#D8FFF5">compare intent</text>
+      </g>
+
+      <g transform="translate(0 166)">
+        <rect x="0" y="0" width="116" height="42" rx="10" fill="#0B1D23" stroke="#264B55"/>
+        <text x="14" y="18" fill="#92AAB4" font-size="11" font-weight="700">graph center</text>
+        <text x="14" y="33" fill="#F4FFFB" font-size="15" font-weight="800">Core / Utils</text>
+      </g>
+    </g>
   </g>
 </svg>

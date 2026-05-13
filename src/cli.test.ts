@@ -111,7 +111,7 @@ test("cli observe --warn-coupling-concentration reports advisory coupling warnin
   assert.equal(result.status, 0);
 
   const payload = JSON.parse(result.stdout);
-  assert.equal(payload.schemaVersion, "axiom.graph.v10");
+  assert.equal(payload.schemaVersion, "axiom.graph.v11");
   assert.deepEqual(payload.filters, { violationsOnly: true, attention: true });
   assert.equal(payload.summary.violations, 0);
   assert.equal(payload.summary.warnings, 1);
@@ -131,7 +131,7 @@ test("cli observe --warn-deep-internal-imports reports advisory deep import warn
   assert.equal(result.status, 0);
 
   const payload = JSON.parse(result.stdout);
-  assert.equal(payload.schemaVersion, "axiom.graph.v10");
+  assert.equal(payload.schemaVersion, "axiom.graph.v11");
   assert.equal(payload.summary.violations, 0);
   assert.equal(payload.summary.warnings, 1);
   assert.equal(payload.warnings[0].code, "deep_internal_import");
@@ -149,7 +149,7 @@ test("cli observe --warn-unresolved-imports reports advisory unresolved import w
   assert.equal(result.status, 0);
 
   const payload = JSON.parse(result.stdout);
-  assert.equal(payload.schemaVersion, "axiom.graph.v10");
+  assert.equal(payload.schemaVersion, "axiom.graph.v11");
   assert.equal(payload.summary.violations, 0);
   assert.equal(payload.summary.warnings, 1);
   assert.equal(payload.warnings[0].code, "unresolved_import");
@@ -179,7 +179,7 @@ test("cli graph --json returns parseable graph output", () => {
   assert.equal(result.status, 0);
 
   const payload = JSON.parse(result.stdout);
-  assert.equal(payload.schemaVersion, "axiom.graph.v10");
+  assert.equal(payload.schemaVersion, "axiom.graph.v11");
   assert.equal(payload.summary.observedDependencies, 3);
   assert.equal(payload.summary.shownObservedDependencies, 3);
   assert.equal(payload.violations[0].code, "unexposed_import");
@@ -269,7 +269,7 @@ test("cli graph --violations-only --json returns filtered graph output", () => {
   assert.equal(result.status, 0);
 
   const payload = JSON.parse(result.stdout);
-  assert.equal(payload.schemaVersion, "axiom.graph.v10");
+  assert.equal(payload.schemaVersion, "axiom.graph.v11");
   assert.deepEqual(payload.filters, { violationsOnly: true, attention: false });
   assert.equal(payload.summary.observedDependencies, 3);
   assert.equal(payload.summary.shownObservedDependencies, 2);
@@ -292,7 +292,7 @@ test("cli graph --attention --json marks the attention filter", () => {
   assert.equal(result.status, 0);
 
   const payload = JSON.parse(result.stdout);
-  assert.equal(payload.schemaVersion, "axiom.graph.v10");
+  assert.equal(payload.schemaVersion, "axiom.graph.v11");
   assert.deepEqual(payload.filters, { violationsOnly: true, attention: true });
   assert.equal(payload.summary.shownObservedDependencies, 2);
   assert.equal(payload.allObservedDependencies.length, 3);
@@ -309,7 +309,7 @@ test("cli observe --json marks the attention filter", () => {
   assert.equal(result.status, 0);
 
   const payload = JSON.parse(result.stdout);
-  assert.equal(payload.schemaVersion, "axiom.graph.v10");
+  assert.equal(payload.schemaVersion, "axiom.graph.v11");
   assert.deepEqual(payload.filters, { violationsOnly: true, attention: true });
   assert.equal(payload.summary.shownObservedDependencies, 2);
 });
@@ -332,7 +332,7 @@ test("cli observe --baseline reports observed edge drift without failing", () =>
   assert.equal(result.status, 0);
 
   const payload = JSON.parse(result.stdout);
-  assert.equal(payload.schemaVersion, "axiom.graph.v10");
+  assert.equal(payload.schemaVersion, "axiom.graph.v11");
   assert.equal(payload.drift.kind, "advisory_observed_edge_drift");
   assert.deepEqual(
     payload.drift.newObservedEdges.map((edge: { fromModule: string; toModule: string }) => `${edge.fromModule}->${edge.toModule}`),
@@ -412,7 +412,7 @@ test("cli diff --json exposes the same advisory drift payload as graph JSON", ()
   assert.equal(result.status, 0);
 
   const payload = JSON.parse(result.stdout);
-  assert.equal(payload.schemaVersion, "axiom.graph.v10");
+  assert.equal(payload.schemaVersion, "axiom.graph.v11");
   assert.equal(payload.drift.kind, "advisory_observed_edge_drift");
   assert.deepEqual(
     payload.drift.newObservedEdges.map((edge: { fromModule: string; toModule: string }) => `${edge.fromModule}->${edge.toModule}`),

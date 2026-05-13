@@ -152,7 +152,7 @@ test("infer JSON includes the generated .axi draft", () => {
   const result = runInfer({ root: path.join(repoRoot, "fixtures/basic-ts-valid") });
   const payload = toInferJson(result);
 
-  assert.equal(payload.schemaVersion, "axiom.infer.v5");
+  assert.equal(payload.schemaVersion, "axiom.infer.v6");
   assert.deepEqual(payload.starterContract, {
     kind: "current_graph_snapshot",
     notice: [
@@ -177,6 +177,8 @@ test("infer JSON includes the generated .axi draft", () => {
     ]
   });
   assert.equal(payload.summary.sourceFiles, 3);
+  assert.equal(payload.summary.architecturePressureNotes, 0);
+  assert.deepEqual(payload.architecturePressureNotes, []);
   assert.equal(payload.summary.modules, 3);
   assert.deepEqual(payload.modules.find((module) => module.name === "Simulation")?.dependencyEvidence, [
     {
@@ -195,6 +197,43 @@ test("infer JSON includes the generated .axi draft", () => {
   assert.deepEqual(payload.modules.find((module) => module.name === "Physics")?.dependencyEvidence, []);
   assert.match(payload.axi, /not a recommended architecture/);
   assert.match(payload.axi, /module Physics/);
+});
+
+test("infer includes architecture pressure notes for large source files", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "axi-infer-large-file-"));
+
+  try {
+    fs.mkdirSync(path.join(root, "src"), { recursive: true });
+    fs.writeFileSync(
+      path.join(root, "src/main.ts"),
+      Array.from({ length: 805 }, (_, index) => `export const value${index} = ${index};`).join("\n")
+    );
+
+    const result = runInfer({ root });
+    const output = formatInferResult(result);
+    const payload = toInferJson(result);
+
+    assert.equal(result.architecturePressureNotes.length, 1);
+    assert.deepEqual(result.architecturePressureNotes[0], {
+      kind: "large_source_file",
+      filePath: "src/main.ts",
+      lineCount: 805,
+      threshold: 800,
+      importsScanned: 0,
+      exportsScanned: 0,
+      functionLikeCount: 0,
+      classCount: 0,
+      message:
+        "src/main.ts has 805 lines; inferred module boundaries may miss responsibilities concentrated inside this file."
+    });
+    assert.match(output, /# architecture pressure notes:/);
+    assert.match(output, /# - src\/main\.ts: 805 lines, 0 imports, 0 functions, 0 classes/);
+    assert.match(output, /quiet inferred import graph can still hide responsibilities inside very large files/);
+    assert.equal(payload.summary.architecturePressureNotes, 1);
+    assert.equal(payload.architecturePressureNotes[0]?.filePath, "src/main.ts");
+  } finally {
+    fs.rmSync(root, { force: true, recursive: true });
+  }
 });
 
 test("infer uses TypeScript path aliases from tsconfig", () => {

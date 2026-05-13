@@ -1,6 +1,6 @@
-import type { InferResult, InferredDependency, InferredModule } from "../infer/infer.js";
+import type { InferArchitecturePressureNote, InferResult, InferredDependency, InferredModule } from "../infer/infer.js";
 
-export const inferJsonSchemaVersion = "axiom.infer.v5";
+export const inferJsonSchemaVersion = "axiom.infer.v6";
 
 export interface InferJsonModule extends InferredModule {
   dependencyEvidence: InferJsonDependencyEvidence[];
@@ -23,7 +23,9 @@ export interface InferJsonResult {
     modules: number;
     observedDependencies: number;
     collapsedCycles: number;
+    architecturePressureNotes: number;
   };
+  architecturePressureNotes: InferArchitecturePressureNote[];
   modules: InferJsonModule[];
   observedDependencies: InferredDependency[];
   collapsedCycles: InferResult["collapsedCycles"];
@@ -53,6 +55,18 @@ export function formatInferResult(result: InferResult): string {
     lines.push(`# ${command}`);
   }
   lines.push("");
+
+  if (result.architecturePressureNotes.length > 0) {
+    lines.push("# architecture pressure notes:");
+    lines.push("# These are advisory starter-contract notes, not proof that the current files are wrong.");
+    for (const note of result.architecturePressureNotes) {
+      lines.push(
+        `# - ${note.filePath}: ${note.lineCount} lines, ${note.importsScanned} imports, ${note.functionLikeCount} functions, ${note.classCount} classes`
+      );
+    }
+    lines.push("# review: inferred module boundaries can miss responsibilities concentrated inside very large files.");
+    lines.push("");
+  }
 
   for (const cycle of result.collapsedCycles) {
     lines.push(`# collapsed cycle: ${cycle.module}`);
@@ -129,8 +143,10 @@ export function toInferJson(result: InferResult): InferJsonResult {
       candidateModules: result.candidateModules,
       modules: result.modules.length,
       observedDependencies: result.observedDependencies.length,
-      collapsedCycles: result.collapsedCycles.length
+      collapsedCycles: result.collapsedCycles.length,
+      architecturePressureNotes: result.architecturePressureNotes.length
     },
+    architecturePressureNotes: result.architecturePressureNotes,
     modules: buildInferJsonModules(result),
     observedDependencies: result.observedDependencies,
     collapsedCycles: result.collapsedCycles,

@@ -385,7 +385,7 @@ For monorepos:
 axi infer --root . --group-by workspace
 ```
 
-Inference prints a draft to stdout and does not write files. The output says up front that it mirrors the current dependency graph, not recommended architecture. It also includes an authoring checklist, next commands, and evidence comments before each inferred `depends on` edge so reviewers can see which import sites created the edge. Treat it as a starting point: rename modules, add layers, tighten `depends on`, and add `exposes` or `hides` after review. When `axi infer` collapses cyclic candidate groups, it lists the included groups, a cycle path sample, and observed internal edges so the cycle is useful architecture feedback instead of just a strange generated name.
+Inference prints a draft to stdout and does not write files. The output says up front that it mirrors the current dependency graph, not recommended architecture. It also includes an authoring checklist, next commands, and evidence comments before each inferred `depends on` edge so reviewers can see which import sites created the edge. Treat it as a starting point: rename modules, add layers, tighten `depends on`, and add `exposes` or `hides` after review. When `axi infer` collapses cyclic candidate groups, it lists the included groups, a cycle path sample, and observed internal edges so the cycle is useful architecture feedback instead of just a strange generated name. If very large files appear, infer also prints advisory architecture pressure notes so a quiet folder graph does not hide responsibilities concentrated inside one file.
 
 For a quick first-value loop, save a baseline and then use `axi diff` after a change:
 

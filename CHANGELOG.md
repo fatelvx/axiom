@@ -77,6 +77,8 @@
 - Added `architectureSummary.reviewStory` and bumped graph JSON to `axiom.graph.v12` so graph / observe / diff output can summarize setup, top review pressures, and the next step for humans and future agent adapters.
 - Added an Agent And MCP Integration guide covering read-only agent loops, baseline lifecycle, review-story consumption, and MCP v0 guardrails.
 - Added no-contract scan summaries and opt-in `--warn-large-files` advisory warnings so quiet import graphs do not hide intra-file responsibility pressure.
+- Added advisory architecture pressure notes to `axi infer` and bumped infer JSON to `axiom.infer.v6`.
+- Refined the logo and banner visual system so radar nodes no longer rely on off-center text inside circles.
 
 ## 0.5.8 - Monorepo Spec Discovery
 

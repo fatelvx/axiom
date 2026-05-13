@@ -1,9 +1,10 @@
 import path from "node:path";
-import type { ImportRecord } from "../axi/types.js";
+import { largeModuleFileLineThreshold } from "../axi/constants.js";
+import type { ImportRecord, SourceFileMetric } from "../axi/types.js";
 import { applyDiscoveryOverrides, loadConfig } from "../config/config.js";
 import { findSourceFiles } from "../fs/discover.js";
 import { createImportResolver, loadPackageResolver, type PackageMetadata } from "../scanner/importResolver.js";
-import { scanImports } from "../scanner/importScanner.js";
+import { scanSourceFile } from "../scanner/importScanner.js";
 import { normalizePathForMatch } from "../validator/glob.js";
 
 export type InferGroupBy = "folder" | "workspace";
@@ -65,12 +66,25 @@ export interface InferStarterContract {
   nextCommands: string[];
 }
 
+export interface InferArchitecturePressureNote {
+  kind: "large_source_file";
+  filePath: string;
+  lineCount: number;
+  threshold: number;
+  importsScanned: number;
+  exportsScanned: number;
+  functionLikeCount: number;
+  classCount: number;
+  message: string;
+}
+
 export interface InferResult {
   root: string;
   starterContract: InferStarterContract;
   sourceFiles: string[];
   importCount: number;
   candidateModules: number;
+  architecturePressureNotes: InferArchitecturePressureNote[];
   collapsedCycles: CollapsedCycle[];
   modules: InferredModule[];
   observedDependencies: InferredDependency[];
@@ -141,7 +155,9 @@ export function runInfer(options: InferOptions): InferResult {
     workspaceSourceRoots
   );
   const fileOwners = buildFileOwners(candidateGroups);
-  const imports = sourceFiles.flatMap((sourceFile) => scanImports(sourceFile, { resolver }));
+  const sourceScans = sourceFiles.map((sourceFile) => scanSourceFile(sourceFile, { resolver }));
+  const imports = sourceScans.flatMap((scan) => scan.imports);
+  const sourceFileMetrics = sourceScans.map((scan) => scan.metrics);
   const candidateEdges = buildCandidateEdges(root, imports, fileOwners);
   const components = collapseCycles(candidateGroups, candidateEdges);
   const keyToComponent = mapKeysToComponents(components);
@@ -150,20 +166,25 @@ export function runInfer(options: InferOptions): InferResult {
   const collapsedCycles = components
     .filter((component) => component.keys.length > 1)
     .map((component) => buildCollapsedCycle(candidateGroups, candidateEdges, component));
+  const architecturePressureNotes = findArchitecturePressureNotes(root, sourceFileMetrics);
 
   return {
     root,
-    starterContract: buildStarterContract(collapsedCycles),
+    starterContract: buildStarterContract(collapsedCycles, architecturePressureNotes),
     sourceFiles,
     importCount: imports.length,
     candidateModules: candidateGroups.length,
+    architecturePressureNotes,
     collapsedCycles,
     modules,
     observedDependencies
   };
 }
 
-function buildStarterContract(collapsedCycles: CollapsedCycle[]): InferStarterContract {
+function buildStarterContract(
+  collapsedCycles: CollapsedCycle[],
+  architecturePressureNotes: InferArchitecturePressureNote[]
+): InferStarterContract {
   const authoringChecklist = [...inferStarterContractAuthoringChecklist];
 
   if (collapsedCycles.length > 0) {
@@ -176,12 +197,49 @@ function buildStarterContract(collapsedCycles: CollapsedCycle[]): InferStarterCo
     );
   }
 
+  if (architecturePressureNotes.length > 0) {
+    authoringChecklist.push(
+      "Inspect architecture pressure notes; a quiet inferred import graph can still hide responsibilities inside very large files."
+    );
+  }
+
   return {
     kind: "current_graph_snapshot",
     notice: [...inferStarterContractNotice],
     authoringChecklist,
     nextCommands: [...inferStarterContractNextCommands]
   };
+}
+
+function findArchitecturePressureNotes(
+  root: string,
+  sourceFileMetrics: SourceFileMetric[]
+): InferArchitecturePressureNote[] {
+  return sourceFileMetrics
+    .filter((metric) => metric.lineCount >= largeModuleFileLineThreshold)
+    .sort((left, right) => {
+      if (right.lineCount !== left.lineCount) {
+        return right.lineCount - left.lineCount;
+      }
+
+      return relativePath(root, left.filePath).localeCompare(relativePath(root, right.filePath));
+    })
+    .slice(0, 8)
+    .map((metric) => {
+      const filePath = relativePath(root, metric.filePath);
+      return {
+        kind: "large_source_file",
+        filePath,
+        lineCount: metric.lineCount,
+        threshold: largeModuleFileLineThreshold,
+        importsScanned: metric.importCount,
+        exportsScanned: metric.exportCount,
+        functionLikeCount: metric.functionLikeCount,
+        classCount: metric.classCount,
+        message:
+          `${filePath} has ${metric.lineCount} lines; inferred module boundaries may miss responsibilities concentrated inside this file.`
+      };
+    });
 }
 
 function chooseInferenceFiles(root: string, sourceFiles: string[], groupBy: InferGroupBy): string[] {

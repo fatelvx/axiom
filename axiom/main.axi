@@ -1,6 +1,7 @@
 layers Core -> Engine -> Interface
 
 module CoreTypes
+path "src/axi/constants.ts"
 path "src/axi/types.ts"
 layer Core
 purpose "shared architecture contract and diagnostic types"

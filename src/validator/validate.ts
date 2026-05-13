@@ -13,6 +13,7 @@ import type {
   Violation,
   ViolationCode
 } from "../axi/types.js";
+import { largeModuleFileLineThreshold } from "../axi/constants.js";
 import { globToRegExp, normalizePathForMatch } from "./glob.js";
 import type { OwnershipIndex } from "./ownership.js";
 
@@ -27,7 +28,6 @@ const suppressibleCodes = new Set<ViolationCode>([
 const expiringSuppressionWarningDays = 30;
 const couplingConcentrationModuleThreshold = 4;
 const publicEntrypointInternalTargetThreshold = 4;
-const largeModuleFileLineThreshold = 800;
 
 interface DateValidationOptions {
   today?: string;

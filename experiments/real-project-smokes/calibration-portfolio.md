@@ -28,13 +28,14 @@ Each smoke should answer two questions before any implementation change:
 | ofetch / ky / Preact Signals batch | small libraries and multi-package source tree | flat libraries may need deeper grouping; Preact Signals surfaced a real package cycle | advisory-signal-calibration | Use as graph interpretation and inferred-name calibration |
 | pnpm workspace smokes | large pnpm monorepo | package exports pointed at built `lib` files while source clone had `src` mirrors | general-resolver-scanner | Implemented conservative build-output source mirror resolution |
 | Vite type-only package imports smoke | pnpm workspace with declaration aliases | `#types/*` and `#dep-types/*` point to `.d.ts` files for type-only imports | general-resolver-scanner | Implemented declaration resolution only for scanner-confirmed type-only imports |
+| yargs production diff smoke | CLI parser library with TypeScript source and ESM/Deno shims | Deno platform shim imports clone-missing `build/lib/yerror.js` while `lib/yerror.ts` exists | common-ecosystem-convention candidate | Do not change code yet; track relative build-output source mirrors for repeated evidence |
 
 ## Missing Coverage
 
 The current portfolio is still too infrastructure- and library-heavy. Before broad integration expansion, add no-install smokes for:
 
 - framework app repo, such as a Next.js or Remix-style app
-- CLI tool repo with mixed command modules
+- additional CLI tool repo with command modules, preferably one that does not import clone-missing build output
 - package with mixed CJS and ESM entry points
 - generated-code-heavy repo where source scope matters
 - non-pnpm workspace, such as npm workspaces, Yarn workspaces, or Lerna-style packages

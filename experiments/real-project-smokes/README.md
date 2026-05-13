@@ -124,3 +124,4 @@ npm run real-project:diff-smoke -- \
 - [v11 graph interpretation replay, 2026-05-13](results/2026-05-13-v11-graph-interpretation-replay.md)
 - [pnpm workspace resolver smokes, 2026-05-13](results/2026-05-13-pnpm-workspace-smokes.md)
 - [Vite type-only package imports smoke, 2026-05-14](results/2026-05-14-vite-type-imports.md)
+- [yargs production diff smoke, 2026-05-14](results/yargs-prod-diff-smoke-2026-05-14.md)

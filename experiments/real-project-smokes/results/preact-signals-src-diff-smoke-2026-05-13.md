@@ -8,10 +8,11 @@ Source scope: include packages/*/src/**; default excludes only
 Inference: group-by workspace
 
 This is a smoke test, not a verdict. The baseline contract is inferred from the baseline ref and reused as an external `--spec` against the current ref.
+Baseline-spec violations are mismatches against that inferred baseline contract, not judgments about the target repository.
 
 ## Summary
 
-| Ref | Commit | Package | Modules | Observed imports | Hard violations | Warnings |
+| Ref | Commit | Package | Modules | Observed imports | Baseline-spec violations | Warnings |
 | --- | --- | --- | ---: | ---: | ---: | ---: |
 | @preact/signals@2.7.0 | 28b5900 | n/a | 8 | 12 | 0 | 1 |
 | @preact/signals@2.9.0 | 16b270a | n/a | 8 | 17 | 1 | 1 |

@@ -538,10 +538,11 @@ function formatMarkdownReport(report) {
     `Inference: ${formatInferenceScope(report)}`,
     "",
     "This is a smoke test, not a verdict. The baseline contract is inferred from the baseline ref and reused as an external `--spec` against the current ref.",
+    "Baseline-spec violations are mismatches against that inferred baseline contract, not judgments about the target repository.",
     "",
     "## Summary",
     "",
-    "| Ref | Commit | Package | Modules | Observed imports | Hard violations | Warnings |",
+    "| Ref | Commit | Package | Modules | Observed imports | Baseline-spec violations | Warnings |",
     "| --- | --- | --- | ---: | ---: | ---: | ---: |",
     [
       report.baseline.ref,

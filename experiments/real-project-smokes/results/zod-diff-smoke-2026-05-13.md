@@ -6,10 +6,11 @@ Baseline: v4.0.1 (b259211)
 Current: v4.4.3 (1fb56a5)
 
 This is a smoke test, not a verdict. The baseline contract is inferred from the baseline ref and reused as an external `--spec` against the current ref.
+Baseline-spec violations are mismatches against that inferred baseline contract, not judgments about the target repository.
 
 ## Summary
 
-| Ref | Commit | Package | Modules | Observed imports | Hard violations | Warnings |
+| Ref | Commit | Package | Modules | Observed imports | Baseline-spec violations | Warnings |
 | --- | --- | --- | ---: | ---: | ---: | ---: |
 | v4.0.1 | b259211 | n/a | 15 | 51 | 0 | 2 |
 | v4.4.3 | 1fb56a5 | n/a | 15 | 54 | 0 | 2 |

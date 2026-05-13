@@ -7,10 +7,11 @@ Current: v4.9.12 (4b796cf)
 Source scope: include all supported source; default excludes only
 
 This is a smoke test, not a verdict. The baseline contract is inferred from the baseline ref and reused as an external `--spec` against the current ref.
+Baseline-spec violations are mismatches against that inferred baseline contract, not judgments about the target repository.
 
 ## Summary
 
-| Ref | Commit | Package | Modules | Observed imports | Hard violations | Warnings |
+| Ref | Commit | Package | Modules | Observed imports | Baseline-spec violations | Warnings |
 | --- | --- | --- | ---: | ---: | ---: | ---: |
 | v4.8.4 | 530ab09 | 4.8.4 | 6 | 85 | 0 | 38 |
 | v4.9.12 | 4b796cf | 4.9.12 | 6 | 77 | 0 | 38 |
@@ -86,4 +87,3 @@ This is a smoke test, not a verdict. The baseline contract is inferred from the 
 - New or removed edges are advisory drift signals, not automatic good/bad judgments.
 - Warning counts are advisory pressure signals and do not fail CI by themselves.
 - Use this harness to calibrate Axiom behavior before turning any signal into a hard gate.
-

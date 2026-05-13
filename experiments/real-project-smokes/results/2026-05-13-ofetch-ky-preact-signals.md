@@ -30,7 +30,7 @@ Signals -> SignalsDebug
 via packages/preact/src/internal.ts:3 importing ../../debug/src/devtools
 ```
 
-Because the baseline contract was inferred from `@preact/signals@2.7.0`, the current `@preact/signals@2.9.0` source shows this as a new undeclared edge. The same import is also surfaced as `deep_internal_import` because it reaches into another package's source path instead of a likely public entry point.
+Because the baseline contract was inferred from `@preact/signals@2.7.0`, the current `@preact/signals@2.9.0` source shows this as a new baseline-spec mismatch / undeclared edge. The same import is also surfaced as `deep_internal_import` because it reaches into another package's source path instead of a likely public entry point.
 
 This is not a claim that the Preact Signals change is wrong. It shows that Axiom can make a new package-level source relationship visible and point to the exact import site that created it.
 

@@ -5,10 +5,11 @@ Generated (UTC): 2026-05-12T19:34:07.954Z
 This pilot calibrates the latest public API surface and public-entry bypass signals on real repositories before deciding whether to run another large MiroFish backtest.
 
 It is not a verdict about nanoid or zod maintainership. External probe contracts are intentionally small and are used to test signal shape, not to claim maintainer intent.
+Contract violation counts in this report are scoped to those probe or inferred contracts.
 
 ## Summary
 
-| Project | Ref | Commit | Mode | Source files | Imports | Unique edges | Hard violations | Intentional debt | Warnings | Public API warnings | Deep imports | Coupling | Check ms | Graph ms |
+| Project | Ref | Commit | Mode | Source files | Imports | Unique edges | Contract violations | Intentional debt | Warnings | Public API warnings | Deep imports | Coupling | Check ms | Graph ms |
 | --- | --- | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
 | nanoid | 964d1e0 | 964d1e0 | external-public-surface-contract | 18 | 56 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 1122.9 | 1011.4 |
 | zod | v4.4.3 | 1fb56a5c | inferred-workspace-contract | 406 | 1103 | 7 | 0 | 0 | 2 | 0 | 1 | 1 | 3152.2 | 3420.5 |

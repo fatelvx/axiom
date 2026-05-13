@@ -8,10 +8,11 @@ Source scope: include source/**; default excludes only
 Inference: group-by folder, group-depth 2
 
 This is a smoke test, not a verdict. The baseline contract is inferred from the baseline ref and reused as an external `--spec` against the current ref.
+Baseline-spec violations are mismatches against that inferred baseline contract, not judgments about the target repository.
 
 ## Summary
 
-| Ref | Commit | Package | Modules | Observed imports | Hard violations | Warnings |
+| Ref | Commit | Package | Modules | Observed imports | Baseline-spec violations | Warnings |
 | --- | --- | --- | ---: | ---: | ---: | ---: |
 | v1.14.0 | c52a694 | 1.14.0 | 1 | 0 | 0 | 0 |
 | v1.14.3 | eb5c3eb | 1.14.3 | 1 | 0 | 0 | 0 |

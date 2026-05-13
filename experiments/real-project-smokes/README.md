@@ -76,6 +76,8 @@ The script clones the baseline and current refs, optionally writes a small tempo
 
 This is closer to an Axiom pilot workflow than the version smoke harness. It asks: "If this was the contract snapshot we cared about, what architecture edges and advisory signals changed later?" The answer is still a smoke calibration result, not a maintainer-intent claim.
 
+In generated diff smoke summaries, "baseline-spec violations" means mismatches against the inferred baseline contract used for that smoke. It should be read as scoped drift calibration, not as a package-quality or maintainer-intent verdict.
+
 For complex repositories, run both a whole-repo view and a focused source view when possible. Whole-repo scans can reveal test, benchmark, and runtime harness coupling to source internals. Focused scans such as `--include "src/**"` are better for asking whether the production source graph itself drifted.
 
 Example focused source run:

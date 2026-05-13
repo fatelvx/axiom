@@ -16,7 +16,8 @@ test("loadConfig returns defaults when no config file exists", () => {
       warnUnresolvedImports: false,
       warnPublicApiSurface: false,
       warnCouplingConcentration: false,
-      warnDeepInternalImports: false
+      warnDeepInternalImports: false,
+      warnLargeFiles: false
     });
   } finally {
     fs.rmSync(root, { force: true, recursive: true });
@@ -34,11 +35,12 @@ test("loadConfig reads axiom.config.json from the project root", () => {
         exclude: ["src/generated/**"],
         specs: ["architecture/**/*.axi"],
         tsconfig: "tsconfig.app.json",
-      intentionalViolationExpiryWarningDays: 14,
-      warnUnresolvedImports: true,
-      warnPublicApiSurface: true,
-      warnCouplingConcentration: true,
-      warnDeepInternalImports: true
+        intentionalViolationExpiryWarningDays: 14,
+        warnUnresolvedImports: true,
+        warnPublicApiSurface: true,
+        warnCouplingConcentration: true,
+        warnDeepInternalImports: true,
+        warnLargeFiles: true
       })
     );
 
@@ -53,6 +55,7 @@ test("loadConfig reads axiom.config.json from the project root", () => {
     assert.equal(config.warnPublicApiSurface, true);
     assert.equal(config.warnCouplingConcentration, true);
     assert.equal(config.warnDeepInternalImports, true);
+    assert.equal(config.warnLargeFiles, true);
     assert.equal(config.filePath, path.join(root, "axiom.config.json"));
   } finally {
     fs.rmSync(root, { force: true, recursive: true });
@@ -81,7 +84,8 @@ test("applyDiscoveryOverrides appends CLI source scope patterns", () => {
     warnUnresolvedImports: false,
     warnPublicApiSurface: false,
     warnCouplingConcentration: false,
-    warnDeepInternalImports: false
+    warnDeepInternalImports: false,
+    warnLargeFiles: false
   };
 
   assert.deepEqual(
@@ -164,6 +168,18 @@ test("loadConfig rejects invalid deep internal import warning setting", () => {
     fs.writeFileSync(path.join(root, "axiom.config.json"), JSON.stringify({ warnDeepInternalImports: "yes" }));
 
     assert.throws(() => loadConfig(root), /warnDeepInternalImports/);
+  } finally {
+    fs.rmSync(root, { force: true, recursive: true });
+  }
+});
+
+test("loadConfig rejects invalid large file warning setting", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "axi-config-invalid-large-files-"));
+
+  try {
+    fs.writeFileSync(path.join(root, "axiom.config.json"), JSON.stringify({ warnLargeFiles: "yes" }));
+
+    assert.throws(() => loadConfig(root), /warnLargeFiles/);
   } finally {
     fs.rmSync(root, { force: true, recursive: true });
   }

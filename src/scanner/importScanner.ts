@@ -17,6 +17,8 @@ export function scanSourceFile(filePath: string, options: ScanImportsOptions = {
   const sourceFile = ts.createSourceFile(filePath, text, ts.ScriptTarget.Latest, true, getScriptKind(filePath));
   const imports: ImportRecord[] = [];
   const localExports: LocalExportRecord[] = [];
+  let functionLikeCount = 0;
+  let classCount = 0;
   const resolver = options.resolver ?? { resolve: resolveRelativeImport };
 
   function recordImport(
@@ -59,6 +61,14 @@ export function scanSourceFile(filePath: string, options: ScanImportsOptions = {
   }
 
   function visit(node: ts.Node): void {
+    if (isFunctionLikeNode(node)) {
+      functionLikeCount += 1;
+    }
+
+    if (ts.isClassDeclaration(node) || ts.isClassExpression(node)) {
+      classCount += 1;
+    }
+
     if (ts.isImportDeclaration(node)) {
       const specifier = readStringLiteral(node.moduleSpecifier);
       if (specifier) {
@@ -107,7 +117,42 @@ export function scanSourceFile(filePath: string, options: ScanImportsOptions = {
 
   visit(sourceFile);
 
-  return { imports, localExports };
+  return {
+    imports,
+    localExports,
+    metrics: {
+      filePath,
+      lineCount: countLines(text),
+      importCount: imports.length,
+      exportCount: countExportRecords(imports, localExports),
+      functionLikeCount,
+      classCount
+    }
+  };
+}
+
+function countLines(text: string): number {
+  if (text.length === 0) {
+    return 0;
+  }
+
+  return text.split(/\r\n|\r|\n/).length;
+}
+
+function countExportRecords(imports: ImportRecord[], localExports: LocalExportRecord[]): number {
+  return imports.filter((importRecord) => importRecord.kind === "export").length + localExports.length;
+}
+
+function isFunctionLikeNode(node: ts.Node): boolean {
+  return (
+    ts.isFunctionDeclaration(node) ||
+    ts.isFunctionExpression(node) ||
+    ts.isArrowFunction(node) ||
+    ts.isMethodDeclaration(node) ||
+    ts.isConstructorDeclaration(node) ||
+    ts.isGetAccessorDeclaration(node) ||
+    ts.isSetAccessorDeclaration(node)
+  );
 }
 
 function readImportBindings(node: ts.ImportDeclaration): ImportBinding[] {

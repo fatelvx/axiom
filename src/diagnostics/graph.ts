@@ -859,7 +859,7 @@ function buildArchitectureReviewStory(input: {
     pressures,
     nextStep: formatReviewStoryNextStep(input, pressures),
     caveat:
-      "This story is a review aid over static imports. It points to likely pressure, not proof that the architecture is good or bad."
+      "This story is a review aid over static imports. It points to likely pressure, not proof that the architecture is good or bad; a quiet import graph can still hide intra-file responsibility concentration."
   };
 }
 
@@ -901,10 +901,10 @@ function formatReviewStorySummary(
   }
 
   if (input.summary.observedDependencies === 0) {
-    return "This scoped scan is quiet and observed no cross-module import edges. Confirm the scope covers the architecture you care about.";
+    return "This scoped import graph is quiet and observed no cross-module import edges. Confirm the scope covers the architecture you care about; this does not inspect intra-file responsibility concentration unless large-file warnings are enabled.";
   }
 
-  return "This scoped graph is quiet. Confirm the graph center matches intended architecture before saving or updating a baseline.";
+  return "This scoped import graph is quiet. Confirm the graph center matches intended architecture before saving or updating a baseline; quiet imports do not prove intra-file responsibilities are healthy.";
 }
 
 function formatReviewStoryNextStep(
@@ -1012,6 +1012,20 @@ function warningClusterToReviewPressure(cluster: WarningCluster): GraphJsonArchi
     };
   }
 
+  if (cluster.code === "large_module_file") {
+    return {
+      kind: "advisory_warning_root",
+      title: "Intra-file responsibility pressure",
+      description: `${cluster.count} large source file${pluralize(
+        cluster.count
+      )} may hide architecture pressure that import graphs cannot see.`,
+      severity: "review",
+      count: cluster.count,
+      code: cluster.code,
+      modules
+    };
+  }
+
   return {
     kind: "advisory_warning_root",
     title: `${cluster.code} around ${cluster.subject}`,
@@ -1024,6 +1038,10 @@ function warningClusterToReviewPressure(cluster: WarningCluster): GraphJsonArchi
 }
 
 function readWarningClusterModules(cluster: WarningCluster): string[] {
+  if (cluster.code === "large_module_file") {
+    return [];
+  }
+
   const subject = cluster.subject;
   const arrowModules = subject.includes(" -> ")
     ? subject
@@ -1088,12 +1106,12 @@ function formatArchitectureHeadline(
   }
 
   if (input.summary.observedDependencies === 0) {
-    return "No hard contract failures were reported, and this scoped scan did not observe cross-module imports. Confirm the scan scope covers the architecture you care about, then save a baseline if this shape is intended.";
+    return "No hard contract failures were reported, and this scoped import graph did not observe cross-module imports. Confirm the scan scope covers the architecture you care about; quiet imports do not prove intra-file responsibilities are healthy.";
   }
 
-  return `This scoped graph is quiet: no hard failures, visible debt, advisory warnings, or baseline drift were reported${formatCentralHeadlineReviewPrompt(
+  return `This scoped import graph is quiet: no hard failures, visible debt, advisory warnings, or baseline drift were reported${formatCentralHeadlineReviewPrompt(
     centralModules
-  )}.`;
+  )}. Quiet imports do not prove intra-file responsibilities are healthy.`;
 }
 
 function formatArchitectureQuickRead(
@@ -1147,7 +1165,7 @@ function formatArchitectureLookFirst(centralModules: GraphJsonArchitectureCentra
     centralModules.length > 0
       ? `Graph center: inspect ${centralModules[0]?.module}; it carries the strongest observed coupling in this scan.`
       : "Graph center: if no center appears, confirm the scan scope actually covers the architecture you care about.",
-    "Shape fit: compare central modules, deep imports, and drift with the architecture you expected for this repository."
+    "Shape fit: compare central modules, deep imports, drift, and any intra-file pressure warnings with the architecture you expected for this repository."
   ];
 }
 
@@ -1877,6 +1895,7 @@ function formatOtherViolations(graph: GraphJsonResult): string[] {
   for (const violation of otherViolations) {
     const location = violation.location ? ` ${violation.location.filePath}:${violation.location.line}` : "";
     lines.push(`  ${violation.code}${location}: ${violation.message}`);
+    lines.push(...formatGraphDiagnosticDetails(violation, "    "));
   }
 
   return lines;
@@ -1968,16 +1987,50 @@ function formatWarnings(graph: GraphJsonResult): string[] {
     const fanInThreshold = readNumber(threshold?.fanInModules);
     const fanOutThreshold = readNumber(threshold?.fanOutModules);
     const internalTargetsThreshold = readNumber(threshold?.internalTargets);
-    if (fanInThreshold !== undefined || fanOutThreshold !== undefined || internalTargetsThreshold !== undefined) {
+    const lineThreshold = readNumber(threshold?.lines);
+    if (
+      fanInThreshold !== undefined ||
+      fanOutThreshold !== undefined ||
+      internalTargetsThreshold !== undefined ||
+      lineThreshold !== undefined
+    ) {
       lines.push(
         `  threshold: ${[
           fanInThreshold === undefined ? undefined : `fan-in >= ${fanInThreshold}`,
           fanOutThreshold === undefined ? undefined : `fan-out >= ${fanOutThreshold}`,
-          internalTargetsThreshold === undefined ? undefined : `internal targets >= ${internalTargetsThreshold}`
+          internalTargetsThreshold === undefined ? undefined : `internal targets >= ${internalTargetsThreshold}`,
+          lineThreshold === undefined ? undefined : `lines >= ${lineThreshold}`
         ]
           .filter((item): item is string => item !== undefined)
           .join(" or ")}`
       );
+    }
+
+    const lineCount = readNumber(warning.details?.lineCount);
+    if (lineCount !== undefined) {
+      lines.push(`  line count: ${lineCount}`);
+    }
+
+    const importsScanned = readNumber(warning.details?.importsScanned);
+    const exportsScanned = readNumber(warning.details?.exportsScanned);
+    const functionLikeCount = readNumber(warning.details?.functionLikeCount);
+    const classCount = readNumber(warning.details?.classCount);
+    if (
+      importsScanned !== undefined ||
+      exportsScanned !== undefined ||
+      functionLikeCount !== undefined ||
+      classCount !== undefined
+    ) {
+      lines.push(
+        `  file shape: ${importsScanned ?? 0} imports, ${exportsScanned ?? 0} exports, ${
+          functionLikeCount ?? 0
+        } functions, ${classCount ?? 0} classes`
+      );
+    }
+
+    const scope = readString(warning.details?.scope);
+    if (scope) {
+      lines.push(`  scope: ${scope}`);
     }
 
     const incomingModules = readStringArray(warning.details?.incomingModules);
@@ -2005,6 +2058,55 @@ function formatWarnings(graph: GraphJsonResult): string[] {
     if (warning.suggestion) {
       lines.push(`  fix: ${warning.suggestion}`);
     }
+  }
+
+  return lines;
+}
+
+function formatGraphDiagnosticDetails(violation: GraphJsonViolation, indent: string): string[] {
+  const details = violation.details;
+  if (!details) {
+    return [];
+  }
+
+  const lines: string[] = [];
+  const sourceFileCount = readNumber(details.sourceFiles);
+  const importsScanned = readNumber(details.importsScanned);
+  if (sourceFileCount !== undefined || importsScanned !== undefined) {
+    lines.push(`${indent}scan: ${sourceFileCount ?? "unknown"} source files, ${importsScanned ?? "unknown"} imports scanned`);
+  }
+
+  const topLargestFiles = readRecordArray(details.topLargestFiles);
+  if (topLargestFiles.length > 0) {
+    lines.push(`${indent}top largest files:`);
+    for (const file of topLargestFiles) {
+      const filePath = readString(file.filePath) ?? "unknown";
+      const lineCount = readNumber(file.lineCount) ?? 0;
+      const importCount = readNumber(file.imports) ?? 0;
+      const functionCount = readNumber(file.functions) ?? 0;
+      const classCount = readNumber(file.classes) ?? 0;
+      lines.push(`${indent}  ${filePath} (${lineCount} lines, ${importCount} imports, ${functionCount} functions, ${classCount} classes)`);
+    }
+  }
+
+  const inferredModuleCandidates = readRecordArray(details.inferredModuleCandidates);
+  if (inferredModuleCandidates.length > 0) {
+    lines.push(`${indent}inferred module candidates:`);
+    for (const candidate of inferredModuleCandidates) {
+      const name = readString(candidate.name) ?? "Module";
+      const candidatePath = readString(candidate.path) ?? "unknown";
+      const fileCount = readNumber(candidate.fileCount) ?? 0;
+      lines.push(`${indent}  ${name}: ${candidatePath} (${fileCount} files)`);
+    }
+  }
+
+  const note = readString(details.note);
+  if (note) {
+    lines.push(`${indent}note: ${note}`);
+  }
+
+  if (violation.suggestion) {
+    lines.push(`${indent}fix: ${violation.suggestion}`);
   }
 
   return lines;
@@ -2081,6 +2183,10 @@ function buildWarningClusters(warnings: GraphJsonViolation[]): WarningCluster[] 
 function warningClusterSubject(warning: GraphJsonViolation): string {
   if (warning.code === "deep_internal_import") {
     return deepInternalImportClusterSubject(warning);
+  }
+
+  if (warning.code === "large_module_file") {
+    return "intra-file responsibility pressure";
   }
 
   const fromModule = readString(warning.details?.fromModule);
@@ -2667,6 +2773,12 @@ function readStringArray(value: unknown): string[] {
 
 function readRecord(value: unknown): Record<string, unknown> | undefined {
   return value && typeof value === "object" && !Array.isArray(value) ? (value as Record<string, unknown>) : undefined;
+}
+
+function readRecordArray(value: unknown): Array<Record<string, unknown>> {
+  return Array.isArray(value)
+    ? value.filter((item): item is Record<string, unknown> => Boolean(readRecord(item)))
+    : [];
 }
 
 function readLocation(value: unknown): GraphJsonLocation | undefined {

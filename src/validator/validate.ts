@@ -6,6 +6,7 @@ import type {
   LocalExportRecord,
   ObservedDependency,
   PathRef,
+  SourceFileMetric,
   SuppressedViolation,
   SuppressionInfo,
   SuppressionRule,
@@ -26,6 +27,7 @@ const suppressibleCodes = new Set<ViolationCode>([
 const expiringSuppressionWarningDays = 30;
 const couplingConcentrationModuleThreshold = 4;
 const publicEntrypointInternalTargetThreshold = 4;
+const largeModuleFileLineThreshold = 800;
 
 interface DateValidationOptions {
   today?: string;
@@ -876,6 +878,41 @@ export function findCouplingConcentrationWarnings(observedDependencies: Observed
         }
       ];
     });
+}
+
+export function findLargeModuleFileWarnings(sourceFileMetrics: SourceFileMetric[], root: string): Violation[] {
+  return sourceFileMetrics
+    .filter((metric) => metric.lineCount >= largeModuleFileLineThreshold)
+    .sort((left, right) => {
+      if (right.lineCount !== left.lineCount) {
+        return right.lineCount - left.lineCount;
+      }
+
+      return relativePath(root, left.filePath).localeCompare(relativePath(root, right.filePath));
+    })
+    .map((metric) => ({
+      code: "large_module_file" as const,
+      message: "Source file is large enough that architecture pressure may be hidden inside the file.",
+      location: {
+        filePath: metric.filePath,
+        line: 1
+      },
+      details: {
+        filePath: relativePath(root, metric.filePath),
+        lineCount: metric.lineCount,
+        threshold: {
+          lines: largeModuleFileLineThreshold
+        },
+        importsScanned: metric.importCount,
+        exportsScanned: metric.exportCount,
+        functionLikeCount: metric.functionLikeCount,
+        classCount: metric.classCount,
+        observed: `${relativePath(root, metric.filePath)} has ${metric.lineCount} lines`,
+        scope: "intra_file_responsibility_pressure",
+        suggestion:
+          "Use this as a refactor/review prompt; split only after identifying real responsibilities. This warning does not mean the import graph is unhealthy."
+      }
+    }));
 }
 
 export function findDeepInternalImportWarnings(

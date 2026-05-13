@@ -51,7 +51,7 @@ test("graph JSON exposes declared, forbidden, visibility, and observed edges", (
       lookFirst: [
         "Hard signals: read `violations[]`, `intentionalDebt[]`, and `warnings[]` before judging the diagram.",
         "Graph center: inspect Services; it carries the strongest observed coupling in this scan.",
-        "Shape fit: compare central modules, deep imports, and drift with the architecture you expected for this repository."
+        "Shape fit: compare central modules, deep imports, drift, and any intra-file pressure warnings with the architecture you expected for this repository."
       ],
       centralModules: [
         {
@@ -93,7 +93,7 @@ test("graph JSON exposes declared, forbidden, visibility, and observed edges", (
       nextStep:
         "Fix hard violations first, or add visible temporary `accepts ... until ... because ...` debt only after review.",
       caveat:
-        "This story is a review aid over static imports. It points to likely pressure, not proof that the architecture is good or bad."
+        "This story is a review aid over static imports. It points to likely pressure, not proof that the architecture is good or bad; a quiet import graph can still hide intra-file responsibility concentration."
     },
     topSignals: [
       {
@@ -207,10 +207,10 @@ test("quiet graph interpretation still gives a next review step", () => {
   const output = formatGraphResult(result);
 
   assert.equal(payload.architectureSummary.status, "clear");
-  assert.match(payload.architectureSummary.interpretation.headline, /This scoped graph is quiet/);
+  assert.match(payload.architectureSummary.interpretation.headline, /This scoped import graph is quiet/);
   assert.match(payload.architectureSummary.interpretation.headline, /compare that center with your intended architecture/);
   assert.match(payload.architectureSummary.interpretation.headline, /saving a baseline/);
-  assert.match(output, /interpretation: This scoped graph is quiet/);
+  assert.match(output, /interpretation: This scoped import graph is quiet/);
   assert.match(output, /look first:/);
 });
 

@@ -35,6 +35,7 @@ interface CliOptions {
   warnPublicApiSurface: boolean;
   warnCouplingConcentration: boolean;
   warnDeepInternalImports: boolean;
+  warnLargeFiles: boolean;
 }
 
 type CliCommand = "check" | "graph" | "infer" | "observe" | "diff";
@@ -85,7 +86,8 @@ try {
     warnUnresolvedImports: options.warnUnresolvedImports,
     warnPublicApiSurface: options.warnPublicApiSurface,
     warnCouplingConcentration: options.warnCouplingConcentration,
-    warnDeepInternalImports: options.warnDeepInternalImports
+    warnDeepInternalImports: options.warnDeepInternalImports,
+    warnLargeFiles: options.warnLargeFiles
   });
   const baseline = options.baselinePath ? loadGraphBaseline(options.baselinePath, options.root) : undefined;
 
@@ -160,7 +162,8 @@ function parseOptions(values: string[], command: CliCommand): CliOptions {
     warnUnresolvedImports: false,
     warnPublicApiSurface: false,
     warnCouplingConcentration: false,
-    warnDeepInternalImports: false
+    warnDeepInternalImports: false,
+    warnLargeFiles: false
   };
 
   for (let index = 0; index < values.length; index += 1) {
@@ -345,6 +348,16 @@ function parseOptions(values: string[], command: CliCommand): CliOptions {
       }
 
       options.warnDeepInternalImports = true;
+      continue;
+    }
+
+    if (value === "--warn-large-files") {
+      if (command === "infer") {
+        console.error("--warn-large-files is only supported by check, graph, observe, and diff.");
+        process.exit(1);
+      }
+
+      options.warnLargeFiles = true;
       continue;
     }
 
@@ -557,10 +570,10 @@ function printHelp(): void {
   console.log(`Axiom
 
 Usage:
-  axi check [--root <path>] [--config <path>] [--include <glob>] [--exclude <glob>] [--spec <path>] [--json] [--warn-unowned] [--strict] [--intentional-violation-warning-days <n>] [--warn-unresolved-imports] [--warn-public-api-surface] [--warn-coupling-concentration] [--warn-deep-internal-imports]
-  axi graph [--root <path>] [--config <path>] [--include <glob>] [--exclude <glob>] [--spec <path>] [--json|--markdown|--mermaid] [--warn-unowned] [--strict] [--violations-only|--attention] [--baseline <graph-json>] [--intentional-violation-warning-days <n>] [--warn-unresolved-imports] [--warn-public-api-surface] [--warn-coupling-concentration] [--warn-deep-internal-imports]
-  axi observe [--root <path>] [--config <path>] [--include <glob>] [--exclude <glob>] [--spec <path>] [--json|--markdown|--mermaid] [--warn-unowned] [--strict] [--baseline <graph-json>] [--intentional-violation-warning-days <n>] [--warn-unresolved-imports] [--warn-public-api-surface] [--warn-coupling-concentration] [--warn-deep-internal-imports]
-  axi diff <baseline-json> [--root <path>] [--config <path>] [--include <glob>] [--exclude <glob>] [--spec <path>] [--json|--markdown|--mermaid] [--warn-unowned] [--strict] [--intentional-violation-warning-days <n>] [--warn-unresolved-imports] [--warn-public-api-surface] [--warn-coupling-concentration] [--warn-deep-internal-imports]
+  axi check [--root <path>] [--config <path>] [--include <glob>] [--exclude <glob>] [--spec <path>] [--json] [--warn-unowned] [--strict] [--intentional-violation-warning-days <n>] [--warn-unresolved-imports] [--warn-public-api-surface] [--warn-coupling-concentration] [--warn-deep-internal-imports] [--warn-large-files]
+  axi graph [--root <path>] [--config <path>] [--include <glob>] [--exclude <glob>] [--spec <path>] [--json|--markdown|--mermaid] [--warn-unowned] [--strict] [--violations-only|--attention] [--baseline <graph-json>] [--intentional-violation-warning-days <n>] [--warn-unresolved-imports] [--warn-public-api-surface] [--warn-coupling-concentration] [--warn-deep-internal-imports] [--warn-large-files]
+  axi observe [--root <path>] [--config <path>] [--include <glob>] [--exclude <glob>] [--spec <path>] [--json|--markdown|--mermaid] [--warn-unowned] [--strict] [--baseline <graph-json>] [--intentional-violation-warning-days <n>] [--warn-unresolved-imports] [--warn-public-api-surface] [--warn-coupling-concentration] [--warn-deep-internal-imports] [--warn-large-files]
+  axi diff <baseline-json> [--root <path>] [--config <path>] [--include <glob>] [--exclude <glob>] [--spec <path>] [--json|--markdown|--mermaid] [--warn-unowned] [--strict] [--intentional-violation-warning-days <n>] [--warn-unresolved-imports] [--warn-public-api-surface] [--warn-coupling-concentration] [--warn-deep-internal-imports] [--warn-large-files]
   axi infer [--root <path>] [--config <path>] [--include <glob>] [--exclude <glob>] [--json] [--group-depth <n>] [--group-by folder|workspace]
 
 Commands:
@@ -600,5 +613,7 @@ Adoption:
                    Warn when one module has high observed fan-in or fan-out without failing the check.
   --warn-deep-internal-imports
                    Warn when a module uses a relative cross-module import to bypass a likely entry point.
+  --warn-large-files
+                   Warn when large source files may hide intra-file responsibility concentration.
 `);
 }

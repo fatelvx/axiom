@@ -172,6 +172,68 @@ function formatDetails(root: string, violation: Violation): string[] {
     lines.push(`  owners: ${owners.join(", ")}`);
   }
 
+  const sourceFileCount = readNumber(violation.details.sourceFiles);
+  const importsScanned = readNumber(violation.details.importsScanned);
+  if (sourceFileCount !== undefined || importsScanned !== undefined) {
+    lines.push(
+      `  scan: ${sourceFileCount ?? "unknown"} source files, ${importsScanned ?? "unknown"} imports scanned`
+    );
+  }
+
+  const topLargestFiles = readRecordArray(violation.details.topLargestFiles);
+  if (topLargestFiles.length > 0) {
+    lines.push("  top largest files:");
+    for (const file of topLargestFiles) {
+      const filePath = readString(file.filePath) ?? "unknown";
+      const lineCount = readNumber(file.lineCount) ?? 0;
+      const importCount = readNumber(file.imports) ?? 0;
+      const functionCount = readNumber(file.functions) ?? 0;
+      const classCount = readNumber(file.classes) ?? 0;
+      lines.push(`    ${filePath} (${lineCount} lines, ${importCount} imports, ${functionCount} functions, ${classCount} classes)`);
+    }
+  }
+
+  const inferredModuleCandidates = readRecordArray(violation.details.inferredModuleCandidates);
+  if (inferredModuleCandidates.length > 0) {
+    lines.push("  inferred module candidates:");
+    for (const candidate of inferredModuleCandidates) {
+      const name = readString(candidate.name) ?? "Module";
+      const candidatePath = readString(candidate.path) ?? "unknown";
+      const fileCount = readNumber(candidate.fileCount) ?? 0;
+      lines.push(`    ${name}: ${candidatePath} (${fileCount} files)`);
+    }
+  }
+
+  const lineCount = readNumber(violation.details.lineCount);
+  if (lineCount !== undefined) {
+    lines.push(`  line count: ${lineCount}`);
+  }
+
+  const threshold = readRecord(violation.details.threshold);
+  const lineThreshold = readNumber(threshold?.lines);
+  if (lineThreshold !== undefined) {
+    lines.push(`  threshold: lines >= ${lineThreshold}`);
+  }
+
+  const functionLikeCount = readNumber(violation.details.functionLikeCount);
+  const classCount = readNumber(violation.details.classCount);
+  const exportsScanned = readNumber(violation.details.exportsScanned);
+  if (functionLikeCount !== undefined || classCount !== undefined || exportsScanned !== undefined) {
+    lines.push(
+      `  file shape: ${functionLikeCount ?? 0} functions, ${classCount ?? 0} classes, ${exportsScanned ?? 0} exports`
+    );
+  }
+
+  const scope = readString(violation.details.scope);
+  if (scope) {
+    lines.push(`  scope: ${scope}`);
+  }
+
+  const note = readString(violation.details.note);
+  if (note) {
+    lines.push(`  note: ${note}`);
+  }
+
   const suggestion = readString(violation.details.suggestion);
   if (suggestion) {
     lines.push(`  fix: ${suggestion}`);
@@ -203,4 +265,18 @@ function readLocation(value: unknown): SourceLocation | undefined {
 
 function readStringArray(value: unknown): string[] {
   return Array.isArray(value) ? value.filter((item): item is string => typeof item === "string") : [];
+}
+
+function readRecord(value: unknown): Record<string, unknown> | undefined {
+  return value && typeof value === "object" && !Array.isArray(value) ? (value as Record<string, unknown>) : undefined;
+}
+
+function readRecordArray(value: unknown): Array<Record<string, unknown>> {
+  return Array.isArray(value)
+    ? value.filter((item): item is Record<string, unknown> => Boolean(readRecord(item)))
+    : [];
+}
+
+function readNumber(value: unknown): number | undefined {
+  return typeof value === "number" && Number.isFinite(value) ? value : undefined;
 }

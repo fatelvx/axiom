@@ -10,6 +10,7 @@ export type ViolationCode =
   | "ambiguous_module_owner"
   | "unowned_source_file"
   | "unresolved_import"
+  | "large_module_file"
   | "broad_public_surface"
   | "public_entrypoint_coupling"
   | "coupling_concentration"
@@ -109,9 +110,19 @@ export interface LocalExportRecord {
   isTypeOnly?: boolean;
 }
 
+export interface SourceFileMetric {
+  filePath: string;
+  lineCount: number;
+  importCount: number;
+  exportCount: number;
+  functionLikeCount: number;
+  classCount: number;
+}
+
 export interface SourceFileScan {
   imports: ImportRecord[];
   localExports: LocalExportRecord[];
+  metrics: SourceFileMetric;
 }
 
 export interface ObservedDependency {

@@ -160,6 +160,7 @@ Axiom v0.5.8 currently supports:
 - Opt-in coupling concentration warnings for modules with high observed fan-in or fan-out with `--warn-coupling-concentration`.
 - Opt-in unresolved import warnings for static relative or package `#imports` that Axiom can see but cannot resolve with `--warn-unresolved-imports`.
 - Opt-in deep internal import warnings for relative cross-module imports that bypass likely `index.*` entry points with `--warn-deep-internal-imports`.
+- Opt-in large source file warnings for intra-file responsibility pressure with `--warn-large-files`.
 - TypeScript/JavaScript import scanning through the TypeScript parser.
 - Relative imports, barrel `index.*` files, dynamic imports, `require`, and multiline imports.
 - TypeScript `paths` aliases from `tsconfig.json`.
@@ -177,7 +178,7 @@ Axiom v0.5.8 currently supports:
 - Architecture attention output with `axi observe`, including a visible review model that separates advisory review from CI gates.
 - Baseline-aware observed edge drift with `axi observe --baseline <graph-json>`.
 - Focused graph output with `axi graph --violations-only`.
-- Scan summaries with module, source-file, import, and observed-dependency counts.
+- Scan summaries with module, source-file, import, observed-dependency counts, and no-contract starter context.
 
 ## How To Read A Graph
 
@@ -189,7 +190,7 @@ Start with three questions:
 
 `axi graph`, `axi observe`, and JSON summaries now include an interpretation layer for this first read. It can say, for example, that the scoped graph is quiet, that a module is becoming a fan-in hub, or that a contract is failing before the diagram should be treated as stable. The interpretation is intentionally conservative: it helps you navigate the graph, but the evidence still lives in the exact violation, warning, drift, and import-site lists.
 
-When a scan is quiet, the next step is not "declare victory". Compare the graph center with the shape you expected, then save an unfiltered `axi graph --json` baseline if that shape is intentional.
+When a scan is quiet, the next step is not "declare victory". Compare the graph center with the shape you expected, check whether huge files are hiding responsibilities inside one module, then save an unfiltered `axi graph --json` baseline if that shape is intentional.
 
 For concrete examples of failing contracts, quiet graphs, advisory pressure, and React plus Pixi game clients, read [Read The Graph](guides/read-the-graph.md).
 
@@ -201,6 +202,7 @@ Axiom v0 is intentionally honest about its blind spots:
 - It can optionally warn about static relative or package `#imports` that the scanner sees but cannot resolve with `--warn-unresolved-imports`, but it still cannot see non-literal runtime wiring.
 - It does not prove that a module is semantically well-designed. Axiom can catch direct hidden-path re-exports and local import-then-export leaks from hidden internals, `--warn-public-api-surface` can flag broad `export *` barrels and exposed entry points that reach many internal files, and `--warn-deep-internal-imports` can flag relative imports that bypass likely entry points, but code can still become too coupled through wrappers, facades, or overly large public entry points. This is the `symbol-level API health` gap.
 - It does not prove that concentrated fan-in or fan-out is wrong. `--warn-coupling-concentration` surfaces modules that may be turning into coordination hubs so humans and agents can review the pressure before it becomes hidden debt.
+- It does not prove that a quiet import graph means the code is internally well-factored. `--warn-large-files` only surfaces large-file pressure as an advisory review prompt; it is not a general complexity metric or a refactor mandate.
 - It does not replace ESLint, TypeScript, tests, or review. Axiom focuses on architecture intent: declared graph, observed graph, drift, warnings, intentional violations, and CI gates for clear contracts.
 - It does not replace Dependency Cruiser, Nx boundaries, CodeQL, or custom repository scripts. See [Comparison And Boundaries](guides/comparison.md) for where Axiom is useful and where other tools are stronger.
 - It does not make `.axi` maintenance free. Use `axi infer` to start from the current graph, then tighten only the boundaries that matter.
@@ -304,11 +306,13 @@ axi observe --root . --warn-public-api-surface
 axi observe --root . --warn-unresolved-imports
 axi observe --root . --warn-coupling-concentration
 axi observe --root . --warn-deep-internal-imports
+axi observe --root . --warn-large-files
 axi check --root . --warn-unowned
 axi check --root . --warn-public-api-surface
 axi check --root . --warn-unresolved-imports
 axi check --root . --warn-coupling-concentration
 axi check --root . --warn-deep-internal-imports
+axi check --root . --warn-large-files
 axi check --root . --strict
 axi observe --root ../some-app --spec ./contracts/some-app.axi --markdown
 axi graph --root . --json
@@ -457,7 +461,8 @@ Axiom reads `axiom.config.json` from the project root when present:
   "warnUnresolvedImports": false,
   "warnPublicApiSurface": false,
   "warnCouplingConcentration": false,
-  "warnDeepInternalImports": false
+  "warnDeepInternalImports": false,
+  "warnLargeFiles": false
 }
 ```
 
@@ -472,6 +477,7 @@ Fields:
 - `warnPublicApiSurface`: opt into advisory warnings for broad exposed barrels such as `export *`.
 - `warnCouplingConcentration`: opt into advisory warnings for modules with high observed fan-in or fan-out.
 - `warnDeepInternalImports`: opt into advisory warnings for relative cross-module imports that bypass likely entry points.
+- `warnLargeFiles`: opt into advisory warnings for source files large enough that architecture pressure may be hidden inside one file.
 
 Default discovery skips common dependency, build, cache, and temporary output folders:
 
@@ -582,6 +588,18 @@ axi graph --root . --attention --warn-deep-internal-imports
 Today this flags relative cross-module imports that target a non-`index.*` file when the target module has a likely `index.*` entry point. It is advisory: the check still exits `0` unless there are real violations. Treat it as a prompt to import through a public entry point, or to add explicit `exposes` / `hides` rules when a deep path is intentional.
 
 When an inferred or broad module has multiple source groups, Axiom only recommends an `index.*` entry point from the same source group as the deep import. If the only entry point lives in another group, the warning is marked ambiguous instead of pretending that entry point is the public boundary for the whole collapsed module. That usually means the contract should split the module, declare a narrower public surface, or keep the warning as a review prompt until the team names the boundary.
+
+## Large File Warnings
+
+Some projects have very few files and a quiet import graph, but most architecture pressure lives inside huge files. To surface that review risk without making it a gate, opt into large-file warnings:
+
+```bash
+axi observe --root . --warn-large-files
+axi check --root . --warn-large-files
+axi graph --root . --attention --warn-large-files
+```
+
+Today this flags source files at 800 lines or more and reports basic file shape data such as imports, exports, functions, and classes. It is advisory: the check still exits `0` unless there are real violations. Treat it as a prompt to inspect responsibilities inside the file, not as proof that the file must be split immediately.
 
 ## JSON And Markdown Output
 

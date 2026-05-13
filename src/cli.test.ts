@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
-import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import test from "node:test";
@@ -154,6 +154,37 @@ test("cli observe --warn-unresolved-imports reports advisory unresolved import w
   assert.equal(payload.summary.warnings, 1);
   assert.equal(payload.warnings[0].code, "unresolved_import");
   assert.equal(payload.warnings[0].details.specifier, "./generated/runtime-token");
+});
+
+test("cli observe --warn-large-files reports advisory intra-file pressure warnings", () => {
+  const root = mkdtempSync(path.join(tmpdir(), "axi-cli-large-file-"));
+
+  try {
+    mkdirSync(path.join(root, "axiom"), { recursive: true });
+    mkdirSync(path.join(root, "src"), { recursive: true });
+    writeFileSync(path.join(root, "axiom/main.axi"), ['module App', 'path "src/**"', ""].join("\n"));
+    writeFileSync(
+      path.join(root, "src/main.ts"),
+      Array.from({ length: 805 }, (_, index) => `export const value${index} = ${index};`).join("\n")
+    );
+
+    const result = spawnSync(process.execPath, [cliPath, "observe", "--root", root, "--warn-large-files", "--json"], {
+      cwd: repoRoot,
+      encoding: "utf8"
+    });
+
+    assert.equal(result.status, 0);
+
+    const payload = JSON.parse(result.stdout);
+    assert.equal(payload.schemaVersion, "axiom.graph.v12");
+    assert.equal(payload.summary.violations, 0);
+    assert.equal(payload.summary.warnings, 1);
+    assert.equal(payload.warnings[0].code, "large_module_file");
+    assert.equal(payload.warnings[0].details.lineCount, 805);
+    assert.equal(payload.architectureSummary.reviewStory.pressures[0].title, "Intra-file responsibility pressure");
+  } finally {
+    rmSync(root, { force: true, recursive: true });
+  }
 });
 
 test("cli graph returns graph output without acting as a validation gate", () => {

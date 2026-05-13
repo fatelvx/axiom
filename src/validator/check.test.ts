@@ -276,6 +276,56 @@ test("coupling concentration warnings are opt-in advisory diagnostics", () => {
   });
 });
 
+test("large file warnings are opt-in advisory diagnostics", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "axi-large-file-"));
+
+  try {
+    fs.mkdirSync(path.join(root, "axiom"), { recursive: true });
+    fs.mkdirSync(path.join(root, "src"), { recursive: true });
+    fs.writeFileSync(path.join(root, "axiom/main.axi"), ['module App', 'path "src/**"', ""].join("\n"));
+    fs.writeFileSync(
+      path.join(root, "src/main.ts"),
+      Array.from({ length: 805 }, (_, index) => `export const value${index} = ${index};`).join("\n")
+    );
+
+    const quietResult = runCheck({ root });
+
+    assert.deepEqual(quietResult.violations, []);
+    assert.deepEqual(quietResult.warnings, []);
+    assert.equal(quietResult.sourceFileMetrics[0]?.lineCount, 805);
+
+    const result = runCheck({ root, warnLargeFiles: true });
+
+    assert.deepEqual(result.violations, []);
+    assert.equal(result.warnings.length, 1);
+    assert.deepEqual(result.warnings[0], {
+      code: "large_module_file",
+      message: "Source file is large enough that architecture pressure may be hidden inside the file.",
+      location: {
+        filePath: path.join(root, "src/main.ts"),
+        line: 1
+      },
+      details: {
+        filePath: "src/main.ts",
+        lineCount: 805,
+        threshold: {
+          lines: 800
+        },
+        importsScanned: 0,
+        exportsScanned: 0,
+        functionLikeCount: 0,
+        classCount: 0,
+        observed: "src/main.ts has 805 lines",
+        scope: "intra_file_responsibility_pressure",
+        suggestion:
+          "Use this as a refactor/review prompt; split only after identifying real responsibilities. This warning does not mean the import graph is unhealthy."
+      }
+    });
+  } finally {
+    fs.rmSync(root, { force: true, recursive: true });
+  }
+});
+
 test("deep internal import warnings are opt-in advisory diagnostics", () => {
   const root = path.join(repoRoot, "fixtures/deep-internal-import");
   const quietResult = runCheck({ root });

@@ -76,6 +76,7 @@
 - Improved inferred collapsed-cycle names with repeated prefixes, so cycles such as `Signals` plus `SignalsDebug` no longer become `SignalsSignalsDebug`.
 - Added `architectureSummary.reviewStory` and bumped graph JSON to `axiom.graph.v12` so graph / observe / diff output can summarize setup, top review pressures, and the next step for humans and future agent adapters.
 - Added an Agent And MCP Integration guide covering read-only agent loops, baseline lifecycle, review-story consumption, and MCP v0 guardrails.
+- Added no-contract scan summaries and opt-in `--warn-large-files` advisory warnings so quiet import graphs do not hide intra-file responsibility pressure.
 
 ## 0.5.8 - Monorepo Spec Discovery
 

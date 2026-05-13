@@ -26,6 +26,7 @@ For an existing contract:
 
 ```bash
 axi observe --root . --warn-coupling-concentration --warn-deep-internal-imports
+axi observe --root . --warn-large-files
 axi graph --root . --mermaid
 axi graph --root . --json > axiom-baseline.json
 axi diff axiom-baseline.json --root .
@@ -79,6 +80,7 @@ Look for:
 - Whether the scan scope covers the code you meant to review.
 - Whether the contract is too broad, for example one giant module that hides every edge.
 - Whether important runtime wiring is outside static imports.
+- Whether responsibilities are hidden inside a few huge files; use `--warn-large-files` when a project has very few files or a suspiciously quiet import graph.
 
 If the shape matches the intended architecture, save an unfiltered baseline:
 
@@ -100,6 +102,8 @@ Advisory warnings are review prompts, not proof of bad architecture.
 
 `deep_internal_import` means one module imported another module through a relative non-entry file while the target module appears to have an `index.*` entry point. That may be a public-entry bypass, or it may mean the contract needs a more precise public surface.
 
+`large_module_file` means a source file crossed the current large-file threshold. It does not mean the file is wrong. It means import graph analysis may be missing architecture pressure because too many responsibilities live inside one file.
+
 If Axiom says the entry point is ambiguous, do not blindly rewrite imports to the first `index.ts` it found. Broad inferred modules and collapsed cycles often contain several plausible source groups. Axiom only treats an `index.*` file as likely advice when it is in the same source group as the deep import; an entry point in `services/sandbox` should not be used as advice for a `store` import. Treat ambiguity as a contract-authoring signal: split the module, declare `exposes` / `hides`, or ask the maintainer which entry point is real.
 
 Focused graph views can also say they are showing few or zero dependency edges while warnings are present. That is not a contradiction. The focused view hides clean edges, while warnings can still point at files, public surfaces, unresolved imports, or graph pressure. Use the `full observed dependencies` count to see how much graph data was scanned.
@@ -113,6 +117,7 @@ How to respond:
 - If the deep path is intended public API, declare it with `exposes`.
 - If the deep path is private, repair callers to use the entry point.
 - If the module is intentionally a hub, document that intent with `purpose` and keep the warning advisory until the boundary is stable.
+- If a large-file warning appears, inspect the file's internal responsibilities before splitting it; a large cohesive table or generated adapter may be acceptable, while a mixed engine/controller/store file is a refactor candidate.
 
 ## React And Pixi Game Clients
 
@@ -140,6 +145,7 @@ These are not built-in framework rules. They are examples of intent you can expr
 Avoid these readings:
 
 - "No warnings" does not mean "healthy architecture."
+- "Quiet graph" does not mean "small responsibilities inside files."
 - "High fan-in" does not always mean "bad module."
 - "A cycle collapsed by `axi infer`" does not mean "delete the cycle immediately." It means the current source graph cannot be cleanly layered without review.
 - "A Mermaid graph exists" does not mean the project has adopted Axiom. Adoption starts when a reviewed contract represents intended architecture.

@@ -12,6 +12,7 @@ export interface AxiomConfig {
   warnPublicApiSurface?: boolean;
   warnCouplingConcentration?: boolean;
   warnDeepInternalImports?: boolean;
+  warnLargeFiles?: boolean;
 }
 
 export interface LoadedAxiomConfig {
@@ -25,6 +26,7 @@ export interface LoadedAxiomConfig {
   warnPublicApiSurface: boolean;
   warnCouplingConcentration: boolean;
   warnDeepInternalImports: boolean;
+  warnLargeFiles: boolean;
 }
 
 export interface ConfigDiscoveryOverrides {
@@ -64,6 +66,7 @@ export function loadConfig(root: string, configPath?: string): LoadedAxiomConfig
     warnPublicApiSurface: config.warnPublicApiSurface ?? false,
     warnCouplingConcentration: config.warnCouplingConcentration ?? false,
     warnDeepInternalImports: config.warnDeepInternalImports ?? false,
+    warnLargeFiles: config.warnLargeFiles ?? false,
     ...(config.tsconfig ? { tsconfig: config.tsconfig } : {}),
     ...(config.intentionalViolationExpiryWarningDays === undefined
       ? {}
@@ -90,7 +93,8 @@ function defaultConfig(): LoadedAxiomConfig {
     warnUnresolvedImports: false,
     warnPublicApiSurface: false,
     warnCouplingConcentration: false,
-    warnDeepInternalImports: false
+    warnDeepInternalImports: false,
+    warnLargeFiles: false
   };
 }
 
@@ -127,7 +131,8 @@ function parseConfigFile(filePath: string): AxiomConfig {
     warnUnresolvedImports: readOptionalBoolean(filePath, rawConfig, "warnUnresolvedImports"),
     warnPublicApiSurface: readOptionalBoolean(filePath, rawConfig, "warnPublicApiSurface"),
     warnCouplingConcentration: readOptionalBoolean(filePath, rawConfig, "warnCouplingConcentration"),
-    warnDeepInternalImports: readOptionalBoolean(filePath, rawConfig, "warnDeepInternalImports")
+    warnDeepInternalImports: readOptionalBoolean(filePath, rawConfig, "warnDeepInternalImports"),
+    warnLargeFiles: readOptionalBoolean(filePath, rawConfig, "warnLargeFiles")
   };
 }
 

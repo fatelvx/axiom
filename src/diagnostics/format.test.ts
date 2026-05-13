@@ -41,6 +41,10 @@ test("human diagnostics tell no-spec projects how to start", () => {
 
   assert.match(output, /error no_spec_files/);
   assert.match(output, /No \.axi files found/);
+  assert.match(output, /scan: \d+ source files, \d+ imports scanned/);
+  assert.match(output, /top largest files:/);
+  assert.match(output, /inferred module candidates:/);
+  assert.match(output, /quiet import graph can still hide intra-file responsibility concentration/);
   assert.match(output, /fix: Run `axi infer --root \. > axiom\/main\.axi` from the project root/);
   assert.match(output, /--spec <path-to-contract\.axi>/);
 });

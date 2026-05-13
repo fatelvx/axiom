@@ -5,6 +5,7 @@ import type {
   ImportRecord,
   LocalExportRecord,
   ObservedDependency,
+  SourceFileMetric,
   SuppressedViolation,
   Violation
 } from "../axi/types.js";
@@ -21,6 +22,7 @@ import {
   findCouplingConcentrationWarnings,
   findDeepInternalImportWarnings,
   findExpiringSuppressions,
+  findLargeModuleFileWarnings,
   findPublicApiSurfaceWarnings,
   findUnresolvedImportWarnings,
   validateModuleSurfaceConsistency,
@@ -44,12 +46,14 @@ export interface CheckOptions {
   warnPublicApiSurface?: boolean;
   warnCouplingConcentration?: boolean;
   warnDeepInternalImports?: boolean;
+  warnLargeFiles?: boolean;
 }
 
 export interface CheckResult {
   root: string;
   specFiles: string[];
   sourceFiles: string[];
+  sourceFileMetrics: SourceFileMetric[];
   importCount: number;
   observedDependencies: ObservedDependency[];
   spec: AxiomSpec;
@@ -71,6 +75,7 @@ export function runCheck(options: CheckOptions): CheckResult {
   const warnPublicApiSurface = options.warnPublicApiSurface ?? config.warnPublicApiSurface;
   const warnCouplingConcentration = options.warnCouplingConcentration ?? config.warnCouplingConcentration;
   const warnDeepInternalImports = options.warnDeepInternalImports ?? config.warnDeepInternalImports;
+  const warnLargeFiles = options.warnLargeFiles ?? config.warnLargeFiles;
   const specFiles = options.specPaths?.length ? resolveExplicitSpecFiles(root, options.specPaths) : findAxiomFiles(root, config);
   const sourceFiles = findSourceFiles(root, config);
   const resolver = createImportResolver({ root, tsconfigPath: config.tsconfig });
@@ -78,17 +83,6 @@ export function runCheck(options: CheckOptions): CheckResult {
   const warnings: Violation[] = [];
   const suppressedViolations: SuppressedViolation[] = [];
   const spec: AxiomSpec = { modules: [], layerOrders: [] };
-
-  if (specFiles.length === 0) {
-    violations.push({
-      code: "no_spec_files",
-      message: `No .axi files found under ${root}.`,
-      details: {
-        suggestion:
-          "Run `axi infer --root . > axiom/main.axi` from the project root to create a starter contract, or pass an external pilot contract with `--spec <path-to-contract.axi>`."
-      }
-    });
-  }
 
   for (const specFile of specFiles) {
     const text = readTextFile(specFile);
@@ -103,6 +97,12 @@ export function runCheck(options: CheckOptions): CheckResult {
   const sourceScans = sourceFiles.map((sourceFile) => scanSourceFile(sourceFile, { resolver }));
   const imports: ImportRecord[] = sourceScans.flatMap((scan) => scan.imports);
   const localExports: LocalExportRecord[] = sourceScans.flatMap((scan) => scan.localExports);
+  const sourceFileMetrics = sourceScans.map((scan) => scan.metrics);
+
+  if (specFiles.length === 0) {
+    violations.push(buildNoSpecFilesViolation(root, sourceFiles, imports.length, sourceFileMetrics));
+  }
+
   const ownership = createOwnershipIndex(root, spec.modules);
   violations.push(...validateOwnership(sourceFiles, ownership));
   const unownedSourceFileDiagnostics = spec.modules.length > 0 ? findUnownedSourceFiles(sourceFiles, ownership) : [];
@@ -143,11 +143,15 @@ export function runCheck(options: CheckOptions): CheckResult {
   if (warnDeepInternalImports) {
     warnings.push(...findDeepInternalImportWarnings(spec, observedDependencies, sourceFiles, ownership, root));
   }
+  if (warnLargeFiles) {
+    warnings.push(...findLargeModuleFileWarnings(sourceFileMetrics, root));
+  }
 
   return {
     root,
     specFiles,
     sourceFiles,
+    sourceFileMetrics,
     importCount: imports.length,
     observedDependencies,
     spec,
@@ -155,6 +159,111 @@ export function runCheck(options: CheckOptions): CheckResult {
     warnings,
     suppressedViolations
   };
+}
+
+function buildNoSpecFilesViolation(
+  root: string,
+  sourceFiles: string[],
+  importCount: number,
+  sourceFileMetrics: SourceFileMetric[]
+): Violation {
+  return {
+    code: "no_spec_files",
+    message: `No .axi files found under ${root}.`,
+    details: {
+      sourceFiles: sourceFiles.length,
+      importsScanned: importCount,
+      topLargestFiles: topLargestFiles(root, sourceFileMetrics),
+      inferredModuleCandidates: inferModuleCandidates(root, sourceFiles),
+      note:
+        "Axiom can scan imports before a contract, but it cannot compare declared-vs-observed architecture intent yet. A quiet import graph can still hide intra-file responsibility concentration.",
+      suggestion:
+        "Run `axi infer --root . > axiom/main.axi` from the project root to create a starter contract, or pass an external pilot contract with `--spec <path-to-contract.axi>`."
+    }
+  };
+}
+
+function topLargestFiles(root: string, sourceFileMetrics: SourceFileMetric[]): Array<Record<string, number | string>> {
+  return [...sourceFileMetrics]
+    .sort((left, right) => {
+      if (right.lineCount !== left.lineCount) {
+        return right.lineCount - left.lineCount;
+      }
+
+      return relativePath(root, left.filePath).localeCompare(relativePath(root, right.filePath));
+    })
+    .slice(0, 5)
+    .map((metric) => ({
+      filePath: relativePath(root, metric.filePath),
+      lineCount: metric.lineCount,
+      imports: metric.importCount,
+      exports: metric.exportCount,
+      functions: metric.functionLikeCount,
+      classes: metric.classCount
+    }));
+}
+
+function inferModuleCandidates(root: string, sourceFiles: string[]): Array<Record<string, number | string>> {
+  const candidates = new Map<string, { name: string; path: string; fileCount: number }>();
+
+  for (const sourceFile of sourceFiles) {
+    const relativeFilePath = relativePath(root, sourceFile);
+    const segments = relativeFilePath.split("/").filter(Boolean);
+    if (segments.length === 0) {
+      continue;
+    }
+
+    const candidate = inferModuleCandidateFromSegments(segments);
+    const existing = candidates.get(candidate.path) ?? {
+      name: candidate.name,
+      path: candidate.path,
+      fileCount: 0
+    };
+    existing.fileCount += 1;
+    candidates.set(candidate.path, existing);
+  }
+
+  return [...candidates.values()]
+    .sort((left, right) => {
+      if (right.fileCount !== left.fileCount) {
+        return right.fileCount - left.fileCount;
+      }
+
+      return left.path.localeCompare(right.path);
+    })
+    .slice(0, 8);
+}
+
+function inferModuleCandidateFromSegments(segments: string[]): { name: string; path: string } {
+  if (segments[0] === "src") {
+    const secondSegment = segments[1];
+    if (!secondSegment || isSourceFileSegment(secondSegment)) {
+      return { name: "SrcRoot", path: "src/*" };
+    }
+
+    return { name: toPascalCase(secondSegment), path: `src/${secondSegment}/**` };
+  }
+
+  const firstSegment = segments[0] ?? "root";
+  if (isSourceFileSegment(firstSegment)) {
+    return { name: "Root", path: "*" };
+  }
+
+  return { name: toPascalCase(firstSegment), path: `${firstSegment}/**` };
+}
+
+function isSourceFileSegment(segment: string): boolean {
+  return /\.[cm]?[jt]sx?$/.test(segment);
+}
+
+function toPascalCase(value: string): string {
+  const words = value
+    .split(/[^A-Za-z0-9]+/)
+    .map((word) => word.trim())
+    .filter(Boolean);
+
+  const name = words.map((word) => `${word.charAt(0).toUpperCase()}${word.slice(1)}`).join("");
+  return name || "Module";
 }
 
 function resolveExplicitSpecFiles(root: string, specPaths: string[]): string[] {
@@ -215,4 +324,8 @@ function findUnownedSourceFiles(sourceFiles: string[], ownership: ReturnType<typ
         suggestion: "Add a module path that owns this file, or exclude it from Axiom source discovery."
       }
     }));
+}
+
+function relativePath(root: string, filePath: string): string {
+  return path.relative(root, filePath).replace(/\\/g, "/");
 }

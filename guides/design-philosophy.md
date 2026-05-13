@@ -86,6 +86,7 @@ They are early surfaces for architecture pressure:
 - `deep_internal_import`: a module bypasses another module's likely `index.*` entry point.
 - `coupling_concentration`: a module has high observed fan-in or fan-out.
 - `unresolved_import`: Axiom can see a static internal-looking import but cannot resolve it into the observed graph.
+- `large_module_file`: a source file is large enough that responsibilities may be concentrated inside one file, outside the import graph.
 
 These signals belong in review, PR comments, dashboards, and future agent repair loops. They should not become default CI failures unless a team deliberately converts a repeated pattern into an explicit contract.
 
@@ -103,6 +104,8 @@ It does not fully observe:
 - framework conventions that do not appear as static source imports
 
 It also does not prove full symbol-level API health. A public `index.ts` can make consumers look compliant while becoming an accidental facade. Axiom can catch direct hidden re-exports, local import-then-export leaks, broad barrels, entrypoint coupling, and deep internal imports, but it still cannot prove that every exported symbol is a good public API.
+
+A quiet import graph also does not prove that responsibilities inside a file are healthy. Large-file warnings exist to keep that caveat visible in few-file repositories, but they are review prompts, not a complexity score or a refactor command.
 
 The right response is not to overclaim. The right response is to surface reliable proxy signals, document the remaining gap, and collect real-project evidence before adding more rules.
 

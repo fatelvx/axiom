@@ -42,6 +42,7 @@ Files:
 - `results/mirofish-read-the-graph-pilot-card-target-2026-05-13.md`: targeted backtest after adding the read-the-graph guide, 10-minute pilot card, and v11 interpretation replay evidence.
 - `results/mirofish-pilot-confidence-mcp-target-2026-05-13.md`: targeted backtest after the Lumina entrypoint-confidence repair plus ofetch / Preact Signals safe pilots; recommends one more review-story refinement before MCP.
 - `results/mirofish-review-story-target-2026-05-13.md`: targeted backtest after adding `architectureSummary.reviewStory`; recommends a larger public-reception / MCP backtest next.
+- `results/mirofish-big-backtest-v4-2026-05-13.md`: larger synthetic backtest after `reviewStory`; recommends a limited read-only MCP preview after baseline lifecycle and agent-loop guardrail docs.
 - `tools/write-mirofish-env.ps1`: local helper for writing MiroFish credentials to `.env` without pasting secrets into chat.
 
 Live run input snapshot:

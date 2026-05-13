@@ -728,3 +728,37 @@ Detailed result:
 ```text
 experiments/axiom-forecast/results/mirofish-review-story-target-2026-05-13.md
 ```
+
+### Big Backtest V4 After Review Story
+
+Before this larger backtest, Axiom had shipped and pushed:
+
+- graph JSON schema `axiom.graph.v12`
+- `architectureSummary.reviewStory`
+- human and Markdown review story output
+- target backtest evidence that `reviewStory` addresses the "117 warnings and a graph" rejection pattern
+- safe pilots on Lumina, ofetch, and Preact Signals
+
+Method:
+
+Used the same local MiroFish `.env` and model configuration through direct `LLMClient`. This was a larger synthetic reception prompt, not a full OASIS social simulation rerun.
+
+Primary result:
+
+- A limited read-only MCP preview is now reasonable for senior engineers and agent-loop builders, but broad launch language is still premature.
+- `reviewStory` reduces the "just a linter / dependency graph" perception by giving a stable narrative entrypoint.
+- MCP should stay a thin wrapper over CLI / JSON, with no write tools, no auto-accepted debt, and no automatic gates from advisory review story output.
+- The two small guardrails to ship before preview are baseline lifecycle guidance and an agent-loop integration recipe.
+- The main remaining misunderstanding is that users or agents may treat a quiet story as proof of semantic architecture health.
+
+Follow-up taken:
+
+- Added `guides/agent-loop.md`.
+- Linked it from README, JSON Consumers, and GitHub Actions.
+- Documented the `.axi/baselines/current.graph.json` pilot convention, safe agent loop, `reviewStory` consumption, and read-only MCP v0 guardrails.
+
+Detailed result:
+
+```text
+experiments/axiom-forecast/results/mirofish-big-backtest-v4-2026-05-13.md
+```

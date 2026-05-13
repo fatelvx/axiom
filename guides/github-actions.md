@@ -153,3 +153,5 @@ hard gate from axi check
 review context from axi observe
 policy changes through .axi review
 ```
+
+For a fuller AI repair-loop or MCP wrapper pattern, use [Agent And MCP Integration](agent-loop.md). It covers baseline lifecycle, `reviewStory` consumption, and why agents should not update baselines or accepted debt automatically.

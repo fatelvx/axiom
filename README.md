@@ -140,6 +140,7 @@ Choose your next step:
 - First graph review: use [Read The Graph](guides/read-the-graph.md) when the diagram is useful but you are not sure whether it means healthy or drifting.
 - Teammate trial: send [10-Minute Pilot Card](guides/pilot-card.md) when someone wants to try Axiom without adding files to their repo.
 - CI path: read [GitHub Actions And PR Summaries](guides/github-actions.md), then compare it with the dogfooded workflow in [.github/workflows/ci.yml](.github/workflows/ci.yml).
+- Agent path: read [Agent And MCP Integration](guides/agent-loop.md) before giving Axiom output to an AI repair loop or MCP wrapper.
 - Real contract shape: inspect [examples/monorepo-workspace](examples/monorepo-workspace) for package-level contracts.
 - Tool comparison: read [Comparison And Boundaries](guides/comparison.md) if you are asking how Axiom differs from ESLint, Dependency Cruiser, Nx, CodeQL, or custom scripts.
 - Product philosophy: read [Design Philosophy](guides/design-philosophy.md) to understand why Axiom prefers observability first and hard gates only for high-confidence contracts.
@@ -685,6 +686,7 @@ For a fuller PR workflow, use [GitHub Actions And PR Summaries](guides/github-ac
 - [Comparison And Boundaries](guides/comparison.md)
 - [GitHub Actions And PR Summaries](guides/github-actions.md)
 - [JSON Consumers](guides/json-consumers.md)
+- [Agent And MCP Integration](guides/agent-loop.md)
 - [Publishing The Public Alpha](guides/publishing-alpha.md)
 - [Contributing](CONTRIBUTING.md)
 - [Basic App Example](examples/basic-app)

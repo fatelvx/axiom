@@ -1,0 +1,172 @@
+{
+  "kind": "axiom.real-project-diff-smoke.v1",
+  "generatedAt": "2026-05-13T01:51:39.887Z",
+  "repo": "https://github.com/honojs/hono.git",
+  "name": "hono-src",
+  "baselineRef": "v4.8.4",
+  "currentRef": "v4.9.12",
+  "groupBy": "folder",
+  "sourceScope": {
+    "include": [
+      "src/**"
+    ],
+    "exclude": []
+  },
+  "warningFlags": [
+    "--warn-coupling-concentration",
+    "--warn-deep-internal-imports",
+    "--warn-unresolved-imports"
+  ],
+  "node": "v24.14.1",
+  "platform": "win32 x64",
+  "baseline": {
+    "ref": "v4.8.4",
+    "commit": "530ab09",
+    "packageVersion": "4.8.4",
+    "summary": {
+      "modules": 3,
+      "declaredDependencies": 2,
+      "forbiddenDependencies": 0,
+      "exposedPaths": 0,
+      "hiddenPaths": 0,
+      "observedDependencies": 14,
+      "shownObservedDependencies": 14,
+      "violations": 0,
+      "intentionalViolations": 0,
+      "warnings": 6
+    }
+  },
+  "current": {
+    "ref": "v4.9.12",
+    "commit": "4b796cf",
+    "packageVersion": "4.9.12",
+    "summary": {
+      "modules": 3,
+      "declaredDependencies": 2,
+      "forbiddenDependencies": 0,
+      "exposedPaths": 0,
+      "hiddenPaths": 0,
+      "observedDependencies": 14,
+      "shownObservedDependencies": 14,
+      "violations": 0,
+      "intentionalViolations": 0,
+      "warnings": 6
+    }
+  },
+  "drift": {
+    "kind": "advisory_observed_edge_drift",
+    "baseline": {
+      "schemaVersion": "axiom.graph.v9",
+      "observedDependencies": 14
+    },
+    "newObservedEdges": [],
+    "removedObservedEdges": []
+  },
+  "warnings": {
+    "byCode": {
+      "deep_internal_import": 6
+    },
+    "details": [
+      {
+        "code": "deep_internal_import",
+        "message": "Preset imports MixedCycle through a deep relative path instead of a likely entry point.",
+        "location": {
+          "filePath": "src/preset/quick.ts",
+          "line": 6
+        },
+        "observed": "Preset -> MixedCycle deep internal import",
+        "fromModule": "Preset",
+        "toModule": "MixedCycle",
+        "specifier": "../hono-base",
+        "importedPath": "src/hono-base.ts",
+        "incomingModules": [],
+        "outgoingModules": []
+      },
+      {
+        "code": "deep_internal_import",
+        "message": "Preset imports MixedCycle through a deep relative path instead of a likely entry point.",
+        "location": {
+          "filePath": "src/preset/quick.ts",
+          "line": 7
+        },
+        "observed": "Preset -> MixedCycle deep internal import",
+        "fromModule": "Preset",
+        "toModule": "MixedCycle",
+        "specifier": "../hono-base",
+        "importedPath": "src/hono-base.ts",
+        "incomingModules": [],
+        "outgoingModules": []
+      },
+      {
+        "code": "deep_internal_import",
+        "message": "Preset imports MixedCycle through a deep relative path instead of a likely entry point.",
+        "location": {
+          "filePath": "src/preset/quick.ts",
+          "line": 11
+        },
+        "observed": "Preset -> MixedCycle deep internal import",
+        "fromModule": "Preset",
+        "toModule": "MixedCycle",
+        "specifier": "../types",
+        "importedPath": "src/types.ts",
+        "incomingModules": [],
+        "outgoingModules": []
+      },
+      {
+        "code": "deep_internal_import",
+        "message": "Preset imports MixedCycle through a deep relative path instead of a likely entry point.",
+        "location": {
+          "filePath": "src/preset/tiny.ts",
+          "line": 6
+        },
+        "observed": "Preset -> MixedCycle deep internal import",
+        "fromModule": "Preset",
+        "toModule": "MixedCycle",
+        "specifier": "../hono-base",
+        "importedPath": "src/hono-base.ts",
+        "incomingModules": [],
+        "outgoingModules": []
+      },
+      {
+        "code": "deep_internal_import",
+        "message": "Preset imports MixedCycle through a deep relative path instead of a likely entry point.",
+        "location": {
+          "filePath": "src/preset/tiny.ts",
+          "line": 7
+        },
+        "observed": "Preset -> MixedCycle deep internal import",
+        "fromModule": "Preset",
+        "toModule": "MixedCycle",
+        "specifier": "../hono-base",
+        "importedPath": "src/hono-base.ts",
+        "incomingModules": [],
+        "outgoingModules": []
+      },
+      {
+        "code": "deep_internal_import",
+        "message": "Preset imports MixedCycle through a deep relative path instead of a likely entry point.",
+        "location": {
+          "filePath": "src/preset/tiny.ts",
+          "line": 9
+        },
+        "observed": "Preset -> MixedCycle deep internal import",
+        "fromModule": "Preset",
+        "toModule": "MixedCycle",
+        "specifier": "../types",
+        "importedPath": "src/types.ts",
+        "incomingModules": [],
+        "outgoingModules": []
+      }
+    ]
+  },
+  "timingsMs": {
+    "cloneBaseline": 2015.4,
+    "cloneCurrent": 1965.8,
+    "infer": 1320.5,
+    "baselineGraph": 1334.6,
+    "diffJson": 1521.6,
+    "diffMarkdown": 1807.3,
+    "observeMarkdown": 1606.3,
+    "diffMermaid": 1406.5
+  }
+}

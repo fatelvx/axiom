@@ -1,0 +1,670 @@
+{
+  "kind": "axiom.real-project-diff-smoke.v1",
+  "generatedAt": "2026-05-13T01:52:29.223Z",
+  "repo": "https://github.com/honojs/hono.git",
+  "name": "hono",
+  "baselineRef": "v4.8.4",
+  "currentRef": "v4.9.12",
+  "groupBy": "workspace",
+  "sourceScope": {
+    "include": [],
+    "exclude": []
+  },
+  "warningFlags": [
+    "--warn-coupling-concentration",
+    "--warn-deep-internal-imports",
+    "--warn-unresolved-imports"
+  ],
+  "node": "v24.14.1",
+  "platform": "win32 x64",
+  "baseline": {
+    "ref": "v4.8.4",
+    "commit": "530ab09",
+    "packageVersion": "4.8.4",
+    "summary": {
+      "modules": 6,
+      "declaredDependencies": 5,
+      "forbiddenDependencies": 0,
+      "exposedPaths": 0,
+      "hiddenPaths": 0,
+      "observedDependencies": 85,
+      "shownObservedDependencies": 85,
+      "violations": 0,
+      "intentionalViolations": 0,
+      "warnings": 38
+    }
+  },
+  "current": {
+    "ref": "v4.9.12",
+    "commit": "4b796cf",
+    "packageVersion": "4.9.12",
+    "summary": {
+      "modules": 6,
+      "declaredDependencies": 5,
+      "forbiddenDependencies": 0,
+      "exposedPaths": 0,
+      "hiddenPaths": 0,
+      "observedDependencies": 77,
+      "shownObservedDependencies": 77,
+      "violations": 0,
+      "intentionalViolations": 0,
+      "warnings": 38
+    }
+  },
+  "drift": {
+    "kind": "advisory_observed_edge_drift",
+    "baseline": {
+      "schemaVersion": "axiom.graph.v9",
+      "observedDependencies": 85
+    },
+    "newObservedEdges": [],
+    "removedObservedEdges": [
+      {
+        "fromModule": "RuntimeTests",
+        "toModule": "Vitest",
+        "importSites": 6,
+        "firstImport": {
+          "filePath": "runtime-tests/bun/vitest.config.ts",
+          "line": 3,
+          "specifier": "../../vitest.config",
+          "resolvedPath": "vitest.config.ts"
+        },
+        "violationCodes": [],
+        "intentionalViolationCodes": []
+      },
+      {
+        "fromModule": "Vitest2",
+        "toModule": "Vitest",
+        "importSites": 2,
+        "firstImport": {
+          "filePath": ".vitest.config/jsx-runtime-default.ts",
+          "line": 1,
+          "specifier": "../vitest.config",
+          "resolvedPath": "vitest.config.ts"
+        },
+        "violationCodes": [],
+        "intentionalViolationCodes": []
+      }
+    ]
+  },
+  "warnings": {
+    "byCode": {
+      "unresolved_import": 4,
+      "deep_internal_import": 34
+    },
+    "details": [
+      {
+        "code": "unresolved_import",
+        "message": "Benchmarks has an import that Axiom could not resolve into the observed graph.",
+        "location": {
+          "filePath": "benchmarks/handle-event/index.js",
+          "line": 7
+        },
+        "observed": "Benchmarks unresolved import",
+        "module": "Benchmarks",
+        "specifier": "../../dist/hono",
+        "incomingModules": [],
+        "outgoingModules": []
+      },
+      {
+        "code": "unresolved_import",
+        "message": "Benchmarks has an import that Axiom could not resolve into the observed graph.",
+        "location": {
+          "filePath": "benchmarks/handle-event/index.js",
+          "line": 8
+        },
+        "observed": "Benchmarks unresolved import",
+        "module": "Benchmarks",
+        "specifier": "../../dist/router/reg-exp-router",
+        "incomingModules": [],
+        "outgoingModules": []
+      },
+      {
+        "code": "unresolved_import",
+        "message": "Benchmarks has an import that Axiom could not resolve into the observed graph.",
+        "location": {
+          "filePath": "benchmarks/webapp/hono.js",
+          "line": 1
+        },
+        "observed": "Benchmarks unresolved import",
+        "module": "Benchmarks",
+        "specifier": "../../dist/hono",
+        "incomingModules": [],
+        "outgoingModules": []
+      },
+      {
+        "code": "unresolved_import",
+        "message": "PerfMeasures has an import that Axiom could not resolve into the observed graph.",
+        "location": {
+          "filePath": "perf-measures/type-check/client.ts",
+          "line": 2
+        },
+        "observed": "PerfMeasures unresolved import",
+        "module": "PerfMeasures",
+        "specifier": "./generated/app",
+        "incomingModules": [],
+        "outgoingModules": []
+      },
+      {
+        "code": "deep_internal_import",
+        "message": "Benchmarks imports Hono through a deep relative path instead of a likely entry point.",
+        "location": {
+          "filePath": "benchmarks/query-param/src/bench.mts",
+          "line": 2
+        },
+        "observed": "Benchmarks -> Hono deep internal import",
+        "fromModule": "Benchmarks",
+        "toModule": "Hono",
+        "specifier": "../../../src/utils/url",
+        "importedPath": "src/utils/url.ts",
+        "incomingModules": [],
+        "outgoingModules": []
+      },
+      {
+        "code": "deep_internal_import",
+        "message": "Benchmarks imports Hono through a deep relative path instead of a likely entry point.",
+        "location": {
+          "filePath": "benchmarks/query-param/src/hono.mts",
+          "line": 1
+        },
+        "observed": "Benchmarks -> Hono deep internal import",
+        "fromModule": "Benchmarks",
+        "toModule": "Hono",
+        "specifier": "../../../src/utils/url",
+        "importedPath": "src/utils/url.ts",
+        "incomingModules": [],
+        "outgoingModules": []
+      },
+      {
+        "code": "deep_internal_import",
+        "message": "Benchmarks imports Hono through a deep relative path instead of a likely entry point.",
+        "location": {
+          "filePath": "benchmarks/routers-deno/src/hono.mts",
+          "line": 4
+        },
+        "observed": "Benchmarks -> Hono deep internal import",
+        "fromModule": "Benchmarks",
+        "toModule": "Hono",
+        "specifier": "../../../src/router.ts",
+        "importedPath": "src/router.ts",
+        "incomingModules": [],
+        "outgoingModules": []
+      },
+      {
+        "code": "deep_internal_import",
+        "message": "Benchmarks imports Hono through a deep relative path instead of a likely entry point.",
+        "location": {
+          "filePath": "benchmarks/routers/src/hono.mts",
+          "line": 4
+        },
+        "observed": "Benchmarks -> Hono deep internal import",
+        "fromModule": "Benchmarks",
+        "toModule": "Hono",
+        "specifier": "../../../src/router.ts",
+        "importedPath": "src/router.ts",
+        "incomingModules": [],
+        "outgoingModules": []
+      },
+      {
+        "code": "deep_internal_import",
+        "message": "RuntimeTests imports Hono through a deep relative path instead of a likely entry point.",
+        "location": {
+          "filePath": "runtime-tests/bun/index.test.tsx",
+          "line": 6
+        },
+        "observed": "RuntimeTests -> Hono deep internal import",
+        "fromModule": "RuntimeTests",
+        "toModule": "Hono",
+        "specifier": "../../src/adapter/bun/websocket",
+        "importedPath": "src/adapter/bun/websocket.ts",
+        "incomingModules": [],
+        "outgoingModules": []
+      },
+      {
+        "code": "deep_internal_import",
+        "message": "RuntimeTests imports Hono through a deep relative path instead of a likely entry point.",
+        "location": {
+          "filePath": "runtime-tests/bun/index.test.tsx",
+          "line": 7
+        },
+        "observed": "RuntimeTests -> Hono deep internal import",
+        "fromModule": "RuntimeTests",
+        "toModule": "Hono",
+        "specifier": "../../src/adapter/bun/websocket",
+        "importedPath": "src/adapter/bun/websocket.ts",
+        "incomingModules": [],
+        "outgoingModules": []
+      },
+      {
+        "code": "deep_internal_import",
+        "message": "RuntimeTests imports Hono through a deep relative path instead of a likely entry point.",
+        "location": {
+          "filePath": "runtime-tests/bun/index.test.tsx",
+          "line": 8
+        },
+        "observed": "RuntimeTests -> Hono deep internal import",
+        "fromModule": "RuntimeTests",
+        "toModule": "Hono",
+        "specifier": "../../src/context",
+        "importedPath": "src/context.ts",
+        "incomingModules": [],
+        "outgoingModules": []
+      },
+      {
+        "code": "deep_internal_import",
+        "message": "RuntimeTests imports Hono through a deep relative path instead of a likely entry point.",
+        "location": {
+          "filePath": "runtime-tests/deno-jsx/jsx.test.tsx",
+          "line": 4
+        },
+        "observed": "RuntimeTests -> Hono deep internal import",
+        "fromModule": "RuntimeTests",
+        "toModule": "Hono",
+        "specifier": "../../src/jsx/streaming.ts",
+        "importedPath": "src/jsx/streaming.ts",
+        "incomingModules": [],
+        "outgoingModules": []
+      },
+      {
+        "code": "deep_internal_import",
+        "message": "RuntimeTests imports Hono through a deep relative path instead of a likely entry point.",
+        "location": {
+          "filePath": "runtime-tests/deno-jsx/jsx.test.tsx",
+          "line": 5
+        },
+        "observed": "RuntimeTests -> Hono deep internal import",
+        "fromModule": "RuntimeTests",
+        "toModule": "Hono",
+        "specifier": "../../src/utils/html.ts",
+        "importedPath": "src/utils/html.ts",
+        "incomingModules": [],
+        "outgoingModules": []
+      },
+      {
+        "code": "deep_internal_import",
+        "message": "RuntimeTests imports Hono through a deep relative path instead of a likely entry point.",
+        "location": {
+          "filePath": "runtime-tests/deno-jsx/jsx.test.tsx",
+          "line": 6
+        },
+        "observed": "RuntimeTests -> Hono deep internal import",
+        "fromModule": "RuntimeTests",
+        "toModule": "Hono",
+        "specifier": "../../src/utils/html.ts",
+        "importedPath": "src/utils/html.ts",
+        "incomingModules": [],
+        "outgoingModules": []
+      },
+      {
+        "code": "deep_internal_import",
+        "message": "RuntimeTests imports Hono through a deep relative path instead of a likely entry point.",
+        "location": {
+          "filePath": "runtime-tests/deno/hono.test.ts",
+          "line": 3
+        },
+        "observed": "RuntimeTests -> Hono deep internal import",
+        "fromModule": "RuntimeTests",
+        "toModule": "Hono",
+        "specifier": "../../src/context.ts",
+        "importedPath": "src/context.ts",
+        "incomingModules": [],
+        "outgoingModules": []
+      },
+      {
+        "code": "deep_internal_import",
+        "message": "RuntimeTests imports Hono through a deep relative path instead of a likely entry point.",
+        "location": {
+          "filePath": "runtime-tests/deno/hono.test.ts",
+          "line": 5
+        },
+        "observed": "RuntimeTests -> Hono deep internal import",
+        "fromModule": "RuntimeTests",
+        "toModule": "Hono",
+        "specifier": "../../src/hono.ts",
+        "importedPath": "src/hono.ts",
+        "incomingModules": [],
+        "outgoingModules": []
+      },
+      {
+        "code": "deep_internal_import",
+        "message": "RuntimeTests imports Hono through a deep relative path instead of a likely entry point.",
+        "location": {
+          "filePath": "runtime-tests/deno/middleware.test.tsx",
+          "line": 5
+        },
+        "observed": "RuntimeTests -> Hono deep internal import",
+        "fromModule": "RuntimeTests",
+        "toModule": "Hono",
+        "specifier": "../../src/hono.ts",
+        "importedPath": "src/hono.ts",
+        "incomingModules": [],
+        "outgoingModules": []
+      },
+      {
+        "code": "deep_internal_import",
+        "message": "RuntimeTests imports Hono through a deep relative path instead of a likely entry point.",
+        "location": {
+          "filePath": "runtime-tests/deno/ssg.test.tsx",
+          "line": 2
+        },
+        "observed": "RuntimeTests -> Hono deep internal import",
+        "fromModule": "RuntimeTests",
+        "toModule": "Hono",
+        "specifier": "../../src/adapter/deno/ssg.ts",
+        "importedPath": "src/adapter/deno/ssg.ts",
+        "incomingModules": [],
+        "outgoingModules": []
+      },
+      {
+        "code": "deep_internal_import",
+        "message": "RuntimeTests imports Hono through a deep relative path instead of a likely entry point.",
+        "location": {
+          "filePath": "runtime-tests/deno/ssg.test.tsx",
+          "line": 3
+        },
+        "observed": "RuntimeTests -> Hono deep internal import",
+        "fromModule": "RuntimeTests",
+        "toModule": "Hono",
+        "specifier": "../../src/hono.ts",
+        "importedPath": "src/hono.ts",
+        "incomingModules": [],
+        "outgoingModules": []
+      },
+      {
+        "code": "deep_internal_import",
+        "message": "RuntimeTests imports Hono through a deep relative path instead of a likely entry point.",
+        "location": {
+          "filePath": "runtime-tests/deno/stream.test.ts",
+          "line": 3
+        },
+        "observed": "RuntimeTests -> Hono deep internal import",
+        "fromModule": "RuntimeTests",
+        "toModule": "Hono",
+        "specifier": "../../src/hono.ts",
+        "importedPath": "src/hono.ts",
+        "incomingModules": [],
+        "outgoingModules": []
+      },
+      {
+        "code": "deep_internal_import",
+        "message": "RuntimeTests imports Hono through a deep relative path instead of a likely entry point.",
+        "location": {
+          "filePath": "runtime-tests/lambda-edge/index.test.ts",
+          "line": 1
+        },
+        "observed": "RuntimeTests -> Hono deep internal import",
+        "fromModule": "RuntimeTests",
+        "toModule": "Hono",
+        "specifier": "../../src/adapter/lambda-edge/handler",
+        "importedPath": "src/adapter/lambda-edge/handler.ts",
+        "incomingModules": [],
+        "outgoingModules": []
+      },
+      {
+        "code": "deep_internal_import",
+        "message": "RuntimeTests imports Hono through a deep relative path instead of a likely entry point.",
+        "location": {
+          "filePath": "runtime-tests/lambda-edge/index.test.ts",
+          "line": 7
+        },
+        "observed": "RuntimeTests -> Hono deep internal import",
+        "fromModule": "RuntimeTests",
+        "toModule": "Hono",
+        "specifier": "../../src/adapter/lambda-edge/handler",
+        "importedPath": "src/adapter/lambda-edge/handler.ts",
+        "incomingModules": [],
+        "outgoingModules": []
+      },
+      {
+        "code": "deep_internal_import",
+        "message": "RuntimeTests imports Hono through a deep relative path instead of a likely entry point.",
+        "location": {
+          "filePath": "runtime-tests/lambda-edge/index.test.ts",
+          "line": 8
+        },
+        "observed": "RuntimeTests -> Hono deep internal import",
+        "fromModule": "RuntimeTests",
+        "toModule": "Hono",
+        "specifier": "../../src/hono",
+        "importedPath": "src/hono.ts",
+        "incomingModules": [],
+        "outgoingModules": []
+      },
+      {
+        "code": "deep_internal_import",
+        "message": "RuntimeTests imports Hono through a deep relative path instead of a likely entry point.",
+        "location": {
+          "filePath": "runtime-tests/lambda/index.test.ts",
+          "line": 2
+        },
+        "observed": "RuntimeTests -> Hono deep internal import",
+        "fromModule": "RuntimeTests",
+        "toModule": "Hono",
+        "specifier": "../../src/adapter/aws-lambda/handler",
+        "importedPath": "src/adapter/aws-lambda/handler.ts",
+        "incomingModules": [],
+        "outgoingModules": []
+      },
+      {
+        "code": "deep_internal_import",
+        "message": "RuntimeTests imports Hono through a deep relative path instead of a likely entry point.",
+        "location": {
+          "filePath": "runtime-tests/lambda/index.test.ts",
+          "line": 10
+        },
+        "observed": "RuntimeTests -> Hono deep internal import",
+        "fromModule": "RuntimeTests",
+        "toModule": "Hono",
+        "specifier": "../../src/adapter/aws-lambda/handler",
+        "importedPath": "src/adapter/aws-lambda/handler.ts",
+        "incomingModules": [],
+        "outgoingModules": []
+      },
+      {
+        "code": "deep_internal_import",
+        "message": "RuntimeTests imports Hono through a deep relative path instead of a likely entry point.",
+        "location": {
+          "filePath": "runtime-tests/lambda/index.test.ts",
+          "line": 15
+        },
+        "observed": "RuntimeTests -> Hono deep internal import",
+        "fromModule": "RuntimeTests",
+        "toModule": "Hono",
+        "specifier": "../../src/adapter/aws-lambda/types",
+        "importedPath": "src/adapter/aws-lambda/types.ts",
+        "incomingModules": [],
+        "outgoingModules": []
+      },
+      {
+        "code": "deep_internal_import",
+        "message": "RuntimeTests imports Hono through a deep relative path instead of a likely entry point.",
+        "location": {
+          "filePath": "runtime-tests/lambda/index.test.ts",
+          "line": 22
+        },
+        "observed": "RuntimeTests -> Hono deep internal import",
+        "fromModule": "RuntimeTests",
+        "toModule": "Hono",
+        "specifier": "../../src/hono",
+        "importedPath": "src/hono.ts",
+        "incomingModules": [],
+        "outgoingModules": []
+      },
+      {
+        "code": "deep_internal_import",
+        "message": "RuntimeTests imports Hono through a deep relative path instead of a likely entry point.",
+        "location": {
+          "filePath": "runtime-tests/lambda/mock.ts",
+          "line": 2
+        },
+        "observed": "RuntimeTests -> Hono deep internal import",
+        "fromModule": "RuntimeTests",
+        "toModule": "Hono",
+        "specifier": "../../src/adapter/aws-lambda/handler",
+        "importedPath": "src/adapter/aws-lambda/handler.ts",
+        "incomingModules": [],
+        "outgoingModules": []
+      },
+      {
+        "code": "deep_internal_import",
+        "message": "RuntimeTests imports Hono through a deep relative path instead of a likely entry point.",
+        "location": {
+          "filePath": "runtime-tests/lambda/mock.ts",
+          "line": 7
+        },
+        "observed": "RuntimeTests -> Hono deep internal import",
+        "fromModule": "RuntimeTests",
+        "toModule": "Hono",
+        "specifier": "../../src/adapter/aws-lambda/types",
+        "importedPath": "src/adapter/aws-lambda/types.ts",
+        "incomingModules": [],
+        "outgoingModules": []
+      },
+      {
+        "code": "deep_internal_import",
+        "message": "RuntimeTests imports Hono through a deep relative path instead of a likely entry point.",
+        "location": {
+          "filePath": "runtime-tests/lambda/stream-mock.ts",
+          "line": 3
+        },
+        "observed": "RuntimeTests -> Hono deep internal import",
+        "fromModule": "RuntimeTests",
+        "toModule": "Hono",
+        "specifier": "../../src/adapter/aws-lambda/handler",
+        "importedPath": "src/adapter/aws-lambda/handler.ts",
+        "incomingModules": [],
+        "outgoingModules": []
+      },
+      {
+        "code": "deep_internal_import",
+        "message": "RuntimeTests imports Hono through a deep relative path instead of a likely entry point.",
+        "location": {
+          "filePath": "runtime-tests/lambda/stream-mock.ts",
+          "line": 7
+        },
+        "observed": "RuntimeTests -> Hono deep internal import",
+        "fromModule": "RuntimeTests",
+        "toModule": "Hono",
+        "specifier": "../../src/adapter/aws-lambda/types",
+        "importedPath": "src/adapter/aws-lambda/types.ts",
+        "incomingModules": [],
+        "outgoingModules": []
+      },
+      {
+        "code": "deep_internal_import",
+        "message": "RuntimeTests imports Hono through a deep relative path instead of a likely entry point.",
+        "location": {
+          "filePath": "runtime-tests/lambda/stream.test.ts",
+          "line": 1
+        },
+        "observed": "RuntimeTests -> Hono deep internal import",
+        "fromModule": "RuntimeTests",
+        "toModule": "Hono",
+        "specifier": "../../src/adapter/aws-lambda/handler",
+        "importedPath": "src/adapter/aws-lambda/handler.ts",
+        "incomingModules": [],
+        "outgoingModules": []
+      },
+      {
+        "code": "deep_internal_import",
+        "message": "RuntimeTests imports Hono through a deep relative path instead of a likely entry point.",
+        "location": {
+          "filePath": "runtime-tests/lambda/stream.test.ts",
+          "line": 2
+        },
+        "observed": "RuntimeTests -> Hono deep internal import",
+        "fromModule": "RuntimeTests",
+        "toModule": "Hono",
+        "specifier": "../../src/adapter/aws-lambda/handler",
+        "importedPath": "src/adapter/aws-lambda/handler.ts",
+        "incomingModules": [],
+        "outgoingModules": []
+      },
+      {
+        "code": "deep_internal_import",
+        "message": "RuntimeTests imports Hono through a deep relative path instead of a likely entry point.",
+        "location": {
+          "filePath": "runtime-tests/lambda/stream.test.ts",
+          "line": 3
+        },
+        "observed": "RuntimeTests -> Hono deep internal import",
+        "fromModule": "RuntimeTests",
+        "toModule": "Hono",
+        "specifier": "../../src/adapter/aws-lambda/types",
+        "importedPath": "src/adapter/aws-lambda/types.ts",
+        "incomingModules": [],
+        "outgoingModules": []
+      },
+      {
+        "code": "deep_internal_import",
+        "message": "RuntimeTests imports Hono through a deep relative path instead of a likely entry point.",
+        "location": {
+          "filePath": "runtime-tests/lambda/stream.test.ts",
+          "line": 8
+        },
+        "observed": "RuntimeTests -> Hono deep internal import",
+        "fromModule": "RuntimeTests",
+        "toModule": "Hono",
+        "specifier": "../../src/hono",
+        "importedPath": "src/hono.ts",
+        "incomingModules": [],
+        "outgoingModules": []
+      },
+      {
+        "code": "deep_internal_import",
+        "message": "RuntimeTests imports Hono through a deep relative path instead of a likely entry point.",
+        "location": {
+          "filePath": "runtime-tests/node/index.test.ts",
+          "line": 7
+        },
+        "observed": "RuntimeTests -> Hono deep internal import",
+        "fromModule": "RuntimeTests",
+        "toModule": "Hono",
+        "specifier": "../../src/context",
+        "importedPath": "src/context.ts",
+        "incomingModules": [],
+        "outgoingModules": []
+      },
+      {
+        "code": "deep_internal_import",
+        "message": "RuntimeTests imports Hono through a deep relative path instead of a likely entry point.",
+        "location": {
+          "filePath": "runtime-tests/workerd/index.ts",
+          "line": 3
+        },
+        "observed": "RuntimeTests -> Hono deep internal import",
+        "fromModule": "RuntimeTests",
+        "toModule": "Hono",
+        "specifier": "../../src/hono",
+        "importedPath": "src/hono.ts",
+        "incomingModules": [],
+        "outgoingModules": []
+      },
+      {
+        "code": "deep_internal_import",
+        "message": "RuntimeTests imports Hono through a deep relative path instead of a likely entry point.",
+        "location": {
+          "filePath": "runtime-tests/workerd/index.ts",
+          "line": 4
+        },
+        "observed": "RuntimeTests -> Hono deep internal import",
+        "fromModule": "RuntimeTests",
+        "toModule": "Hono",
+        "specifier": "../../src/utils/color",
+        "importedPath": "src/utils/color.ts",
+        "incomingModules": [],
+        "outgoingModules": []
+      }
+    ]
+  },
+  "timingsMs": {
+    "cloneBaseline": 1674.1,
+    "cloneCurrent": 2463.5,
+    "infer": 2659.2,
+    "baselineGraph": 2090.7,
+    "diffJson": 2094.5,
+    "diffMarkdown": 1544.3,
+    "observeMarkdown": 1453.7,
+    "diffMermaid": 1503
+  }
+}

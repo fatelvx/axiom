@@ -1,0 +1,266 @@
+## Axiom Architecture Review
+
+Status: needs review
+Review mode: observe (advisory)
+
+### Summary
+- Modules: 6
+- Declared dependencies: 5
+- Observed dependencies: 0 of 77
+- Hard violations: 0
+- Intentional violations: 0
+- Advisory warnings: 38
+- Drift: 0 new observed edges, 2 removed observed edges
+
+### Review Notes
+- This is review output; use `axi check` when you want a CI gate.
+- Hard violations are contract failures.
+- Intentional violations, warnings, and drift are visible debt or advisory signals.
+- Axiom does not auto-accept debt; accepted debt must be declared in `.axi` with an expiration date and reason.
+- Expired or invalid intentional violations are hard contract failures in `axi check`.
+- Observed dependencies are filtered to attention edges; the summary keeps the full count.
+
+### Hard Violations
+- None
+
+### Visible Intentional Debt
+- None
+
+### Advisory Warnings
+- `unresolved_import` at `benchmarks/handle-event/index.js:7`: Benchmarks has an import that Axiom could not resolve into the observed graph.
+  - Observed: Benchmarks unresolved import
+  - Specifier: `../../dist/hono`
+  - Fix: Axiom could not map this static import to a source file, so the observed graph may be incomplete. Add the missing file, configure tsconfig/package imports, or exclude generated/runtime paths intentionally.
+- `unresolved_import` at `benchmarks/handle-event/index.js:8`: Benchmarks has an import that Axiom could not resolve into the observed graph.
+  - Observed: Benchmarks unresolved import
+  - Specifier: `../../dist/router/reg-exp-router`
+  - Fix: Axiom could not map this static import to a source file, so the observed graph may be incomplete. Add the missing file, configure tsconfig/package imports, or exclude generated/runtime paths intentionally.
+- `unresolved_import` at `benchmarks/webapp/hono.js:1`: Benchmarks has an import that Axiom could not resolve into the observed graph.
+  - Observed: Benchmarks unresolved import
+  - Specifier: `../../dist/hono`
+  - Fix: Axiom could not map this static import to a source file, so the observed graph may be incomplete. Add the missing file, configure tsconfig/package imports, or exclude generated/runtime paths intentionally.
+- `unresolved_import` at `perf-measures/type-check/client.ts:2`: PerfMeasures has an import that Axiom could not resolve into the observed graph.
+  - Observed: PerfMeasures unresolved import
+  - Specifier: `./generated/app`
+  - Fix: Axiom could not map this static import to a source file, so the observed graph may be incomplete. Add the missing file, configure tsconfig/package imports, or exclude generated/runtime paths intentionally.
+- `deep_internal_import` at `benchmarks/query-param/src/bench.mts:2`: Benchmarks imports Hono through a deep relative path instead of a likely entry point.
+  - Observed: Benchmarks -> Hono deep internal import
+  - Specifier: `../../../src/utils/url`
+  - Imported path: `src/utils/url.ts`
+  - Likely entry points: `src/adapter/aws-lambda/index.ts`, `src/adapter/bun/index.ts`, `src/adapter/cloudflare-pages/index.ts`, `src/adapter/cloudflare-workers/index.ts`, `src/adapter/deno/index.ts`
+  - Fix: Import a public entry point from Hono, or declare explicit exposes/hides rules if this deep path is intentional.
+- `deep_internal_import` at `benchmarks/query-param/src/hono.mts:1`: Benchmarks imports Hono through a deep relative path instead of a likely entry point.
+  - Observed: Benchmarks -> Hono deep internal import
+  - Specifier: `../../../src/utils/url`
+  - Imported path: `src/utils/url.ts`
+  - Likely entry points: `src/adapter/aws-lambda/index.ts`, `src/adapter/bun/index.ts`, `src/adapter/cloudflare-pages/index.ts`, `src/adapter/cloudflare-workers/index.ts`, `src/adapter/deno/index.ts`
+  - Fix: Import a public entry point from Hono, or declare explicit exposes/hides rules if this deep path is intentional.
+- `deep_internal_import` at `benchmarks/routers-deno/src/hono.mts:4`: Benchmarks imports Hono through a deep relative path instead of a likely entry point.
+  - Observed: Benchmarks -> Hono deep internal import
+  - Specifier: `../../../src/router.ts`
+  - Imported path: `src/router.ts`
+  - Likely entry points: `src/adapter/aws-lambda/index.ts`, `src/adapter/bun/index.ts`, `src/adapter/cloudflare-pages/index.ts`, `src/adapter/cloudflare-workers/index.ts`, `src/adapter/deno/index.ts`
+  - Fix: Import a public entry point from Hono, or declare explicit exposes/hides rules if this deep path is intentional.
+- `deep_internal_import` at `benchmarks/routers/src/hono.mts:4`: Benchmarks imports Hono through a deep relative path instead of a likely entry point.
+  - Observed: Benchmarks -> Hono deep internal import
+  - Specifier: `../../../src/router.ts`
+  - Imported path: `src/router.ts`
+  - Likely entry points: `src/adapter/aws-lambda/index.ts`, `src/adapter/bun/index.ts`, `src/adapter/cloudflare-pages/index.ts`, `src/adapter/cloudflare-workers/index.ts`, `src/adapter/deno/index.ts`
+  - Fix: Import a public entry point from Hono, or declare explicit exposes/hides rules if this deep path is intentional.
+- `deep_internal_import` at `runtime-tests/bun/index.test.tsx:6`: RuntimeTests imports Hono through a deep relative path instead of a likely entry point.
+  - Observed: RuntimeTests -> Hono deep internal import
+  - Specifier: `../../src/adapter/bun/websocket`
+  - Imported path: `src/adapter/bun/websocket.ts`
+  - Likely entry points: `src/adapter/aws-lambda/index.ts`, `src/adapter/bun/index.ts`, `src/adapter/cloudflare-pages/index.ts`, `src/adapter/cloudflare-workers/index.ts`, `src/adapter/deno/index.ts`
+  - Fix: Import a public entry point from Hono, or declare explicit exposes/hides rules if this deep path is intentional.
+- `deep_internal_import` at `runtime-tests/bun/index.test.tsx:7`: RuntimeTests imports Hono through a deep relative path instead of a likely entry point.
+  - Observed: RuntimeTests -> Hono deep internal import
+  - Specifier: `../../src/adapter/bun/websocket`
+  - Imported path: `src/adapter/bun/websocket.ts`
+  - Likely entry points: `src/adapter/aws-lambda/index.ts`, `src/adapter/bun/index.ts`, `src/adapter/cloudflare-pages/index.ts`, `src/adapter/cloudflare-workers/index.ts`, `src/adapter/deno/index.ts`
+  - Fix: Import a public entry point from Hono, or declare explicit exposes/hides rules if this deep path is intentional.
+- `deep_internal_import` at `runtime-tests/bun/index.test.tsx:8`: RuntimeTests imports Hono through a deep relative path instead of a likely entry point.
+  - Observed: RuntimeTests -> Hono deep internal import
+  - Specifier: `../../src/context`
+  - Imported path: `src/context.ts`
+  - Likely entry points: `src/adapter/aws-lambda/index.ts`, `src/adapter/bun/index.ts`, `src/adapter/cloudflare-pages/index.ts`, `src/adapter/cloudflare-workers/index.ts`, `src/adapter/deno/index.ts`
+  - Fix: Import a public entry point from Hono, or declare explicit exposes/hides rules if this deep path is intentional.
+- `deep_internal_import` at `runtime-tests/deno-jsx/jsx.test.tsx:4`: RuntimeTests imports Hono through a deep relative path instead of a likely entry point.
+  - Observed: RuntimeTests -> Hono deep internal import
+  - Specifier: `../../src/jsx/streaming.ts`
+  - Imported path: `src/jsx/streaming.ts`
+  - Likely entry points: `src/adapter/aws-lambda/index.ts`, `src/adapter/bun/index.ts`, `src/adapter/cloudflare-pages/index.ts`, `src/adapter/cloudflare-workers/index.ts`, `src/adapter/deno/index.ts`
+  - Fix: Import a public entry point from Hono, or declare explicit exposes/hides rules if this deep path is intentional.
+- `deep_internal_import` at `runtime-tests/deno-jsx/jsx.test.tsx:5`: RuntimeTests imports Hono through a deep relative path instead of a likely entry point.
+  - Observed: RuntimeTests -> Hono deep internal import
+  - Specifier: `../../src/utils/html.ts`
+  - Imported path: `src/utils/html.ts`
+  - Likely entry points: `src/adapter/aws-lambda/index.ts`, `src/adapter/bun/index.ts`, `src/adapter/cloudflare-pages/index.ts`, `src/adapter/cloudflare-workers/index.ts`, `src/adapter/deno/index.ts`
+  - Fix: Import a public entry point from Hono, or declare explicit exposes/hides rules if this deep path is intentional.
+- `deep_internal_import` at `runtime-tests/deno-jsx/jsx.test.tsx:6`: RuntimeTests imports Hono through a deep relative path instead of a likely entry point.
+  - Observed: RuntimeTests -> Hono deep internal import
+  - Specifier: `../../src/utils/html.ts`
+  - Imported path: `src/utils/html.ts`
+  - Likely entry points: `src/adapter/aws-lambda/index.ts`, `src/adapter/bun/index.ts`, `src/adapter/cloudflare-pages/index.ts`, `src/adapter/cloudflare-workers/index.ts`, `src/adapter/deno/index.ts`
+  - Fix: Import a public entry point from Hono, or declare explicit exposes/hides rules if this deep path is intentional.
+- `deep_internal_import` at `runtime-tests/deno/hono.test.ts:3`: RuntimeTests imports Hono through a deep relative path instead of a likely entry point.
+  - Observed: RuntimeTests -> Hono deep internal import
+  - Specifier: `../../src/context.ts`
+  - Imported path: `src/context.ts`
+  - Likely entry points: `src/adapter/aws-lambda/index.ts`, `src/adapter/bun/index.ts`, `src/adapter/cloudflare-pages/index.ts`, `src/adapter/cloudflare-workers/index.ts`, `src/adapter/deno/index.ts`
+  - Fix: Import a public entry point from Hono, or declare explicit exposes/hides rules if this deep path is intentional.
+- `deep_internal_import` at `runtime-tests/deno/hono.test.ts:5`: RuntimeTests imports Hono through a deep relative path instead of a likely entry point.
+  - Observed: RuntimeTests -> Hono deep internal import
+  - Specifier: `../../src/hono.ts`
+  - Imported path: `src/hono.ts`
+  - Likely entry points: `src/adapter/aws-lambda/index.ts`, `src/adapter/bun/index.ts`, `src/adapter/cloudflare-pages/index.ts`, `src/adapter/cloudflare-workers/index.ts`, `src/adapter/deno/index.ts`
+  - Fix: Import a public entry point from Hono, or declare explicit exposes/hides rules if this deep path is intentional.
+- `deep_internal_import` at `runtime-tests/deno/middleware.test.tsx:5`: RuntimeTests imports Hono through a deep relative path instead of a likely entry point.
+  - Observed: RuntimeTests -> Hono deep internal import
+  - Specifier: `../../src/hono.ts`
+  - Imported path: `src/hono.ts`
+  - Likely entry points: `src/adapter/aws-lambda/index.ts`, `src/adapter/bun/index.ts`, `src/adapter/cloudflare-pages/index.ts`, `src/adapter/cloudflare-workers/index.ts`, `src/adapter/deno/index.ts`
+  - Fix: Import a public entry point from Hono, or declare explicit exposes/hides rules if this deep path is intentional.
+- `deep_internal_import` at `runtime-tests/deno/ssg.test.tsx:2`: RuntimeTests imports Hono through a deep relative path instead of a likely entry point.
+  - Observed: RuntimeTests -> Hono deep internal import
+  - Specifier: `../../src/adapter/deno/ssg.ts`
+  - Imported path: `src/adapter/deno/ssg.ts`
+  - Likely entry points: `src/adapter/aws-lambda/index.ts`, `src/adapter/bun/index.ts`, `src/adapter/cloudflare-pages/index.ts`, `src/adapter/cloudflare-workers/index.ts`, `src/adapter/deno/index.ts`
+  - Fix: Import a public entry point from Hono, or declare explicit exposes/hides rules if this deep path is intentional.
+- `deep_internal_import` at `runtime-tests/deno/ssg.test.tsx:3`: RuntimeTests imports Hono through a deep relative path instead of a likely entry point.
+  - Observed: RuntimeTests -> Hono deep internal import
+  - Specifier: `../../src/hono.ts`
+  - Imported path: `src/hono.ts`
+  - Likely entry points: `src/adapter/aws-lambda/index.ts`, `src/adapter/bun/index.ts`, `src/adapter/cloudflare-pages/index.ts`, `src/adapter/cloudflare-workers/index.ts`, `src/adapter/deno/index.ts`
+  - Fix: Import a public entry point from Hono, or declare explicit exposes/hides rules if this deep path is intentional.
+- `deep_internal_import` at `runtime-tests/deno/stream.test.ts:3`: RuntimeTests imports Hono through a deep relative path instead of a likely entry point.
+  - Observed: RuntimeTests -> Hono deep internal import
+  - Specifier: `../../src/hono.ts`
+  - Imported path: `src/hono.ts`
+  - Likely entry points: `src/adapter/aws-lambda/index.ts`, `src/adapter/bun/index.ts`, `src/adapter/cloudflare-pages/index.ts`, `src/adapter/cloudflare-workers/index.ts`, `src/adapter/deno/index.ts`
+  - Fix: Import a public entry point from Hono, or declare explicit exposes/hides rules if this deep path is intentional.
+- `deep_internal_import` at `runtime-tests/lambda-edge/index.test.ts:1`: RuntimeTests imports Hono through a deep relative path instead of a likely entry point.
+  - Observed: RuntimeTests -> Hono deep internal import
+  - Specifier: `../../src/adapter/lambda-edge/handler`
+  - Imported path: `src/adapter/lambda-edge/handler.ts`
+  - Likely entry points: `src/adapter/aws-lambda/index.ts`, `src/adapter/bun/index.ts`, `src/adapter/cloudflare-pages/index.ts`, `src/adapter/cloudflare-workers/index.ts`, `src/adapter/deno/index.ts`
+  - Fix: Import a public entry point from Hono, or declare explicit exposes/hides rules if this deep path is intentional.
+- `deep_internal_import` at `runtime-tests/lambda-edge/index.test.ts:7`: RuntimeTests imports Hono through a deep relative path instead of a likely entry point.
+  - Observed: RuntimeTests -> Hono deep internal import
+  - Specifier: `../../src/adapter/lambda-edge/handler`
+  - Imported path: `src/adapter/lambda-edge/handler.ts`
+  - Likely entry points: `src/adapter/aws-lambda/index.ts`, `src/adapter/bun/index.ts`, `src/adapter/cloudflare-pages/index.ts`, `src/adapter/cloudflare-workers/index.ts`, `src/adapter/deno/index.ts`
+  - Fix: Import a public entry point from Hono, or declare explicit exposes/hides rules if this deep path is intentional.
+- `deep_internal_import` at `runtime-tests/lambda-edge/index.test.ts:8`: RuntimeTests imports Hono through a deep relative path instead of a likely entry point.
+  - Observed: RuntimeTests -> Hono deep internal import
+  - Specifier: `../../src/hono`
+  - Imported path: `src/hono.ts`
+  - Likely entry points: `src/adapter/aws-lambda/index.ts`, `src/adapter/bun/index.ts`, `src/adapter/cloudflare-pages/index.ts`, `src/adapter/cloudflare-workers/index.ts`, `src/adapter/deno/index.ts`
+  - Fix: Import a public entry point from Hono, or declare explicit exposes/hides rules if this deep path is intentional.
+- `deep_internal_import` at `runtime-tests/lambda/index.test.ts:2`: RuntimeTests imports Hono through a deep relative path instead of a likely entry point.
+  - Observed: RuntimeTests -> Hono deep internal import
+  - Specifier: `../../src/adapter/aws-lambda/handler`
+  - Imported path: `src/adapter/aws-lambda/handler.ts`
+  - Likely entry points: `src/adapter/aws-lambda/index.ts`, `src/adapter/bun/index.ts`, `src/adapter/cloudflare-pages/index.ts`, `src/adapter/cloudflare-workers/index.ts`, `src/adapter/deno/index.ts`
+  - Fix: Import a public entry point from Hono, or declare explicit exposes/hides rules if this deep path is intentional.
+- `deep_internal_import` at `runtime-tests/lambda/index.test.ts:10`: RuntimeTests imports Hono through a deep relative path instead of a likely entry point.
+  - Observed: RuntimeTests -> Hono deep internal import
+  - Specifier: `../../src/adapter/aws-lambda/handler`
+  - Imported path: `src/adapter/aws-lambda/handler.ts`
+  - Likely entry points: `src/adapter/aws-lambda/index.ts`, `src/adapter/bun/index.ts`, `src/adapter/cloudflare-pages/index.ts`, `src/adapter/cloudflare-workers/index.ts`, `src/adapter/deno/index.ts`
+  - Fix: Import a public entry point from Hono, or declare explicit exposes/hides rules if this deep path is intentional.
+- `deep_internal_import` at `runtime-tests/lambda/index.test.ts:15`: RuntimeTests imports Hono through a deep relative path instead of a likely entry point.
+  - Observed: RuntimeTests -> Hono deep internal import
+  - Specifier: `../../src/adapter/aws-lambda/types`
+  - Imported path: `src/adapter/aws-lambda/types.ts`
+  - Likely entry points: `src/adapter/aws-lambda/index.ts`, `src/adapter/bun/index.ts`, `src/adapter/cloudflare-pages/index.ts`, `src/adapter/cloudflare-workers/index.ts`, `src/adapter/deno/index.ts`
+  - Fix: Import a public entry point from Hono, or declare explicit exposes/hides rules if this deep path is intentional.
+- `deep_internal_import` at `runtime-tests/lambda/index.test.ts:22`: RuntimeTests imports Hono through a deep relative path instead of a likely entry point.
+  - Observed: RuntimeTests -> Hono deep internal import
+  - Specifier: `../../src/hono`
+  - Imported path: `src/hono.ts`
+  - Likely entry points: `src/adapter/aws-lambda/index.ts`, `src/adapter/bun/index.ts`, `src/adapter/cloudflare-pages/index.ts`, `src/adapter/cloudflare-workers/index.ts`, `src/adapter/deno/index.ts`
+  - Fix: Import a public entry point from Hono, or declare explicit exposes/hides rules if this deep path is intentional.
+- `deep_internal_import` at `runtime-tests/lambda/mock.ts:2`: RuntimeTests imports Hono through a deep relative path instead of a likely entry point.
+  - Observed: RuntimeTests -> Hono deep internal import
+  - Specifier: `../../src/adapter/aws-lambda/handler`
+  - Imported path: `src/adapter/aws-lambda/handler.ts`
+  - Likely entry points: `src/adapter/aws-lambda/index.ts`, `src/adapter/bun/index.ts`, `src/adapter/cloudflare-pages/index.ts`, `src/adapter/cloudflare-workers/index.ts`, `src/adapter/deno/index.ts`
+  - Fix: Import a public entry point from Hono, or declare explicit exposes/hides rules if this deep path is intentional.
+- `deep_internal_import` at `runtime-tests/lambda/mock.ts:7`: RuntimeTests imports Hono through a deep relative path instead of a likely entry point.
+  - Observed: RuntimeTests -> Hono deep internal import
+  - Specifier: `../../src/adapter/aws-lambda/types`
+  - Imported path: `src/adapter/aws-lambda/types.ts`
+  - Likely entry points: `src/adapter/aws-lambda/index.ts`, `src/adapter/bun/index.ts`, `src/adapter/cloudflare-pages/index.ts`, `src/adapter/cloudflare-workers/index.ts`, `src/adapter/deno/index.ts`
+  - Fix: Import a public entry point from Hono, or declare explicit exposes/hides rules if this deep path is intentional.
+- `deep_internal_import` at `runtime-tests/lambda/stream-mock.ts:3`: RuntimeTests imports Hono through a deep relative path instead of a likely entry point.
+  - Observed: RuntimeTests -> Hono deep internal import
+  - Specifier: `../../src/adapter/aws-lambda/handler`
+  - Imported path: `src/adapter/aws-lambda/handler.ts`
+  - Likely entry points: `src/adapter/aws-lambda/index.ts`, `src/adapter/bun/index.ts`, `src/adapter/cloudflare-pages/index.ts`, `src/adapter/cloudflare-workers/index.ts`, `src/adapter/deno/index.ts`
+  - Fix: Import a public entry point from Hono, or declare explicit exposes/hides rules if this deep path is intentional.
+- `deep_internal_import` at `runtime-tests/lambda/stream-mock.ts:7`: RuntimeTests imports Hono through a deep relative path instead of a likely entry point.
+  - Observed: RuntimeTests -> Hono deep internal import
+  - Specifier: `../../src/adapter/aws-lambda/types`
+  - Imported path: `src/adapter/aws-lambda/types.ts`
+  - Likely entry points: `src/adapter/aws-lambda/index.ts`, `src/adapter/bun/index.ts`, `src/adapter/cloudflare-pages/index.ts`, `src/adapter/cloudflare-workers/index.ts`, `src/adapter/deno/index.ts`
+  - Fix: Import a public entry point from Hono, or declare explicit exposes/hides rules if this deep path is intentional.
+- `deep_internal_import` at `runtime-tests/lambda/stream.test.ts:1`: RuntimeTests imports Hono through a deep relative path instead of a likely entry point.
+  - Observed: RuntimeTests -> Hono deep internal import
+  - Specifier: `../../src/adapter/aws-lambda/handler`
+  - Imported path: `src/adapter/aws-lambda/handler.ts`
+  - Likely entry points: `src/adapter/aws-lambda/index.ts`, `src/adapter/bun/index.ts`, `src/adapter/cloudflare-pages/index.ts`, `src/adapter/cloudflare-workers/index.ts`, `src/adapter/deno/index.ts`
+  - Fix: Import a public entry point from Hono, or declare explicit exposes/hides rules if this deep path is intentional.
+- `deep_internal_import` at `runtime-tests/lambda/stream.test.ts:2`: RuntimeTests imports Hono through a deep relative path instead of a likely entry point.
+  - Observed: RuntimeTests -> Hono deep internal import
+  - Specifier: `../../src/adapter/aws-lambda/handler`
+  - Imported path: `src/adapter/aws-lambda/handler.ts`
+  - Likely entry points: `src/adapter/aws-lambda/index.ts`, `src/adapter/bun/index.ts`, `src/adapter/cloudflare-pages/index.ts`, `src/adapter/cloudflare-workers/index.ts`, `src/adapter/deno/index.ts`
+  - Fix: Import a public entry point from Hono, or declare explicit exposes/hides rules if this deep path is intentional.
+- `deep_internal_import` at `runtime-tests/lambda/stream.test.ts:3`: RuntimeTests imports Hono through a deep relative path instead of a likely entry point.
+  - Observed: RuntimeTests -> Hono deep internal import
+  - Specifier: `../../src/adapter/aws-lambda/types`
+  - Imported path: `src/adapter/aws-lambda/types.ts`
+  - Likely entry points: `src/adapter/aws-lambda/index.ts`, `src/adapter/bun/index.ts`, `src/adapter/cloudflare-pages/index.ts`, `src/adapter/cloudflare-workers/index.ts`, `src/adapter/deno/index.ts`
+  - Fix: Import a public entry point from Hono, or declare explicit exposes/hides rules if this deep path is intentional.
+- `deep_internal_import` at `runtime-tests/lambda/stream.test.ts:8`: RuntimeTests imports Hono through a deep relative path instead of a likely entry point.
+  - Observed: RuntimeTests -> Hono deep internal import
+  - Specifier: `../../src/hono`
+  - Imported path: `src/hono.ts`
+  - Likely entry points: `src/adapter/aws-lambda/index.ts`, `src/adapter/bun/index.ts`, `src/adapter/cloudflare-pages/index.ts`, `src/adapter/cloudflare-workers/index.ts`, `src/adapter/deno/index.ts`
+  - Fix: Import a public entry point from Hono, or declare explicit exposes/hides rules if this deep path is intentional.
+- `deep_internal_import` at `runtime-tests/node/index.test.ts:7`: RuntimeTests imports Hono through a deep relative path instead of a likely entry point.
+  - Observed: RuntimeTests -> Hono deep internal import
+  - Specifier: `../../src/context`
+  - Imported path: `src/context.ts`
+  - Likely entry points: `src/adapter/aws-lambda/index.ts`, `src/adapter/bun/index.ts`, `src/adapter/cloudflare-pages/index.ts`, `src/adapter/cloudflare-workers/index.ts`, `src/adapter/deno/index.ts`
+  - Fix: Import a public entry point from Hono, or declare explicit exposes/hides rules if this deep path is intentional.
+- `deep_internal_import` at `runtime-tests/workerd/index.ts:3`: RuntimeTests imports Hono through a deep relative path instead of a likely entry point.
+  - Observed: RuntimeTests -> Hono deep internal import
+  - Specifier: `../../src/hono`
+  - Imported path: `src/hono.ts`
+  - Likely entry points: `src/adapter/aws-lambda/index.ts`, `src/adapter/bun/index.ts`, `src/adapter/cloudflare-pages/index.ts`, `src/adapter/cloudflare-workers/index.ts`, `src/adapter/deno/index.ts`
+  - Fix: Import a public entry point from Hono, or declare explicit exposes/hides rules if this deep path is intentional.
+- `deep_internal_import` at `runtime-tests/workerd/index.ts:4`: RuntimeTests imports Hono through a deep relative path instead of a likely entry point.
+  - Observed: RuntimeTests -> Hono deep internal import
+  - Specifier: `../../src/utils/color`
+  - Imported path: `src/utils/color.ts`
+  - Likely entry points: `src/adapter/aws-lambda/index.ts`, `src/adapter/bun/index.ts`, `src/adapter/cloudflare-pages/index.ts`, `src/adapter/cloudflare-workers/index.ts`, `src/adapter/deno/index.ts`
+  - Fix: Import a public entry point from Hono, or declare explicit exposes/hides rules if this deep path is intentional.
+
+### Architecture Drift (Advisory)
+- Kind: `advisory_observed_edge_drift`
+- Baseline: `C:/Users/邱品丰/AppData/Local/Temp/axiom-real-project-diff-smoke-kFmRUC/hono-v4.8.4-baseline.graph.json` (85 observed dependencies, axiom.graph.v9)
+- New observed edges:
+  - None
+- Removed observed edges:
+  - `RuntimeTests -> Vitest`
+    - previously via `runtime-tests/bun/vitest.config.ts:3` importing `../../vitest.config`
+    - previously via `runtime-tests/fastly/vitest.config.ts:4` importing `../../vitest.config`
+    - previously via `runtime-tests/lambda-edge/vitest.config.ts:3` importing `../../vitest.config`
+    - previously via `runtime-tests/lambda/vitest.config.ts:3` importing `../../vitest.config`
+    - previously via `runtime-tests/node/vitest.config.ts:3` importing `../../vitest.config`
+    - previously via `runtime-tests/workerd/vitest.config.ts:3` importing `../../vitest.config`
+  - `Vitest2 -> Vitest`
+    - previously via `.vitest.config/jsx-runtime-default.ts:1` importing `../vitest.config`
+    - previously via `.vitest.config/jsx-runtime-dom.ts:1` importing `../vitest.config`

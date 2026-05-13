@@ -28,31 +28,33 @@ try {
   const baseline = cloneRef(options.baselineRef, "baseline");
   const current = cloneRef(options.currentRef, "current");
   const warningArgs = warningFlags(options.warnings);
+  const configPath = writeScopeConfig(workRoot, options);
+  const configArgs = configPath ? ["--config", configPath] : [];
   const contractPath = path.join(workRoot, `${safeSegment(options.name)}-${safeSegment(options.baselineRef)}-inferred.axi`);
   const baselineGraphPath = path.join(workRoot, `${safeSegment(options.name)}-${safeSegment(options.baselineRef)}-baseline.graph.json`);
 
   const infer = timedCapture(
     process.execPath,
-    [cliPath, "infer", "--root", baseline.root, "--group-by", options.groupBy],
+    [cliPath, "infer", "--root", baseline.root, ...configArgs, "--group-by", options.groupBy],
     { label: `axi infer ${options.baselineRef}` }
   );
   writeTextFile(contractPath, ensureTrailingNewline(infer.stdout));
 
   const baselineGraph = timedCapture(
     process.execPath,
-    [cliPath, "graph", "--root", baseline.root, "--spec", contractPath, "--json", ...warningArgs],
+    [cliPath, "graph", "--root", baseline.root, ...configArgs, "--spec", contractPath, "--json", ...warningArgs],
     { label: `axi graph ${options.baselineRef}` }
   );
   writeTextFile(baselineGraphPath, ensureTrailingNewline(baselineGraph.stdout));
 
   const diffJson = timedCapture(
     process.execPath,
-    [cliPath, "diff", baselineGraphPath, "--root", current.root, "--spec", contractPath, "--json", ...warningArgs],
+    [cliPath, "diff", baselineGraphPath, "--root", current.root, ...configArgs, "--spec", contractPath, "--json", ...warningArgs],
     { label: `axi diff ${options.baselineRef} -> ${options.currentRef}` }
   );
   const diffMarkdown = timedCapture(
     process.execPath,
-    [cliPath, "diff", baselineGraphPath, "--root", current.root, "--spec", contractPath, "--markdown", ...warningArgs],
+    [cliPath, "diff", baselineGraphPath, "--root", current.root, ...configArgs, "--spec", contractPath, "--markdown", ...warningArgs],
     { label: `axi diff --markdown ${options.baselineRef} -> ${options.currentRef}` }
   );
   const observeMarkdown = timedCapture(
@@ -64,6 +66,7 @@ try {
       baselineGraphPath,
       "--root",
       current.root,
+      ...configArgs,
       "--spec",
       contractPath,
       "--markdown",
@@ -73,7 +76,7 @@ try {
   );
   const diffMermaid = timedCapture(
     process.execPath,
-    [cliPath, "diff", baselineGraphPath, "--root", current.root, "--spec", contractPath, "--mermaid", ...warningArgs],
+    [cliPath, "diff", baselineGraphPath, "--root", current.root, ...configArgs, "--spec", contractPath, "--mermaid", ...warningArgs],
     { label: `axi diff --mermaid ${options.baselineRef} -> ${options.currentRef}` }
   );
 
@@ -87,6 +90,10 @@ try {
     baselineRef: options.baselineRef,
     currentRef: options.currentRef,
     groupBy: options.groupBy,
+    sourceScope: {
+      include: options.include,
+      exclude: options.exclude
+    },
     warningFlags: warningArgs,
     node: process.version,
     platform: `${process.platform} ${process.arch}`,
@@ -94,7 +101,8 @@ try {
     artifacts: options.keep
       ? {
           contractPath: normalizePath(contractPath),
-          baselineGraphPath: normalizePath(baselineGraphPath)
+          baselineGraphPath: normalizePath(baselineGraphPath),
+          ...(configPath ? { configPath: normalizePath(configPath) } : {})
         }
       : undefined,
     baseline: {
@@ -188,6 +196,8 @@ function parseArgs(args) {
     baselineRef: defaultBaselineRef,
     currentRef: defaultCurrentRef,
     groupBy: "workspace",
+    include: [],
+    exclude: [],
     warnings: [...defaultWarnings],
     json: false,
     keep: false
@@ -239,6 +249,18 @@ function parseArgs(args) {
               .split(",")
               .map((item) => item.trim())
               .filter(Boolean);
+      index += 1;
+      continue;
+    }
+
+    if (arg === "--include") {
+      parsed.include = parsePatternList(readRequiredValue(args, index, arg));
+      index += 1;
+      continue;
+    }
+
+    if (arg === "--exclude") {
+      parsed.exclude = parsePatternList(readRequiredValue(args, index, arg));
       index += 1;
       continue;
     }
@@ -308,6 +330,17 @@ function readRequiredValue(args, index, flag) {
   return value;
 }
 
+function parsePatternList(value) {
+  if (value === "none") {
+    return [];
+  }
+
+  return value
+    .split(",")
+    .map((item) => item.trim())
+    .filter(Boolean);
+}
+
 function warningFlags(warnings) {
   const flags = [];
   const enabled = new Set(warnings);
@@ -329,6 +362,26 @@ function warningFlags(warnings) {
   }
 
   return flags;
+}
+
+function writeScopeConfig(workRoot, options) {
+  if (options.include.length === 0 && options.exclude.length === 0) {
+    return undefined;
+  }
+
+  const configPath = path.join(workRoot, `${safeSegment(options.name)}-scope.axiom.config.json`);
+  writeTextFile(
+    configPath,
+    `${JSON.stringify(
+      {
+        ...(options.include.length > 0 ? { include: options.include } : {}),
+        ...(options.exclude.length > 0 ? { exclude: options.exclude } : {})
+      },
+      null,
+      2
+    )}\n`
+  );
+  return configPath;
 }
 
 function timedCapture(command, args, options) {
@@ -466,6 +519,7 @@ function formatMarkdownReport(report) {
     `Repository: ${report.repo}`,
     `Baseline: ${report.baseline.ref} (${report.baseline.commit})`,
     `Current: ${report.current.ref} (${report.current.commit})`,
+    `Source scope: ${formatSourceScope(report.sourceScope)}`,
     "",
     "This is a smoke test, not a verdict. The baseline contract is inferred from the baseline ref and reused as an external `--spec` against the current ref.",
     "",
@@ -542,6 +596,12 @@ function formatMarkdownReport(report) {
   lines.push("");
 
   return `${lines.join("\n")}\n`;
+}
+
+function formatSourceScope(sourceScope) {
+  const include = sourceScope.include.length > 0 ? `include ${sourceScope.include.join(", ")}` : "include all supported source";
+  const exclude = sourceScope.exclude.length > 0 ? `exclude ${sourceScope.exclude.join(", ")}` : "default excludes only";
+  return `${include}; ${exclude}`;
 }
 
 function appendEdgeList(lines, edges, prefix) {
@@ -621,6 +681,8 @@ Options:
   --baseline-ref <ref>          Git tag or branch used to infer the baseline contract.
   --current-ref <ref>           Git tag or branch checked against the baseline contract.
   --group-by <mode>             infer grouping mode: folder or workspace.
+  --include <patterns>          Comma list of source include globs for both refs.
+  --exclude <patterns>          Comma list of source exclude globs for both refs.
   --warnings <list>             Comma list: coupling,deep,public-api,unresolved, or none.
   --json                        Print JSON instead of Markdown.
   --json-out <path>             Write machine-readable report JSON.

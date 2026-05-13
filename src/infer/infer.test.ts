@@ -111,6 +111,20 @@ test("infer gives long collapsed cycles a readable module name", () => {
   assert.doesNotMatch(output, /ServicesAgentLoopServicesMemoryServicesToolsStore/);
 });
 
+test("infer gives mixed long collapsed cycles a neutral readable module name", () => {
+  const result = runInfer({ root: path.join(repoRoot, "fixtures/infer-mixed-long-cycle") });
+
+  assert.equal(result.candidateModules, 5);
+  assert.deepEqual(result.collapsedCycles.map((cycle) => cycle.module), ["MixedCycle"]);
+  assert.deepEqual(result.collapsedCycles[0]?.sourceGroups, ["Adapter", "Client", "Middleware", "Router", "Utils"]);
+  assert.deepEqual(result.modules.map((module) => module.name), ["MixedCycle"]);
+
+  const output = formatInferResult(result);
+  assert.match(output, /# collapsed cycle: MixedCycle/);
+  assert.match(output, /# includes:\n# - Adapter\n# - Client\n# - Middleware\n# - Router\n# - Utils/);
+  assert.doesNotMatch(output, /CycleGroupAdapterAnd/);
+});
+
 test("infer JSON includes the generated .axi draft", () => {
   const result = runInfer({ root: path.join(repoRoot, "fixtures/basic-ts-valid") });
   const payload = toInferJson(result);

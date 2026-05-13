@@ -57,6 +57,9 @@
 - Added `.benchmark_tmp` to default ignored temporary output directories.
 - Added `allObservedDependencies[]` and `shownObservedDependencies[]` to graph / observe JSON so attention-mode machine consumers can distinguish the full observed graph from the filtered view.
 - Tightened deeper `axi infer` folder grouping so parent folders with direct files use non-overlapping `*` ownership when child folders become separate modules.
+- Added `--include` and `--exclude` scope controls to the real-project diff smoke harness.
+- Changed mixed long inferred cycle fallback names from concatenated `CycleGroup...` names to `MixedCycle`.
+- Added clone-only real-project diff smoke artifacts for Zustand and Hono, including a source-scoped Hono run.
 
 ## 0.5.8 - Monorepo Spec Discovery
 

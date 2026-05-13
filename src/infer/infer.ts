@@ -603,8 +603,7 @@ function conciseCycleName(names: string[]): string {
     return toIdentifier(`${dominantToken}-cycle`);
   }
 
-  const firstName = names[0] ?? "Module";
-  return toIdentifier(`cycle-group-${firstName}-and-${Math.max(0, names.length - 1)}-more`);
+  return "MixedCycle";
 }
 
 function findDominantLeadingToken(names: string[]): string | undefined {

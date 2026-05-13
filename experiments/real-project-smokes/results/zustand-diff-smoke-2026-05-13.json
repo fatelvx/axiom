@@ -1,0 +1,77 @@
+{
+  "kind": "axiom.real-project-diff-smoke.v1",
+  "generatedAt": "2026-05-13T01:52:04.876Z",
+  "repo": "https://github.com/pmndrs/zustand.git",
+  "name": "zustand",
+  "baselineRef": "v5.0.1",
+  "currentRef": "v5.0.13",
+  "groupBy": "workspace",
+  "sourceScope": {
+    "include": [],
+    "exclude": []
+  },
+  "warningFlags": [
+    "--warn-coupling-concentration",
+    "--warn-deep-internal-imports",
+    "--warn-unresolved-imports"
+  ],
+  "node": "v24.14.1",
+  "platform": "win32 x64",
+  "baseline": {
+    "ref": "v5.0.1",
+    "commit": "c87a5d6",
+    "packageVersion": "5.0.1",
+    "summary": {
+      "modules": 5,
+      "declaredDependencies": 2,
+      "forbiddenDependencies": 0,
+      "exposedPaths": 0,
+      "hiddenPaths": 0,
+      "observedDependencies": 36,
+      "shownObservedDependencies": 36,
+      "violations": 0,
+      "intentionalViolations": 0,
+      "warnings": 0
+    }
+  },
+  "current": {
+    "ref": "v5.0.13",
+    "commit": "6bc451e",
+    "packageVersion": "5.0.13",
+    "summary": {
+      "modules": 5,
+      "declaredDependencies": 2,
+      "forbiddenDependencies": 0,
+      "exposedPaths": 0,
+      "hiddenPaths": 0,
+      "observedDependencies": 40,
+      "shownObservedDependencies": 40,
+      "violations": 0,
+      "intentionalViolations": 0,
+      "warnings": 0
+    }
+  },
+  "drift": {
+    "kind": "advisory_observed_edge_drift",
+    "baseline": {
+      "schemaVersion": "axiom.graph.v9",
+      "observedDependencies": 36
+    },
+    "newObservedEdges": [],
+    "removedObservedEdges": []
+  },
+  "warnings": {
+    "byCode": {},
+    "details": []
+  },
+  "timingsMs": {
+    "cloneBaseline": 8563.8,
+    "cloneCurrent": 1285.1,
+    "infer": 499,
+    "baselineGraph": 510.6,
+    "diffJson": 515.8,
+    "diffMarkdown": 515.4,
+    "observeMarkdown": 614.6,
+    "diffMermaid": 687.7
+  }
+}

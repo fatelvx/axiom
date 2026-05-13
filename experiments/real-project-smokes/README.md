@@ -70,9 +70,24 @@ npm run real-project:diff-smoke -- \
   --markdown-out experiments/real-project-smokes/results/zod-diff-smoke-2026-05-13.md
 ```
 
-The script clones the baseline and current refs, runs `axi infer --group-by <mode>` on the baseline ref, saves an `axi graph --json` baseline, then runs `axi diff` and `axi observe --baseline --markdown` against the current ref with the inferred contract as an external `--spec`.
+The script clones the baseline and current refs, optionally writes a small temporary `axiom.config.json` from `--include` / `--exclude`, runs `axi infer --group-by <mode>` on the baseline ref, saves an `axi graph --json` baseline, then runs `axi diff` and `axi observe --baseline --markdown` against the current ref with the inferred contract as an external `--spec`.
 
 This is closer to an Axiom pilot workflow than the version smoke harness. It asks: "If this was the contract snapshot we cared about, what architecture edges and advisory signals changed later?" The answer is still a smoke calibration result, not a maintainer-intent claim.
+
+For complex repositories, run both a whole-repo view and a focused source view when possible. Whole-repo scans can reveal test, benchmark, and runtime harness coupling to source internals. Focused scans such as `--include "src/**"` are better for asking whether the production source graph itself drifted.
+
+Example focused source run:
+
+```bash
+npm run real-project:diff-smoke -- \
+  --repo https://github.com/honojs/hono.git \
+  --name hono-src \
+  --baseline-ref v4.8.4 \
+  --current-ref v4.9.12 \
+  --group-by folder \
+  --include "src/**" \
+  --warnings coupling,deep,unresolved
+```
 
 ## Recorded Runs
 
@@ -82,3 +97,6 @@ This is closer to an Axiom pilot workflow than the version smoke harness. It ask
 - [public API surface pilot, 2026-05-13](results/public-api-pilot-2026-05-13.md)
 - [zod `axi diff` baseline pilot, 2026-05-13](results/zod-diff-pilot-2026-05-13.md)
 - [zod diff architecture smoke from the repeatable harness, 2026-05-13](results/zod-diff-smoke-2026-05-13.md)
+- [zustand diff architecture smoke, 2026-05-13](results/zustand-diff-smoke-2026-05-13.md)
+- [hono whole-repo diff architecture smoke, 2026-05-13](results/hono-diff-smoke-2026-05-13.md)
+- [hono source-scoped diff architecture smoke, 2026-05-13](results/hono-src-diff-smoke-2026-05-13.md)

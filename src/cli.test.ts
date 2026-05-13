@@ -592,7 +592,7 @@ test("cli infer --json returns parseable inferred output", () => {
   assert.equal(result.status, 0);
 
   const payload = JSON.parse(result.stdout);
-  assert.equal(payload.schemaVersion, "axiom.infer.v4");
+  assert.equal(payload.schemaVersion, "axiom.infer.v5");
   assert.equal(payload.starterContract.kind, "current_graph_snapshot");
   assert.match(payload.starterContract.notice.join("\n"), /not a recommended architecture/);
   assert.match(payload.starterContract.authoringChecklist.join("\n"), /do not blanket-accept first-run problems/);

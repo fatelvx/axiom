@@ -1,6 +1,6 @@
 import type { InferResult, InferredDependency, InferredModule } from "../infer/infer.js";
 
-export const inferJsonSchemaVersion = "axiom.infer.v4";
+export const inferJsonSchemaVersion = "axiom.infer.v5";
 
 export interface InferJsonModule extends InferredModule {
   dependencyEvidence: InferJsonDependencyEvidence[];
@@ -71,6 +71,12 @@ export function formatInferResult(result: InferResult): string {
       }
       if (cycle.internalDependencies.length > 8) {
         lines.push(`# - ... ${cycle.internalDependencies.length - 8} more`);
+      }
+    }
+    if (cycle.cyclePathSamples.length > 0) {
+      lines.push("# cycle path sample:");
+      for (const sample of cycle.cyclePathSamples.slice(0, 3)) {
+        lines.push(`# - ${sample.groups.join(" -> ")}`);
       }
     }
     lines.push("# reason: inferred groups form a circular dependency, so this starter contract keeps them together.");

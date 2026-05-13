@@ -44,6 +44,11 @@ test("infer collapses cyclic candidate groups into one starter module", () => {
     {
       module: "AB",
       sourceGroups: ["A", "B"],
+      cyclePathSamples: [
+        {
+          groups: ["A", "B", "A"]
+        }
+      ],
       internalDependencies: [
         {
           fromGroup: "A",
@@ -89,6 +94,7 @@ test("infer collapses cyclic candidate groups into one starter module", () => {
   assert.match(output, /# collapsed cycle: AB/);
   assert.match(output, /# includes: A, B/);
   assert.match(output, /# - A -> B \(1\)/);
+  assert.match(output, /# cycle path sample:\n# - A -> B -> A/);
   assert.match(output, /# reason: inferred groups form a circular dependency/);
   assert.match(output, /Review collapsed cycles as boundary tangles/);
 });
@@ -110,6 +116,7 @@ test("infer gives long collapsed cycles a readable module name", () => {
   assert.match(output, /# collapsed cycle: ServicesCycle/);
   assert.match(output, /# includes: ServicesAgentLoop, ServicesMemory, ServicesTools, Store/);
   assert.match(output, /# - ServicesAgentLoop -> ServicesMemory \(1\)/);
+  assert.match(output, /# cycle path sample:\n# - ServicesAgentLoop -> ServicesMemory -> ServicesTools -> Store -> ServicesAgentLoop/);
   assert.doesNotMatch(output, /ServicesAgentLoopServicesMemoryServicesToolsStore/);
 });
 
@@ -124,6 +131,7 @@ test("infer gives mixed long collapsed cycles a neutral readable module name", (
   const output = formatInferResult(result);
   assert.match(output, /# collapsed cycle: MixedCycle/);
   assert.match(output, /# includes:\n# - Adapter\n# - Client\n# - Middleware\n# - Router\n# - Utils/);
+  assert.match(output, /# cycle path sample:/);
   assert.doesNotMatch(output, /CycleGroupAdapterAnd/);
 });
 
@@ -131,7 +139,7 @@ test("infer JSON includes the generated .axi draft", () => {
   const result = runInfer({ root: path.join(repoRoot, "fixtures/basic-ts-valid") });
   const payload = toInferJson(result);
 
-  assert.equal(payload.schemaVersion, "axiom.infer.v4");
+  assert.equal(payload.schemaVersion, "axiom.infer.v5");
   assert.deepEqual(payload.starterContract, {
     kind: "current_graph_snapshot",
     notice: [

@@ -41,7 +41,12 @@ export interface InferredImportSample {
 export interface CollapsedCycle {
   module: string;
   sourceGroups: string[];
+  cyclePathSamples: CollapsedCyclePathSample[];
   internalDependencies: CollapsedCycleDependency[];
+}
+
+export interface CollapsedCyclePathSample {
+  groups: string[];
 }
 
 export interface CollapsedCycleDependency {
@@ -636,6 +641,7 @@ function buildCollapsedCycle(
   component: Component
 ): CollapsedCycle {
   const componentKeys = new Set(component.keys);
+  const cyclePathSamples = buildCyclePathSamples(candidateGroups, candidateEdges, component);
   const internalDependencies = candidateEdges
     .filter((edge) => componentKeys.has(edge.from) && componentKeys.has(edge.to) && edge.from !== edge.to)
     .map((edge) => ({
@@ -651,8 +657,77 @@ function buildCollapsedCycle(
   return {
     module: component.name,
     sourceGroups: component.keys.map((key) => candidateName(candidateGroups, key)).sort(),
+    cyclePathSamples,
     internalDependencies
   };
+}
+
+function buildCyclePathSamples(
+  candidateGroups: CandidateGroup[],
+  candidateEdges: CandidateEdge[],
+  component: Component
+): CollapsedCyclePathSample[] {
+  const componentKeys = new Set(component.keys);
+  const outgoing = new Map<string, string[]>();
+
+  for (const key of component.keys) {
+    outgoing.set(key, []);
+  }
+
+  for (const edge of candidateEdges) {
+    if (!componentKeys.has(edge.from) || !componentKeys.has(edge.to) || edge.from === edge.to) {
+      continue;
+    }
+    outgoing.get(edge.from)?.push(edge.to);
+  }
+
+  for (const targets of outgoing.values()) {
+    targets.sort((left, right) => candidateName(candidateGroups, left).localeCompare(candidateName(candidateGroups, right)));
+  }
+
+  const starts = [...component.keys].sort((left, right) =>
+    candidateName(candidateGroups, left).localeCompare(candidateName(candidateGroups, right))
+  );
+
+  for (const start of starts) {
+    const cyclePath = findCyclePath(start, start, outgoing, new Set([start]), [start]);
+    if (cyclePath) {
+      return [
+        {
+          groups: cyclePath.map((key) => candidateName(candidateGroups, key))
+        }
+      ];
+    }
+  }
+
+  return [];
+}
+
+function findCyclePath(
+  start: string,
+  current: string,
+  outgoing: Map<string, string[]>,
+  visited: Set<string>,
+  cyclePath: string[]
+): string[] | undefined {
+  for (const target of outgoing.get(current) ?? []) {
+    if (target === start && cyclePath.length > 1) {
+      return [...cyclePath, start];
+    }
+
+    if (visited.has(target)) {
+      continue;
+    }
+
+    visited.add(target);
+    const found = findCyclePath(start, target, outgoing, visited, [...cyclePath, target]);
+    if (found) {
+      return found;
+    }
+    visited.delete(target);
+  }
+
+  return undefined;
 }
 
 function uniquifyComponentNames(components: Component[]): Component[] {

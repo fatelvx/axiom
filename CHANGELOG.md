@@ -63,6 +63,7 @@
 - Added a reusable Axiom logo and refreshed the README banner around the radar / declared-vs-observed visual system.
 - Added `architectureSummary` to graph / observe / diff JSON and bumped graph JSON to `axiom.graph.v10` for agent, dashboard, and future MCP consumers.
 - Added a GitHub Actions summary helper that renders `axi observe --json` `architectureSummary` into a job summary while keeping `axi check` as the only gate.
+- Added cycle path samples to collapsed-cycle inference output and bumped infer JSON to `axiom.infer.v5`.
 
 ## 0.5.8 - Monorepo Spec Discovery
 

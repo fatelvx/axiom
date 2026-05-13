@@ -37,6 +37,7 @@ Files:
 - `results/mirofish-mermaid-graph-target-2026-05-13.md`: targeted backtest after adding visual Mermaid graph output and the in-diagram legend repair.
 - `results/mirofish-big-backtest-v2-2026-05-13.md`: larger synthetic backtest after the Mermaid legend repair, including the rejected blanket-adopt recommendation.
 - `results/mirofish-contract-recipes-target-2026-05-13.md`: targeted backtest after adding contract recipes for common adoption shapes and external pilots.
+- `results/mirofish-big-backtest-v3-2026-05-13.md`: larger synthetic backtest after contract recipes, target-pilot follow-up, Mermaid graph output, baseline drift, and real-project smoke evidence.
 - `tools/write-mirofish-env.ps1`: local helper for writing MiroFish credentials to `.env` without pasting secrets into chat.
 
 Live run input snapshot:
@@ -80,6 +81,12 @@ Latest contract recipes target snapshot:
 
 ```text
 current master after adding contract recipes for React/Vite apps, React plus Pixi game clients, TypeScript libraries, monorepos, and external pilot contracts
+```
+
+Latest big backtest V3 snapshot:
+
+```text
+current master after contract recipes, gate-readiness guidance, Mermaid graph output, external specs, baseline drift, and real-project smoke evidence
 ```
 
 Use this experiment as forecast input, not as a replacement for real users. A useful forecast should produce falsifiable adoption risks, concrete messaging changes, and roadmap tradeoffs.

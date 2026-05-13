@@ -15,6 +15,7 @@ axi infer --root . > contracts/current-graph.axi
 axi observe --root . --spec contracts/app.axi --markdown
 axi graph --root . --spec contracts/app.axi --mermaid
 axi graph --root . --spec contracts/app.axi --json > axiom-baseline.json
+axi diff axiom-baseline.json --root . --spec contracts/app.axi
 ```
 
 The generated contract from `axi infer` mirrors current imports. A recipe is a reviewed intent draft. Neither one should automatically become accepted debt.
@@ -192,6 +193,8 @@ Start with workspace-aware inference:
 ```bash
 axi infer --root . --group-by workspace > contracts/workspace.current.axi
 axi observe --root . --spec contracts/workspace.axi --markdown
+axi graph --root . --spec contracts/workspace.axi --json > axiom-baseline.json
+axi diff axiom-baseline.json --root . --spec contracts/workspace.axi
 ```
 
 Keep app-to-app imports out of the contract unless they are intentionally allowed. Package exports and `exposes` rules are usually a better first boundary than modeling every folder.
@@ -212,6 +215,8 @@ target-app/
 axi infer --root ../target-app --group-depth 2 > contracts/target-app.inferred.axi
 axi observe --root ../target-app --spec contracts/target-app.axi --markdown --warn-deep-internal-imports
 axi graph --root ../target-app --spec contracts/target-app.axi --mermaid
+axi graph --root ../target-app --spec contracts/target-app.axi --json > target-app-baseline.json
+axi diff target-app-baseline.json --root ../target-app --spec contracts/target-app.axi
 ```
 
 Module paths inside `contracts/target-app.axi` still point at files under `--root`. This keeps the target repo clean until the contract is mature enough to adopt.

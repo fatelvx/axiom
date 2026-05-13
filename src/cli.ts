@@ -34,7 +34,7 @@ interface CliOptions {
   warnDeepInternalImports: boolean;
 }
 
-type CliCommand = "check" | "graph" | "infer" | "observe";
+type CliCommand = "check" | "graph" | "infer" | "observe" | "diff";
 
 const args = process.argv.slice(2);
 const commandValue = args[0];
@@ -65,6 +65,10 @@ try {
     process.exit(0);
   }
 
+  if (command === "diff" && !options.baselinePath) {
+    throw new Error("axi diff requires a baseline graph JSON. Use `axi diff <baseline-json>` or `axi diff --baseline <graph-json>`.");
+  }
+
   const result = runCheck({
     root: options.root,
     configPath: options.configPath,
@@ -88,6 +92,7 @@ try {
         violationsOnly: options.graphViolationsOnly,
         attention: options.graphAttention,
         observe: command === "observe",
+        driftOnly: command === "diff",
         baseline
       })
     );
@@ -97,6 +102,7 @@ try {
         violationsOnly: options.graphViolationsOnly,
         attention: options.graphAttention,
         observe: command === "observe",
+        driftOnly: command === "diff",
         baseline
       })
     );
@@ -106,6 +112,7 @@ try {
         violationsOnly: options.graphViolationsOnly,
         attention: options.graphAttention,
         observe: command === "observe",
+        driftOnly: command === "diff",
         baseline
       })
     );
@@ -115,6 +122,7 @@ try {
         violationsOnly: options.graphViolationsOnly,
         attention: options.graphAttention,
         observe: command === "observe",
+        driftOnly: command === "diff",
         baseline
       })
     );
@@ -127,7 +135,7 @@ try {
 }
 
 function isCommand(value: string | undefined): value is CliCommand {
-  return value === "check" || value === "graph" || value === "infer" || value === "observe";
+  return value === "check" || value === "graph" || value === "infer" || value === "observe" || value === "diff";
 }
 
 function parseOptions(values: string[], command: CliCommand): CliOptions {
@@ -171,8 +179,8 @@ function parseOptions(values: string[], command: CliCommand): CliOptions {
     }
 
     if (value === "--markdown") {
-      if (command !== "graph" && command !== "observe") {
-        console.error("--markdown is only supported by graph and observe.");
+      if (command !== "graph" && command !== "observe" && command !== "diff") {
+        console.error("--markdown is only supported by graph, observe, and diff.");
         process.exit(1);
       }
 
@@ -186,8 +194,8 @@ function parseOptions(values: string[], command: CliCommand): CliOptions {
     }
 
     if (value === "--mermaid") {
-      if (command !== "graph" && command !== "observe") {
-        console.error("--mermaid is only supported by graph and observe.");
+      if (command !== "graph" && command !== "observe" && command !== "diff") {
+        console.error("--mermaid is only supported by graph, observe, and diff.");
         process.exit(1);
       }
 
@@ -231,7 +239,7 @@ function parseOptions(values: string[], command: CliCommand): CliOptions {
 
     if (value === "--spec") {
       if (command === "infer") {
-        console.error("--spec is only supported by check, graph, and observe.");
+        console.error("--spec is only supported by check, graph, observe, and diff.");
         process.exit(1);
       }
 
@@ -248,7 +256,7 @@ function parseOptions(values: string[], command: CliCommand): CliOptions {
 
     if (value === "--intentional-violation-warning-days") {
       if (command === "infer") {
-        console.error("--intentional-violation-warning-days is only supported by check, graph, and observe.");
+        console.error("--intentional-violation-warning-days is only supported by check, graph, observe, and diff.");
         process.exit(1);
       }
 
@@ -310,8 +318,8 @@ function parseOptions(values: string[], command: CliCommand): CliOptions {
     }
 
     if (value === "--baseline") {
-      if (command !== "graph" && command !== "observe") {
-        console.error("--baseline is only supported by graph and observe.");
+      if (command !== "graph" && command !== "observe" && command !== "diff") {
+        console.error("--baseline is only supported by graph, observe, and diff.");
         process.exit(1);
       }
 
@@ -384,6 +392,11 @@ function parseOptions(values: string[], command: CliCommand): CliOptions {
 
       options.groupBy = groupBy;
       index += 1;
+      continue;
+    }
+
+    if (command === "diff" && !value.startsWith("-") && !options.baselinePath) {
+      options.baselinePath = value;
       continue;
     }
 
@@ -502,12 +515,14 @@ Usage:
   axi check [--root <path>] [--config <path>] [--spec <path>] [--json] [--warn-unowned] [--strict] [--intentional-violation-warning-days <n>] [--warn-unresolved-imports] [--warn-public-api-surface] [--warn-coupling-concentration] [--warn-deep-internal-imports]
   axi graph [--root <path>] [--config <path>] [--spec <path>] [--json|--markdown|--mermaid] [--warn-unowned] [--strict] [--violations-only|--attention] [--baseline <graph-json>] [--intentional-violation-warning-days <n>] [--warn-unresolved-imports] [--warn-public-api-surface] [--warn-coupling-concentration] [--warn-deep-internal-imports]
   axi observe [--root <path>] [--config <path>] [--spec <path>] [--json|--markdown|--mermaid] [--warn-unowned] [--strict] [--baseline <graph-json>] [--intentional-violation-warning-days <n>] [--warn-unresolved-imports] [--warn-public-api-surface] [--warn-coupling-concentration] [--warn-deep-internal-imports]
+  axi diff <baseline-json> [--root <path>] [--config <path>] [--spec <path>] [--json|--markdown|--mermaid] [--warn-unowned] [--strict] [--intentional-violation-warning-days <n>] [--warn-unresolved-imports] [--warn-public-api-surface] [--warn-coupling-concentration] [--warn-deep-internal-imports]
   axi infer [--root <path>] [--config <path>] [--json] [--group-depth <n>] [--group-by folder|workspace]
 
 Commands:
   check    Validate source dependencies against .axi architecture specs.
   graph    Print declared and observed architecture graphs.
   observe  Show the architecture attention surface: violations, visible debt, and warnings.
+  diff     Compare current observed module edges against an unfiltered axi graph --json baseline.
   infer    Print a starter .axi contract inferred from current imports.
 
 Graph:
@@ -515,9 +530,10 @@ Graph:
   --attention        Alias for --violations-only with awareness-oriented human output.
   --baseline <graph-json>
                     Compare observed module edges against an unfiltered axi graph --json baseline.
-  --markdown        Print a PR/agent-friendly architecture review summary for graph or observe.
+  diff              Product-facing baseline drift command; exits 0 and does not act as a gate.
+  --markdown        Print a PR/agent-friendly architecture review summary for graph, observe, or diff.
                     This is presentation output; use axi check for a CI gate.
-  --mermaid         Print a Mermaid flowchart of observed module dependencies for graph or observe.
+  --mermaid         Print a Mermaid flowchart of observed module dependencies for graph, observe, or diff.
                     This is presentation output; use axi graph --json for machine-readable data.
   observe            Product-facing alias for graph --attention.
 

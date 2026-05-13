@@ -25,6 +25,7 @@ test("infer creates a starter contract from source folders", () => {
   assert.match(output, /# 1\. Rename modules so they match the team's architecture vocabulary/);
   assert.match(output, /# next commands:/);
   assert.match(output, /# axi observe --root \. --spec <draft\.axi> --markdown/);
+  assert.match(output, /# axi diff --root \. --spec <draft\.axi> axiom-baseline\.json/);
   assert.match(output, /module Simulation/);
   assert.match(output, /path "src\/simulation\/\*\*"/);
   assert.match(output, /depends on Physics/);
@@ -131,7 +132,8 @@ test("infer JSON includes the generated .axi draft", () => {
     nextCommands: [
       "axi observe --root . --spec <draft.axi> --markdown",
       "axi graph --root . --spec <draft.axi> --mermaid",
-      "axi graph --root . --spec <draft.axi> --json > axiom-baseline.json"
+      "axi graph --root . --spec <draft.axi> --json > axiom-baseline.json",
+      "axi diff --root . --spec <draft.axi> axiom-baseline.json"
     ]
   });
   assert.equal(payload.summary.sourceFiles, 3);

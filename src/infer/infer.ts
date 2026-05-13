@@ -109,7 +109,8 @@ export const inferStarterContractAuthoringChecklist = [
 export const inferStarterContractNextCommands = [
   "axi observe --root . --spec <draft.axi> --markdown",
   "axi graph --root . --spec <draft.axi> --mermaid",
-  "axi graph --root . --spec <draft.axi> --json > axiom-baseline.json"
+  "axi graph --root . --spec <draft.axi> --json > axiom-baseline.json",
+  "axi diff --root . --spec <draft.axi> axiom-baseline.json"
 ];
 
 export function runInfer(options: InferOptions): InferResult {

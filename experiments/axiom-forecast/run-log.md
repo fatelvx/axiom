@@ -522,3 +522,37 @@ Detailed result:
 ```text
 experiments/axiom-forecast/results/mirofish-contract-recipes-target-2026-05-13.md
 ```
+
+### Big Backtest V3 After Contract Recipes
+
+Before this larger backtest, Axiom had shipped and pushed:
+
+- `axi infer` starter notices, authoring checklist, next commands, and readable collapsed cycles
+- external `--spec` pilot contracts
+- `axi observe`, Markdown review summaries, and Mermaid graph output
+- baseline-aware observed edge drift through `axi observe --baseline` and `axi graph --baseline`
+- contract recipes plus gate-readiness and maintenance-rhythm guidance
+- real-project smoke reports for nanoid and zod
+
+Method:
+
+Used the same local MiroFish `.env` and model configuration through direct `LLMClient`. This was a larger synthetic reception prompt, not a full OASIS social simulation rerun.
+
+Primary result:
+
+- Axiom is close, and "architecture observability layer" is credible, but the first-value moment is still too indirect.
+- The strongest remaining rejection pattern is: "I have to write or review a contract before I see any value."
+- The backtest recommended a first-class baseline drift command so users can save a graph baseline, make or review a change, and immediately see new/removed observed module edges.
+- This recommendation fits the current graph model and visible-debt discipline because it does not add enforcement semantics, hidden ignores, or auto-accepted debt.
+
+Follow-up taken:
+
+- Added `axi diff` as an advisory baseline-drift command over the existing graph result.
+- `axi diff` supports human, JSON, Markdown, and Mermaid output.
+- Public docs and `axi infer` next-command hints now include `axi diff` as the short first-value drift view.
+
+Detailed result:
+
+```text
+experiments/axiom-forecast/results/mirofish-big-backtest-v3-2026-05-13.md
+```

@@ -161,11 +161,15 @@ Use this when you want to see architecture drift since a known graph snapshot:
 
 ```bash
 axi graph --root . --json > axiom-baseline.json
+axi diff axiom-baseline.json --root .
+axi diff axiom-baseline.json --root . --markdown
 axi observe --root . --baseline axiom-baseline.json
 axi observe --root . --baseline axiom-baseline.json --markdown
 ```
 
-Use `--markdown` when the output should become a PR comment, review note, or agent repair-loop message. It keeps hard violations, visible intentional debt, advisory warnings, and drift in separate sections.
+Use `axi diff` when you want the shortest drift-only review: new and removed observed module edges since the baseline. Use `axi observe --baseline` when you also want hard violations, visible intentional debt, advisory warnings, and drift in one review artifact.
+
+Use `--markdown` when the output should become a PR comment, review note, or agent repair-loop message. `axi diff --markdown` stays drift-focused; `axi observe --markdown` keeps hard violations, visible intentional debt, advisory warnings, and drift in separate sections.
 
 Plain `axi observe` output also states its review model: declared `.axi` intent is compared with observed source imports, the command stays advisory and exits `0`, and clean observed edges may be omitted from the attention view. This is intentional; use `axi check` when you want a CI gate.
 
@@ -210,7 +214,7 @@ For a workspace or monorepo:
 axi infer --root . --group-by workspace
 ```
 
-The inferred contract is a starting point, not a final architecture. The output marks itself as a current-graph snapshot because it mirrors today's dependency shape rather than recommending what the architecture should become. It also includes an authoring checklist and next commands so the first `.axi` draft is easier to review. Rename modules, add layers, tighten `depends on`, and add `exposes` or `hides` after review. If inference collapses a cycle, read the included groups and observed internal edges as a clue about where boundaries are tangled.
+The inferred contract is a starting point, not a final architecture. The output marks itself as a current-graph snapshot because it mirrors today's dependency shape rather than recommending what the architecture should become. It also includes an authoring checklist and next commands so the first `.axi` draft is easier to review. Rename modules, add layers, tighten `depends on`, and add `exposes` or `hides` after review. Save a graph baseline, then run `axi diff` after changes to see drift before deciding what should become a gate. If inference collapses a cycle, read the included groups and observed internal edges as a clue about where boundaries are tangled.
 
 For common project shapes such as React apps, React plus Pixi game clients, TypeScript libraries, and monorepos, compare the inferred graph with [Contract Recipes](contract-recipes.md) before turning the draft into declared intent.
 

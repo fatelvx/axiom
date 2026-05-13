@@ -263,6 +263,7 @@ npx @fatelvx/axiom check --root .
 axi check --root <project>
 axi observe --root <project>
 axi graph --root <project>
+axi diff <baseline-json> --root <project>
 axi infer --root <project>
 ```
 
@@ -271,6 +272,7 @@ Use them like this:
 - `axi check`: validate code against `.axi`; exits `1` on violations.
 - `axi observe`: show the architecture attention surface; exits `0`, explains the declared-intent vs observed-import review model, and focuses violations, visible debt, and warnings.
 - `axi graph`: inspect declared and observed graphs; exits `0` even with violations.
+- `axi diff`: compare current observed module edges against a saved `axi graph --json` baseline; exits `0` and stays advisory.
 - `axi graph --violations-only` or `axi graph --attention`: show failing edges, intentional violations, and warning guardrails.
 - `axi graph --mermaid`: print a visual Mermaid flowchart of observed module dependencies with a built-in legend.
 - `axi infer`: print a starter `.axi` draft from existing imports, plus a review checklist for turning the draft into intent.
@@ -296,6 +298,8 @@ axi observe --root ../some-app --spec ./contracts/some-app.axi --markdown
 axi graph --root . --json
 axi observe --root . --mermaid
 axi graph --root . --json > axiom-baseline.json
+axi diff axiom-baseline.json --root .
+axi diff axiom-baseline.json --root . --markdown
 axi observe --root . --baseline axiom-baseline.json
 axi observe --root . --baseline axiom-baseline.json --markdown
 axi infer --root . --group-depth 2
@@ -362,6 +366,15 @@ axi infer --root . --group-by workspace
 ```
 
 Inference prints a draft to stdout and does not write files. The output says up front that it mirrors the current dependency graph, not recommended architecture. It also includes an authoring checklist and next commands, so the first contract is not a blank configuration chore. Treat it as a starting point: rename modules, add layers, tighten `depends on`, and add `exposes` or `hides` after review. When `axi infer` collapses cyclic candidate groups, it lists the included groups and observed internal edges so the cycle is useful architecture feedback instead of just a strange generated name.
+
+For a quick first-value loop, save a baseline and then use `axi diff` after a change:
+
+```bash
+axi graph --root . --spec axiom-starter.axi --json > axiom-baseline.json
+axi diff axiom-baseline.json --root . --spec axiom-starter.axi
+```
+
+`axi diff` is not a gate. It shows added and removed observed module edges so drift is visible before the team decides which parts deserve enforcement.
 
 ## Monorepos
 

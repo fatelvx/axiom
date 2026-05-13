@@ -49,6 +49,8 @@
 - Added a real-project version smoke harness for comparing architecture pressure across repository tags.
 - Added `--spec <path>` for check, graph, and observe so external pilot contracts can scan a target repo without writing `.axi` files into it.
 - Added a pilot workflow guide that separates code-health audits from Axiom boundary-drift scans and keeps early adoption observe-first.
+- Added `axi diff` as a first-class advisory baseline-drift command over the existing graph model, with human, JSON, Markdown, and Mermaid output.
+- Added contract recipes and updated onboarding docs so pilots can move from inferred starter contracts to graph baselines and `axi diff` before adopting CI gates.
 
 ## 0.5.8 - Monorepo Spec Discovery
 

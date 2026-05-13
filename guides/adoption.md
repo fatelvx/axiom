@@ -50,9 +50,10 @@ axi infer --root . > axiom-starter.axi
 axi observe --root . --spec axiom-starter.axi --markdown
 axi graph --root . --spec axiom-starter.axi --mermaid
 axi graph --root . --spec axiom-starter.axi --json > axiom-baseline.json
+axi diff axiom-baseline.json --root . --spec axiom-starter.axi
 ```
 
-The starter contract mirrors current imports. Treat it as evidence, not approval. Use the saved baseline to review future drift with `axi observe --baseline`, then tighten only the boundaries that produce reliable signal.
+The starter contract mirrors current imports. Treat it as evidence, not approval. Use the saved baseline to review future drift with `axi diff` for a short drift-only view or `axi observe --baseline` for a fuller review artifact, then tighten only the boundaries that produce reliable signal.
 
 The generated comments are part of the onboarding surface. They remind reviewers to rename modules into team vocabulary, review every `depends on` edge as architecture intent, turn visibility suggestions into rules only after review, and avoid blanket debt acceptance. This is one of the main differences from a linter config: the first artifact is a negotiation aid for declared architecture intent, not just a list of rules to appease.
 
@@ -301,6 +302,8 @@ For a concrete GitHub Actions setup, read [GitHub Actions And PR Summaries](gith
 If you build on JSON output, read [JSON Consumers](json-consumers.md). Use `axi check --json` for gates, tolerate additive graph fields, and read top-level `intentionalDebt[]` when reviewing accepted debt.
 
 `axi observe --root . --baseline axiom-baseline.json` compares the current observed module edges with an unfiltered `axi graph --json` snapshot. JSON marks this as `advisory_observed_edge_drift`; treat new and removed edges as PR review context first, and promote only the parts that prove consistently useful into stricter automation.
+
+`axi diff axiom-baseline.json --root .` is the shortest first-value view over the same baseline model. It shows only new and removed observed module edges, exits `0`, and stays advisory. Use it when you want architecture drift to be visible before the contract is mature enough to gate.
 
 `axi observe --root . --markdown` and `axi observe --root . --baseline axiom-baseline.json --markdown` keep hard violations, visible intentional debt, advisory warnings, and drift in separate sections. This makes the escape hatch conspicuous without making every advisory signal a blocker. The visible debt section is contract-led, not edge-only, so accepted surface leaks still appear in the review artifact.
 

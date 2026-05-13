@@ -109,11 +109,12 @@ axi graph --root ../target-app --spec contracts/target-app.axi --json > axiom-ba
 Then compare later edits:
 
 ```bash
+axi diff axiom-baseline.json --root ../target-app --spec contracts/target-app.axi --markdown
 axi observe --root ../target-app --spec contracts/target-app.axi \
   --baseline axiom-baseline.json --markdown
 ```
 
-This shows new and removed observed module edges. It is advisory review context, not a gate.
+Use `axi diff` for a short drift-only artifact. Use `axi observe --baseline` when you also want hard violations, visible intentional debt, and advisory warnings. Both keep drift advisory unless the team intentionally promotes a policy.
 
 ## 6. Use Public-Surface Probes Carefully
 
@@ -164,6 +165,8 @@ Only then move the reviewed contract into the target repo and add CI.
 ```bash
 axi infer --root ../target-app --group-depth 2 > contracts/target-app.inferred.axi
 axi graph --root ../target-app --spec contracts/target-app.axi --mermaid
+axi graph --root ../target-app --spec contracts/target-app.axi --json > axiom-baseline.json
+axi diff axiom-baseline.json --root ../target-app --spec contracts/target-app.axi --markdown
 axi observe --root ../target-app --spec contracts/target-app.axi --markdown --warn-deep-internal-imports
 axi check --root ../target-app --spec contracts/target-app.axi
 ```

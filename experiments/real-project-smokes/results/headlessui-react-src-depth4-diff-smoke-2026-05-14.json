@@ -1,6 +1,6 @@
 {
-  "kind": "axiom.real-project-diff-smoke.v1",
-  "generatedAt": "2026-05-13T20:16:53.175Z",
+  "kind": "axiom.real-project-diff-smoke.v2",
+  "generatedAt": "2026-05-13T20:34:30.553Z",
   "repo": "https://github.com/tailwindlabs/headlessui.git",
   "name": "headlessui-react-src-depth4",
   "baselineRef": "@headlessui/react@v2.2.8",
@@ -27,6 +27,202 @@
   ],
   "node": "v24.14.1",
   "platform": "win32 x64",
+  "baselineInference": {
+    "schemaVersion": "axiom.infer.v7",
+    "summary": {
+      "sourceFiles": 160,
+      "importsScanned": 791,
+      "candidateModules": 6,
+      "modules": 1,
+      "observedDependencies": 0,
+      "collapsedCycles": 1,
+      "architecturePressureNotes": 4
+    },
+    "collapsedCycles": [
+      {
+        "module": "PackagesCycle",
+        "sourceGroups": [
+          "PackagesHeadlessuiReactSrc",
+          "PackagesHeadlessuiReactSrcComponents",
+          "PackagesHeadlessuiReactSrcHooks",
+          "PackagesHeadlessuiReactSrcInternal",
+          "PackagesHeadlessuiReactSrcMachines",
+          "PackagesHeadlessuiReactSrcUtils"
+        ],
+        "cyclePathSamples": [
+          {
+            "groups": [
+              "PackagesHeadlessuiReactSrc",
+              "PackagesHeadlessuiReactSrcComponents",
+              "PackagesHeadlessuiReactSrc"
+            ]
+          }
+        ],
+        "internalDependencyCount": 20,
+        "topInternalDependencies": [
+          {
+            "fromGroup": "PackagesHeadlessuiReactSrcComponents",
+            "toGroup": "PackagesHeadlessuiReactSrc",
+            "count": 34,
+            "firstSample": {
+              "filePath": "packages/@headlessui-react/src/components/button/button.tsx",
+              "line": 9,
+              "specifier": "../../types",
+              "resolvedPath": "packages/@headlessui-react/src/types.ts"
+            }
+          },
+          {
+            "fromGroup": "PackagesHeadlessuiReactSrcComponents",
+            "toGroup": "PackagesHeadlessuiReactSrcHooks",
+            "count": 194,
+            "firstSample": {
+              "filePath": "packages/@headlessui-react/src/components/button/button.tsx",
+              "line": 6,
+              "specifier": "../../hooks/use-active-press",
+              "resolvedPath": "packages/@headlessui-react/src/hooks/use-active-press.tsx"
+            }
+          },
+          {
+            "fromGroup": "PackagesHeadlessuiReactSrcComponents",
+            "toGroup": "PackagesHeadlessuiReactSrcInternal",
+            "count": 54,
+            "firstSample": {
+              "filePath": "packages/@headlessui-react/src/components/button/button.tsx",
+              "line": 8,
+              "specifier": "../../internal/disabled",
+              "resolvedPath": "packages/@headlessui-react/src/internal/disabled.tsx"
+            }
+          },
+          {
+            "fromGroup": "PackagesHeadlessuiReactSrcComponents",
+            "toGroup": "PackagesHeadlessuiReactSrcMachines",
+            "count": 8,
+            "firstSample": {
+              "filePath": "packages/@headlessui-react/src/components/combobox/combobox-machine.ts",
+              "line": 2,
+              "specifier": "../../machines/stack-machine",
+              "resolvedPath": "packages/@headlessui-react/src/machines/stack-machine.ts"
+            }
+          },
+          {
+            "fromGroup": "PackagesHeadlessuiReactSrcComponents",
+            "toGroup": "PackagesHeadlessuiReactSrcUtils",
+            "count": 98,
+            "firstSample": {
+              "filePath": "packages/@headlessui-react/src/components/button/button.tsx",
+              "line": 10,
+              "specifier": "../../utils/render",
+              "resolvedPath": "packages/@headlessui-react/src/utils/render.ts"
+            }
+          }
+        ],
+        "cycleBreakingCandidates": [
+          {
+            "fromGroup": "PackagesHeadlessuiReactSrcComponents",
+            "toGroup": "PackagesHeadlessuiReactSrcHooks",
+            "count": 194,
+            "firstSample": {
+              "filePath": "packages/@headlessui-react/src/components/button/button.tsx",
+              "line": 6,
+              "specifier": "../../hooks/use-active-press",
+              "resolvedPath": "packages/@headlessui-react/src/hooks/use-active-press.tsx"
+            },
+            "rationale": "PackagesHeadlessuiReactSrcComponents -> PackagesHeadlessuiReactSrcHooks participates in the collapsed cycle with 194 import sites; inspect whether this edge should become an explicit boundary, interface, event, or accepted merged responsibility."
+          },
+          {
+            "fromGroup": "PackagesHeadlessuiReactSrcComponents",
+            "toGroup": "PackagesHeadlessuiReactSrcUtils",
+            "count": 98,
+            "firstSample": {
+              "filePath": "packages/@headlessui-react/src/components/button/button.tsx",
+              "line": 10,
+              "specifier": "../../utils/render",
+              "resolvedPath": "packages/@headlessui-react/src/utils/render.ts"
+            },
+            "rationale": "PackagesHeadlessuiReactSrcComponents -> PackagesHeadlessuiReactSrcUtils participates in the collapsed cycle with 98 import sites; inspect whether this edge should become an explicit boundary, interface, event, or accepted merged responsibility."
+          },
+          {
+            "fromGroup": "PackagesHeadlessuiReactSrcComponents",
+            "toGroup": "PackagesHeadlessuiReactSrcInternal",
+            "count": 54,
+            "firstSample": {
+              "filePath": "packages/@headlessui-react/src/components/button/button.tsx",
+              "line": 8,
+              "specifier": "../../internal/disabled",
+              "resolvedPath": "packages/@headlessui-react/src/internal/disabled.tsx"
+            },
+            "rationale": "PackagesHeadlessuiReactSrcComponents -> PackagesHeadlessuiReactSrcInternal participates in the collapsed cycle with 54 import sites; inspect whether this edge should become an explicit boundary, interface, event, or accepted merged responsibility."
+          },
+          {
+            "fromGroup": "PackagesHeadlessuiReactSrcComponents",
+            "toGroup": "PackagesHeadlessuiReactSrc",
+            "count": 34,
+            "firstSample": {
+              "filePath": "packages/@headlessui-react/src/components/button/button.tsx",
+              "line": 9,
+              "specifier": "../../types",
+              "resolvedPath": "packages/@headlessui-react/src/types.ts"
+            },
+            "rationale": "PackagesHeadlessuiReactSrcComponents -> PackagesHeadlessuiReactSrc participates in the collapsed cycle with 34 import sites; inspect whether this edge should become an explicit boundary, interface, event, or accepted merged responsibility."
+          },
+          {
+            "fromGroup": "PackagesHeadlessuiReactSrcHooks",
+            "toGroup": "PackagesHeadlessuiReactSrcUtils",
+            "count": 28,
+            "firstSample": {
+              "filePath": "packages/@headlessui-react/src/hooks/document-overflow/handle-ios-locking.ts",
+              "line": 1,
+              "specifier": "../../utils/disposables",
+              "resolvedPath": "packages/@headlessui-react/src/utils/disposables.ts"
+            },
+            "rationale": "PackagesHeadlessuiReactSrcHooks -> PackagesHeadlessuiReactSrcUtils participates in the collapsed cycle with 28 import sites; inspect whether this edge should become an explicit boundary, interface, event, or accepted merged responsibility."
+          }
+        ]
+      }
+    ],
+    "architecturePressureNotes": [
+      {
+        "kind": "large_source_file",
+        "filePath": "packages/@headlessui-react/src/components/combobox/combobox.tsx",
+        "lineCount": 1683,
+        "functionLikeCount": 88,
+        "importsScanned": 53,
+        "exportsScanned": 0,
+        "classCount": 0,
+        "message": "packages/@headlessui-react/src/components/combobox/combobox.tsx has 1683 lines; inferred module boundaries may miss responsibilities concentrated inside this file."
+      },
+      {
+        "kind": "large_source_file",
+        "filePath": "packages/@headlessui-react/src/components/popover/popover.tsx",
+        "lineCount": 1123,
+        "functionLikeCount": 57,
+        "importsScanned": 37,
+        "exportsScanned": 0,
+        "classCount": 0,
+        "message": "packages/@headlessui-react/src/components/popover/popover.tsx has 1123 lines; inferred module boundaries may miss responsibilities concentrated inside this file."
+      },
+      {
+        "kind": "large_source_file",
+        "filePath": "packages/@headlessui-react/src/components/listbox/listbox.tsx",
+        "lineCount": 1097,
+        "functionLikeCount": 54,
+        "importsScanned": 51,
+        "exportsScanned": 0,
+        "classCount": 0,
+        "message": "packages/@headlessui-react/src/components/listbox/listbox.tsx has 1097 lines; inferred module boundaries may miss responsibilities concentrated inside this file."
+      },
+      {
+        "kind": "large_source_file",
+        "filePath": "packages/@headlessui-react/src/components/menu/menu.tsx",
+        "lineCount": 922,
+        "functionLikeCount": 51,
+        "importsScanned": 42,
+        "exportsScanned": 0,
+        "classCount": 0,
+        "message": "packages/@headlessui-react/src/components/menu/menu.tsx has 922 lines; inferred module boundaries may miss responsibilities concentrated inside this file."
+      }
+    ]
+  },
   "baseline": {
     "ref": "@headlessui/react@v2.2.8",
     "commit": "8759a5c",
@@ -75,13 +271,13 @@
     "details": []
   },
   "timingsMs": {
-    "cloneBaseline": 1949.2,
-    "cloneCurrent": 5554.9,
-    "infer": 1230.1,
-    "baselineGraph": 1179.1,
-    "diffJson": 1364.7,
-    "diffMarkdown": 1214.7,
-    "observeMarkdown": 1161.5,
-    "diffMermaid": 1185.6
+    "cloneBaseline": 2134.1,
+    "cloneCurrent": 1960.4,
+    "infer": 1344.4,
+    "baselineGraph": 1203.9,
+    "diffJson": 1175.8,
+    "diffMarkdown": 1210.4,
+    "observeMarkdown": 1345.6,
+    "diffMermaid": 1157.7
   }
 }

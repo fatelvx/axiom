@@ -47,7 +47,7 @@ Drift:
 - 0 new observed module edges.
 - 0 removed observed module edges.
 
-This output is technically correct but not the full story. `axi infer` saw 160 source files and 791 imports, then collapsed 6 candidate source groups into one cycle:
+This output is technically correct but not the full story. The linked diff-smoke summary now preserves a `Baseline Inference` section so this evidence stays attached to the quiet graph baseline. `axi infer` saw 160 source files and 791 imports, then collapsed 6 candidate source groups into one cycle:
 
 - `PackagesHeadlessuiReactSrc`
 - `PackagesHeadlessuiReactSrcComponents`
@@ -65,7 +65,7 @@ Top cycle-breaking candidates from inference:
 | `Components -> Hooks` | 194 | `components/button/button.tsx:6` imports `../../hooks/use-active-press` |
 | `Components -> Utils` | 98 | `components/button/button.tsx:10` imports `../../utils/render` |
 | `Components -> Internal` | 54 | `components/button/button.tsx:8` imports `../../internal/disabled` |
-| `Components -> SrcRoot` | 34 | `components/combobox/combobox.tsx:62` imports `../../react-glue` |
+| `Components -> SrcRoot` | 34 | `components/button/button.tsx:9` imports `../../types` |
 | `Hooks -> Utils` | 28 | `hooks/document-overflow/handle-ios-locking.ts:1` imports `../../utils/disposables` |
 
 Large-file pressure notes from inference:
@@ -103,8 +103,8 @@ This is the expected product shape. Axiom does not infer public API intent on th
 - Main signal: the post-collapse diff graph is quiet, but inference shows a real 6-group cycle with concrete cycle-breaking candidates; the public-surface probe shows a 21-line barrel facade and one 25-target public entry point.
 - Gap class: `advisory-signal-calibration` plus artifact completeness guidance for collapsed-cycle inference evidence.
 - Decision: do not change validator behavior from this run. Update adoption guidance so inferred collapsed-cycle evidence is preserved alongside the graph baseline, and keep public API warnings opt-in through explicit `exposes` or probe contracts.
-- Code changed: no validator code.
-- Follow-up: consider adding infer summary fields to future diff-smoke reports so a collapsed starter contract does not look like a truly empty architecture graph.
+- Code changed: diff-smoke harness/reporting only; no validator semantics.
+- Follow-up: keep calibrating inferred collapsed-cycle evidence across more UI/library repos before turning boundary-split suggestions into product behavior.
 
 ## Linked Artifacts
 

@@ -33,7 +33,7 @@ try {
   const contractPath = path.join(workRoot, `${safeSegment(options.name)}-${safeSegment(options.baselineRef)}-inferred.axi`);
   const baselineGraphPath = path.join(workRoot, `${safeSegment(options.name)}-${safeSegment(options.baselineRef)}-baseline.graph.json`);
 
-  const inferArgs = [cliPath, "infer", "--root", baseline.root, ...configArgs, "--group-by", options.groupBy];
+  const inferArgs = [cliPath, "infer", "--root", baseline.root, ...configArgs, "--group-by", options.groupBy, "--json"];
   if (options.groupDepth !== undefined) {
     inferArgs.push("--group-depth", String(options.groupDepth));
   }
@@ -41,7 +41,11 @@ try {
   const infer = timedCapture(process.execPath, inferArgs, {
     label: `axi infer ${options.baselineRef}`
   });
-  writeTextFile(contractPath, ensureTrailingNewline(infer.stdout));
+  const inferPayload = JSON.parse(infer.stdout);
+  if (typeof inferPayload.axi !== "string") {
+    throw new Error("axi infer --json did not include an axi draft.");
+  }
+  writeTextFile(contractPath, ensureTrailingNewline(inferPayload.axi));
 
   const baselineGraph = timedCapture(
     process.execPath,
@@ -86,7 +90,7 @@ try {
   const baselinePayload = JSON.parse(baselineGraph.stdout);
   const diffPayload = JSON.parse(diffJson.stdout);
   const report = {
-    kind: "axiom.real-project-diff-smoke.v1",
+    kind: "axiom.real-project-diff-smoke.v2",
     generatedAt: startedAt.toISOString(),
     repo: options.repo,
     name: options.name,
@@ -109,6 +113,7 @@ try {
           ...(configPath ? { configPath: normalizePath(configPath) } : {})
         }
       : undefined,
+    baselineInference: summarizeInference(inferPayload),
     baseline: {
       ref: options.baselineRef,
       commit: baseline.commit,
@@ -526,6 +531,62 @@ function summarizeWarnings(warnings) {
   };
 }
 
+function summarizeInference(payload) {
+  return {
+    schemaVersion: payload.schemaVersion,
+    summary: payload.summary ?? {
+      sourceFiles: payload.sourceFiles?.length ?? 0,
+      importsScanned: payload.importCount ?? 0,
+      candidateModules: payload.candidateModules ?? 0,
+      modules: payload.modules?.length ?? 0,
+      observedDependencies: payload.observedDependencies?.length ?? 0,
+      collapsedCycles: payload.collapsedCycles?.length ?? 0,
+      architecturePressureNotes: payload.architecturePressureNotes?.length ?? 0
+    },
+    collapsedCycles: (payload.collapsedCycles ?? []).map((cycle) => ({
+      module: cycle.module,
+      sourceGroups: cycle.sourceGroups ?? [],
+      cyclePathSamples: (cycle.cyclePathSamples ?? []).slice(0, 3),
+      internalDependencyCount: cycle.internalDependencies?.length ?? 0,
+      topInternalDependencies: summarizeInferredEdges(cycle.internalDependencies ?? []),
+      cycleBreakingCandidates: summarizeInferredEdges(cycle.cycleBreakingCandidates ?? [], { includeRationale: true })
+    })),
+    architecturePressureNotes: (payload.architecturePressureNotes ?? []).map((note) => ({
+      kind: note.kind,
+      filePath: note.filePath,
+      lineCount: note.lineCount,
+      functionLikeCount: note.functionLikeCount,
+      importsScanned: note.importsScanned,
+      exportsScanned: note.exportsScanned,
+      classCount: note.classCount,
+      message: note.message
+    }))
+  };
+}
+
+function summarizeInferredEdges(edges, options = {}) {
+  return edges.slice(0, 5).map((edge) => ({
+    fromGroup: edge.fromGroup,
+    toGroup: edge.toGroup,
+    count: edge.count,
+    firstSample: summarizeSample(edge.samples?.[0]),
+    ...(options.includeRationale && typeof edge.rationale === "string" ? { rationale: edge.rationale } : {})
+  }));
+}
+
+function summarizeSample(sample) {
+  if (!sample) {
+    return undefined;
+  }
+
+  return {
+    filePath: sample.filePath,
+    line: sample.line,
+    specifier: sample.specifier,
+    resolvedPath: sample.resolvedPath
+  };
+}
+
 function formatMarkdownReport(report) {
   const lines = [
     `# ${report.name} Diff Architecture Smoke`,
@@ -568,15 +629,15 @@ function formatMarkdownReport(report) {
       .join(" | ")
       .replace(/^/, "| ")
       .replace(/$/, " |"),
-    "",
-    "## Drift",
-    "",
-    `- New observed edges: ${report.drift.newObservedEdges.length}`,
-    `- Removed observed edges: ${report.drift.removedObservedEdges.length}`,
     ""
   ];
 
-  lines.push("### New Observed Edges");
+  appendInferenceSummary(lines, report.baselineInference);
+
+  lines.push("## Drift", "");
+  lines.push(`- New observed edges: ${report.drift.newObservedEdges.length}`);
+  lines.push(`- Removed observed edges: ${report.drift.removedObservedEdges.length}`);
+  lines.push("", "### New Observed Edges");
   appendEdgeList(lines, report.drift.newObservedEdges, "via");
   lines.push("", "### Removed Observed Edges");
   appendEdgeList(lines, report.drift.removedObservedEdges, "previously via");
@@ -612,6 +673,48 @@ function formatMarkdownReport(report) {
   lines.push("- Use this harness to calibrate Axiom behavior before turning any signal into a hard gate.");
 
   return `${lines.join("\n")}\n`;
+}
+
+function appendInferenceSummary(lines, inference) {
+  if (!inference?.summary) {
+    return;
+  }
+
+  lines.push("## Baseline Inference", "");
+  lines.push(`- Source files: ${inference.summary.sourceFiles ?? 0}`);
+  lines.push(`- Imports scanned: ${inference.summary.importsScanned ?? 0}`);
+  lines.push(`- Candidate modules: ${inference.summary.candidateModules ?? 0}`);
+  lines.push(`- Emitted modules: ${inference.summary.modules ?? 0}`);
+  lines.push(`- Inferred observed dependencies: ${inference.summary.observedDependencies ?? 0}`);
+  lines.push(`- Collapsed cycles: ${inference.summary.collapsedCycles ?? inference.collapsedCycles.length}`);
+  lines.push(`- Architecture pressure notes: ${inference.summary.architecturePressureNotes ?? inference.architecturePressureNotes.length}`);
+
+  if (inference.collapsedCycles.length > 0) {
+    lines.push("", "### Collapsed Cycles");
+    for (const cycle of inference.collapsedCycles) {
+      lines.push(`- \`${cycle.module}\`: ${cycle.sourceGroups.length} source groups merged.`);
+      if (cycle.sourceGroups.length > 0) {
+        lines.push(`  - groups: ${cycle.sourceGroups.map((group) => `\`${group}\``).join(", ")}`);
+      }
+      for (const candidate of cycle.cycleBreakingCandidates) {
+        const sample = candidate.firstSample
+          ? `; sample \`${candidate.firstSample.filePath}:${candidate.firstSample.line}\` importing \`${candidate.firstSample.specifier}\``
+          : "";
+        lines.push(`  - candidate \`${candidate.fromGroup} -> ${candidate.toGroup}\`: ${candidate.count} import sites${sample}`);
+      }
+    }
+  }
+
+  if (inference.architecturePressureNotes.length > 0) {
+    lines.push("", "### Intra-File Pressure Notes");
+    for (const note of inference.architecturePressureNotes.slice(0, 8)) {
+      lines.push(
+        `- \`${note.filePath}\`: ${note.lineCount} lines, ${note.functionLikeCount} function-like nodes, ${note.importsScanned} imports`
+      );
+    }
+  }
+
+  lines.push("");
 }
 
 function formatSourceScope(sourceScope) {
@@ -719,8 +822,9 @@ Options:
   --workdir <path>              Reuse a local work directory.
   --keep                        Keep temporary clones and baseline artifacts.
 
-The script clones two refs, infers a baseline contract, saves a graph baseline,
-then runs axi diff and axi observe --baseline against the current ref.
+The script clones two refs, infers a baseline contract, records inference
+summary evidence, saves a graph baseline, then runs axi diff and
+axi observe --baseline against the current ref.
 
 This is a smoke calibration tool, not a production benchmark or architecture verdict.
 `);

@@ -114,7 +114,7 @@ test("GitHub annotation helper accepts PowerShell UTF-16LE redirected JSON", () 
 
 test("GitHub annotation helper rejects non-check JSON payloads", () => {
   const payload = {
-    schemaVersion: "axiom.graph.v11",
+    schemaVersion: "axiom.graph.v12",
     summary: {},
     violations: []
   };

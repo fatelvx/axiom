@@ -76,6 +76,25 @@ test("graph JSON exposes declared, forbidden, visibility, and observed edges", (
       caveat:
         "This is a graph interpretation over static imports, not proof of semantic architecture health. Compare it with the architecture you intended."
     },
+    reviewStory: {
+      summary:
+        "The contract is failing. Treat the listed hard violations as the first repair target before using this graph as a baseline.",
+      setup:
+        "Scanned 2 declared modules and 3 observed import edges. This report is advisory unless you run `axi check` as the gate.",
+      pressures: [
+        {
+          kind: "hard_violation",
+          title: "Hard contract failures",
+          description: "2 hard violations should be fixed or explicitly accepted before treating this graph as stable.",
+          severity: "gate",
+          count: 2
+        }
+      ],
+      nextStep:
+        "Fix hard violations first, or add visible temporary `accepts ... until ... because ...` debt only after review.",
+      caveat:
+        "This story is a review aid over static imports. It points to likely pressure, not proof that the architecture is good or bad."
+    },
     topSignals: [
       {
         kind: "hard_violation",
@@ -499,10 +518,17 @@ test("attention graph output clusters repeated warning root causes", () => {
     root: path.join(repoRoot, "fixtures/deep-internal-warning-clusters"),
     warnDeepInternalImports: true
   });
+  const payload = toGraphJson(result, { violationsOnly: true, attention: true });
   const output = formatGraphResult(result, { violationsOnly: true, attention: true });
 
   assert.match(output, /warnings: 2/);
+  assert.equal(payload.architectureSummary.reviewStory.pressures[0]?.title, "Public-entry bypass in Lib");
+  assert.match(
+    payload.architectureSummary.reviewStory.summary,
+    /Start review with Public-entry bypass in Lib/
+  );
   assert.match(output, /likely roots:\n    deep_internal_import Lib public-entry bypass: src\/lib\/internal\/\*: 2 warnings/);
+  assert.match(output, /review story:\n  - Public-entry bypass in Lib:/);
   assert.match(output, /deep_internal_import src\/app\/a\.ts:1/);
   assert.match(output, /deep_internal_import src\/app\/b\.ts:1/);
 });

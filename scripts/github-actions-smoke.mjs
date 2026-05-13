@@ -41,7 +41,7 @@ try {
     "--warn-deep-internal-imports"
   ], 0);
   const observePayload = parseJson(observeJson.stdout, "observe JSON output");
-  assertEqual(observePayload.schemaVersion, "axiom.graph.v11", "observe graph schema version");
+  assertEqual(observePayload.schemaVersion, "axiom.graph.v12", "observe graph schema version");
   assertEqual(observePayload.architectureSummary?.status, "failing_contract", "observe architecture status");
 
   const observeJsonPath = path.join(tempDirectory, "basic-app.observe.json");

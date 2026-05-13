@@ -656,3 +656,75 @@ Detailed result:
 ```text
 experiments/axiom-forecast/results/mirofish-read-the-graph-pilot-card-target-2026-05-13.md
 ```
+
+### Pilot Confidence / MCP Timing Target Backtest
+
+Before this target backtest, Axiom had shipped and pushed:
+
+- source-group-aware deep-internal-import entrypoint advice
+- shown dependency edge counts separate from full observed dependencies
+- warning-scope notes for advisory checks
+- warning clustering for advisory-heavy output
+- readable collapsed-cycle names such as `SignalsDebugCycle`
+- clone-only, no-install safe pilots for ofetch and Preact Signals
+
+Method:
+
+Used the same local MiroFish `.env` and model configuration through direct `LLMClient`. This was a targeted risk-map prompt, not a full OASIS social simulation rerun.
+
+Primary result:
+
+- The Lumina entrypoint-confidence repair reduces trust risk because Axiom no longer suggests unrelated public entrypoints inside broad collapsed modules.
+- The ofetch quiet control and Preact Signals workspace signal strengthen differentiation from a noisy linter or generic dependency visualizer.
+- The remaining rejection pattern is first-time interpretation: "117 warnings and a dependency graph" can still feel like lint flood unless Axiom tells a short review story.
+- MCP remains promising, but premature until the CLI / JSON report surface can expose that review story in a stable, agent-friendly structure.
+
+Follow-up decision:
+
+- Do one more target refinement before a larger public-reception / MCP backtest.
+- The refinement should add a compact review-story layer and more root-cause-oriented warning interpretation without adding new enforcement semantics.
+
+Detailed result:
+
+```text
+experiments/axiom-forecast/results/mirofish-pilot-confidence-mcp-target-2026-05-13.md
+```
+
+### Review Story Target Backtest
+
+Before this target backtest, Axiom had implemented:
+
+- `architectureSummary.reviewStory` in graph / observe / diff JSON
+- graph JSON schema `axiom.graph.v12`
+- human and Markdown review story output
+- top review pressures for hard violations, visible debt, warning roots, baseline drift, and quiet graph centers
+- documentation for JSON consumers explaining how to use `reviewStory` without treating it as a gate
+
+Verification before the backtest:
+
+- `npm run alpha:check` passed.
+- The self-contract check passed.
+- GitHub Actions smoke passed.
+- npm pack dry-run passed.
+
+Method:
+
+Used the same local MiroFish `.env` and model configuration through direct `LLMClient`. This was a targeted risk-map prompt, not a full OASIS social simulation rerun.
+
+Primary result:
+
+- `reviewStory` directly addresses the "117 warnings and a graph" rejection pattern by prioritizing the first architecture pressure before raw diagnostics.
+- The output now differentiates Axiom more clearly from lint and dependency visualization because it gives a post-scan narrative over declared intent, observed imports, visible debt, warnings, and drift.
+- `axiom.graph.v12` is considered stable enough for a thin read-only MCP wrapper, as long as MCP treats the story as guidance and keeps `axi check` as the hard gate.
+- The highest remaining risk is overinterpretation of quiet stories as proof of healthy architecture.
+
+Follow-up decision:
+
+- Run a larger public-reception / MCP backtest next.
+- Keep the review-story caveat visible and do not claim semantic architecture health.
+
+Detailed result:
+
+```text
+experiments/axiom-forecast/results/mirofish-review-story-target-2026-05-13.md
+```

@@ -12,7 +12,7 @@ Each JSON payload starts with a `schemaVersion`:
 
 ```text
 axiom.check.v4
-axiom.graph.v11
+axiom.graph.v12
 axiom.infer.v5
 ```
 
@@ -85,7 +85,7 @@ Do not hard-gate on `axi graph`, `axi observe`, or Markdown output unless your o
 
 Important fields:
 
-- `architectureSummary`: agent-friendly status, review mode, interpretation, top signals, and suggested next actions over the same graph result.
+- `architectureSummary`: agent-friendly status, review mode, interpretation, review story, top signals, and suggested next actions over the same graph result.
 - `summary`: counts for modules, observed dependencies, violations, intentional violations, and warnings.
 - `filters`: tells whether output is full graph, attention, or violations-only.
 - `allObservedDependencies[]`: the full observed module graph.
@@ -114,6 +114,16 @@ The top-level `intentionalDebt[]` ledger is the authoritative list for accepted 
 - `caveat`: a reminder that this is static import graph interpretation, not semantic architecture proof.
 
 Consumers should treat the interpretation as a navigation aid, not a gate. For exact evidence, read the raw arrays that produced it.
+
+`architectureSummary.reviewStory` is the short review companion for first-time users and agents. It includes:
+
+- `summary`: a compact story of what the scan means.
+- `setup`: scan size and the reminder that graph / observe output is advisory unless `axi check` is used as the gate.
+- `pressures[]`: the top review pressures, such as hard failures, visible debt, warning roots, baseline drift, or a quiet graph center.
+- `nextStep`: the first action a human or agent should take.
+- `caveat`: a reminder that the story is static import-graph guidance, not semantic architecture proof.
+
+Use `reviewStory` to decide what to show first in a PR comment, dashboard, or agent prompt. Use the raw arrays for exact evidence and line-level repairs.
 
 ## Baseline Drift
 

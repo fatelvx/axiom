@@ -2,7 +2,7 @@ import path from "node:path";
 import type { ModuleRef, PathRef, SourceLocation, Violation, ViolationCode } from "../axi/types.js";
 import type { CheckResult } from "../validator/check.js";
 
-export const graphJsonSchemaVersion = "axiom.graph.v11";
+export const graphJsonSchemaVersion = "axiom.graph.v12";
 
 interface GraphJsonLocation {
   filePath: string;
@@ -136,6 +136,7 @@ interface GraphJsonArchitectureSummary {
   };
   reviewFocus: string;
   interpretation: GraphJsonArchitectureInterpretation;
+  reviewStory: GraphJsonArchitectureReviewStory;
   topSignals: GraphJsonArchitectureSignal[];
   suggestedNextActions: string[];
 }
@@ -156,6 +157,24 @@ interface GraphJsonArchitectureCentralModule {
   incomingImportSites: number;
   outgoingImportSites: number;
   totalImportSites: number;
+}
+
+interface GraphJsonArchitectureReviewStory {
+  summary: string;
+  setup: string;
+  pressures: GraphJsonArchitecturePressure[];
+  nextStep: string;
+  caveat: string;
+}
+
+interface GraphJsonArchitecturePressure {
+  kind: "hard_violation" | "visible_debt" | "advisory_warning_root" | "baseline_drift" | "graph_center";
+  title: string;
+  description: string;
+  severity: "gate" | "review" | "advisory" | "info";
+  count?: number;
+  code?: string;
+  modules?: string[];
 }
 
 interface GraphJsonArchitectureSignal {
@@ -341,10 +360,20 @@ function formatGraphReviewModel(graph: GraphJsonResult, options: GraphFormatOpti
 
 function formatGraphInterpretation(graph: GraphJsonResult): string[] {
   const interpretation = graph.architectureSummary.interpretation;
+  const story = graph.architectureSummary.reviewStory;
   const lines = [`interpretation: ${interpretation.headline}`];
+  lines.push(`story: ${story.summary}`);
 
   if (interpretation.centralModules.length > 0) {
     lines.push(`center: ${formatCentralModulesInline(interpretation.centralModules)}`);
+  }
+
+  if (story.pressures.length > 0) {
+    lines.push("review story:");
+    for (const pressure of story.pressures.slice(0, 3)) {
+      lines.push(`  - ${pressure.title}: ${pressure.description}`);
+    }
+    lines.push(`  next: ${story.nextStep}`);
   }
 
   lines.push("look first:");
@@ -654,6 +683,7 @@ function buildArchitectureSummary(input: {
     },
     reviewFocus: formatArchitectureSummaryFocus(input),
     interpretation: buildArchitectureInterpretation(input),
+    reviewStory: buildArchitectureReviewStory(input),
     topSignals: formatArchitectureSummarySignals(input),
     suggestedNextActions: formatArchitectureSummaryNextActions(input)
   };
@@ -746,6 +776,282 @@ function buildArchitectureInterpretation(input: {
   };
 }
 
+function buildArchitectureReviewStory(input: {
+  summary: GraphJsonResult["summary"];
+  allObservedDependencies: GraphJsonObservedDependency[];
+  violations: GraphJsonViolation[];
+  intentionalDebt: GraphJsonIntentionalDebt[];
+  warnings: GraphJsonViolation[];
+  drift?: GraphJsonDrift;
+}): GraphJsonArchitectureReviewStory {
+  const centralModules = findCentralModules(input.allObservedDependencies);
+  const pressures: GraphJsonArchitecturePressure[] = [];
+  const noSpecViolations = input.violations.filter((violation) => violation.code === "no_spec_files");
+  const otherViolations = input.violations.filter((violation) => violation.code !== "no_spec_files");
+
+  if (noSpecViolations.length > 0) {
+    pressures.push({
+      kind: "hard_violation",
+      title: "No declared architecture contract",
+      description:
+        "Axiom can observe imports, but it cannot compare them with architecture intent until a `.axi` spec exists or `--spec` is provided.",
+      severity: "gate",
+      count: noSpecViolations.length,
+      code: "no_spec_files"
+    });
+  }
+
+  if (otherViolations.length > 0) {
+    pressures.push({
+      kind: "hard_violation",
+      title: "Hard contract failures",
+      description: `${otherViolations.length} hard violation${pluralize(
+        otherViolations.length
+      )} should be fixed or explicitly accepted before treating this graph as stable.`,
+      severity: "gate",
+      count: otherViolations.length
+    });
+  }
+
+  if (input.intentionalDebt.length > 0) {
+    pressures.push({
+      kind: "visible_debt",
+      title: "Visible accepted architecture debt",
+      description: `${input.intentionalDebt.length} accepted debt item${pluralize(
+        input.intentionalDebt.length
+      )} remain visible and should be reviewed before expiration.`,
+      severity: "review",
+      count: input.intentionalDebt.length
+    });
+  }
+
+  for (const cluster of buildWarningClusters(input.warnings).slice(0, 3)) {
+    pressures.push(warningClusterToReviewPressure(cluster));
+  }
+
+  const driftCount = readDriftCount(input.drift);
+  if (driftCount > 0 && input.drift) {
+    pressures.push({
+      kind: "baseline_drift",
+      title: "Observed graph drift",
+      description: `${input.drift.newObservedEdges.length} new and ${
+        input.drift.removedObservedEdges.length
+      } removed observed module edge${pluralize(driftCount)} changed since the baseline.`,
+      severity: "advisory",
+      count: driftCount
+    });
+  }
+
+  if (pressures.length === 0 && centralModules[0]) {
+    pressures.push({
+      kind: "graph_center",
+      title: `Quiet graph center: ${centralModules[0].module}`,
+      description:
+        "No hard failures, visible debt, advisory warnings, or drift were reported; compare this center with the architecture you expected before saving a baseline.",
+      severity: "info",
+      modules: [centralModules[0].module]
+    });
+  }
+
+  return {
+    summary: formatReviewStorySummary(input, pressures),
+    setup: formatReviewStorySetup(input.summary),
+    pressures,
+    nextStep: formatReviewStoryNextStep(input, pressures),
+    caveat:
+      "This story is a review aid over static imports. It points to likely pressure, not proof that the architecture is good or bad."
+  };
+}
+
+function formatReviewStorySetup(summary: GraphJsonResult["summary"]): string {
+  return `Scanned ${summary.modules} declared module${pluralize(summary.modules)} and ${
+    summary.observedDependencies
+  } observed import edge${pluralize(summary.observedDependencies)}. This report is advisory unless you run ` +
+    "`axi check` as the gate.";
+}
+
+function formatReviewStorySummary(
+  input: {
+    summary: GraphJsonResult["summary"];
+    violations: GraphJsonViolation[];
+    intentionalDebt: GraphJsonIntentionalDebt[];
+    warnings: GraphJsonViolation[];
+    drift?: GraphJsonDrift;
+  },
+  pressures: GraphJsonArchitecturePressure[]
+): string {
+  if (input.violations.some((violation) => violation.code === "no_spec_files")) {
+    return "Axiom can scan this repository, but it cannot judge declared-vs-observed drift until architecture intent is supplied.";
+  }
+
+  if (input.violations.length > 0) {
+    return "The contract is failing. Treat the listed hard violations as the first repair target before using this graph as a baseline.";
+  }
+
+  if (input.intentionalDebt.length > 0 || input.warnings.length > 0) {
+    const firstPressure = pressures[0];
+    return firstPressure
+      ? `No hard gate failures. Start review with ${firstPressure.title}: ${firstPressure.description}`
+      : "No hard gate failures, but advisory review signals are present.";
+  }
+
+  const driftCount = readDriftCount(input.drift);
+  if (driftCount > 0) {
+    return "No hard gate failures. Start review with the observed graph drift before updating any baseline.";
+  }
+
+  if (input.summary.observedDependencies === 0) {
+    return "This scoped scan is quiet and observed no cross-module import edges. Confirm the scope covers the architecture you care about.";
+  }
+
+  return "This scoped graph is quiet. Confirm the graph center matches intended architecture before saving or updating a baseline.";
+}
+
+function formatReviewStoryNextStep(
+  input: {
+    violations: GraphJsonViolation[];
+    intentionalDebt: GraphJsonIntentionalDebt[];
+    warnings: GraphJsonViolation[];
+    drift?: GraphJsonDrift;
+  },
+  pressures: GraphJsonArchitecturePressure[]
+): string {
+  if (input.violations.some((violation) => violation.code === "no_spec_files")) {
+    return "Run `axi infer` or pass `--spec`, then review the generated comments before treating the draft as intent.";
+  }
+
+  if (input.violations.length > 0) {
+    return "Fix hard violations first, or add visible temporary `accepts ... until ... because ...` debt only after review.";
+  }
+
+  if (input.intentionalDebt.length > 0 || input.warnings.length > 0) {
+    const firstPressure = pressures[0];
+    return firstPressure
+      ? `Inspect ${firstPressure.title}; decide whether to change code, clarify .axi visibility rules, or keep the signal advisory.`
+      : "Inspect advisory signals; decide whether to change code, clarify the contract, or keep them as visible review notes.";
+  }
+
+  if (readDriftCount(input.drift) > 0) {
+    return "Inspect new and removed observed edges, then update the baseline only if the drift matches intended architecture.";
+  }
+
+  return "Confirm scan scope and intended graph shape, then save a baseline with `axi graph --json` if this is the shape to watch.";
+}
+
+function warningClusterToReviewPressure(cluster: WarningCluster): GraphJsonArchitecturePressure {
+  const modules = readWarningClusterModules(cluster);
+
+  if (cluster.code === "deep_internal_import") {
+    const moduleName = modules[0] ?? "module";
+    if (cluster.subject.includes("state/store leakage")) {
+      return {
+        kind: "advisory_warning_root",
+        title: `State/store leakage into ${moduleName}`,
+        description: `${cluster.count} deep import${pluralize(
+          cluster.count
+        )} target state or store internals; review whether state should be injected, evented, or exposed through an explicit boundary.`,
+        severity: "review",
+        count: cluster.count,
+        code: cluster.code,
+        modules
+      };
+    }
+
+    if (cluster.subject.includes("tool boundary pressure")) {
+      return {
+        kind: "advisory_warning_root",
+        title: `Tool boundary pressure in ${moduleName}`,
+        description: `${cluster.count} deep import${pluralize(
+          cluster.count
+        )} touch tool or tooling internals; review whether contracts/types should move to a smaller shared boundary.`,
+        severity: "review",
+        count: cluster.count,
+        code: cluster.code,
+        modules
+      };
+    }
+
+    if (cluster.subject.includes("ambiguous public boundary")) {
+      return {
+        kind: "advisory_warning_root",
+        title: `Ambiguous public boundary in ${moduleName}`,
+        description: `${cluster.count} deep import${pluralize(
+          cluster.count
+        )} have no clear same-source-group entrypoint; split the module or declare explicit exposure rules before rewriting imports.`,
+        severity: "review",
+        count: cluster.count,
+        code: cluster.code,
+        modules
+      };
+    }
+
+    return {
+      kind: "advisory_warning_root",
+      title: `Public-entry bypass in ${moduleName}`,
+      description: `${cluster.count} deep import${pluralize(
+        cluster.count
+      )} bypass a likely source-group entrypoint; review whether the import should use the public boundary or be declared intentional.`,
+      severity: "review",
+      count: cluster.count,
+      code: cluster.code,
+      modules
+    };
+  }
+
+  if (cluster.code === "coupling_concentration") {
+    return {
+      kind: "advisory_warning_root",
+      title: `Coupling concentration around ${cluster.subject}`,
+      description: `${cluster.count} concentration warning${pluralize(
+        cluster.count
+      )} suggest this module may be becoming a coordination hub.`,
+      severity: "review",
+      count: cluster.count,
+      code: cluster.code,
+      modules
+    };
+  }
+
+  return {
+    kind: "advisory_warning_root",
+    title: `${cluster.code} around ${cluster.subject}`,
+    description: `${cluster.count} advisory warning${pluralize(cluster.count)} share this root.`,
+    severity: "review",
+    count: cluster.count,
+    code: cluster.code,
+    modules
+  };
+}
+
+function readWarningClusterModules(cluster: WarningCluster): string[] {
+  const subject = cluster.subject;
+  const arrowModules = subject.includes(" -> ")
+    ? subject
+        .split(" -> ")
+        .map((part) => part.trim())
+        .filter(Boolean)
+    : [];
+  if (arrowModules.length > 0) {
+    return arrowModules;
+  }
+
+  const markers = [
+    " state/store leakage",
+    " tool boundary pressure",
+    " ambiguous public boundary",
+    " public-entry bypass"
+  ];
+  for (const marker of markers) {
+    const index = subject.indexOf(marker);
+    if (index > 0) {
+      return [subject.slice(0, index)];
+    }
+  }
+
+  const beforeColon = subject.split(":")[0]?.trim();
+  return beforeColon ? [beforeColon] : [];
+}
+
 function formatArchitectureHeadline(
   input: {
     summary: GraphJsonResult["summary"];
@@ -767,10 +1073,11 @@ function formatArchitectureHeadline(
   }
 
   if (input.intentionalDebt.length > 0 || input.warnings.length > 0) {
+    const reviewSignalTotal = input.intentionalDebt.length + input.warnings.length;
     return `No hard contract failures, but ${formatReviewSignalCount(
       input.intentionalDebt.length,
       input.warnings.length
-    )} need review${formatCentralHeadlineSuffix(centralModules)}.`;
+    )} ${reviewSignalTotal === 1 ? "needs" : "need"} review${formatCentralHeadlineSuffix(centralModules)}.`;
   }
 
   const driftCount = readDriftCount(input.drift);
@@ -1205,6 +1512,20 @@ function formatMarkdownInterpretation(graph: GraphJsonResult): string[] {
   }
 
   lines.push(`- Caveat: ${interpretation.caveat}`);
+  lines.push("");
+  lines.push("### Review Story");
+  lines.push(`- Summary: ${graph.architectureSummary.reviewStory.summary}`);
+  lines.push(`- Setup: ${graph.architectureSummary.reviewStory.setup}`);
+  if (graph.architectureSummary.reviewStory.pressures.length === 0) {
+    lines.push("- Pressures: none");
+  } else {
+    lines.push("- Pressures:");
+    for (const pressure of graph.architectureSummary.reviewStory.pressures.slice(0, 3)) {
+      lines.push(`  - ${markdownCode(pressure.title)} (${pressure.severity}): ${pressure.description}`);
+    }
+  }
+  lines.push(`- Next step: ${graph.architectureSummary.reviewStory.nextStep}`);
+  lines.push(`- Caveat: ${graph.architectureSummary.reviewStory.caveat}`);
   return lines;
 }
 

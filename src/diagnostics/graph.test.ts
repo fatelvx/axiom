@@ -1,4 +1,6 @@
 import assert from "node:assert/strict";
+import fs from "node:fs";
+import os from "node:os";
 import path from "node:path";
 import test from "node:test";
 import { formatGraphMarkdown, formatGraphMermaid, formatGraphResult, graphJsonSchemaVersion, toGraphJson } from "./graph.js";
@@ -393,6 +395,46 @@ test("markdown graph output summarizes reviewable architecture signals", () => {
   assert.match(output, /### Architecture Drift \(Advisory\)/);
   assert.match(output, /`advisory_observed_edge_drift`/);
   assert.match(output, /- New observed edges:\n  - `Simulation -> Rendering` \(`forbidden_dependency`\)/);
+});
+
+test("markdown observe treats missing contracts as setup issues", () => {
+  const result = runCheck({ root: path.join(repoRoot, "fixtures/infer-cycle") });
+  const payload = toGraphJson(result, { violationsOnly: true, attention: true, observe: true });
+  const output = formatGraphMarkdown(result, { violationsOnly: true, attention: true, observe: true });
+
+  assert.equal(payload.architectureSummary.status, "needs_contract");
+  assert.equal(payload.architectureSummary.reviewStory.pressures[0]?.kind, "setup_issue");
+  assert.match(output, /Status: needs contract/);
+  assert.match(output, /- Setup issues: 1/);
+  assert.match(output, /- Hard violations: 0/);
+  assert.match(output, /### Setup Issues/);
+  assert.match(output, /`no_spec_files`: No \.axi files found/);
+  assert.match(output, /### Hard Violations\n- None/);
+  assert.doesNotMatch(output, /Status: failing contract/);
+});
+
+test("markdown warnings include large-file function counts", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "axiom-markdown-large-file-"));
+
+  try {
+    fs.mkdirSync(path.join(root, "axiom"), { recursive: true });
+    fs.mkdirSync(path.join(root, "src"), { recursive: true });
+    fs.writeFileSync(path.join(root, "axiom/main.axi"), ['module App', 'path "src/**"', ""].join("\n"));
+    fs.writeFileSync(
+      path.join(root, "src/main.ts"),
+      Array.from({ length: 805 }, (_, index) => `export function value${index}() { return ${index}; }`).join("\n")
+    );
+
+    const result = runCheck({ root, warnLargeFiles: true });
+    const output = formatGraphMarkdown(result, { violationsOnly: true, attention: true, observe: true });
+
+    assert.match(output, /`large_module_file` at `src\/main\.ts:1`/);
+    assert.match(output, /Line count: 805/);
+    assert.match(output, /Threshold: lines >= 800/);
+    assert.match(output, /File shape: .*805 functions/);
+  } finally {
+    fs.rmSync(root, { force: true, recursive: true });
+  }
 });
 
 test("mermaid graph output visualizes observed module dependencies", () => {

@@ -168,7 +168,7 @@ interface GraphJsonArchitectureReviewStory {
 }
 
 interface GraphJsonArchitecturePressure {
-  kind: "hard_violation" | "visible_debt" | "advisory_warning_root" | "baseline_drift" | "graph_center";
+  kind: "setup_issue" | "hard_violation" | "visible_debt" | "advisory_warning_root" | "baseline_drift" | "graph_center";
   title: string;
   description: string;
   severity: "gate" | "review" | "advisory" | "info";
@@ -178,7 +178,7 @@ interface GraphJsonArchitecturePressure {
 }
 
 interface GraphJsonArchitectureSignal {
-  kind: "hard_violation" | "visible_debt" | "advisory_warning" | "baseline_drift";
+  kind: "setup_issue" | "hard_violation" | "visible_debt" | "advisory_warning" | "baseline_drift";
   code: string;
   message: string;
   location?: GraphJsonLocation;
@@ -234,7 +234,7 @@ export function formatGraphResult(result: CheckResult, options: GraphFormatOptio
     `declared dependencies: ${graph.summary.declaredDependencies}`,
     `forbidden dependencies: ${graph.summary.forbiddenDependencies}`,
     ...formatObservedDependencySummaryLines(graph),
-    `violations: ${graph.summary.violations}`,
+    ...formatViolationSummaryLines(graph),
     `intentional violations: ${graph.summary.intentionalViolations}`,
     `warnings: ${graph.summary.warnings}`,
     "warning scope: advisory warning counts include only checks enabled for this command or config"
@@ -256,6 +256,8 @@ export function formatGraphResult(result: CheckResult, options: GraphFormatOptio
   }
 
   if (options.violationsOnly) {
+    lines.push("");
+    lines.push(...formatSetupIssues(graph));
     lines.push("");
     lines.push(...formatViolatingDependencies(graph));
     lines.push("");
@@ -434,7 +436,7 @@ export function formatGraphMarkdown(result: CheckResult, options: GraphFormatOpt
     `- Modules: ${graph.summary.modules}`,
     `- Declared dependencies: ${graph.summary.declaredDependencies}`,
     ...formatMarkdownObservedDependencySummary(graph),
-    `- Hard violations: ${graph.summary.violations}`,
+    ...formatMarkdownViolationSummary(graph),
     `- Intentional violations: ${graph.summary.intentionalViolations}`,
     `- Advisory warnings: ${graph.summary.warnings}`
   ];
@@ -453,6 +455,8 @@ export function formatGraphMarkdown(result: CheckResult, options: GraphFormatOpt
   lines.push(...formatMarkdownInterpretation(graph));
   lines.push("");
   lines.push(...formatMarkdownReviewNotes(graph));
+  lines.push("");
+  lines.push(...formatMarkdownSetupIssues(graph));
   lines.push("");
   lines.push(...formatMarkdownHardViolations(graph));
   lines.push("");
@@ -791,11 +795,11 @@ function buildArchitectureReviewStory(input: {
 
   if (noSpecViolations.length > 0) {
     pressures.push({
-      kind: "hard_violation",
-      title: "No declared architecture contract",
+      kind: "setup_issue",
+      title: "Setup issue: no spec found",
       description:
         "Axiom can observe imports, but it cannot compare them with architecture intent until a `.axi` spec exists or `--spec` is provided.",
-      severity: "gate",
+      severity: "review",
       count: noSpecViolations.length,
       code: "no_spec_files"
     });
@@ -1306,6 +1310,10 @@ function readDriftCount(drift: GraphJsonDrift | undefined): number {
   return (drift?.newObservedEdges.length ?? 0) + (drift?.removedObservedEdges.length ?? 0);
 }
 
+function isSetupIssue(violation: GraphJsonViolation): boolean {
+  return violation.code === "no_spec_files";
+}
+
 function formatArchitectureSummarySignals(input: {
   violations: GraphJsonViolation[];
   intentionalDebt: GraphJsonIntentionalDebt[];
@@ -1316,7 +1324,7 @@ function formatArchitectureSummarySignals(input: {
 
   for (const violation of input.violations) {
     signals.push({
-      kind: "hard_violation",
+      kind: isSetupIssue(violation) ? "setup_issue" : "hard_violation",
       code: violation.code,
       message: violation.message,
       ...(violation.location ? { location: violation.location } : {}),
@@ -1468,6 +1476,24 @@ function formatMarkdownObservedDependencySummary(graph: GraphJsonResult): string
   ];
 }
 
+function formatViolationSummaryLines(graph: GraphJsonResult): string[] {
+  const setupIssueCount = getSetupIssues(graph).length;
+  if (setupIssueCount === 0) {
+    return [`violations: ${graph.summary.violations}`];
+  }
+
+  return [`setup issues: ${setupIssueCount}`, `hard violations: ${getHardViolations(graph).length}`];
+}
+
+function formatMarkdownViolationSummary(graph: GraphJsonResult): string[] {
+  const setupIssueCount = getSetupIssues(graph).length;
+  if (setupIssueCount === 0) {
+    return [`- Hard violations: ${graph.summary.violations}`];
+  }
+
+  return [`- Setup issues: ${setupIssueCount}`, `- Hard violations: ${getHardViolations(graph).length}`];
+}
+
 function formatMermaidObservedDependencySummary(graph: GraphJsonResult): string {
   if (!graph.filters.violationsOnly) {
     return `observedDependencies=${graph.summary.observedDependencies}`;
@@ -1477,16 +1503,18 @@ function formatMermaidObservedDependencySummary(graph: GraphJsonResult): string 
 }
 
 function formatMarkdownReviewStatus(graph: GraphJsonResult): string {
-  if (graph.summary.violations > 0) {
-    return "failing contract";
+  switch (graph.architectureSummary.status) {
+    case "needs_contract":
+      return "needs contract";
+    case "failing_contract":
+      return "failing contract";
+    case "needs_review":
+      return "needs review";
+    case "drift_detected":
+      return "needs review";
+    case "clear":
+      return "clear";
   }
-
-  const driftCount = (graph.drift?.newObservedEdges.length ?? 0) + (graph.drift?.removedObservedEdges.length ?? 0);
-  if (graph.summary.intentionalViolations > 0 || graph.summary.warnings > 0 || driftCount > 0) {
-    return "needs review";
-  }
-
-  return "clear";
 }
 
 function formatMarkdownDiffStatus(graph: GraphJsonResult): string {
@@ -1560,6 +1588,24 @@ function formatMarkdownReviewNotes(graph: GraphJsonResult): string[] {
 
   if (graph.filters.violationsOnly) {
     lines.push("- Dependency summaries separate shown attention edges from the full observed graph.");
+  }
+
+  return lines;
+}
+
+function formatMarkdownSetupIssues(graph: GraphJsonResult): string[] {
+  const setupIssues = getSetupIssues(graph);
+  const lines = ["### Setup Issues"];
+
+  if (setupIssues.length === 0) {
+    lines.push("- None");
+    return lines;
+  }
+
+  for (const issue of setupIssues) {
+    const location = issue.location ? ` at ${markdownCode(formatLocation(issue.location))}` : "";
+    lines.push(`- ${markdownCode(issue.code)}${location}: ${issue.message}`);
+    appendMarkdownDiagnosticDetails(lines, issue);
   }
 
   return lines;
@@ -1707,17 +1753,48 @@ function appendMarkdownWarningDetails(lines: string[], warning: GraphJsonViolati
   const fanInThreshold = readNumber(threshold?.fanInModules);
   const fanOutThreshold = readNumber(threshold?.fanOutModules);
   const internalTargetsThreshold = readNumber(threshold?.internalTargets);
-  if (fanInThreshold !== undefined || fanOutThreshold !== undefined || internalTargetsThreshold !== undefined) {
+  const lineThreshold = readNumber(threshold?.lines);
+  if (
+    fanInThreshold !== undefined ||
+    fanOutThreshold !== undefined ||
+    internalTargetsThreshold !== undefined ||
+    lineThreshold !== undefined
+  ) {
     appendMarkdownDetail(
       lines,
       "Threshold",
       [
         fanInThreshold === undefined ? undefined : `fan-in >= ${fanInThreshold}`,
         fanOutThreshold === undefined ? undefined : `fan-out >= ${fanOutThreshold}`,
-        internalTargetsThreshold === undefined ? undefined : `internal targets >= ${internalTargetsThreshold}`
+        internalTargetsThreshold === undefined ? undefined : `internal targets >= ${internalTargetsThreshold}`,
+        lineThreshold === undefined ? undefined : `lines >= ${lineThreshold}`
       ]
         .filter((item): item is string => item !== undefined)
         .join(" or ")
+    );
+  }
+
+  const lineCount = readNumber(warning.details?.lineCount);
+  if (lineCount !== undefined) {
+    appendMarkdownDetail(lines, "Line count", String(lineCount));
+  }
+
+  const importsScanned = readNumber(warning.details?.importsScanned);
+  const exportsScanned = readNumber(warning.details?.exportsScanned);
+  const functionLikeCount = readNumber(warning.details?.functionLikeCount);
+  const classCount = readNumber(warning.details?.classCount);
+  if (
+    importsScanned !== undefined ||
+    exportsScanned !== undefined ||
+    functionLikeCount !== undefined ||
+    classCount !== undefined
+  ) {
+    appendMarkdownDetail(
+      lines,
+      "File shape",
+      `${importsScanned ?? 0} imports, ${exportsScanned ?? 0} exports, ${functionLikeCount ?? 0} functions, ${
+        classCount ?? 0
+      } classes`
     );
   }
 
@@ -1742,6 +1819,43 @@ function appendMarkdownWarningDetails(lines: string[], warning: GraphJsonViolati
 
   if (warning.suggestion) {
     appendMarkdownDetail(lines, "Fix", warning.suggestion);
+  }
+}
+
+function appendMarkdownDiagnosticDetails(lines: string[], violation: GraphJsonViolation): void {
+  const sourceFileCount = readNumber(violation.details?.sourceFiles);
+  const importsScanned = readNumber(violation.details?.importsScanned);
+  if (sourceFileCount !== undefined || importsScanned !== undefined) {
+    appendMarkdownDetail(
+      lines,
+      "Scan",
+      `${sourceFileCount ?? "unknown"} source files, ${importsScanned ?? "unknown"} imports scanned`
+    );
+  }
+
+  const scopeHints = readRecordArray(violation.details?.scopeHints);
+  if (scopeHints.length > 0) {
+    for (const hint of scopeHints.slice(0, 2)) {
+      appendMarkdownDetail(lines, "Scope guidance", readString(hint.message));
+
+      const matchedFolders = readStringArray(hint.matchedFolders);
+      if (matchedFolders.length > 0) {
+        appendMarkdownDetail(lines, "Matched folders", matchedFolders.map(markdownCode).join(", "));
+      }
+
+      const samplePaths = readStringArray(hint.samplePaths);
+      if (samplePaths.length > 0) {
+        appendMarkdownDetail(lines, "Examples", samplePaths.slice(0, 4).map(markdownCode).join(", "));
+      }
+
+      appendMarkdownDetail(lines, "Try", readString(hint.suggestion));
+    }
+  }
+
+  appendMarkdownDetail(lines, "Note", readString(violation.details?.note));
+
+  if (violation.suggestion) {
+    appendMarkdownDetail(lines, "Fix", violation.suggestion);
   }
 }
 
@@ -1901,6 +2015,32 @@ function formatOtherViolations(graph: GraphJsonResult): string[] {
   return lines;
 }
 
+function formatSetupIssues(graph: GraphJsonResult): string[] {
+  const setupIssues = getSetupIssues(graph);
+  const lines = ["setup issues:"];
+
+  if (setupIssues.length === 0) {
+    lines.push("  none");
+    return lines;
+  }
+
+  for (const issue of setupIssues) {
+    const location = issue.location ? ` ${issue.location.filePath}:${issue.location.line}` : "";
+    lines.push(`  ${issue.code}${location}: ${issue.message}`);
+    lines.push(...formatGraphDiagnosticDetails(issue, "    "));
+  }
+
+  return lines;
+}
+
+function getSetupIssues(graph: GraphJsonResult): GraphJsonViolation[] {
+  return graph.violations.filter(isSetupIssue);
+}
+
+function getHardViolations(graph: GraphJsonResult): GraphJsonViolation[] {
+  return graph.violations.filter((violation) => !isSetupIssue(violation));
+}
+
 function getOtherViolations(graph: GraphJsonResult): GraphJsonViolation[] {
   const dependencyViolationKeys = new Set(
     graph.observedDependencies.flatMap((dependency) =>
@@ -1908,7 +2048,7 @@ function getOtherViolations(graph: GraphJsonResult): GraphJsonViolation[] {
     )
   );
 
-  return graph.violations.filter((violation) => {
+  return getHardViolations(graph).filter((violation) => {
     if (!violation.location) {
       return true;
     }

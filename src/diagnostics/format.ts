@@ -134,6 +134,26 @@ function formatDetails(root: string, violation: Violation): string[] {
     lines.push(`  likely entry points: ${publicEntrypoints.join(", ")}`);
   }
 
+  const moduleEntrypoints = readStringArray(violation.details.moduleEntrypoints);
+  if (moduleEntrypoints.length > 0) {
+    lines.push(`  other module entry points: ${moduleEntrypoints.join(", ")}`);
+  }
+
+  const entrypointConfidence = readString(violation.details.entrypointConfidence);
+  if (entrypointConfidence) {
+    lines.push(`  entrypoint confidence: ${entrypointConfidence}`);
+  }
+
+  const entrypointReason = readString(violation.details.entrypointReason);
+  if (entrypointReason) {
+    lines.push(`  entrypoint reason: ${entrypointReason}`);
+  }
+
+  const deepImportGroup = readString(violation.details.deepImportGroup);
+  if (deepImportGroup) {
+    lines.push(`  deep import group: ${deepImportGroup}`);
+  }
+
   const internalTargets = readStringArray(violation.details.internalTargets);
   if (internalTargets.length > 0) {
     lines.push(`  internal targets: ${internalTargets.join(", ")}`);

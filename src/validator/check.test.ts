@@ -290,7 +290,7 @@ test("deep internal import warnings are opt-in advisory diagnostics", () => {
   assert.equal(result.warnings.length, 1);
   assert.deepEqual(result.warnings[0], {
     code: "deep_internal_import",
-    message: "App imports Lib through a deep relative path instead of a likely entry point.",
+    message: "App imports Lib through a deep relative path instead of a likely source-group entry point.",
     location: {
       filePath: path.join(root, "src/app/deep.ts"),
       line: 1
@@ -300,15 +300,21 @@ test("deep internal import warnings are opt-in advisory diagnostics", () => {
       toModule: "Lib",
       specifier: "../lib/internal/secret",
       importedPath: "src/lib/internal/secret.ts",
+      deepImportGroup: "src/lib/internal/*",
+      sourceGroup: "src/lib",
       publicEntrypoints: ["src/lib/index.ts"],
       publicEntrypointCount: 1,
       publicEntrypointsTruncated: false,
+      moduleEntrypoints: [],
+      moduleEntrypointCount: 1,
+      moduleEntrypointsTruncated: false,
       entrypointConfidence: "single_likely_entrypoint",
+      entrypointReason: "single_same_source_group_entrypoint",
       importKind: "import",
       observed: "App -> Lib deep internal import",
       scope: "relative_cross_module_non_entrypoint",
       suggestion:
-        "Import a public entry point from Lib, or declare explicit exposes/hides rules if this deep path is intentional."
+        "Import the source-group entry point from Lib, or declare explicit exposes/hides rules if this deep path is intentional."
     }
   });
 });
@@ -322,22 +328,58 @@ test("deep internal import warnings soften entrypoint advice for broad inferred 
   assert.equal(result.warnings[0]?.code, "deep_internal_import");
   assert.equal(
     result.warnings[0]?.message,
-    "App imports ServicesCycle through a deep relative path while ServicesCycle has multiple likely entry points."
+    "App imports ServicesCycle through a deep relative path with no clear source-group entry point."
   );
   assert.deepEqual(result.warnings[0]?.details, {
     fromModule: "App",
     toModule: "ServicesCycle",
     specifier: "../services/tools/internal/tool",
     importedPath: "src/services/tools/internal/tool.ts",
-    publicEntrypoints: ["src/services/index.ts", "src/services/tools/index.ts", "src/store/index.ts"],
-    publicEntrypointCount: 3,
+    deepImportGroup: "src/services/tools/*",
+    sourceGroup: "src/services",
+    publicEntrypoints: ["src/services/index.ts", "src/services/tools/index.ts"],
+    publicEntrypointCount: 2,
     publicEntrypointsTruncated: false,
+    moduleEntrypoints: ["src/services/index.ts", "src/services/tools/index.ts", "src/store/index.ts"],
+    moduleEntrypointCount: 3,
+    moduleEntrypointsTruncated: false,
     entrypointConfidence: "ambiguous_entrypoints",
+    entrypointReason: "multiple_same_source_group_entrypoints",
     importKind: "import",
     observed: "App -> ServicesCycle deep internal import",
     scope: "relative_cross_module_non_entrypoint",
     suggestion:
-      "Review the likely entry points for ServicesCycle; this inferred module may be too broad, so declare explicit exposes/hides rules or split the module before treating one index file as the public boundary."
+      "Review the src/services/tools/* source group for ServicesCycle; this module may be too broad or missing a public entry point, so declare explicit exposes/hides rules or split the module before treating another source group's index file as the public boundary."
+  });
+});
+
+test("deep internal import warnings do not recommend entrypoints from another source group", () => {
+  const root = path.join(repoRoot, "fixtures/deep-internal-cross-group-entrypoint");
+  const result = runCheck({ root, warnDeepInternalImports: true });
+
+  assert.deepEqual(result.violations, []);
+  assert.equal(result.warnings.length, 1);
+  assert.equal(result.warnings[0]?.code, "deep_internal_import");
+  assert.deepEqual(result.warnings[0]?.details, {
+    fromModule: "App",
+    toModule: "ServicesCycle",
+    specifier: "../store/chatStore",
+    importedPath: "src/store/chatStore.ts",
+    deepImportGroup: "src/store/*",
+    sourceGroup: "src/store",
+    publicEntrypoints: [],
+    publicEntrypointCount: 0,
+    publicEntrypointsTruncated: false,
+    moduleEntrypoints: ["src/services/sandbox/index.ts"],
+    moduleEntrypointCount: 1,
+    moduleEntrypointsTruncated: false,
+    entrypointConfidence: "ambiguous_entrypoints",
+    entrypointReason: "no_same_source_group_entrypoint",
+    importKind: "import",
+    observed: "App -> ServicesCycle deep internal import",
+    scope: "relative_cross_module_non_entrypoint",
+    suggestion:
+      "Review the src/store/* source group for ServicesCycle; this module may be too broad or missing a public entry point, so declare explicit exposes/hides rules or split the module before treating another source group's index file as the public boundary."
   });
 });
 

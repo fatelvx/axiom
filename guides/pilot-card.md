@@ -74,6 +74,7 @@ If the graph is quiet, still ask whether the center and scope are right before s
 
 - A hard violation breaks a contract that the team actually believes.
 - A module with an `index.*` entry point has many cross-module deep imports into non-entry files.
+- A deep-import warning says the entry point is ambiguous or has no same-source-group entry point. That often means the inferred module is too broad, especially around collapsed cycles.
 - A public entry point starts exporting unrelated internals just to make callers look compliant.
 - A module becomes the graph center but the team expected it to be a leaf or adapter.
 - Visible accepted debt is close to expiration, unused, or no longer has a convincing reason.

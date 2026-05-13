@@ -485,11 +485,13 @@ test("attention graph output explains deep internal import warnings", () => {
   const output = formatGraphResult(result, { violationsOnly: true, attention: true });
 
   assert.match(output, /warnings: 1/);
-  assert.match(output, /deep_internal_import src\/app\/deep\.ts:1: App imports Lib through a deep relative path instead of a likely entry point\./);
+  assert.match(output, /deep_internal_import src\/app\/deep\.ts:1: App imports Lib through a deep relative path instead of a likely source-group entry point\./);
   assert.match(output, /observed: App -> Lib deep internal import/);
   assert.match(output, /imported path: src\/lib\/internal\/secret\.ts/);
+  assert.match(output, /deep import group: src\/lib\/internal\/\*/);
   assert.match(output, /likely entry points: src\/lib\/index\.ts/);
   assert.match(output, /entrypoint confidence: single_likely_entrypoint/);
+  assert.match(output, /entrypoint reason: single_same_source_group_entrypoint/);
 });
 
 test("attention graph output clusters repeated warning root causes", () => {
@@ -500,9 +502,25 @@ test("attention graph output clusters repeated warning root causes", () => {
   const output = formatGraphResult(result, { violationsOnly: true, attention: true });
 
   assert.match(output, /warnings: 2/);
-  assert.match(output, /clusters:\n    deep_internal_import App -> Lib: 2 warnings/);
+  assert.match(output, /likely roots:\n    deep_internal_import Lib public-entry bypass: src\/lib\/internal\/\*: 2 warnings/);
   assert.match(output, /deep_internal_import src\/app\/a\.ts:1/);
   assert.match(output, /deep_internal_import src\/app\/b\.ts:1/);
+});
+
+test("attention graph output avoids cross-group entrypoint advice", () => {
+  const result = runCheck({
+    root: path.join(repoRoot, "fixtures/deep-internal-cross-group-entrypoint"),
+    warnDeepInternalImports: true
+  });
+  const output = formatGraphResult(result, { violationsOnly: true, attention: true });
+
+  assert.match(output, /warnings: 1/);
+  assert.match(output, /deep_internal_import src\/app\/use-store\.ts:1: App imports ServicesCycle through a deep relative path with no clear source-group entry point\./);
+  assert.match(output, /imported path: src\/store\/chatStore\.ts/);
+  assert.match(output, /other module entry points: src\/services\/sandbox\/index\.ts/);
+  assert.match(output, /entrypoint confidence: ambiguous_entrypoints/);
+  assert.match(output, /entrypoint reason: no_same_source_group_entrypoint/);
+  assert.doesNotMatch(output, /likely entry points: src\/services\/sandbox\/index\.ts/);
 });
 
 test("violations-only graph output includes non-edge surface violations", () => {

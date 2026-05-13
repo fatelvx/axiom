@@ -99,6 +99,8 @@ Important fields:
 
 Warning counts only include advisory checks enabled for that command or config. If a dashboard compares `observe`, `graph`, Markdown, and Mermaid output, run them with the same `--warn-*` flags or label the difference as warning-scope, not drift.
 
+`deep_internal_import` warning details can include `entrypointConfidence`, `entrypointReason`, `deepImportGroup`, `sourceGroup`, `publicEntrypoints[]`, and `moduleEntrypoints[]`. `publicEntrypoints[]` is same-source-group advice. `moduleEntrypoints[]` lists other entry points in the broad module that were not used as direct advice. Agents should not rewrite imports to `moduleEntrypoints[]` when `entrypointConfidence` is `ambiguous_entrypoints`.
+
 The top-level `intentionalDebt[]` ledger is the authoritative list for accepted debt review. Per-edge `intentionalViolations[]` entries are useful annotations, but some accepted debt is not a cross-module observed edge. For example, an accepted `hidden_reexport` from an exposed entry point can appear in `intentionalDebt[]` even when there is no `observedDependencies[]` edge to show.
 
 `architectureSummary` is a convenience surface for agents and dashboards. It does not add validation semantics. Use it to decide what to show first, then read the underlying `violations[]`, `intentionalDebt[]`, `warnings[]`, `drift`, and observed dependency arrays for exact evidence.

@@ -1339,9 +1339,24 @@ function appendMarkdownWarningDetails(lines: string[], warning: GraphJsonViolati
     appendMarkdownDetail(lines, "Likely entry points", publicEntrypoints.map(markdownCode).join(", "));
   }
 
+  const moduleEntrypoints = readStringArray(warning.details?.moduleEntrypoints);
+  if (moduleEntrypoints.length > 0) {
+    appendMarkdownDetail(lines, "Other module entry points", moduleEntrypoints.map(markdownCode).join(", "));
+  }
+
   const entrypointConfidence = readString(warning.details?.entrypointConfidence);
   if (entrypointConfidence) {
     appendMarkdownDetail(lines, "Entrypoint confidence", markdownCode(entrypointConfidence));
+  }
+
+  const entrypointReason = readString(warning.details?.entrypointReason);
+  if (entrypointReason) {
+    appendMarkdownDetail(lines, "Entrypoint reason", markdownCode(entrypointReason));
+  }
+
+  const deepImportGroup = readString(warning.details?.deepImportGroup);
+  if (deepImportGroup) {
+    appendMarkdownDetail(lines, "Deep import group", markdownCode(deepImportGroup));
   }
 
   const internalTargets = readStringArray(warning.details?.internalTargets);
@@ -1603,9 +1618,24 @@ function formatWarnings(graph: GraphJsonResult): string[] {
       lines.push(`  likely entry points: ${publicEntrypoints.join(", ")}`);
     }
 
+    const moduleEntrypoints = readStringArray(warning.details?.moduleEntrypoints);
+    if (moduleEntrypoints.length > 0) {
+      lines.push(`  other module entry points: ${moduleEntrypoints.join(", ")}`);
+    }
+
     const entrypointConfidence = readString(warning.details?.entrypointConfidence);
     if (entrypointConfidence) {
       lines.push(`  entrypoint confidence: ${entrypointConfidence}`);
+    }
+
+    const entrypointReason = readString(warning.details?.entrypointReason);
+    if (entrypointReason) {
+      lines.push(`  entrypoint reason: ${entrypointReason}`);
+    }
+
+    const deepImportGroup = readString(warning.details?.deepImportGroup);
+    if (deepImportGroup) {
+      lines.push(`  deep import group: ${deepImportGroup}`);
     }
 
     const internalTargets = readStringArray(warning.details?.internalTargets);
@@ -1672,7 +1702,7 @@ function formatWarningClusters(warnings: GraphJsonViolation[]): string[] {
     return [];
   }
 
-  const lines = ["  clusters:"];
+  const lines = ["  likely roots:"];
   for (const cluster of clusters.slice(0, 8)) {
     lines.push(`    ${cluster.code} ${cluster.subject}: ${cluster.count} warning${pluralize(cluster.count)}`);
   }
@@ -1688,7 +1718,7 @@ function formatMarkdownWarningClusters(warnings: GraphJsonViolation[]): string[]
     return [];
   }
 
-  const lines = ["- Warning clusters:"];
+  const lines = ["- Likely warning roots:"];
   for (const cluster of clusters.slice(0, 8)) {
     lines.push(
       `  - ${markdownCode(cluster.code)} ${markdownCode(cluster.subject)}: ${cluster.count} warning${pluralize(
@@ -1728,6 +1758,10 @@ function buildWarningClusters(warnings: GraphJsonViolation[]): WarningCluster[] 
 }
 
 function warningClusterSubject(warning: GraphJsonViolation): string {
+  if (warning.code === "deep_internal_import") {
+    return deepInternalImportClusterSubject(warning);
+  }
+
   const fromModule = readString(warning.details?.fromModule);
   const toModule = readString(warning.details?.toModule);
   if (fromModule && toModule) {
@@ -1745,6 +1779,34 @@ function warningClusterSubject(warning: GraphJsonViolation): string {
   }
 
   return "general";
+}
+
+function deepInternalImportClusterSubject(warning: GraphJsonViolation): string {
+  const toModule = readString(warning.details?.toModule) ?? "unknown module";
+  const deepImportGroup = readString(warning.details?.deepImportGroup);
+  const importedPath = readString(warning.details?.importedPath);
+  const entrypointConfidence = readString(warning.details?.entrypointConfidence);
+  const group = deepImportGroup ?? "unknown source group";
+  const label = classifyDeepInternalRoot(importedPath, entrypointConfidence);
+
+  return `${toModule} ${label}: ${group}`;
+}
+
+function classifyDeepInternalRoot(importedPath: string | undefined, entrypointConfidence: string | undefined): string {
+  const segments = (importedPath ?? "").split("/").filter(Boolean);
+  if (segments.includes("store")) {
+    return "state/store leakage";
+  }
+
+  if (segments.includes("tooling") || segments.includes("tools")) {
+    return "tool boundary pressure";
+  }
+
+  if (entrypointConfidence === "ambiguous_entrypoints") {
+    return "ambiguous public boundary";
+  }
+
+  return "public-entry bypass";
 }
 
 function formatDriftOnly(graph: GraphJsonResult): string[] {

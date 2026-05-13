@@ -580,7 +580,7 @@ axi graph --root . --attention --warn-deep-internal-imports
 
 Today this flags relative cross-module imports that target a non-`index.*` file when the target module has a likely `index.*` entry point. It is advisory: the check still exits `0` unless there are real violations. Treat it as a prompt to import through a public entry point, or to add explicit `exposes` / `hides` rules when a deep path is intentional.
 
-When an inferred or broad module has multiple likely `index.*` files, Axiom marks the entry point advice as ambiguous instead of pretending one file is the public boundary. That usually means the contract should split the module, declare a narrower public surface, or keep the warning as a review prompt until the team names the boundary.
+When an inferred or broad module has multiple source groups, Axiom only recommends an `index.*` entry point from the same source group as the deep import. If the only entry point lives in another group, the warning is marked ambiguous instead of pretending that entry point is the public boundary for the whole collapsed module. That usually means the contract should split the module, declare a narrower public surface, or keep the warning as a review prompt until the team names the boundary.
 
 ## JSON And Markdown Output
 

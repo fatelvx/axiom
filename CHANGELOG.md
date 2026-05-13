@@ -71,6 +71,8 @@
 - Clarified focused graph output by separating shown dependency edges from full observed dependencies in human, Markdown, and Mermaid summaries.
 - Added warning-scope notes and warning clusters so advisory-heavy pilots surface likely root causes before listing individual files.
 - Softened `deep_internal_import` entrypoint advice for broad or collapsed modules with multiple likely entry points instead of pretending one index file is authoritative.
+- Refined `deep_internal_import` entrypoint confidence to use same-source-group entrypoints only, preventing broad collapsed modules from recommending an unrelated `index.*` file.
+- Reworked warning clusters into likely warning roots for deep imports, including state/store leakage, tool boundary pressure, ambiguous public boundaries, and public-entry bypasses.
 
 ## 0.5.8 - Monorepo Spec Discovery
 

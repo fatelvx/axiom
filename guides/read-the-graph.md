@@ -100,9 +100,11 @@ Advisory warnings are review prompts, not proof of bad architecture.
 
 `deep_internal_import` means one module imported another module through a relative non-entry file while the target module appears to have an `index.*` entry point. That may be a public-entry bypass, or it may mean the contract needs a more precise public surface.
 
-If Axiom says the entry point is ambiguous, do not blindly rewrite imports to the first `index.ts` it found. Broad inferred modules and collapsed cycles often contain several plausible entry points. Treat that as a contract-authoring signal: split the module, declare `exposes` / `hides`, or ask the maintainer which entry point is real.
+If Axiom says the entry point is ambiguous, do not blindly rewrite imports to the first `index.ts` it found. Broad inferred modules and collapsed cycles often contain several plausible source groups. Axiom only treats an `index.*` file as likely advice when it is in the same source group as the deep import; an entry point in `services/sandbox` should not be used as advice for a `store` import. Treat ambiguity as a contract-authoring signal: split the module, declare `exposes` / `hides`, or ask the maintainer which entry point is real.
 
 Focused graph views can also say they are showing few or zero dependency edges while warnings are present. That is not a contradiction. The focused view hides clean edges, while warnings can still point at files, public surfaces, unresolved imports, or graph pressure. Use the `full observed dependencies` count to see how much graph data was scanned.
+
+The warning roots near the top of Markdown and human output are deliberately coarse. They are meant to turn a warning flood into review themes such as state/store leakage, tool boundary pressure, ambiguous public boundaries, or coupling hubs before you inspect individual files.
 
 How to respond:
 

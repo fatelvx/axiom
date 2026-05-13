@@ -1,10 +1,10 @@
 <svg width="1200" height="360" viewBox="0 0 1200 360" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
   <title id="title">Axiom architecture observability banner</title>
-  <desc id="desc">A dark developer-tool banner for Axiom with clean product text and a minimal observability mark.</desc>
+  <desc id="desc">A dark developer-tool banner for Axiom with spacious product text, a radar-style architecture graph, and a compact review story panel.</desc>
   <defs>
     <linearGradient id="bg" x1="0" y1="0" x2="1200" y2="360" gradientUnits="userSpaceOnUse">
       <stop stop-color="#061014"/>
-      <stop offset="0.56" stop-color="#08181C"/>
+      <stop offset="0.55" stop-color="#08181C"/>
       <stop offset="1" stop-color="#071119"/>
     </linearGradient>
     <linearGradient id="teal" x1="0" y1="0" x2="260" y2="0" gradientUnits="userSpaceOnUse">
@@ -12,21 +12,21 @@
       <stop offset="0.55" stop-color="#3AD7FF"/>
       <stop offset="1" stop-color="#7FA2FF"/>
     </linearGradient>
-    <linearGradient id="drift" x1="0" y1="0" x2="98" y2="86" gradientUnits="userSpaceOnUse">
+    <linearGradient id="drift" x1="0" y1="0" x2="120" y2="120" gradientUnits="userSpaceOnUse">
       <stop stop-color="#FFD166"/>
       <stop offset="1" stop-color="#FF5F7E"/>
     </linearGradient>
-    <linearGradient id="panel" x1="692" y1="48" x2="1126" y2="312" gradientUnits="userSpaceOnUse">
+    <linearGradient id="panel" x1="678" y1="42" x2="1128" y2="318" gradientUnits="userSpaceOnUse">
       <stop stop-color="#0D2024"/>
       <stop offset="1" stop-color="#08141B"/>
     </linearGradient>
-    <radialGradient id="markGlow" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(824 174) rotate(90) scale(130)">
+    <radialGradient id="radarFade" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(846 154) rotate(90) scale(120)">
       <stop stop-color="#37D6FF" stop-opacity="0.18"/>
       <stop offset="1" stop-color="#37D6FF" stop-opacity="0"/>
     </radialGradient>
-    <filter id="softGlow" x="-40%" y="-40%" width="180%" height="180%">
+    <filter id="signalGlow" x="-50%" y="-50%" width="200%" height="200%">
       <feGaussianBlur stdDeviation="3.5" result="blur"/>
-      <feColorMatrix in="blur" type="matrix" values="0 0 0 0 0.29 0 0 0 0 0.95 0 0 0 0 0.88 0 0 0 0.34 0"/>
+      <feColorMatrix in="blur" type="matrix" values="0 0 0 0 0.22 0 0 0 0 0.84 0 0 0 0 0.95 0 0 0 0.45 0"/>
       <feBlend in="SourceGraphic" mode="screen"/>
     </filter>
     <pattern id="grid" width="44" height="44" patternUnits="userSpaceOnUse">
@@ -38,68 +38,103 @@
   </defs>
 
   <rect width="1200" height="360" fill="url(#bg)"/>
-  <rect width="1200" height="360" fill="url(#grid)" opacity="0.22"/>
-  <rect width="1200" height="360" fill="url(#dots)" opacity="0.16"/>
-  <path d="M0 286C150 248 293 261 436 293C591 327 735 317 899 268C1032 229 1121 240 1200 263" stroke="#17323A" stroke-width="2" opacity="0.38"/>
-  <path d="M0 80C146 110 283 101 430 68C596 31 760 44 910 82C1034 113 1122 110 1200 92" stroke="#102C34" stroke-width="2" opacity="0.5"/>
+  <rect width="1200" height="360" fill="url(#grid)" opacity="0.24"/>
+  <rect width="1200" height="360" fill="url(#dots)" opacity="0.18"/>
+  <path d="M0 286C150 248 293 261 436 293C591 327 735 317 899 268C1032 229 1121 240 1200 263" stroke="#17323A" stroke-width="2" opacity="0.45"/>
+  <path d="M0 80C146 110 283 101 430 68C596 31 760 44 910 82C1034 113 1122 110 1200 92" stroke="#102C34" stroke-width="2" opacity="0.58"/>
 
-  <g transform="translate(76 58)" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, Liberation Mono, monospace">
-    <g font-size="13" font-weight="800">
-      <circle cx="8" cy="13" r="5" fill="#8BFFD8"/>
-      <text x="23" y="18" fill="#C9FFF1">ARCHITECTURE OBSERVABILITY</text>
+  <g transform="translate(76 56)" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, Liberation Mono, monospace">
+    <g>
+      <rect x="0" y="0" width="306" height="34" rx="17" fill="#0C2025" stroke="#1F424B"/>
+      <circle cx="19" cy="17" r="5" fill="#8BFFD8"/>
+      <text x="34" y="22" fill="#C9FFF1" font-size="13" font-weight="800">ARCHITECTURE OBSERVABILITY</text>
     </g>
 
-    <text x="0" y="99" fill="#F4FFFB" font-size="76" font-weight="800" letter-spacing="0">AXIOM</text>
-    <rect x="2" y="119" width="248" height="5" rx="2.5" fill="url(#teal)"/>
+    <text x="0" y="101" fill="#F4FFFB" font-size="76" font-weight="800" letter-spacing="0">AXIOM</text>
+    <rect x="2" y="121" width="248" height="5" rx="2.5" fill="url(#teal)"/>
 
-    <text x="2" y="164" fill="#DCECF0" font-size="22" font-weight="700">Explicit contracts for AI-era codebases.</text>
-    <text x="2" y="196" fill="#A8BBC4" font-size="16" font-weight="500">Observe drift and keep architecture debt visible.</text>
-    <text x="2" y="220" fill="#A8BBC4" font-size="16" font-weight="500">Gate only high-confidence intent.</text>
+    <text x="2" y="166" fill="#DCECF0" font-size="22" font-weight="700">Explicit contracts for AI-era codebases.</text>
+    <text x="2" y="198" fill="#A8BBC4" font-size="16" font-weight="500">Observe drift and keep architecture debt visible.</text>
+    <text x="2" y="222" fill="#A8BBC4" font-size="16" font-weight="500">Gate only high-confidence intent.</text>
 
-    <g transform="translate(2 286)" font-size="13" font-weight="800">
-      <path d="M0 0H32" stroke="#8BFFD8" stroke-width="2" stroke-dasharray="6 6"/>
-      <text x="44" y="5" fill="#C9FFF1">declared intent</text>
-      <path d="M194 0H226" stroke="#3AD7FF" stroke-width="2"/>
-      <circle cx="226" cy="0" r="5" stroke="#3AD7FF" stroke-width="2"/>
-      <text x="240" y="5" fill="#C7F1FF">observed graph</text>
-      <path d="M392 0H424" stroke="url(#drift)" stroke-width="3"/>
-      <circle cx="424" cy="0" r="5" fill="#FF5F7E"/>
-      <text x="438" y="5" fill="#FFE3D6">review first</text>
+    <g transform="translate(0 270)" font-size="13" font-weight="800">
+      <g>
+        <rect x="0" y="-18" width="162" height="38" rx="9" fill="#0B1D22" stroke="#24464F"/>
+        <path d="M17 1H47" stroke="#8BFFD8" stroke-width="2" stroke-dasharray="6 6"/>
+        <text x="61" y="5" fill="#C9FFF1">declared intent</text>
+      </g>
+      <g transform="translate(184 0)">
+        <rect x="0" y="-18" width="158" height="38" rx="9" fill="#0B1D22" stroke="#24464F"/>
+        <path d="M18 1H49" stroke="#3AD7FF" stroke-width="2"/>
+        <circle cx="49" cy="1" r="5" stroke="#3AD7FF" stroke-width="2"/>
+        <text x="63" y="5" fill="#C7F1FF">observed graph</text>
+      </g>
+      <g transform="translate(364 0)">
+        <rect x="0" y="-18" width="136" height="38" rx="9" fill="#0B1D22" stroke="#24464F"/>
+        <path d="M18 1H49" stroke="url(#drift)" stroke-width="3"/>
+        <circle cx="49" cy="1" r="5" fill="#FF5F7E"/>
+        <text x="63" y="5" fill="#FFE3D6">review first</text>
+      </g>
     </g>
   </g>
 
-  <g transform="translate(690 48)">
-    <rect x="0" y="0" width="438" height="264" rx="24" fill="url(#panel)" stroke="#21444D" stroke-width="1.5"/>
-    <circle cx="134" cy="132" r="112" fill="url(#markGlow)"/>
+  <g transform="translate(674 42)">
+    <rect x="0" y="0" width="452" height="276" rx="22" fill="url(#panel)" stroke="#1F3F48" stroke-width="1.5"/>
+    <rect x="18" y="18" width="416" height="240" rx="17" fill="#071217" stroke="#142F37"/>
 
-    <g transform="translate(38 36)">
-      <circle cx="96" cy="96" r="86" stroke="#28505B" stroke-width="1.5"/>
-      <circle cx="96" cy="96" r="64" stroke="url(#teal)" stroke-width="3.2"/>
-      <path d="M45 96A51 51 0 0 1 96 45" stroke="#8BFFD8" stroke-width="3" stroke-linecap="round" opacity="0.82"/>
-      <path d="M147 96A51 51 0 0 1 96 147" stroke="#7FA2FF" stroke-width="3" stroke-linecap="round" opacity="0.82"/>
-      <path d="M77 72L118 119" stroke="url(#drift)" stroke-width="4.8" stroke-linecap="round"/>
-      <circle cx="118" cy="119" r="4.5" fill="#FF5F7E"/>
-      <path d="M59 150L88 59C91 51 101 51 104 59L133 150" stroke="url(#teal)" stroke-width="9.8" stroke-linecap="round" stroke-linejoin="round"/>
-      <path d="M76 118H116" stroke="#EFFFFA" stroke-width="6.5" stroke-linecap="round"/>
-      <path d="M76 118H116" stroke="#8BFFD8" stroke-width="2.6" stroke-linecap="round"/>
+    <g transform="translate(45 35)">
+      <circle cx="128" cy="112" r="104" fill="url(#radarFade)"/>
+      <circle cx="128" cy="112" r="92" stroke="#28505B" stroke-width="1.4"/>
+      <circle cx="128" cy="112" r="66" stroke="#1F4049" stroke-width="1.2"/>
+      <circle cx="128" cy="112" r="38" stroke="#18343E" stroke-width="1.2"/>
+      <circle cx="120" cy="116" r="80" stroke="#37D6FF" stroke-width="2.4" stroke-dasharray="10 10" opacity="0.5"/>
+      <circle cx="139" cy="104" r="80" stroke="url(#teal)" stroke-width="3"/>
+      <path d="M128 112L194 75" stroke="#37D6FF" stroke-width="2" stroke-linecap="round" opacity="0.72"/>
+      <path d="M128 112L186 83L164 145Z" fill="#37D6FF" opacity="0.08"/>
+
+      <path d="M76 121L118 80L166 104L210 76" stroke="#315C68" stroke-width="2.5" stroke-linecap="round"/>
+      <path d="M86 168L130 132L172 154L215 130" stroke="#315C68" stroke-width="2.5" stroke-linecap="round"/>
+      <path d="M118 80L172 154" stroke="url(#drift)" stroke-width="4.5" stroke-linecap="round" filter="url(#signalGlow)"/>
+
+      <g fill="#071014" stroke-width="2.6">
+        <circle cx="76" cy="121" r="13.5" stroke="#8BFFD8"/>
+        <circle cx="118" cy="80" r="14.5" stroke="#FFD166"/>
+        <circle cx="166" cy="104" r="14.5" stroke="#3AD7FF"/>
+        <circle cx="210" cy="76" r="13.5" stroke="#8BFFD8"/>
+        <circle cx="86" cy="168" r="13.5" stroke="#7FA2FF"/>
+        <circle cx="172" cy="154" r="14.5" stroke="#FF5F7E"/>
+        <circle cx="215" cy="130" r="13.5" stroke="#3AD7FF"/>
+      </g>
+      <g fill="#F4FFFB">
+        <circle cx="76" cy="121" r="3.2"/>
+        <circle cx="118" cy="80" r="3.4"/>
+        <circle cx="166" cy="104" r="3.4"/>
+        <circle cx="210" cy="76" r="3.2"/>
+        <circle cx="86" cy="168" r="3.2"/>
+        <circle cx="172" cy="154" r="3.4"/>
+        <circle cx="215" cy="130" r="3.2"/>
+      </g>
     </g>
 
-    <g transform="translate(246 66)" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, Liberation Mono, monospace">
+    <g transform="translate(292 54)" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, Liberation Mono, monospace">
       <text x="0" y="0" fill="#F3FFFC" font-size="15" font-weight="800">REVIEW STORY</text>
-      <rect x="0" y="17" width="118" height="3" rx="1.5" fill="url(#teal)"/>
+      <rect x="0" y="16" width="92" height="3" rx="1.5" fill="url(#teal)"/>
 
-      <g font-size="12" font-weight="800">
-        <text x="0" y="56" fill="#8399A2">SIGNALS</text>
-        <text x="126" y="56" fill="#FFE1E8" text-anchor="end">first</text>
-        <circle cx="148" cy="52" r="5" fill="#FF5F7E"/>
+      <g transform="translate(0 50)" font-size="12" font-weight="700">
+        <circle cx="7" cy="-4" r="5" fill="#FF5F7E"/>
+        <text x="22" y="0" fill="#FFE1E8">signals first</text>
 
-        <text x="0" y="96" fill="#8399A2">CENTER</text>
-        <text x="126" y="96" fill="#C7F1FF" text-anchor="end">visible</text>
-        <circle cx="148" cy="92" r="5" fill="#3AD7FF"/>
+        <circle cx="7" cy="34" r="5" fill="#3AD7FF"/>
+        <text x="22" y="38" fill="#C7F1FF">graph center</text>
 
-        <text x="0" y="136" fill="#8399A2">NEXT</text>
-        <text x="126" y="136" fill="#D8FFF5" text-anchor="end">review</text>
-        <circle cx="148" cy="132" r="5" fill="#8BFFD8"/>
+        <circle cx="7" cy="72" r="5" fill="#8BFFD8"/>
+        <text x="22" y="76" fill="#D8FFF5">next step</text>
+      </g>
+
+      <g transform="translate(0 156)">
+        <rect x="0" y="0" width="132" height="50" rx="12" fill="#0B1D23" stroke="#264B55"/>
+        <text x="16" y="20" fill="#92AAB4" font-size="11" font-weight="700">center</text>
+        <text x="16" y="36" fill="#F4FFFB" font-size="14" font-weight="800">Core / Utils</text>
       </g>
     </g>
   </g>

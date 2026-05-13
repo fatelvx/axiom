@@ -2,12 +2,16 @@ import fs from "node:fs";
 import path from "node:path";
 
 export interface ImportResolver {
-  resolve(fromFile: string, specifier: string): string | undefined;
+  resolve(fromFile: string, specifier: string, options?: ImportResolveOptions): string | undefined;
 }
 
 export interface ImportResolverOptions {
   root: string;
   tsconfigPath?: string;
+}
+
+export interface ImportResolveOptions {
+  allowDeclarationFiles?: boolean;
 }
 
 interface TsconfigResolver {
@@ -42,6 +46,7 @@ interface PackageSubpathMapping {
 }
 
 const extensionCandidates = [".ts", ".tsx", ".js", ".jsx", ".mts", ".cts"];
+const declarationExtensionCandidates = [".d.ts", ".d.mts", ".d.cts"];
 const sourceExtensionAlternates = new Map([
   [".js", [".ts", ".tsx"]],
   [".jsx", [".tsx"]],
@@ -57,23 +62,31 @@ export function createImportResolver(options: ImportResolverOptions): ImportReso
   const packageResolver = loadPackageResolver(root);
 
   return {
-    resolve(fromFile: string, specifier: string): string | undefined {
-      return resolveRelativeImport(fromFile, specifier)
-        ?? resolveTsconfigPath(tsconfig, specifier)
-        ?? resolvePackageSpecifier(packageResolver, fromFile, specifier);
+    resolve(fromFile: string, specifier: string, resolveOptions: ImportResolveOptions = {}): string | undefined {
+      return resolveRelativeImport(fromFile, specifier, resolveOptions)
+        ?? resolveTsconfigPath(tsconfig, specifier, resolveOptions)
+        ?? resolvePackageSpecifier(packageResolver, fromFile, specifier, resolveOptions);
     }
   };
 }
 
-export function resolveRelativeImport(fromFile: string, specifier: string): string | undefined {
+export function resolveRelativeImport(
+  fromFile: string,
+  specifier: string,
+  options: ImportResolveOptions = {}
+): string | undefined {
   if (!specifier.startsWith(".")) {
     return undefined;
   }
 
-  return resolveFileCandidate(path.resolve(path.dirname(fromFile), specifier));
+  return resolveFileCandidate(path.resolve(path.dirname(fromFile), specifier), options);
 }
 
-function resolveTsconfigPath(tsconfig: TsconfigResolver | undefined, specifier: string): string | undefined {
+function resolveTsconfigPath(
+  tsconfig: TsconfigResolver | undefined,
+  specifier: string,
+  options: ImportResolveOptions
+): string | undefined {
   if (!tsconfig || specifier.startsWith(".")) {
     return undefined;
   }
@@ -87,7 +100,7 @@ function resolveTsconfigPath(tsconfig: TsconfigResolver | undefined, specifier: 
     const captures = match.slice(1);
     for (const target of mapping.targets) {
       const substituted = substituteCaptures(target, captures);
-      const resolved = resolveFileCandidate(path.resolve(tsconfig.baseUrl, substituted));
+      const resolved = resolveFileCandidate(path.resolve(tsconfig.baseUrl, substituted), options);
       if (resolved) {
         return resolved;
       }
@@ -100,11 +113,12 @@ function resolveTsconfigPath(tsconfig: TsconfigResolver | undefined, specifier: 
 function resolvePackageSpecifier(
   packageResolver: PackageResolver,
   fromFile: string,
-  specifier: string
+  specifier: string,
+  options: ImportResolveOptions
 ): string | undefined {
   if (specifier.startsWith("#")) {
     const owner = findNearestPackage(packageResolver, fromFile);
-    return owner ? resolvePackageSubpath(owner.directory, owner.imports, specifier) : undefined;
+    return owner ? resolvePackageSubpath(owner.directory, owner.imports, specifier, options) : undefined;
   }
 
   const parsed = parsePackageSpecifier(specifier);
@@ -113,7 +127,9 @@ function resolvePackageSpecifier(
   }
 
   const packageMetadata = packageResolver.packagesByName.get(parsed.packageName);
-  return packageMetadata ? resolvePackageSubpath(packageMetadata.directory, packageMetadata.exports, parsed.subpath) : undefined;
+  return packageMetadata
+    ? resolvePackageSubpath(packageMetadata.directory, packageMetadata.exports, parsed.subpath, options)
+    : undefined;
 }
 
 function loadTsconfigResolver(root: string, configuredPath: string | undefined): TsconfigResolver | undefined {
@@ -419,7 +435,12 @@ function orderConditionKeys(keys: string[]): string[] {
   return [...preferred, ...rest];
 }
 
-function resolvePackageSubpath(directory: string, mappings: PackageSubpathMapping[], subpath: string): string | undefined {
+function resolvePackageSubpath(
+  directory: string,
+  mappings: PackageSubpathMapping[],
+  subpath: string,
+  options: ImportResolveOptions
+): string | undefined {
   for (const mapping of mappings) {
     const match = subpath.match(mapping.regexp);
     if (!match) {
@@ -434,7 +455,8 @@ function resolvePackageSubpath(directory: string, mappings: PackageSubpathMappin
         continue;
       }
 
-      const resolved = resolveFileCandidate(basePath) ?? resolvePackageSourceMirror(directory, basePath);
+      const resolved = resolveFileCandidate(basePath, options)
+        ?? resolvePackageSourceMirror(directory, basePath, options);
       if (resolved) {
         return resolved;
       }
@@ -444,7 +466,11 @@ function resolvePackageSubpath(directory: string, mappings: PackageSubpathMappin
   return undefined;
 }
 
-function resolvePackageSourceMirror(directory: string, basePath: string): string | undefined {
+function resolvePackageSourceMirror(
+  directory: string,
+  basePath: string,
+  options: ImportResolveOptions
+): string | undefined {
   const relative = normalizePackagePath(path.relative(directory, basePath));
 
   for (const outputDirectory of ["lib", "dist"]) {
@@ -460,7 +486,7 @@ function resolvePackageSourceMirror(directory: string, basePath: string): string
       continue;
     }
 
-    const resolved = resolveFileCandidate(sourceBasePath);
+    const resolved = resolveFileCandidate(sourceBasePath, options);
     if (resolved) {
       return resolved;
     }
@@ -701,9 +727,10 @@ function readChildDirectories(directory: string): string[] {
     .map((entry) => path.join(directory, entry.name));
 }
 
-function resolveFileCandidate(basePath: string): string | undefined {
-  for (const candidate of buildCandidates(basePath)) {
-    if (!isDeclarationFile(candidate) && fs.existsSync(candidate) && fs.statSync(candidate).isFile()) {
+function resolveFileCandidate(basePath: string, options: ImportResolveOptions = {}): string | undefined {
+  for (const candidate of buildCandidates(basePath, options)) {
+    const declarationAllowed = options.allowDeclarationFiles || !isDeclarationFile(candidate);
+    if (declarationAllowed && fs.existsSync(candidate) && fs.statSync(candidate).isFile()) {
       return candidate;
     }
   }
@@ -711,7 +738,7 @@ function resolveFileCandidate(basePath: string): string | undefined {
   return undefined;
 }
 
-function buildCandidates(basePath: string): string[] {
+function buildCandidates(basePath: string, options: ImportResolveOptions): string[] {
   const candidates = new Set<string>([basePath]);
   const parsed = path.parse(basePath);
   const sourceAlternates = sourceExtensionAlternates.get(parsed.ext);
@@ -724,8 +751,20 @@ function buildCandidates(basePath: string): string[] {
     candidates.add(`${basePath}${extension}`);
   }
 
+  if (options.allowDeclarationFiles) {
+    for (const extension of declarationExtensionCandidates) {
+      candidates.add(`${basePath}${extension}`);
+    }
+  }
+
   for (const extension of extensionCandidates) {
     candidates.add(path.join(basePath, `index${extension}`));
+  }
+
+  if (options.allowDeclarationFiles) {
+    for (const extension of declarationExtensionCandidates) {
+      candidates.add(path.join(basePath, `index${extension}`));
+    }
   }
 
   return [...candidates];

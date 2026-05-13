@@ -164,7 +164,7 @@ Axiom v0.5.8 currently supports:
 - TypeScript/JavaScript import scanning through the TypeScript parser.
 - Relative imports, barrel `index.*` files, dynamic imports, `require`, and multiline imports.
 - TypeScript `paths` aliases from `tsconfig.json`.
-- Package `imports` and workspace package `exports` / `main` for internal package-style imports, including common `lib` or `dist` targets mapped back to existing `src` mirrors in source-only clones.
+- Package `imports` and workspace package `exports` / `main` for internal package-style imports, including common `lib` or `dist` targets mapped back to existing `src` mirrors in source-only clones and declaration targets for type-only imports.
 - Workspace package discovery from `package.json` workspaces and `pnpm-workspace.yaml`.
 - Common monorepo contract discovery under `apps/*` and `packages/*`.
 - Gradual adoption with default loose mode, `--warn-unowned`, and `--strict`.
@@ -561,7 +561,7 @@ axi check --root . --warn-unresolved-imports
 axi graph --root . --attention --warn-unresolved-imports
 ```
 
-Today this flags static relative imports and package `#imports` from owned files when Axiom can see the import but cannot resolve it to a source file. It is advisory: the check still exits `0` unless there are real violations. Treat it as a prompt to configure `tsconfig` or package imports, restore a missing file, or acknowledge that generated/runtime wiring is outside the observed graph.
+Today this flags static relative imports and package `#imports` from owned files when Axiom can see the import but cannot resolve it to a source or type declaration file. Declaration files are only considered for scanner-confirmed type-only imports and exports, so runtime imports to `.d.ts` files still remain unresolved. It is advisory: the check still exits `0` unless there are real violations. Treat it as a prompt to configure `tsconfig` or package imports, restore a missing file, or acknowledge that generated/runtime wiring is outside the observed graph.
 
 ## Coupling Concentration Warnings
 

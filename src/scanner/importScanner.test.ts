@@ -165,6 +165,74 @@ test("scanner reads imports from TypeScript syntax instead of line regexes", () 
   }
 });
 
+test("scanner resolves declaration files for type-only imports", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "axi-imports-type-declarations-"));
+
+  try {
+    writeFile(
+      root,
+      "package.json",
+      JSON.stringify({
+        name: "@demo/app",
+        imports: {
+          "#types/*": "./types/*.d.ts"
+        }
+      })
+    );
+    writeFile(
+      root,
+      "src/app.ts",
+      [
+        'import type { Config } from "#types/config";',
+        'export type { LocalType } from "./types/local";',
+        'import { Runtime } from "./types/runtime";'
+      ].join("\n")
+    );
+    writeFile(root, "types/config.d.ts", "export interface Config {}\n");
+    writeFile(root, "src/types/local.d.ts", "export interface LocalType {}\n");
+    writeFile(root, "src/types/runtime.d.ts", "export interface Runtime {}\n");
+
+    const imports = scanImports(path.join(root, "src/app.ts"), {
+      resolver: createImportResolver({ root })
+    });
+
+    assert.deepEqual(
+      imports.map((record) => ({
+        line: record.line,
+        kind: record.kind,
+        specifier: record.specifier,
+        resolvedPath: normalize(root, record.resolvedPath),
+        isTypeOnly: record.isTypeOnly
+      })),
+      [
+        {
+          line: 1,
+          kind: "import",
+          specifier: "#types/config",
+          resolvedPath: "types/config.d.ts",
+          isTypeOnly: true
+        },
+        {
+          line: 2,
+          kind: "export",
+          specifier: "./types/local",
+          resolvedPath: "src/types/local.d.ts",
+          isTypeOnly: true
+        },
+        {
+          line: 3,
+          kind: "import",
+          specifier: "./types/runtime",
+          resolvedPath: undefined,
+          isTypeOnly: false
+        }
+      ]
+    );
+  } finally {
+    fs.rmSync(root, { force: true, recursive: true });
+  }
+});
+
 test("scanner marks broad re-export forms", () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "axi-imports-export-kind-"));
 

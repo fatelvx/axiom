@@ -127,6 +127,42 @@ test("resolver supports package imports from package.json", () => {
   }
 });
 
+test("resolver resolves declaration files only when explicitly allowed", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "axi-resolver-declarations-"));
+
+  try {
+    writeFile(
+      root,
+      "package.json",
+      JSON.stringify({
+        name: "@demo/app",
+        imports: {
+          "#types/*": "./types/*.d.ts"
+        }
+      })
+    );
+    writeFile(root, "src/app/main.ts", "export const app = true;\n");
+    writeFile(root, "src/types/local.d.ts", "export interface LocalType {}\n");
+    writeFile(root, "types/config.d.ts", "export interface Config {}\n");
+
+    const resolver = createImportResolver({ root });
+    const fromFile = path.join(root, "src/app/main.ts");
+
+    assert.equal(resolver.resolve(fromFile, "#types/config"), undefined);
+    assert.equal(resolver.resolve(fromFile, "../types/local"), undefined);
+    assert.equal(
+      normalize(root, resolver.resolve(fromFile, "#types/config", { allowDeclarationFiles: true })),
+      "types/config.d.ts"
+    );
+    assert.equal(
+      normalize(root, resolver.resolve(fromFile, "../types/local", { allowDeclarationFiles: true })),
+      "src/types/local.d.ts"
+    );
+  } finally {
+    fs.rmSync(root, { force: true, recursive: true });
+  }
+});
+
 test("resolver supports package exports and workspace package subpaths", () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "axi-resolver-workspace-"));
 

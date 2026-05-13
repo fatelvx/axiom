@@ -2,7 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 import ts from "typescript";
 import type { ImportBinding, ImportRecord, LocalExportRecord, SourceFileScan } from "../axi/types.js";
-import { resolveRelativeImport, type ImportResolver } from "./importResolver.js";
+import { resolveRelativeImport, type ImportResolver, type ImportResolveOptions } from "./importResolver.js";
 
 export interface ScanImportsOptions {
   resolver?: ImportResolver;
@@ -25,17 +25,20 @@ export function scanSourceFile(filePath: string, options: ScanImportsOptions = {
     node: ts.Node,
     kind: ImportRecord["kind"],
     specifier: string,
-    options: Pick<ImportRecord, "exportKind" | "isTypeOnly" | "importedBindings"> = {}
+    importOptions: Pick<ImportRecord, "exportKind" | "isTypeOnly" | "importedBindings"> = {}
   ): void {
     const line = sourceFile.getLineAndCharacterOfPosition(node.getStart(sourceFile)).line + 1;
+    const resolveOptions: ImportResolveOptions = {
+      allowDeclarationFiles: importOptions.isTypeOnly === true || kind === "import_type"
+    };
 
     imports.push({
       filePath,
       line,
       kind,
       specifier,
-      resolvedPath: resolver.resolve(filePath, specifier),
-      ...options
+      resolvedPath: resolver.resolve(filePath, specifier, resolveOptions),
+      ...importOptions
     });
   }
 
@@ -72,9 +75,10 @@ export function scanSourceFile(filePath: string, options: ScanImportsOptions = {
     if (ts.isImportDeclaration(node)) {
       const specifier = readStringLiteral(node.moduleSpecifier);
       if (specifier) {
+        const importedBindings = readImportBindings(node);
         recordImport(node, "import", specifier, {
-          isTypeOnly: node.importClause?.isTypeOnly,
-          importedBindings: readImportBindings(node)
+          isTypeOnly: isImportDeclarationTypeOnly(node, importedBindings),
+          importedBindings
         });
       }
     } else if (ts.isExportDeclaration(node)) {
@@ -194,6 +198,14 @@ function readImportBindings(node: ts.ImportDeclaration): ImportBinding[] {
   }
 
   return bindings;
+}
+
+function isImportDeclarationTypeOnly(node: ts.ImportDeclaration, bindings: ImportBinding[]): boolean {
+  if (node.importClause?.isTypeOnly) {
+    return true;
+  }
+
+  return bindings.length > 0 && bindings.every((binding) => binding.isTypeOnly);
 }
 
 function readLocalExportNames(node: ts.ExportDeclaration): string[] {

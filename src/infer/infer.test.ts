@@ -131,7 +131,7 @@ test("infer JSON includes the generated .axi draft", () => {
   const result = runInfer({ root: path.join(repoRoot, "fixtures/basic-ts-valid") });
   const payload = toInferJson(result);
 
-  assert.equal(payload.schemaVersion, "axiom.infer.v3");
+  assert.equal(payload.schemaVersion, "axiom.infer.v4");
   assert.deepEqual(payload.starterContract, {
     kind: "current_graph_snapshot",
     notice: [
@@ -157,6 +157,21 @@ test("infer JSON includes the generated .axi draft", () => {
   });
   assert.equal(payload.summary.sourceFiles, 3);
   assert.equal(payload.summary.modules, 3);
+  assert.deepEqual(payload.modules.find((module) => module.name === "Simulation")?.dependencyEvidence, [
+    {
+      toModule: "Physics",
+      count: 1,
+      samples: [
+        {
+          filePath: "src/simulation/step.ts",
+          line: 1,
+          specifier: "../physics/math",
+          resolvedPath: "src/physics/math.ts"
+        }
+      ]
+    }
+  ]);
+  assert.deepEqual(payload.modules.find((module) => module.name === "Physics")?.dependencyEvidence, []);
   assert.match(payload.axi, /not a recommended architecture/);
   assert.match(payload.axi, /module Physics/);
 });

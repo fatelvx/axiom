@@ -1,6 +1,16 @@
 import type { InferResult, InferredDependency, InferredModule } from "../infer/infer.js";
 
-export const inferJsonSchemaVersion = "axiom.infer.v3";
+export const inferJsonSchemaVersion = "axiom.infer.v4";
+
+export interface InferJsonModule extends InferredModule {
+  dependencyEvidence: InferJsonDependencyEvidence[];
+}
+
+export interface InferJsonDependencyEvidence {
+  toModule: string;
+  count: number;
+  samples: InferredDependency["samples"];
+}
 
 export interface InferJsonResult {
   schemaVersion: typeof inferJsonSchemaVersion;
@@ -14,7 +24,7 @@ export interface InferJsonResult {
     observedDependencies: number;
     collapsedCycles: number;
   };
-  modules: InferredModule[];
+  modules: InferJsonModule[];
   observedDependencies: InferredDependency[];
   collapsedCycles: InferResult["collapsedCycles"];
   axi: string;
@@ -115,7 +125,7 @@ export function toInferJson(result: InferResult): InferJsonResult {
       observedDependencies: result.observedDependencies.length,
       collapsedCycles: result.collapsedCycles.length
     },
-    modules: result.modules,
+    modules: buildInferJsonModules(result),
     observedDependencies: result.observedDependencies,
     collapsedCycles: result.collapsedCycles,
     axi: formatInferResult(result)
@@ -128,6 +138,25 @@ export function formatInferJson(result: InferResult): string {
 
 function normalizePath(filePath: string): string {
   return filePath.replace(/\\/g, "/");
+}
+
+function buildInferJsonModules(result: InferResult): InferJsonModule[] {
+  const dependenciesByModule = new Map<string, InferredDependency[]>();
+
+  for (const dependency of result.observedDependencies) {
+    const dependencies = dependenciesByModule.get(dependency.fromModule) ?? [];
+    dependencies.push(dependency);
+    dependenciesByModule.set(dependency.fromModule, dependencies);
+  }
+
+  return result.modules.map((module) => ({
+    ...module,
+    dependencyEvidence: (dependenciesByModule.get(module.name) ?? []).map((dependency) => ({
+      toModule: dependency.toModule,
+      count: dependency.count,
+      samples: dependency.samples
+    }))
+  }));
 }
 
 function dependencyKey(fromModule: string, toModule: string): string {

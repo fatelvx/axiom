@@ -592,11 +592,20 @@ test("cli infer --json returns parseable inferred output", () => {
   assert.equal(result.status, 0);
 
   const payload = JSON.parse(result.stdout);
-  assert.equal(payload.schemaVersion, "axiom.infer.v3");
+  assert.equal(payload.schemaVersion, "axiom.infer.v4");
   assert.equal(payload.starterContract.kind, "current_graph_snapshot");
   assert.match(payload.starterContract.notice.join("\n"), /not a recommended architecture/);
   assert.match(payload.starterContract.authoringChecklist.join("\n"), /do not blanket-accept first-run problems/);
   assert.equal(payload.summary.modules, 3);
+  assert.deepEqual(
+    payload.modules.find((module: { name: string }) => module.name === "Simulation")?.dependencyEvidence?.map(
+      (dependency: { toModule: string; count: number }) => ({
+        toModule: dependency.toModule,
+        count: dependency.count
+      })
+    ),
+    [{ toModule: "Physics", count: 1 }]
+  );
   assert.match(payload.axi, /not a recommended architecture/);
   assert.match(payload.axi, /# evidence: 1 import site observed for Simulation -> Physics/);
   assert.match(payload.axi, /module Physics/);

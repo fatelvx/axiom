@@ -13,7 +13,7 @@ Each JSON payload starts with a `schemaVersion`:
 ```text
 axiom.check.v4
 axiom.graph.v9
-axiom.infer.v3
+axiom.infer.v4
 ```
 
 Treat the prefix as the command family:
@@ -124,6 +124,7 @@ Treat `drift.newObservedEdges[]` and `drift.removedObservedEdges[]` as review co
 - `starterContract.kind: "current_graph_snapshot"` to mark the output as a mirror of today's dependency graph.
 - `starterContract.notice[]` with the same human-facing warning printed in `.axi` comments.
 - `starterContract.authoringChecklist[]` and `starterContract.nextCommands[]` for tools that want to guide first-contract review.
+- `modules[].dependencyEvidence[]` with the target module, observed import-site count, and sample import sites for each inferred dependency.
 - `observedDependencies[]` with counts and sample import sites behind inferred edges.
 - `axi` containing the generated starter contract text.
 

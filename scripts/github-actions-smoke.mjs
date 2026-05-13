@@ -6,6 +6,7 @@ import path from "node:path";
 const repoRoot = process.cwd();
 const cliPath = path.join(repoRoot, "dist/cli.js");
 const annotationHelperPath = path.join(repoRoot, "examples/github-actions/annotate-check.mjs");
+const summaryHelperPath = path.join(repoRoot, "examples/github-actions/summarize-observe.mjs");
 const tempDirectory = mkdtempSync(path.join(tmpdir(), "axiom-github-actions-smoke-"));
 
 try {
@@ -29,26 +30,33 @@ try {
   const notice = runNode([annotationHelperPath, passingJsonPath], 0);
   assertIncludes(notice.stdout, "::notice::Axiom check passed:", "passing check notice");
 
-  const markdownSummary = runNode([
+  const observeJson = runNode([
     cliPath,
     "observe",
     "--root",
     "examples/basic-app",
-    "--markdown",
-    "--warn-public-api-surface",
+    "--json",
     "--warn-unresolved-imports",
-    "--warn-coupling-concentration"
+    "--warn-coupling-concentration",
+    "--warn-deep-internal-imports"
   ], 0);
+  const observePayload = parseJson(observeJson.stdout, "observe JSON output");
+  assertEqual(observePayload.schemaVersion, "axiom.graph.v10", "observe graph schema version");
+  assertEqual(observePayload.architectureSummary?.status, "failing_contract", "observe architecture status");
 
-  assertIncludes(markdownSummary.stdout, "## Axiom Architecture Review", "Markdown architecture heading");
-  assertIncludes(markdownSummary.stdout, "Status: failing contract", "Markdown failing contract status");
-  assertIncludes(markdownSummary.stdout, "Review mode: observe (advisory)", "Markdown advisory review mode");
-  assertIncludes(markdownSummary.stdout, "### Hard Violations", "Markdown hard violations section");
+  const observeJsonPath = path.join(tempDirectory, "basic-app.observe.json");
+  writeFileSync(observeJsonPath, observeJson.stdout, "utf8");
+
+  const stepSummary = runNode([summaryHelperPath, observeJsonPath], 0);
+  assertIncludes(stepSummary.stdout, "## Axiom Architecture Summary", "step summary heading");
+  assertIncludes(stepSummary.stdout, "Status: failing contract", "step summary failing status");
+  assertIncludes(stepSummary.stdout, "Hard violation `unexposed_import`", "step summary hard violation");
+  assertIncludes(stepSummary.stdout, "use `axi check` for CI failures", "step summary gate note");
 
   console.log("GitHub Actions smoke passed.");
   console.log("- basic-app hard violations became GitHub error annotations");
   console.log("- passing check became a GitHub notice");
-  console.log("- observe markdown produced PR review context without changing the gate");
+  console.log("- observe JSON architectureSummary produced PR review context without changing the gate");
 } finally {
   rmSync(tempDirectory, { recursive: true, force: true });
 }

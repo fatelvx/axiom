@@ -32,11 +32,8 @@ jobs:
         if: always()
         shell: bash
         run: |
-          {
-            echo "## Axiom Architecture Summary"
-            echo
-            npx axi observe --root . --markdown \
-              --warn-public-api-surface \
-              --warn-unresolved-imports \
-              --warn-coupling-concentration
-          } >> "$GITHUB_STEP_SUMMARY"
+          npx axi observe --root . --json \
+            --warn-unresolved-imports \
+            --warn-coupling-concentration \
+            --warn-deep-internal-imports > axiom-observe.json
+          node examples/github-actions/summarize-observe.mjs axiom-observe.json >> "$GITHUB_STEP_SUMMARY"

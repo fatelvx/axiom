@@ -4,7 +4,8 @@ This guide shows the recommended split for GitHub Actions:
 
 - `axi check --json` is the hard gate.
 - GitHub annotations should come from hard `violations[]`.
-- `axi observe --markdown` is a PR or job-summary review artifact.
+- `axi observe --json` can feed a PR or job-summary review artifact through `architectureSummary`.
+- `axi observe --markdown` remains useful when you want a full human-readable review body.
 - `axi graph --mermaid` can be attached or pasted when a visual observed dependency graph helps review.
 - Advisory warnings, visible debt, and drift should stay review context unless your team deliberately promotes a signal into policy.
 
@@ -18,7 +19,7 @@ The example workflow lives at:
 examples/github-actions/axiom-pr-review.yml
 ```
 
-If you copy it into another repository, copy the annotation helper too or adjust the `node examples/github-actions/annotate-check.mjs` path.
+If you copy it into another repository, copy the helpers too or adjust the `node examples/github-actions/*.mjs` paths.
 
 It expects Axiom to be installed as a dev dependency:
 
@@ -32,7 +33,7 @@ The workflow does three things:
 
 1. Runs `axi check --root . --json` and keeps the exit code as the gate.
 2. Converts hard violations into GitHub `error` annotations.
-3. Appends `axi observe --markdown` to the GitHub step summary so reviewers and agents can see visible debt, warnings, and drift separately from the gate.
+3. Runs `axi observe --root . --json` and appends its `architectureSummary` to the GitHub step summary so reviewers and agents can see visible debt, warnings, and drift separately from the gate.
 
 From this repository, you can smoke-test the example integration locally:
 
@@ -40,7 +41,7 @@ From this repository, you can smoke-test the example integration locally:
 npm run github-actions:smoke
 ```
 
-The smoke test runs the real built CLI against `examples/basic-app`, verifies that hard violations become GitHub error annotations, verifies that a passing check becomes a notice, and verifies that `axi observe --markdown` produces PR review context without changing the gate.
+The smoke test runs the real built CLI against `examples/basic-app`, verifies that hard violations become GitHub error annotations, verifies that a passing check becomes a notice, and verifies that `axi observe --json` plus `architectureSummary` produces PR review context without changing the gate.
 
 ## Annotation Helper
 
@@ -70,17 +71,14 @@ This keeps the gate source clear:
 
 ## PR Architecture Summary
 
-Use Markdown output for review context:
+Use `axi observe --json` when a CI job, dashboard, or agent should consume the structured `architectureSummary`:
 
 ```bash
-{
-  echo "## Axiom Architecture Summary"
-  echo
-  npx axi observe --root . --markdown \
-    --warn-unresolved-imports \
-    --warn-coupling-concentration \
-    --warn-deep-internal-imports
-} >> "$GITHUB_STEP_SUMMARY"
+npx axi observe --root . --json \
+  --warn-unresolved-imports \
+  --warn-coupling-concentration \
+  --warn-deep-internal-imports > axiom-observe.json
+node examples/github-actions/summarize-observe.mjs axiom-observe.json >> "$GITHUB_STEP_SUMMARY"
 ```
 
 `axi observe` exits successfully by design. It is meant to show the architecture attention surface:
@@ -93,6 +91,15 @@ Use Markdown output for review context:
 Use `axi check` when the job should fail.
 
 Add `--warn-public-api-surface` only when the repository has active `exposes` rules and the team intentionally wants advanced public-entrypoint facade-pressure review. It is not part of the default PR summary because broad aggregators can be intentional and noisy for early pilots.
+
+Use Markdown output when you want the full review body instead of the compact JSON-derived summary:
+
+```bash
+npx axi observe --root . --markdown \
+  --warn-unresolved-imports \
+  --warn-coupling-concentration \
+  --warn-deep-internal-imports >> "$GITHUB_STEP_SUMMARY"
+```
 
 ## Optional Baseline Drift
 
@@ -124,7 +131,7 @@ A minimal agent loop should use the same split:
 
 1. Run `axi check --json`.
 2. Repair hard `violations[]`.
-3. Use `axi observe --markdown` or `axi observe --json` as review context.
+3. Use `axi observe --json` `architectureSummary` or `axi observe --markdown` as review context.
 4. Propose `.axi` `accepts ... until ... because ...` only when temporary debt is genuinely intended and needs human review.
 
 Axiom does not auto-accept debt. Expired or invalid intentional violations remain hard `axi check` failures.

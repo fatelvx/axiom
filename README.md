@@ -168,6 +168,7 @@ Axiom v0.5.8 currently supports:
 - Module `purpose` text surfaced in graph and JSON output for lightweight intent awareness.
 - Human output and stable JSON output for CI and agents.
 - Markdown architecture review summaries for PRs and agent repair loops with `axi observe --markdown`.
+- Agent-friendly graph JSON summaries with `architectureSummary` for CI dashboards, PR bots, and future MCP adapters.
 - Mermaid dependency diagrams for observed module graphs with `axi graph --mermaid` or `axi observe --mermaid`.
 - Starter contract inference with `axi infer`, explicitly marked as a current-graph snapshot rather than recommended architecture, with an authoring checklist and next commands.
 - Architecture attention output with `axi observe`, including a visible review model that separates advisory review from CI gates.
@@ -640,7 +641,7 @@ For your own project, add a script:
 
 Then run that script in CI after installing dependencies.
 
-For a fuller PR workflow, use [GitHub Actions And PR Summaries](guides/github-actions.md). It shows how to keep `axi check --json` as the hard gate, convert hard violations into GitHub annotations, and append `axi observe --markdown` as review context without making advisory warnings or drift accidental blockers.
+For a fuller PR workflow, use [GitHub Actions And PR Summaries](guides/github-actions.md). It shows how to keep `axi check --json` as the hard gate, convert hard violations into GitHub annotations, and append `axi observe --json` `architectureSummary` as review context without making advisory warnings or drift accidental blockers.
 
 ## Guides
 

@@ -22,9 +22,9 @@ Status: public alpha / developer preview. The validator is usable today, but the
 
 ## Product Direction
 
-Axiom is deliberately not starting as a fully automatic architecture guardian. That would be too rigid and too noisy for real codebases.
+Axiom starts as architecture observability, not fully automatic architecture enforcement. Real codebases need a way to see boundary drift before every suspicious shape becomes a failing rule.
 
-The near-term product is:
+The near-term product surface is:
 
 - architecture drift awareness
 - dependency direction tracking
@@ -36,28 +36,26 @@ The near-term product is:
 
 Code can be locally correct while globally collapsing. Axiom's job is to make that collapse visible before it becomes normal, then enforce only the parts of the contract that are clear enough to trust.
 
-This matters more in AI-era repositories because agents can change many files quickly. Axiom should let agents communicate with the architecture contract, while the tool mediates what is a hard violation, what is accepted debt, and what is advisory drift.
+This matters more in AI-era repositories because agents can change many files quickly. Axiom gives humans, agents, and CI the same contract surface: what is a hard violation, what is accepted debt, and what is advisory drift.
 
-## Forecast Signal
+## Evidence And Research Notes
 
-A live MiroFish forecast was run on 2026-05-11 against Axiom's current product seed. It used synthetic stakeholder profiles and simulated social reactions, so it is not market proof or a replacement for real users. Its value is product-risk discovery.
+The repository includes research notes and smoke-test artifacts under `experiments/`. They are calibration evidence, not market proof, maintainer intent, or product claims about scanned projects.
 
-Treat forecast output as a risk map, not an action script. Axiom should absorb the problems it surfaces, then decide changes through the product's own filter: is the signal reliably checkable, does the change help real adopters instead of only quieting skeptics, and does it preserve Axiom's core difference as an architecture contract validator rather than a broad semantic oracle?
+Use those artifacts to understand why the public product promise is deliberately narrow:
 
-The sharpest finding was `symbol-level API health`: Axiom can validate import and visibility intent, and it can catch direct hidden-path re-exports plus local import-then-export leaks from hidden internals, but it cannot prove that broad public API surfaces are semantically healthy.
+- Synthetic forecast notes under [experiments/axiom-forecast](experiments/axiom-forecast) are risk maps for adoption friction, noisy-linter perception, static-analysis blind spots, and contract-maintenance cost.
+- Real-project smoke notes under [experiments/real-project-smokes](experiments/real-project-smokes) test signal shape on ordinary repositories without treating the results as architecture verdicts.
+- Performance smokes track scan comfort separately from marketing claims.
 
-A later targeted backtest of `axi observe` accepted the observability direction and picked module fan-in/fan-out concentration as the next low-noise signal to try. That signal is now opt-in because high coupling is an architecture pressure point, not automatic proof of bad design.
-
-A targeted backtest after ownership lookup memoization accepted the performance improvement as a material reduction in CI-friction risk, but shifted the highest-signal objection toward observed-graph blind spots. Axiom now has opt-in unresolved import warnings for static internal-looking imports that the scanner can see but the resolver cannot map into the source graph.
-
-The forecast also predicted rejection if Axiom looks like:
+This evidence keeps Axiom focused away from:
 
 - Dependency Cruiser with a new syntax
 - another noisy linter
 - a slow CI step
 - a false architecture firewall
 
-So the public product promise is deliberately narrower: make drift visible, keep accepted debt reviewable, and fail CI only for explicit high-confidence rules. Read the summarized forecast in [MiroFish Live Forecast: Axiom Reception](experiments/axiom-forecast/results/mirofish-live-run-2026-05-11.md), or the Chinese process/output excerpt in [MiroFish Live Forecast 中文過程與輸出摘錄](experiments/axiom-forecast/results/mirofish-live-run-2026-05-11.zh.md).
+The product response is to make drift visible, keep accepted debt reviewable, and fail CI only for explicit high-confidence rules. Known gaps such as runtime-only dependency paths and `symbol-level API health` are documented as limitations instead of being hidden behind stronger language.
 
 ## Why It Exists
 

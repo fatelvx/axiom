@@ -106,9 +106,9 @@ It also does not prove full symbol-level API health. A public `index.ts` can mak
 
 The right response is not to overclaim. The right response is to surface reliable proxy signals, document the remaining gap, and collect real-project evidence before adding more rules.
 
-## Forecast Discipline
+## Research Discipline
 
-MiroFish and other synthetic backtests are risk maps, not action scripts.
+Synthetic forecasts, backtests, and real-project smokes are risk maps, not action scripts.
 
 Use them to find pressure points:
 
@@ -123,6 +123,8 @@ Do not blindly implement every simulated recommendation. Before changing the pro
 1. Is this a reliable machine-checkable fact, or only an advisory signal?
 2. Will surfacing it help real adopters act sooner?
 3. Does it preserve the core difference: explicit intent, visible accepted debt, and high-confidence gates?
+
+Keep the public README and user guides product-facing. They should summarize stable lessons and practical workflows, not read like a model-to-maintainer report from a specific experiment run. Run logs, raw critiques, and simulation details belong under `experiments/` with clear caveats.
 
 ## What To Protect
 

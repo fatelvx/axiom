@@ -102,6 +102,7 @@ Public sharing rule:
 - Publish the sanitized summaries, not raw `.env`, local paths, or full runtime dumps.
 - Label the result as a synthetic forecast, not real user research or demand proof.
 - Keep the limitations attached: partial OASIS completion, one empty report section, and simulated profiles.
+- Keep first-page product docs separate from run-by-run forecast narration. Public docs should summarize stable product decisions and user workflows; detailed model critiques stay here as research artifacts.
 
 ## Local Credential Entry
 

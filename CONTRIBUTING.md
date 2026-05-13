@@ -57,8 +57,9 @@ For performance changes:
 - Keep synthetic numbers caveated.
 - Prefer repeatable artifacts over broad speed claims.
 
-For MiroFish or forecast artifacts:
+For research, smoke, or forecast artifacts:
 
 - Publish sanitized summaries only.
 - Do not commit API keys, `.env`, local private paths, or raw runtime dumps.
-- Label outputs as synthetic forecasts, not real user research.
+- Label synthetic forecasts as forecasts, not real user research.
+- Keep README and user guides written for external users. Specific model critiques, run-by-run reasoning, and maintainer-facing notes belong in `experiments/` or local project memory, not the first product page.

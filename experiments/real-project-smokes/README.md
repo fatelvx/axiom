@@ -8,6 +8,8 @@ These runs are not production benchmarks and they are not endorsements of the sc
 - whether `axi infer` produces a starter contract that is usable rather than self-conflicting
 - where the current representation is too coarse, too noisy, or missing important semantic context
 
+Reports in this folder should be readable by external developers. Keep them framed as scoped calibration artifacts, not as chat transcripts, maintainer critiques, or marketing claims.
+
 ## Method
 
 Use a temporary clone, build the local Axiom CLI, and run one of:

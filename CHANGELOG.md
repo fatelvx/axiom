@@ -73,6 +73,7 @@
 - Softened `deep_internal_import` entrypoint advice for broad or collapsed modules with multiple likely entry points instead of pretending one index file is authoritative.
 - Refined `deep_internal_import` entrypoint confidence to use same-source-group entrypoints only, preventing broad collapsed modules from recommending an unrelated `index.*` file.
 - Reworked warning clusters into likely warning roots for deep imports, including state/store leakage, tool boundary pressure, ambiguous public boundaries, and public-entry bypasses.
+- Improved inferred collapsed-cycle names with repeated prefixes, so cycles such as `Signals` plus `SignalsDebug` no longer become `SignalsSignalsDebug`.
 
 ## 0.5.8 - Monorepo Spec Discovery
 

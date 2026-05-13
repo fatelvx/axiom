@@ -914,6 +914,7 @@ export function findDeepInternalImportWarnings(
     const sourceGroupEntrypoints = sourceGroup
       ? publicEntrypoints.filter((entrypoint) => findBestModuleSourceGroup(targetModule, entrypoint) === sourceGroup)
       : publicEntrypoints;
+    const otherModuleEntrypoints = publicEntrypoints.filter((entrypoint) => !sourceGroupEntrypoints.includes(entrypoint));
     const entrypointConfidence =
       sourceGroupEntrypoints.length === 1 ? "single_likely_entrypoint" : "ambiguous_entrypoints";
     const entrypointReason = formatEntrypointReason(sourceGroupEntrypoints.length);
@@ -938,10 +939,9 @@ export function findDeepInternalImportWarnings(
         publicEntrypoints: sourceGroupEntrypoints.slice(0, 5),
         publicEntrypointCount: sourceGroupEntrypoints.length,
         publicEntrypointsTruncated: sourceGroupEntrypoints.length > 5,
-        moduleEntrypoints:
-          sourceGroupEntrypoints.length === publicEntrypoints.length ? [] : publicEntrypoints.slice(0, 5),
-        moduleEntrypointCount: publicEntrypoints.length,
-        moduleEntrypointsTruncated: publicEntrypoints.length > 5,
+        moduleEntrypoints: otherModuleEntrypoints.slice(0, 5),
+        moduleEntrypointCount: otherModuleEntrypoints.length,
+        moduleEntrypointsTruncated: otherModuleEntrypoints.length > 5,
         entrypointConfidence,
         entrypointReason,
         importKind: dependency.importRecord.kind,

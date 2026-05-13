@@ -120,6 +120,19 @@ test("infer gives long collapsed cycles a readable module name", () => {
   assert.doesNotMatch(output, /ServicesAgentLoopServicesMemoryServicesToolsStore/);
 });
 
+test("infer avoids duplicated shared prefixes in collapsed cycle names", () => {
+  const result = runInfer({ root: path.join(repoRoot, "fixtures/infer-shared-prefix-cycle") });
+
+  assert.equal(result.candidateModules, 2);
+  assert.deepEqual(result.collapsedCycles.map((cycle) => cycle.module), ["SignalsDebugCycle"]);
+  assert.deepEqual(result.collapsedCycles[0]?.sourceGroups, ["Signals", "SignalsDebug"]);
+  assert.deepEqual(result.modules.map((module) => module.name), ["SignalsDebugCycle"]);
+
+  const output = formatInferResult(result);
+  assert.match(output, /# collapsed cycle: SignalsDebugCycle/);
+  assert.doesNotMatch(output, /SignalsSignalsDebug/);
+});
+
 test("infer gives mixed long collapsed cycles a neutral readable module name", () => {
   const result = runInfer({ root: path.join(repoRoot, "fixtures/infer-mixed-long-cycle") });
 

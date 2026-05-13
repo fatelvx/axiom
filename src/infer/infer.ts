@@ -599,12 +599,38 @@ function combinedName(candidateGroups: CandidateGroup[], keys: string[]): string
     return names[0] ?? "Module";
   }
 
-  const combined = names.join("");
+  const compact = compactCycleWords(names);
+  const combined = toIdentifier(compact.words.join("-"));
+  if (compact.removedDuplicatePrefix && combined.length <= 27 && names.length <= 3) {
+    return toIdentifier(`${combined}-cycle`);
+  }
+
   if (combined.length <= 32 && names.length <= 3) {
     return combined;
   }
 
   return conciseCycleName(names);
+}
+
+function compactCycleWords(names: string[]): { words: string[]; removedDuplicatePrefix: boolean } {
+  const words: string[] = [];
+  let removedDuplicatePrefix = false;
+
+  for (const name of names) {
+    const nameWords = splitIdentifierWords(name);
+    for (const word of nameWords) {
+      if (words[words.length - 1]?.toLowerCase() === word.toLowerCase()) {
+        removedDuplicatePrefix = true;
+        continue;
+      }
+      words.push(word);
+    }
+  }
+
+  return {
+    words: words.length > 0 ? words : names,
+    removedDuplicatePrefix
+  };
 }
 
 function conciseCycleName(names: string[]): string {

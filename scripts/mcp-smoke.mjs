@@ -23,6 +23,7 @@ async function main() {
   console.log("MCP stdio smoke passed.");
   console.log("- initialized the local stdio server");
   console.log("- listed 5 read-only Axiom tools");
+  console.log("- exercised all 5 read-only Axiom tools through tools/call");
   console.log("- checked the current repository through axiom_check");
   console.log("- treated fixture contract violations as structured evidence");
   console.log("- rejected a tool call outside the configured allow-root");
@@ -31,7 +32,10 @@ async function main() {
 }
 
 async function runMainSmoke() {
-  const server = startServer(["--allow-root", repoRoot, "--timeout-ms", "20000"]);
+  const tempRoot = mkdtempSync(path.join(tmpdir(), "axiom-mcp-baseline-smoke-"));
+  const baselinePath = path.join(tempRoot, "baseline.graph.json");
+  const fixtureRoot = path.join(repoRoot, "fixtures/basic-ts-valid");
+  const server = startServer(["--allow-root", repoRoot, "--allow-root", tempRoot, "--timeout-ms", "20000"]);
 
   try {
     const initialized = await server.request("initialize", {
@@ -83,8 +87,46 @@ async function runMainSmoke() {
     assertEqual(observe.result?.isError, undefined, "observe is not a tool error");
     assertEqual(observe.result?.structuredContent?.schemaVersion, "axiom.graph.v12", "observe schema");
     assertEqual(observe.result?.structuredContent?.payload?.architectureSummary?.gate?.currentCommandIsGate, false, "observe is not a gate");
+
+    const graph = await callTool(server, "axiom_graph", {
+      root: fixtureRoot
+    });
+    assertEqual(graph.result?.isError, undefined, "graph is not a tool error");
+    assertEqual(graph.result?.structuredContent?.tool, "axiom_graph", "graph tool name");
+    assertEqual(graph.result?.structuredContent?.schemaVersion, "axiom.graph.v12", "graph schema");
+    assertEqual(
+      graph.result?.structuredContent?.payload?.architectureSummary?.gate?.currentCommandIsGate,
+      false,
+      "graph is not a gate"
+    );
+    writeFileSync(baselinePath, JSON.stringify(graph.result?.structuredContent?.payload), "utf8");
+
+    const diff = await callTool(server, "axiom_diff", {
+      baselinePath,
+      root: fixtureRoot
+    });
+    assertEqual(diff.result?.isError, undefined, "diff is not a tool error");
+    assertEqual(diff.result?.structuredContent?.tool, "axiom_diff", "diff tool name");
+    assertEqual(diff.result?.structuredContent?.schemaVersion, "axiom.graph.v12", "diff schema");
+    assertEqual(
+      diff.result?.structuredContent?.payload?.drift?.kind,
+      "advisory_observed_edge_drift",
+      "diff drift kind"
+    );
+
+    const infer = await callTool(server, "axiom_infer_contract", {
+      root: fixtureRoot
+    });
+    assertEqual(infer.result?.isError, undefined, "infer is not a tool error");
+    assertEqual(infer.result?.structuredContent?.tool, "axiom_infer_contract", "infer tool name");
+    assertEqual(infer.result?.structuredContent?.schemaVersion, "axiom.infer.v8", "infer schema");
+    assertTextIncludes(infer.result?.structuredContent?.payload?.axi ?? "", "module Physics", "infer generated contract");
   } finally {
-    await server.close();
+    try {
+      await server.close();
+    } finally {
+      rmSync(tempRoot, { force: true, recursive: true });
+    }
   }
 }
 

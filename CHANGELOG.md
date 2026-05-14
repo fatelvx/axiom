@@ -21,6 +21,7 @@
 - Added a minimal dependency-free `axi-mcp` / `axiom-mcp` stdio server with MCP lifecycle, `tools/list`, `tools/call`, allowed-root validation, and CLI execution timeouts.
 - Added an MCP client setup guide for Codex registration, client reload behavior, root scoping, native-tool verification, and safe agent handoff prompts.
 - Added `npm run mcp:smoke` to verify the local MCP stdio server, read-only tool listing, structured contract-failure evidence, and allowed-root rejection before client registration.
+- Extended MCP stdio smoke and server tests to exercise all five read-only tools through `tools/call`: `axiom_check`, `axiom_observe`, `axiom_graph`, `axiom_diff`, and `axiom_infer_contract`.
 - Extended MCP stdio smoke and server tests to cover invalid tool names, missing roots, malformed arguments, outside-root spec paths, and stable JSON-RPC error codes.
 - Extended MCP stdio smoke and server tests to wrap CLI execution failures and timeouts as structured tool errors instead of transport failures.
 - Included warning guardrails in focused graph output so `axi graph --violations-only` acts more like an architecture attention view.

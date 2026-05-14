@@ -9,8 +9,10 @@ import test from "node:test";
 const repoRoot = process.cwd();
 const serverPath = path.join(repoRoot, "dist/mcp/server.js");
 
-test("mcp stdio server initializes, lists tools, and calls read-only check", async () => {
-  const server = startServer(["--allow-root", repoRoot, "--timeout-ms", "20000"]);
+test("mcp stdio server initializes, lists tools, and calls read-only tools", async () => {
+  const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), "axiom-mcp-baseline-"));
+  const baselinePath = path.join(tempRoot, "baseline.graph.json");
+  const server = startServer(["--allow-root", repoRoot, "--allow-root", tempRoot, "--timeout-ms", "20000"]);
 
   try {
     const initialized = await server.request("initialize", {
@@ -52,6 +54,30 @@ test("mcp stdio server initializes, lists tools, and calls read-only check", asy
     assert.equal(failingCheck.result?.structuredContent?.payload?.ok, false);
     assert.equal(failingCheck.result?.structuredContent?.payload?.violations?.[0]?.code, "forbidden_dependency");
 
+    const graph = await server.request("tools/call", {
+      name: "axiom_graph",
+      arguments: {
+        root: "fixtures/basic-ts-valid"
+      }
+    });
+    assert.equal(graph.result?.isError, undefined);
+    assert.equal(graph.result?.structuredContent?.tool, "axiom_graph");
+    assert.equal(graph.result?.structuredContent?.schemaVersion, "axiom.graph.v12");
+    assert.equal(graph.result?.structuredContent?.payload?.architectureSummary?.gate?.currentCommandIsGate, false);
+    fs.writeFileSync(baselinePath, JSON.stringify(graph.result?.structuredContent?.payload), "utf8");
+
+    const diff = await server.request("tools/call", {
+      name: "axiom_diff",
+      arguments: {
+        baselinePath,
+        root: "fixtures/basic-ts-valid"
+      }
+    });
+    assert.equal(diff.result?.isError, undefined);
+    assert.equal(diff.result?.structuredContent?.tool, "axiom_diff");
+    assert.equal(diff.result?.structuredContent?.schemaVersion, "axiom.graph.v12");
+    assert.equal(diff.result?.structuredContent?.payload?.drift?.kind, "advisory_observed_edge_drift");
+
     const infer = await server.request("tools/call", {
       name: "axiom_infer_contract",
       arguments: {
@@ -61,7 +87,11 @@ test("mcp stdio server initializes, lists tools, and calls read-only check", asy
     assert.equal(infer.result?.structuredContent?.schemaVersion, "axiom.infer.v8");
     assert.match(infer.result?.structuredContent?.payload?.axi ?? "", /module Physics/);
   } finally {
-    await server.close();
+    try {
+      await server.close();
+    } finally {
+      fs.rmSync(tempRoot, { force: true, recursive: true });
+    }
   }
 });
 

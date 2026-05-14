@@ -1,5 +1,5 @@
 import { spawnSync } from "node:child_process";
-import { existsSync, mkdtempSync, readFileSync, rmSync } from "node:fs";
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import path from "node:path";
 
 const repoRoot = process.cwd();
@@ -24,6 +24,7 @@ try {
 
   const packageJson = JSON.parse(readFileSync(packageJsonPath, "utf8"));
   assertEqual(packageJson.name, "@fatelvx/axiom", "package name");
+  assertEqual(packageJson.version, "0.6.0-alpha.1", "package version");
   assertDeepEqual(packageJson.bin, {
     axi: "dist/cli.js",
     "axi-mcp": "dist/mcp/server.js",
@@ -50,6 +51,8 @@ try {
   const mcpPath = path.join(packageRoot, "dist", "mcp", "server.js");
   const specFirstRoot = path.join(packageRoot, "examples", "spec-first-pilot");
   const basicRoot = path.join(packageRoot, "examples", "basic-app");
+  const monorepoRoot = path.join(packageRoot, "examples", "monorepo-workspace");
+  const vueRoot = createVueSfcFixture(tempRoot);
 
   const passingCheck = run(process.execPath, [cliPath, "check", "--root", specFirstRoot, "--json"], { cwd: packageRoot });
   const passingPayload = JSON.parse(passingCheck.stdout);
@@ -73,6 +76,33 @@ try {
   assertEqual(inferPayload.schemaVersion, "axiom.infer.v8", "packaged infer schema");
   assertTextIncludes(inferPayload.axi ?? "", "module", "packaged infer contract text");
 
+  const vueCheck = run(process.execPath, [cliPath, "check", "--root", vueRoot, "--json"], {
+    acceptedExitCodes: [1],
+    cwd: packageRoot
+  });
+  const vuePayload = JSON.parse(vueCheck.stdout);
+  assertEqual(vuePayload.summary?.sourceFiles, 4, "packaged Vue SFC source file count");
+  assertEqual(vuePayload.summary?.importsScanned, 3, "packaged Vue SFC import count");
+  assertArrayIncludes(vuePayload.sourceFiles, "src/App.vue", "packaged Vue SFC source list");
+  assertArrayIncludes(
+    vuePayload.violations?.map((violation) => violation.code),
+    "hidden_import",
+    "packaged Vue SFC hidden import"
+  );
+
+  const monorepoCheck = run(process.execPath, [cliPath, "check", "--root", monorepoRoot, "--json"], {
+    acceptedExitCodes: [1],
+    cwd: packageRoot
+  });
+  const monorepoPayload = JSON.parse(monorepoCheck.stdout);
+  assertEqual(monorepoPayload.summary?.specFiles, 2, "packaged monorepo spec count");
+  assertEqual(monorepoPayload.summary?.sourceFiles, 3, "packaged monorepo source count");
+  assertArrayIncludes(
+    monorepoPayload.violations?.map((violation) => violation.code),
+    "hidden_import",
+    "packaged monorepo hidden import"
+  );
+
   const mcpHelp = run(process.execPath, [mcpPath, "--help"], { cwd: packageRoot });
   assertTextIncludes(`${mcpHelp.stdout}\n${mcpHelp.stderr}`, "Axiom MCP stdio server", "packaged MCP help");
 
@@ -81,9 +111,54 @@ try {
   console.log("- verified package contents and bin aliases");
   console.log("- ran packaged CLI against spec-first and failing examples");
   console.log("- ran packaged infer JSON from the extracted tarball");
+  console.log("- verified packaged Vue SFC and monorepo path coverage");
   console.log("- verified packaged MCP server entry point");
 } finally {
   rmSync(tempRoot, { force: true, recursive: true });
+}
+
+function createVueSfcFixture(tempRoot) {
+  const root = path.join(tempRoot, "vue-sfc-fixture");
+
+  writeFile(
+    root,
+    "axiom/main.axi",
+    [
+      "module App",
+      "path \"src/App.vue\"",
+      "depends on Components",
+      "",
+      "module Components",
+      "path \"src/components/**\"",
+      "exposes \"src/components/index.ts\"",
+      "hides \"src/components/internal/**\""
+    ].join("\n")
+  );
+  writeFile(
+    root,
+    "src/App.vue",
+    [
+      "<template>",
+      "  <Widget />",
+      "</template>",
+      "<script setup lang=\"ts\">",
+      "import { Widget } from \"./components\";",
+      "import { secret } from \"./components/internal/secret\";",
+      "const LazyWidget = () => import(\"./components/LazyWidget.vue\");",
+      "</script>"
+    ].join("\n")
+  );
+  writeFile(root, "src/components/index.ts", "export const Widget = 'widget';\n");
+  writeFile(root, "src/components/internal/secret.ts", "export const secret = 'hidden';\n");
+  writeFile(root, "src/components/LazyWidget.vue", "<script setup>\nconst name = 'lazy';\n</script>\n");
+
+  return root;
+}
+
+function writeFile(root, relativePath, contents) {
+  const filePath = path.join(root, relativePath);
+  mkdirSync(path.dirname(filePath), { recursive: true });
+  writeFileSync(filePath, `${contents}\n`);
 }
 
 function run(command, args, options = {}) {

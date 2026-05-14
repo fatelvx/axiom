@@ -1,6 +1,6 @@
 {
   "name": "@fatelvx/axiom",
-  "version": "0.5.8",
+  "version": "0.6.0-alpha.1",
   "description": "Architecture observability and explicit contracts for AI-era codebases.",
   "license": "Apache-2.0",
   "type": "module",
@@ -50,7 +50,7 @@
     "access": "public"
   },
   "scripts": {
-    "alpha:check": "npm run ci && npm run spec-first:smoke && npm run mcp:smoke && npm run mcp:agent-loop:smoke && npm run mcp:conformance:smoke && npm run github-actions:smoke && npm run pack:dry-run",
+    "alpha:check": "npm run ci && npm run spec-first:smoke && npm run mcp:smoke && npm run mcp:agent-loop:smoke && npm run mcp:conformance:smoke && npm run github-actions:smoke && npm run release:candidate:smoke && npm run pack:dry-run",
     "build": "tsc -p tsconfig.json",
     "axiom:self": "npm run build && node dist/cli.js check --root . --strict",
     "check:fixture": "npm run build && node dist/cli.js check --root fixtures/basic-ts-valid",

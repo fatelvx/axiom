@@ -20,7 +20,10 @@ This runs:
 
 - the test suite
 - Axiom's self-contract check
+- spec-first, MCP, GitHub Actions, and release-candidate smokes
 - an npm pack dry run
+
+The release-candidate smoke packs the local package without publishing, extracts it, and verifies the packaged CLI, Vue SFC scanning, monorepo path coverage, inference JSON, bin aliases, and MCP entry point.
 
 ## Verify The Package Locally
 
@@ -44,7 +47,7 @@ Only publish after the repository CI is green:
 
 ```bash
 npm login
-npm publish --access public
+npm publish --access public --tag alpha
 ```
 
 After publishing, users should be able to run:

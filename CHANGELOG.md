@@ -19,6 +19,7 @@
 - Added a spec-first pilot example and `npm run spec-first:smoke` harness that proves a reviewed `.axi` contract passes cleanly and catches deliberate visibility and layer drift as hard `axi check` failures.
 - Added a dependency-free read-only MCP preview contract with tool descriptors, JSON schemas, CLI invocation mapping, and structured-result wrapping for `axiom_check`, `axiom_observe`, `axiom_graph`, `axiom_diff`, and `axiom_infer_contract`.
 - Added a minimal dependency-free `axi-mcp` / `axiom-mcp` stdio server with MCP lifecycle, `tools/list`, `tools/call`, allowed-root validation, and CLI execution timeouts.
+- Added an MCP client setup guide for Codex registration, client reload behavior, root scoping, native-tool verification, and safe agent handoff prompts.
 - Included warning guardrails in focused graph output so `axi graph --violations-only` acts more like an architecture attention view.
 - Added `axi graph --attention` as a product-facing alias for the focused architecture attention view.
 - Added pnpm workspace package discovery for internal package export resolution.

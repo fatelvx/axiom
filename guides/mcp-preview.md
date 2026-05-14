@@ -4,6 +4,8 @@ Axiom's MCP surface should be a thin read-only wrapper over the same CLI JSON ev
 
 This preview ships a minimal stdio server without adding an MCP SDK dependency during the current supply-chain risk window. The server is deliberately small: lifecycle, ping, `tools/list`, and `tools/call` only.
 
+For copyable client registration commands, reload expectations, and allowed-root guidance, see [MCP Client Setup](mcp-client-setup.md).
+
 ## Protocol Shape
 
 The official MCP tools specification describes tools as named operations with an `inputSchema`, optional `outputSchema`, and optional annotations. It also says structured tool results live in `structuredContent` and should be mirrored as serialized JSON text for compatibility. The schema reference defines `readOnlyHint`, `destructiveHint`, and `openWorldHint` as annotations, while warning that annotations are hints and not a security boundary.

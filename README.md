@@ -152,6 +152,7 @@ Choose your next step:
 - CI path: read [GitHub Actions And PR Summaries](guides/github-actions.md), then compare it with the dogfooded workflow in [.github/workflows/ci.yml](.github/workflows/ci.yml).
 - Agent path: read [Agent And MCP Integration](guides/agent-loop.md) before giving Axiom output to an AI repair loop or MCP wrapper.
 - MCP preview: read [MCP Preview](guides/mcp-preview.md) for the read-only stdio server and tool contract that wraps existing CLI JSON evidence without adding new validation semantics.
+- MCP setup: read [MCP Client Setup](guides/mcp-client-setup.md) for Codex registration, client reload behavior, allowed roots, and safe handoff prompts.
 - Real contract shape: inspect [examples/monorepo-workspace](examples/monorepo-workspace) for package-level contracts.
 - Gate rehearsal: inspect [examples/spec-first-pilot](examples/spec-first-pilot) for a reviewed contract that passes cleanly before deliberate drift is introduced by the smoke harness.
 - Tool comparison: read [Comparison And Boundaries](guides/comparison.md) if you are asking how Axiom differs from ESLint, Dependency Cruiser, Nx, CodeQL, or custom scripts.
@@ -728,6 +729,8 @@ For a fuller PR workflow, use [GitHub Actions And PR Summaries](guides/github-ac
 - [GitHub Actions And PR Summaries](guides/github-actions.md)
 - [JSON Consumers](guides/json-consumers.md)
 - [Agent And MCP Integration](guides/agent-loop.md)
+- [MCP Client Setup](guides/mcp-client-setup.md)
+- [MCP Preview](guides/mcp-preview.md)
 - [Publishing The Public Alpha](guides/publishing-alpha.md)
 - [Contributing](CONTRIBUTING.md)
 - [Basic App Example](examples/basic-app)

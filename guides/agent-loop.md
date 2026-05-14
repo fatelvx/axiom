@@ -14,6 +14,8 @@ For the shared artifact convention that agents, CI, and future MCP wrappers shou
 
 For the dependency-free read-only tool contract now used inside the codebase, see [MCP Preview](mcp-preview.md).
 
+For registering the stdio server in Codex or another MCP client, see [MCP Client Setup](mcp-client-setup.md).
+
 ## Safe Agent Loop
 
 Use this loop for Codex, Claude Code, Cursor, CI bots, or a future MCP adapter:
@@ -130,6 +132,7 @@ This is review context, not a health score. The hard gate is axi check.
 
 Watch for these integration mistakes:
 
+- The handoff prompt asks only for MCP verification, but the agent starts editing, committing, or pushing before approval.
 - The agent treats a quiet story as proof that architecture is healthy.
 - The agent rewrites imports toward a guessed public entry point without checking `entrypointConfidence`.
 - The agent creates `accepts` debt to pass CI instead of explaining the tradeoff.

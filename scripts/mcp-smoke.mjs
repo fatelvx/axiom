@@ -16,6 +16,7 @@ const protocolVersion = "2025-11-25";
 async function main() {
   await runMainSmoke();
   await runAllowRootSmoke();
+  await runInvalidInputSmoke();
 
   console.log("MCP stdio smoke passed.");
   console.log("- initialized the local stdio server");
@@ -23,6 +24,7 @@ async function main() {
   console.log("- checked the current repository through axiom_check");
   console.log("- treated fixture contract violations as structured evidence");
   console.log("- rejected a tool call outside the configured allow-root");
+  console.log("- returned stable JSON-RPC errors for invalid tool input");
 }
 
 async function runMainSmoke() {
@@ -100,6 +102,53 @@ async function runAllowRootSmoke() {
     });
     assertEqual(rejected.error?.code, -32602, "outside-root rejection code");
     assertTextIncludes(rejected.error?.message ?? "", "outside allowed MCP roots", "outside-root rejection message");
+  } finally {
+    await server.close();
+  }
+}
+
+async function runInvalidInputSmoke() {
+  const server = startServer(["--allow-root", repoRoot, "--timeout-ms", "20000"]);
+
+  try {
+    const initialized = await server.request("initialize", {
+      protocolVersion,
+      capabilities: {},
+      clientInfo: { name: "axiom-mcp-smoke", version: "0" }
+    });
+    assertNoJsonRpcError(initialized, "invalid-input initialize");
+
+    const missingMethod = await server.request("axiom/unknown", {});
+    assertEqual(missingMethod.error?.code, -32601, "unknown method error code");
+    assertTextIncludes(missingMethod.error?.message ?? "", "Method not found", "unknown method error message");
+
+    const unknownTool = await callTool(server, "axiom_write_contract", {
+      root: repoRoot
+    });
+    assertEqual(unknownTool.error?.code, -32602, "unknown tool error code");
+    assertTextIncludes(unknownTool.error?.message ?? "", "unsupported Axiom tool", "unknown tool error message");
+
+    const missingRoot = await callTool(server, "axiom_check", {});
+    assertEqual(missingRoot.error?.code, -32602, "missing root error code");
+    assertTextIncludes(missingRoot.error?.message ?? "", "root must be a non-empty string", "missing root error message");
+
+    const badArguments = await server.request("tools/call", {
+      name: "axiom_check",
+      arguments: []
+    });
+    assertEqual(badArguments.error?.code, -32602, "bad arguments error code");
+    assertTextIncludes(badArguments.error?.message ?? "", "arguments must be an object", "bad arguments error message");
+
+    const escapedSpecPath = await callTool(server, "axiom_check", {
+      root: repoRoot,
+      specPaths: [path.dirname(repoRoot)]
+    });
+    assertEqual(escapedSpecPath.error?.code, -32602, "outside spec path error code");
+    assertTextIncludes(
+      escapedSpecPath.error?.message ?? "",
+      "specPaths is outside allowed MCP roots",
+      "outside spec path error message"
+    );
   } finally {
     await server.close();
   }

@@ -88,6 +88,57 @@ test("mcp stdio server rejects roots outside the configured allow list", async (
   }
 });
 
+test("mcp stdio server returns stable JSON-RPC errors for invalid tool calls", async () => {
+  const server = startServer(["--allow-root", repoRoot, "--timeout-ms", "20000"]);
+
+  try {
+    await server.request("initialize", {
+      protocolVersion: "2025-11-25",
+      capabilities: {},
+      clientInfo: { name: "axiom-test", version: "0" }
+    });
+
+    const missingMethod = await server.request("axiom/unknown", {});
+    assert.equal(missingMethod.error?.code, -32601);
+    assert.match(missingMethod.error?.message ?? "", /Method not found/);
+
+    const unknownTool = await server.request("tools/call", {
+      name: "axiom_write_contract",
+      arguments: {
+        root: repoRoot
+      }
+    });
+    assert.equal(unknownTool.error?.code, -32602);
+    assert.match(unknownTool.error?.message ?? "", /unsupported Axiom tool/);
+
+    const missingRoot = await server.request("tools/call", {
+      name: "axiom_check",
+      arguments: {}
+    });
+    assert.equal(missingRoot.error?.code, -32602);
+    assert.match(missingRoot.error?.message ?? "", /root must be a non-empty string/);
+
+    const invalidArguments = await server.request("tools/call", {
+      name: "axiom_check",
+      arguments: []
+    });
+    assert.equal(invalidArguments.error?.code, -32602);
+    assert.match(invalidArguments.error?.message ?? "", /arguments must be an object/);
+
+    const outsideSpec = await server.request("tools/call", {
+      name: "axiom_check",
+      arguments: {
+        root: repoRoot,
+        specPaths: [path.dirname(repoRoot)]
+      }
+    });
+    assert.equal(outsideSpec.error?.code, -32602);
+    assert.match(outsideSpec.error?.message ?? "", /specPaths is outside allowed MCP roots/);
+  } finally {
+    await server.close();
+  }
+});
+
 function startServer(args: string[]): McpServerHandle {
   const child = spawn(process.execPath, [serverPath, ...args], {
     cwd: repoRoot,

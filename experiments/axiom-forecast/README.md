@@ -45,6 +45,7 @@ Files:
 - `results/mirofish-big-backtest-v4-2026-05-13.md`: larger synthetic backtest after `reviewStory`; recommends a limited read-only MCP preview after baseline lifecycle and agent-loop guardrail docs.
 - `results/mirofish-tiered-evidence-validator-target-2026-05-14.md`: targeted backtest after pnpm / Vite resolver hardening and the calibration-portfolio decision; keeps tiered evidence internal until hard-gate trust is broader.
 - `results/mirofish-evidence-artifact-target-2026-05-14.md`: targeted backtest after adding the Evidence Artifact Loop guide; says the artifact reduces disconnected-surface risk but still needs real-project calibration before MCP shipping.
+- `results/mirofish-framework-tooling-calibration-target-2026-05-14.md`: targeted backtest after the Express / Fastify / ESLint / SvelteKit / UUID calibration batch; recommends a human-reviewed spec-first pilot before broad MCP or VS Code work.
 - `tools/write-mirofish-env.ps1`: local helper for writing MiroFish credentials to `.env` without pasting secrets into chat.
 
 Live run input snapshot:
@@ -118,6 +119,12 @@ Latest tiered evidence / validator landing target snapshot:
 
 ```text
 current master after pnpm workspace source-mirror resolution, Vite type-only declaration resolution, and the calibration-portfolio overfitting guardrail
+```
+
+Latest framework/tooling calibration target snapshot:
+
+```text
+current master after the clone-only Express, Fastify, ESLint, SvelteKit, and UUID diff-smoke batch plus portfolio classification artifacts
 ```
 
 Use this experiment as forecast input, not as a replacement for real users. A useful forecast should produce falsifiable adoption risks, concrete messaging changes, and roadmap tradeoffs.

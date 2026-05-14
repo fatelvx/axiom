@@ -828,3 +828,38 @@ Detailed result:
 ```text
 experiments/axiom-forecast/results/mirofish-evidence-artifact-target-2026-05-14.md
 ```
+
+### Framework/Tooling Calibration Target Backtest
+
+Before this target backtest, Axiom had run and pushed a clone-only, no-install real-project calibration batch across:
+
+- Express `lib/**`
+- Fastify `lib/**`
+- ESLint `lib/**`
+- SvelteKit `packages/kit/src/**`
+- UUID `src/**`
+
+The batch added calibration classification artifacts and intentionally made no validator/resolver behavior changes. It also recorded an npm CLI workspace attempt that failed before Axiom because Windows checkout hit a deeply nested fixture path.
+
+Method:
+
+Used the same local MiroFish `.env` and model configuration through direct `LLMClient`. This was a targeted risk-map prompt, not a full OASIS social simulation rerun. No target repository installs, `npx`, dependency refreshes, target scripts, target tests, or target builds were run.
+
+Primary result:
+
+- MiroFish gave the checkpoint a deliberately harsh 4/10 credibility score for first-alpha/ecosystem readiness.
+- The useful criticism was that scanner stability and portfolio discipline are not yet the same as a proven human-reviewed `.axi` validation loop.
+- The run incorrectly phrased this as "no `.axi` spec was used"; retain it with the correction that the harness used inferred temporary external specs, but not maintainer-authored or human-reviewed declared contracts.
+- The recommended next checkpoint is a spec-first pilot: author a small human-reviewed `.axi`, introduce or replay a deliberate boundary drift, prove `axi check` catches the hard violation, and preserve the `.axi + baseline + reviewStory + intentionalDebt` artifact.
+- GitHub Actions should come after that as a trust pass over the same evidence; MCP and VS Code should still wait.
+
+Follow-up decision:
+
+- Treat the framework/tooling batch as a successful calibration sprint, but not enough to claim alpha validator readiness.
+- Next implementation work should prove declared-contract validation against deliberate drift before new integration surfaces.
+
+Detailed result:
+
+```text
+experiments/axiom-forecast/results/mirofish-framework-tooling-calibration-target-2026-05-14.md
+```

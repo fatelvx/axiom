@@ -14,6 +14,7 @@
 - Preserved `axi infer` `reviewStory` in real-project diff smoke `baselineInference` reports and bumped the report kind to `axiom.real-project-diff-smoke.v3`.
 - Added `Calibration Classification` metadata to real-project diff smoke reports and bumped the report kind to `axiom.real-project-diff-smoke.v4`.
 - Added a framework/tooling calibration batch covering Express, Fastify, ESLint, SvelteKit, and UUID without target installs or validator behavior changes.
+- Added a targeted MiroFish backtest for the framework/tooling calibration batch, reinforcing a spec-first pilot before broad MCP or VS Code work.
 - Included warning guardrails in focused graph output so `axi graph --violations-only` acts more like an architecture attention view.
 - Added `axi graph --attention` as a product-facing alias for the focused architecture attention view.
 - Added pnpm workspace package discovery for internal package export resolution.

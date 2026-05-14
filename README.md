@@ -2,7 +2,7 @@
 
 [![CI](https://github.com/fatelvx/axiom/actions/workflows/ci.yml/badge.svg)](https://github.com/fatelvx/axiom/actions/workflows/ci.yml)
 
-![Axiom architecture observability banner](assets/banner.svg)
+![Axiom brand banner](assets/banner.png)
 
 **Static architecture contracts for AI-era TypeScript and JavaScript codebases.**
 

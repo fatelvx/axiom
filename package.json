@@ -34,6 +34,7 @@
     "CHANGELOG.md",
     "assets/logo.svg",
     "assets/banner.svg",
+    "assets/banner.png",
     "guides/",
     "examples/basic-app/",
     "examples/github-actions/",

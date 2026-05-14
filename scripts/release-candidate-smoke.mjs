@@ -35,6 +35,7 @@ try {
   for (const filePath of [
     "README.md",
     "CHANGELOG.md",
+    "assets/banner.png",
     "dist/cli.js",
     "dist/mcp/server.js",
     "dist/mcp/tools.js",

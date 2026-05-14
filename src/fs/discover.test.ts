@@ -60,6 +60,23 @@ test("project-specific generated folders are controlled by exclude config", () =
   }
 });
 
+test("source discovery includes Vue single-file components", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "axi-discover-vue-"));
+
+  try {
+    writeFile(root, "src/App.vue", "<script setup>\nimport './feature.js';\n</script>\n");
+    writeFile(root, "src/feature.js", "export const feature = true;\n");
+    writeFile(root, "src/types.d.ts", "export interface Types {}\n");
+
+    assert.deepEqual(findSourceFiles(root).map((filePath) => normalize(root, filePath)), [
+      "src/App.vue",
+      "src/feature.js"
+    ]);
+  } finally {
+    fs.rmSync(root, { force: true, recursive: true });
+  }
+});
+
 test("source and spec discovery respect include, exclude, and specs config", () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "axi-discover-config-"));
 

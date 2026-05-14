@@ -387,6 +387,69 @@ test("scanner summarizes declaration-name token clusters for large-file review h
   }
 });
 
+test("scanner reads imports from Vue single-file component script blocks", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "axi-imports-vue-"));
+
+  try {
+    writeFile(
+      root,
+      "src/App.vue",
+      [
+        "<template>",
+        "  <Widget />",
+        "</template>",
+        "<script setup lang=\"ts\">",
+        "import Widget from \"./Widget.vue\";",
+        "import { useThing } from \"./composables/useThing\";",
+        "const lazy = () => import(\"./LazyPane.vue\");",
+        "function renderThing() { return useThing(); }",
+        "</script>",
+        "<style scoped>",
+        ".root { color: red; }",
+        "</style>"
+      ].join("\n")
+    );
+    writeFile(root, "src/Widget.vue", "<script setup>\n</script>\n");
+    writeFile(root, "src/LazyPane.vue", "<script setup>\n</script>\n");
+    writeFile(root, "src/composables/useThing.ts", "export const useThing = () => true;\n");
+
+    const scan = scanSourceFile(path.join(root, "src/App.vue"));
+
+    assert.deepEqual(
+      scan.imports.map((record) => ({
+        line: record.line,
+        kind: record.kind,
+        specifier: record.specifier,
+        resolvedPath: normalize(root, record.resolvedPath)
+      })),
+      [
+        {
+          line: 5,
+          kind: "import",
+          specifier: "./Widget.vue",
+          resolvedPath: "src/Widget.vue"
+        },
+        {
+          line: 6,
+          kind: "import",
+          specifier: "./composables/useThing",
+          resolvedPath: "src/composables/useThing.ts"
+        },
+        {
+          line: 7,
+          kind: "dynamic_import",
+          specifier: "./LazyPane.vue",
+          resolvedPath: "src/LazyPane.vue"
+        }
+      ]
+    );
+    assert.equal(scan.metrics.lineCount, 12);
+    assert.equal(scan.metrics.functionLikeCount, 2);
+  } finally {
+    fs.rmSync(root, { force: true, recursive: true });
+  }
+});
+
 test("scanner resolves aliases through an injected resolver", () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "axi-imports-alias-"));
 

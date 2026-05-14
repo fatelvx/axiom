@@ -32,7 +32,7 @@ const ignoredDirectories = new Set([
   "temp",
   "tmp"
 ]);
-const sourceExtensions = new Set([".ts", ".tsx", ".js", ".jsx", ".mts", ".cts"]);
+const sourceExtensions = new Set([".ts", ".tsx", ".js", ".jsx", ".mts", ".cts", ".vue"]);
 
 export function findAxiomFiles(root: string, options: DiscoveryOptions = {}): string[] {
   const specPatterns = compilePatterns(options.specs ?? defaultSpecPatterns);

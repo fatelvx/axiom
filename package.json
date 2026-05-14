@@ -64,6 +64,7 @@
     "prepare": "npm run build",
     "real-project:diff-smoke": "npm run build && node scripts/real-project-diff-smoke.mjs",
     "real-project:version-smoke": "npm run build && node scripts/real-project-version-smoke.mjs",
+    "release:candidate:smoke": "npm run build && node scripts/release-candidate-smoke.mjs",
     "spec-first:smoke": "npm run build && node scripts/spec-first-smoke.mjs",
     "test": "npm run build && node scripts/run-tests.mjs"
   },

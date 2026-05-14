@@ -45,7 +45,7 @@ interface PackageSubpathMapping {
   prefixLength: number;
 }
 
-const extensionCandidates = [".ts", ".tsx", ".js", ".jsx", ".mts", ".cts"];
+const extensionCandidates = [".ts", ".tsx", ".js", ".jsx", ".mts", ".cts", ".vue"];
 const declarationExtensionCandidates = [".d.ts", ".d.mts", ".d.cts"];
 const sourceExtensionAlternates = new Map([
   [".js", [".ts", ".tsx"]],

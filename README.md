@@ -4,64 +4,91 @@
 
 ![Axiom architecture observability banner](assets/banner.svg)
 
-**Architecture observability, visible debt, and explicit contracts for AI-era codebases.**
+**Static architecture contracts for AI-era TypeScript and JavaScript codebases.**
 
-Axiom reads `.axi` contracts, scans real TypeScript and JavaScript imports, and shows where the observed code graph drifts from declared architecture intent. It can fail CI for high-confidence boundaries, but its first job is to make architecture drift and accepted debt observable enough for humans and agents to act on.
+Axiom compares the architecture you declared in `.axi` with the imports that actually exist in source code.
 
-> Axiom is part of an ongoing experiment to make architecture hallucinations in AI-generated code observable and enforceable. Read the technical note: [Architecture Hallucinations in LLM-Generated Code](https://gist.github.com/fatelvx/99fadeae8014a1ddc1e8b67727481ee5).
+Use it to:
+
+- fail CI on explicit boundary drift,
+- review advisory architecture pressure before it becomes a rule,
+- keep intentional debt visible,
+- give agents the same evidence humans and CI see.
+
+`Static Contract Loop` milestone: usable today for static TS/JS import graphs. Dynamic evidence, Python, VS Code, and contract sharing are post-static work.
+
+[Quick Start](#quick-start) | [Example Contract](#example-contract) | [Commands](#commands) | [Integrations](#integrations) | [Limits](#limits) | [Guides](#guides)
+
+## The Loop
+
+| Input | Axiom Builds | Output |
+| --- | --- | --- |
+| `.axi` contract | Declared graph | What the architecture says should be allowed |
+| TS/JS imports | Observed graph | What the code actually imports |
+| Baseline + debt | Review context | Drift, advisory pressure, and accepted violations |
+
+A hard gate is only one part of the loop:
 
 ```text
-.axi contract -> declared graph
-source imports -> observed graph
-Axiom compares both -> architecture violations with file, line, rule, and fix
+axi check   = CI gate for reviewed contracts
+axi observe = review story, warnings, debt, drift
+axi infer   = starter contract evidence, not architecture intent
+axi diff    = advisory observed-edge drift against a graph baseline
 ```
-
-Axiom is not a prompt wrapper and not a style linter. It is an architecture observability layer with explicit contracts: it turns boundaries that usually live in docs, reviews, and memory into visible graph feedback, warnings, intentional violations, and CI gates where the contract is clear enough.
-
-Status: public alpha / developer preview. The validator is usable today, but the `.axi` language and JSON schemas may still evolve before a stable 1.0.
-
-## Product Direction
-
-Axiom starts as architecture observability, not fully automatic architecture enforcement. Real codebases need a way to see boundary drift before every suspicious shape becomes a failing rule.
-
-The near-term product surface is:
-
-- architecture drift awareness
-- dependency direction tracking
-- module boundary warnings
-- module fan-in/fan-out concentration warnings
-- semantic ownership mapping through `.axi`
-- intentional violations that stay visible instead of being hidden
-- hard failures only for explicit, high-confidence contracts
-
-Code can be locally correct while globally collapsing. Axiom's job is to make that collapse visible before it becomes normal, then enforce only the parts of the contract that are clear enough to trust.
-
-This matters more in AI-era repositories because agents can change many files quickly. Axiom gives humans, agents, and CI the same contract surface: what is a hard violation, what is accepted debt, and what is advisory drift.
-
-## Evidence And Research Notes
-
-The repository includes research notes and smoke-test artifacts under `experiments/`. They are calibration evidence, not market proof, maintainer intent, or product claims about scanned projects.
-
-Use those artifacts to understand why the public product promise is deliberately narrow:
-
-- Synthetic forecast notes under [experiments/axiom-forecast](experiments/axiom-forecast) are risk maps for adoption friction, noisy-linter perception, static-analysis blind spots, and contract-maintenance cost.
-- Real-project smoke notes under [experiments/real-project-smokes](experiments/real-project-smokes) test signal shape on ordinary repositories without treating the results as architecture verdicts.
-- Performance smokes track scan comfort separately from marketing claims.
-
-This evidence keeps Axiom focused away from:
-
-- Dependency Cruiser with a new syntax
-- another noisy linter
-- a slow CI step
-- a false architecture firewall
-
-The product response is to make drift visible, keep accepted debt reviewable, and fail CI only for explicit high-confidence rules. Known gaps such as runtime-only dependency paths and `symbol-level API health` are documented as limitations instead of being hidden behind stronger language.
 
 ## Why It Exists
 
-AI coding agents are fast, but they often guess architecture from nearby files. Humans do this too. If your boundary is "UI may use Services, but only through the public Services entry point", that rule needs to be machine-checkable.
+AI agents and humans both guess architecture from nearby files. That works until a codebase changes faster than reviewers can keep the global shape in their heads.
 
-Axiom lets you write:
+Axiom turns rules like this:
+
+```text
+UI may depend on Services, but only through the public Services entry point.
+Services internals must stay private.
+Domain must not import UI.
+```
+
+into a machine-checkable contract with file, line, rule, and fix guidance.
+
+It is not a prompt wrapper and not a style linter. It is an architecture observability layer with enforceable contracts where the intent is clear enough.
+
+## Quick Start
+
+From this repository:
+
+```bash
+npm install
+npm run build
+node dist/cli.js check --root examples/basic-app
+```
+
+The example intentionally fails:
+
+```text
+error unexposed_import src/ui/view.ts:2
+  UI imports a non-exposed path from Services.
+
+error hidden_import src/ui/view.ts:3
+  UI imports hidden path from Services.
+```
+
+Try the review surface:
+
+```bash
+node dist/cli.js observe --root examples/basic-app
+node dist/cli.js graph --root examples/basic-app --attention
+```
+
+Try the spec-first gate rehearsal:
+
+```bash
+node dist/cli.js check --root examples/spec-first-pilot
+npm run spec-first:smoke
+```
+
+## Example Contract
+
+Write `axiom/main.axi`:
 
 ```axi
 module Services
@@ -95,104 +122,20 @@ import { parseToken } from "../services/internal/token"; // advisory deep_intern
 
 The hidden internal import becomes an explicit contract violation when `hides` says `internal/**` is private. Without that strict contract, the same shape can still be a review signal: Axiom can see code reaching around a likely entry point, but it does not fail CI unless the team turns that intent into a clear contract.
 
-## Try It In 60 Seconds
+## Static v0 Coverage
 
-From this repository:
+Axiom v0.5.8 is focused on static TypeScript and JavaScript architecture evidence, including Vue single-file component script imports.
 
-```bash
-npm install
-npm run build
-node dist/cli.js check --root examples/basic-app
-```
-
-The example intentionally fails:
-
-```text
-Axiom check failed.
-violations: 2
-
-error unexposed_import src/ui/view.ts:2
-  UI imports a non-exposed path from Services.
-  observed: UI -> Services via "../services/feature"
-  rule: Services exposes src/services/index.ts (axiom/main.axi:13)
-  fix: Import an exposed entry point from Services, or add an exposes rule for this public API.
-
-error hidden_import src/ui/view.ts:3
-  UI imports hidden path from Services.
-  observed: UI -> Services via "../services/internal/token"
-  rule: Services hides src/services/internal/** (axiom/main.axi:14)
-  fix: Import an exposed entry point from Services, or move the shared code behind a public boundary.
-```
-
-For a smaller graph view:
-
-```bash
-node dist/cli.js observe --root examples/basic-app
-node dist/cli.js graph --root examples/basic-app --violations-only
-node dist/cli.js graph --root examples/basic-app --attention
-```
-
-For a pass-then-fail gate rehearsal, use the spec-first pilot example:
-
-```bash
-node dist/cli.js check --root examples/spec-first-pilot
-npm run spec-first:smoke
-```
-
-That smoke copies the valid example to a temporary directory, writes deliberate boundary drift, and confirms `axi check` fails on explicit visibility and layer rules.
-
-Choose your next step:
-
-- Existing project: start with `axi infer --root .`, then follow [Adopting Axiom In A Real Project](guides/adoption.md).
-- Contract authoring: start from [Contract Recipes](guides/contract-recipes.md) if you do not want to invent the first `.axi` shape from scratch.
-- Early pilot: keep the first contract outside the target repo with [Pilot Workflow](guides/pilot-workflow.md).
-- Portable evidence: use [Evidence Artifact Loop](guides/evidence-artifact.md) when `.axi`, baselines, review stories, intentional debt, CI, and agents need to share one workflow.
-- First graph review: use [Read The Graph](guides/read-the-graph.md) when the diagram is useful but you are not sure whether it means healthy or drifting.
-- Teammate trial: send [10-Minute Pilot Card](guides/pilot-card.md) when someone wants to try Axiom without adding files to their repo.
-- CI path: read [GitHub Actions And PR Summaries](guides/github-actions.md), then compare it with the dogfooded workflow in [.github/workflows/ci.yml](.github/workflows/ci.yml).
-- Agent path: read [Agent And MCP Integration](guides/agent-loop.md) before giving Axiom output to an AI repair loop or MCP wrapper.
-- MCP preview: read [MCP Preview](guides/mcp-preview.md) for the read-only stdio server and tool contract that wraps existing CLI JSON evidence without adding new validation semantics.
-- MCP setup: read [MCP Client Setup](guides/mcp-client-setup.md) for Codex registration, client reload behavior, allowed roots, and safe handoff prompts.
-- MCP conformance: read [MCP Conformance](guides/mcp-conformance.md) when testing the server with a fresh agent that has no internal project memory.
-- Real contract shape: inspect [examples/monorepo-workspace](examples/monorepo-workspace) for package-level contracts.
-- Gate rehearsal: inspect [examples/spec-first-pilot](examples/spec-first-pilot) for a reviewed contract that passes cleanly before deliberate drift is introduced by the smoke harness.
-- Tool comparison: read [Comparison And Boundaries](guides/comparison.md) if you are asking how Axiom differs from ESLint, Dependency Cruiser, Nx, CodeQL, or custom scripts.
-- Product philosophy: read [Design Philosophy](guides/design-philosophy.md) to understand why Axiom prefers observability first and hard gates only for high-confidence contracts.
-
-## What It Checks
-
-Axiom v0.5.8 currently supports:
-
-- Module ownership with `path`.
-- Multiple source paths per module.
-- Allowed dependencies with `depends on`.
-- Forbidden module edges with `forbids module`.
-- Layer direction with `layers Core -> UI`.
-- Public/private module surfaces with `exposes` and `hides`.
-- Direct hidden-path re-exports and local import-then-export hidden leaks from exposed entry points.
-- Opt-in public API surface warnings for broad exposed barrels and visible facade pressure with `--warn-public-api-surface`.
-- Opt-in coupling concentration warnings for modules with high observed fan-in or fan-out with `--warn-coupling-concentration`.
-- Opt-in unresolved import warnings for static relative or package `#imports` that Axiom can see but cannot resolve with `--warn-unresolved-imports`.
-- Opt-in deep internal import warnings for relative cross-module imports that bypass likely `index.*` entry points with `--warn-deep-internal-imports`.
-- Opt-in large source file warnings for intra-file responsibility pressure with `--warn-large-files`.
-- TypeScript/JavaScript import scanning through the TypeScript parser.
-- Relative imports, barrel `index.*` files, dynamic imports, `require`, and multiline imports.
-- TypeScript `paths` aliases from `tsconfig.json`.
-- Package `imports` and workspace package `exports` / `main` for internal package-style imports, including common `lib` or `dist` targets mapped back to existing `src` mirrors in source-only clones and declaration targets for type-only imports.
-- Workspace package discovery from `package.json` workspaces and `pnpm-workspace.yaml`.
-- Common monorepo contract discovery under `apps/*` and `packages/*`.
-- Gradual adoption with default loose mode, `--warn-unowned`, and `--strict`.
-- Intentional violations that require an expiration date and reason.
-- Module `purpose` text surfaced in graph and JSON output for lightweight intent awareness.
-- Human output and stable JSON output for CI and agents.
-- Markdown architecture review summaries for PRs and agent repair loops with `axi observe --markdown`.
-- Agent-friendly graph JSON summaries with `architectureSummary.interpretation` for CI dashboards, PR bots, and future MCP adapters.
-- Mermaid dependency diagrams for observed module graphs with `axi graph --mermaid` or `axi observe --mermaid`.
-- Starter contract inference with `axi infer`, explicitly marked as a current-graph snapshot rather than recommended architecture, with a review story, authoring checklist, and next commands.
-- Architecture attention output with `axi observe`, including a visible review model that separates advisory review from CI gates.
-- Baseline-aware observed edge drift with `axi observe --baseline <graph-json>`.
-- Focused graph output with `axi graph --violations-only`.
-- Scan summaries with module, source-file, import, observed-dependency counts, and no-contract starter context.
+| Area | Supported |
+| --- | --- |
+| Contract model | `module`, `path`, `depends on`, `forbids module`, `layers`, `exposes`, `hides`, `purpose` |
+| Hard violations | dependency drift, layer breaches, hidden imports, hidden re-exports, ambiguous owners, broken specs |
+| Advisory review | deep internal imports, public API surface pressure, coupling concentration, unresolved imports, large files |
+| Scanner | TS/JS parser imports, Vue SFC `<script>` imports, `require`, literal dynamic imports, multiline imports, barrel `index.*` files |
+| Resolver | relative paths, `.vue` components, tsconfig `paths`, package `imports`, workspace `exports` / `main`, pnpm workspaces |
+| Adoption | loose mode, `--warn-unowned`, `--strict`, time-bounded intentional violations |
+| Outputs | human, JSON, Markdown, Mermaid, review stories, `topSignals`, baseline drift |
+| Agent surfaces | GitHub Actions examples, JSON consumer guide, read-only MCP server |
 
 ## How To Read A Graph
 
@@ -208,7 +151,7 @@ When a scan is quiet, the next step is not "declare victory". Compare the graph 
 
 For concrete examples of failing contracts, quiet graphs, advisory pressure, and React plus Pixi game clients, read [Read The Graph](guides/read-the-graph.md).
 
-## What It Does Not Prove
+## Limits
 
 Axiom v0 is intentionally honest about its blind spots:
 
@@ -289,7 +232,7 @@ npx axi check --root .
 npx @fatelvx/axiom check --root .
 ```
 
-## Core Commands
+## Commands
 
 ```bash
 axi check --root <project>
@@ -339,6 +282,16 @@ axi observe --root . --baseline axiom-baseline.json --markdown
 axi infer --root . --group-depth 2
 axi infer --root . --group-by workspace
 ```
+
+## Integrations
+
+| Surface | Status | Use it for |
+| --- | --- | --- |
+| GitHub Actions | Example workflow included | Keep `axi check` as the PR gate and attach `axi observe` as review context |
+| JSON / Markdown | Stable v0 schemas | Feed CI annotations, PR summaries, dashboards, and agents |
+| MCP | Read-only stdio preview | Let agents query roots, checks, graphs, diffs, inference, and temporary inferred review evidence |
+
+Start with [GitHub Actions And PR Summaries](guides/github-actions.md), [JSON Consumers](guides/json-consumers.md), or [MCP Client Setup](guides/mcp-client-setup.md).
 
 ## First Contract
 
@@ -777,6 +730,7 @@ npm run axiom:self
 npm run mcp:smoke
 npm run perf:smoke
 npm run github-actions:smoke
+npm run release:candidate:smoke
 npm run alpha:check
 npm run check:fixture
 node dist/cli.js check --root examples/basic-app
@@ -788,24 +742,23 @@ Questions, contract-design discussions, and rough ideas are welcome. Use [GitHub
 
 ## Roadmap
 
-Near-term:
+Current milestone:
 
-- A clearer architecture attention view.
-- Better monorepo performance and resolver caching.
-- Downstream project CI recipes.
-- More TypeScript module resolution hardening.
-- Drift and architecture health surfaces that start advisory, not as hard gates.
-- Evolution graph views for visible architecture change over time.
-- Baseline-aware drift refinement for CI comments and agent repair loops.
-- Pilot evidence for how Axiom complements ESLint architecture rules, Dependency Cruiser, Nx boundaries, CodeQL, and custom CI scripts.
-- Symbol-level public API surface analysis as an advisory research area, not a v0 hard gate.
-- Real-project drift comparisons across multiple repository versions, including coupling concentration and deep internal import pressure.
+- `v0.6.0` candidate: Static Contract Loop. The static TS/JS validator, review surfaces, GitHub Actions examples, and read-only MCP evidence loop should be packaged and dogfooded.
+
+Next:
+
+- Dynamic TS/JS evidence taxonomy: literal dynamic imports, detectable non-literal dynamic imports, runtime composition blind spots.
+- More release-candidate testing from packaged tarballs and clean temp projects.
+- More spec-first pilots on real repositories before stronger CI claims.
+- VS Code authoring and drift navigation over the same CLI/JSON evidence.
+- Contract templates, inheritance, and sharing only after the single-repo validator loop is trusted.
 
 Later:
 
+- Python scanner support after dynamic TS/JS evidence is classified.
 - Capability rules such as wall clock, network, filesystem, and random.
-- AI context compiler as a derived output.
-- Agent repair loop.
+- AI context compiler and repair loops as derived outputs, not replacements for validation.
 
 ## License
 

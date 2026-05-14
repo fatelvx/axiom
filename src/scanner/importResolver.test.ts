@@ -94,6 +94,24 @@ test("resolver maps JavaScript ESM specifiers back to TypeScript source files", 
   }
 });
 
+test("resolver supports Vue single-file components", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "axi-resolver-vue-"));
+
+  try {
+    writeFile(root, "src/app/main.ts", "export const app = true;\n");
+    writeFile(root, "src/app/AppShell.vue", "<script setup>\n</script>\n");
+    writeFile(root, "src/app/views/Home.vue", "<script setup>\n</script>\n");
+
+    const resolver = createImportResolver({ root });
+    const fromFile = path.join(root, "src/app/main.ts");
+
+    assert.equal(normalize(root, resolver.resolve(fromFile, "./AppShell")), "src/app/AppShell.vue");
+    assert.equal(normalize(root, resolver.resolve(fromFile, "./views/Home.vue")), "src/app/views/Home.vue");
+  } finally {
+    fs.rmSync(root, { force: true, recursive: true });
+  }
+});
+
 test("resolver supports package imports from package.json", () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "axi-resolver-imports-"));
 

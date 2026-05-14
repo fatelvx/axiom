@@ -20,7 +20,8 @@ export function scanImports(filePath: string, options: ScanImportsOptions = {}):
 
 export function scanSourceFile(filePath: string, options: ScanImportsOptions = {}): SourceFileScan {
   const text = fs.readFileSync(filePath, "utf8");
-  const sourceFile = ts.createSourceFile(filePath, text, ts.ScriptTarget.Latest, true, getScriptKind(filePath));
+  const parseText = prepareTextForParsing(filePath, text);
+  const sourceFile = ts.createSourceFile(filePath, parseText, ts.ScriptTarget.Latest, true, getScriptKind(filePath));
   const imports: ImportRecord[] = [];
   const localExports: LocalExportRecord[] = [];
   const declarationNames: string[] = [];
@@ -169,6 +170,43 @@ function countLines(text: string): number {
   }
 
   return text.split(/\r\n|\r|\n/).length;
+}
+
+function prepareTextForParsing(filePath: string, text: string): string {
+  return path.extname(filePath).toLowerCase() === ".vue" ? extractVueScriptText(text) : text;
+}
+
+function extractVueScriptText(text: string): string {
+  const scriptBlockPattern = /<script\b[^>]*>[\s\S]*?<\/script>/gi;
+  let output = "";
+  let cursor = 0;
+
+  for (const match of text.matchAll(scriptBlockPattern)) {
+    const block = match[0];
+    const blockStart = match.index ?? 0;
+    const blockEnd = blockStart + block.length;
+    const openEndInBlock = block.indexOf(">") + 1;
+    const closeStartInBlock = block.toLowerCase().lastIndexOf("</script");
+
+    if (openEndInBlock <= 0 || closeStartInBlock < openEndInBlock) {
+      continue;
+    }
+
+    const scriptStart = blockStart + openEndInBlock;
+    const scriptEnd = blockStart + closeStartInBlock;
+
+    output += blankNonNewlineText(text.slice(cursor, scriptStart));
+    output += text.slice(scriptStart, scriptEnd);
+    output += blankNonNewlineText(text.slice(scriptEnd, blockEnd));
+    cursor = blockEnd;
+  }
+
+  output += blankNonNewlineText(text.slice(cursor));
+  return output;
+}
+
+function blankNonNewlineText(text: string): string {
+  return text.replace(/[^\r\n]/g, " ");
 }
 
 function countExportRecords(imports: ImportRecord[], localExports: LocalExportRecord[]): number {

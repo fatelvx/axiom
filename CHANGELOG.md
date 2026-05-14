@@ -22,6 +22,8 @@
 - Added an MCP client setup guide for Codex registration, client reload behavior, root scoping, native-tool verification, and safe agent handoff prompts.
 - Added an agent-readable MCP result `summary` that indexes gate status, counts, review story, drift counts, and tool-error hints while preserving the full CLI JSON payload.
 - Added `structuredContent.summary.topSignals[]` to MCP architecture results so agents can start with compact evidence pointers for hard violations, warning roots, collapsed cycles, large files, drift, and dependency pressure while the full payload remains authoritative.
+- Added `npm run release:candidate:smoke` to pack the local tarball, inspect packaged contents and bin aliases, and run the packaged CLI against included examples without publishing.
+- Added Vue single-file component source discovery, resolver support, and `<script>` / `<script setup>` import scanning for static front-end architecture evidence.
 - Added `axiom_roots` as a read-only MCP tool so agents can inspect configured allowed roots before choosing a scan root.
 - Added `npm run mcp:smoke` to verify the local MCP stdio server, read-only tool listing, structured contract-failure evidence, and allowed-root rejection before client registration.
 - Added `npm run mcp:agent-loop:smoke` to verify a temp-only MCP workflow across roots, clean check, graph baseline, deliberate drift, observe, diff, and infer evidence.

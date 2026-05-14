@@ -26,6 +26,8 @@ Before turning a real-project finding into code, classify it as one of:
 
 This keeps the validator from overfitting to whichever repository was scanned most recently. A useful run can end with "document scope/config/limitation" instead of a code change.
 
+The repeatable diff smoke harness can write this classification directly into each JSON and Markdown report. Prefer filling those fields while running the smoke instead of reconstructing the decision later from memory.
+
 ## Method
 
 Use a temporary clone, build the local Axiom CLI, and run one of:
@@ -83,12 +85,18 @@ npm run real-project:diff-smoke -- \
   --name zod \
   --baseline-ref v4.0.1 \
   --current-ref v4.4.3 \
+  --repo-shape "TypeScript library with public package surfaces" \
+  --main-signal "One inferred baseline makes minor-version architecture drift reviewable." \
+  --gap-class "advisory-signal-calibration" \
+  --decision "Record as calibration evidence before changing validator behavior." \
   --warnings coupling,deep,unresolved \
   --json-out experiments/real-project-smokes/results/zod-diff-smoke-2026-05-13.json \
   --markdown-out experiments/real-project-smokes/results/zod-diff-smoke-2026-05-13.md
 ```
 
 The script clones the baseline and current refs, optionally writes a small temporary `axiom.config.json` from `--include` / `--exclude`, runs `axi infer --group-by <mode> --json` on the baseline ref, saves an `axi graph --json` baseline, then runs `axi diff` and `axi observe --baseline --markdown` against the current ref with the inferred contract as an external `--spec`.
+
+The report includes a `Calibration Classification` section with repo shape, safety posture, scope question, command surface, main signal, gap class, decision, whether code changed, and follow-up. Use those fields to record why a finding is a general implementation gap, a scan-scope issue, an advisory-signal calibration point, or a limitation before changing resolver or validator behavior.
 
 The summarized JSON and Markdown report keeps a baseline inference section with `axi infer` `reviewStory`, source/import counts, collapsed-cycle evidence, cycle-breaking candidates, and large-file pressure notes. This matters when the inferred contract collapses a tangled source graph into one starter module: the graph baseline can be quiet while the inference evidence still shows what reviewers should inspect before treating the starter contract as intended architecture.
 

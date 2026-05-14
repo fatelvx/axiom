@@ -2,6 +2,8 @@
 
 This file keeps real-project smokes from becoming target-specific tuning.
 
+The repeatable diff smoke harness now writes the same classification into each generated JSON and Markdown report. Prefer filling those fields at run time so the artifact carries its own implementation decision.
+
 Each smoke should answer two questions before any implementation change:
 
 1. What repository shape did Axiom just exercise?

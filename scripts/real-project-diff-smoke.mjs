@@ -90,7 +90,7 @@ try {
   const baselinePayload = JSON.parse(baselineGraph.stdout);
   const diffPayload = JSON.parse(diffJson.stdout);
   const report = {
-    kind: "axiom.real-project-diff-smoke.v3",
+    kind: "axiom.real-project-diff-smoke.v4",
     generatedAt: startedAt.toISOString(),
     repo: options.repo,
     name: options.name,
@@ -113,6 +113,7 @@ try {
           ...(configPath ? { configPath: normalizePath(configPath) } : {})
         }
       : undefined,
+    calibration: options.calibration,
     baselineInference: summarizeInference(inferPayload),
     baseline: {
       ref: options.baselineRef,
@@ -209,6 +210,17 @@ function parseArgs(args) {
     include: [],
     exclude: [],
     warnings: [...defaultWarnings],
+    calibration: {
+      repoShape: "not recorded",
+      safetyPosture: "Clone-only source scan; no target installs, package-manager scripts, target tests, target builds, submodules, or npx were run.",
+      scopeQuestion: "Can an inferred baseline contract make version-to-version architecture drift reviewable for this source scope?",
+      commandSurface: "axi infer --json + axi graph --json + axi diff + axi observe --baseline",
+      mainSignal: "not recorded",
+      gapClass: "unclassified",
+      decision: "Record as calibration evidence before changing Axiom behavior.",
+      codeChanged: "not recorded",
+      followUp: "not recorded"
+    },
     json: false,
     keep: false
   };
@@ -269,6 +281,60 @@ function parseArgs(args) {
               .split(",")
               .map((item) => item.trim())
               .filter(Boolean);
+      index += 1;
+      continue;
+    }
+
+    if (arg === "--repo-shape") {
+      parsed.calibration.repoShape = readClassificationValue(args, index, arg);
+      index += 1;
+      continue;
+    }
+
+    if (arg === "--safety-posture") {
+      parsed.calibration.safetyPosture = readClassificationValue(args, index, arg);
+      index += 1;
+      continue;
+    }
+
+    if (arg === "--scope-question") {
+      parsed.calibration.scopeQuestion = readClassificationValue(args, index, arg);
+      index += 1;
+      continue;
+    }
+
+    if (arg === "--command-surface") {
+      parsed.calibration.commandSurface = readClassificationValue(args, index, arg);
+      index += 1;
+      continue;
+    }
+
+    if (arg === "--main-signal") {
+      parsed.calibration.mainSignal = readClassificationValue(args, index, arg);
+      index += 1;
+      continue;
+    }
+
+    if (arg === "--gap-class") {
+      parsed.calibration.gapClass = readClassificationValue(args, index, arg);
+      index += 1;
+      continue;
+    }
+
+    if (arg === "--decision") {
+      parsed.calibration.decision = readClassificationValue(args, index, arg);
+      index += 1;
+      continue;
+    }
+
+    if (arg === "--code-changed") {
+      parsed.calibration.codeChanged = readClassificationValue(args, index, arg);
+      index += 1;
+      continue;
+    }
+
+    if (arg === "--follow-up") {
+      parsed.calibration.followUp = readClassificationValue(args, index, arg);
       index += 1;
       continue;
     }
@@ -348,6 +414,14 @@ function readRequiredValue(args, index, flag) {
     throw new Error(`Missing value for ${flag}.`);
   }
   return value;
+}
+
+function readClassificationValue(args, index, flag) {
+  return normalizeClassificationText(readRequiredValue(args, index, flag));
+}
+
+function normalizeClassificationText(value) {
+  return value.replace(/\^/g, "").trim();
 }
 
 function parsePatternList(value) {
@@ -654,6 +728,8 @@ function formatMarkdownReport(report) {
     ""
   ];
 
+  appendCalibrationClassification(lines, report.calibration);
+
   appendInferenceSummary(lines, report.baselineInference);
 
   lines.push("## Drift", "");
@@ -695,6 +771,24 @@ function formatMarkdownReport(report) {
   lines.push("- Use this harness to calibrate Axiom behavior before turning any signal into a hard gate.");
 
   return `${lines.join("\n")}\n`;
+}
+
+function appendCalibrationClassification(lines, calibration) {
+  if (!calibration) {
+    return;
+  }
+
+  lines.push("## Calibration Classification", "");
+  lines.push(`- Repo shape: ${calibration.repoShape}`);
+  lines.push(`- Safety posture: ${calibration.safetyPosture}`);
+  lines.push(`- Scope question: ${calibration.scopeQuestion}`);
+  lines.push(`- Axiom command surface: ${calibration.commandSurface}`);
+  lines.push(`- Main signal: ${calibration.mainSignal}`);
+  lines.push(`- Gap class: ${calibration.gapClass}`);
+  lines.push(`- Decision: ${calibration.decision}`);
+  lines.push(`- Code changed: ${calibration.codeChanged}`);
+  lines.push(`- Follow-up: ${calibration.followUp}`);
+  lines.push("");
 }
 
 function appendInferenceSummary(lines, inference) {
@@ -852,6 +946,15 @@ Options:
   --include <patterns>          Comma list of source include globs for both refs.
   --exclude <patterns>          Comma list of source exclude globs for both refs.
   --warnings <list>             Comma list: coupling,deep,public-api,unresolved, or none.
+  --repo-shape <text>           Calibration classification: repository shape.
+  --safety-posture <text>       Calibration classification: safety posture.
+  --scope-question <text>       Calibration classification: scoped question.
+  --command-surface <text>      Calibration classification: Axiom commands exercised.
+  --main-signal <text>          Calibration classification: main signal.
+  --gap-class <text>            Calibration classification: gap class.
+  --decision <text>             Calibration classification: implementation decision.
+  --code-changed <text>         Calibration classification: whether Axiom code changed.
+  --follow-up <text>            Calibration classification: next calibration action.
   --json                        Print JSON instead of Markdown.
   --json-out <path>             Write machine-readable report JSON.
   --markdown-out <path>         Write the summarized Markdown report.

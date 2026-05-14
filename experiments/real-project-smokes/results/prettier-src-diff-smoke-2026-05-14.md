@@ -1,6 +1,6 @@
 # prettier-src Diff Architecture Smoke
 
-Generated (UTC): 2026-05-14T07:11:40.367Z
+Generated (UTC): 2026-05-14T07:46:13.740Z
 Repository: https://github.com/prettier/prettier.git
 Baseline: 3.5.3 (4ff5dc5)
 Current: 3.6.2 (7a8b05f)
@@ -16,6 +16,18 @@ Baseline-spec violations are mismatches against that inferred baseline contract,
 | --- | --- | --- | ---: | ---: | ---: | ---: |
 | 3.5.3 | 4ff5dc5 | 3.5.3 | 20 | 394 | 0 | 349 |
 | 3.6.2 | 7a8b05f | 3.6.2 | 20 | 407 | 2 | 360 |
+
+## Calibration Classification
+
+- Repo shape: CLI formatter with language/plugin source packages
+- Safety posture: Clone-only source scan; no target installs, package-manager scripts, target tests, target builds, submodules, or npx were run.
+- Scope question: Can an inferred baseline contract make minor-version source drift reviewable without treating language/plugin internals as maintainer-declared architecture?
+- Axiom command surface: axi infer --json + axi graph --json + axi diff + axi observe --baseline
+- Main signal: The inferred baseline preserves seven collapsed cycles, five large-file pressure notes, and two new current-ref edges into plugin surfaces.
+- Gap class: advisory-signal-calibration / scan-scope
+- Decision: Do not change validator behavior; keep deep-import and coupling warnings opt-in and use this as CLI-tool artifact calibration.
+- Code changed: No validator behavior changed; this smoke only verifies report classification metadata.
+- Follow-up: Run additional missing-shape smokes for app repositories, mixed CJS/ESM packages, generated-code-heavy projects, and non-pnpm workspaces before broad integrations.
 
 ## Baseline Inference
 
@@ -465,12 +477,12 @@ Baseline-spec violations are mismatches against that inferred baseline contract,
 
 ## Timings
 
-- Clone baseline: 23399.3ms
-- Clone current: 27033.3ms
-- Infer baseline contract: 3723.4ms
-- Baseline graph: 3668.5ms
-- Diff JSON: 2871.9ms
-- Observe Markdown: 4006.6ms
+- Clone baseline: 28077.2ms
+- Clone current: 31414.1ms
+- Infer baseline contract: 1597ms
+- Baseline graph: 1649.9ms
+- Diff JSON: 1571.8ms
+- Observe Markdown: 3881.8ms
 
 ## Caveats
 

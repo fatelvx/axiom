@@ -1,6 +1,6 @@
 {
-  "kind": "axiom.real-project-diff-smoke.v3",
-  "generatedAt": "2026-05-14T07:11:40.367Z",
+  "kind": "axiom.real-project-diff-smoke.v4",
+  "generatedAt": "2026-05-14T07:46:13.740Z",
   "repo": "https://github.com/prettier/prettier.git",
   "name": "prettier-src",
   "baselineRef": "3.5.3",
@@ -24,6 +24,17 @@
   ],
   "node": "v24.14.1",
   "platform": "win32 x64",
+  "calibration": {
+    "repoShape": "CLI formatter with language/plugin source packages",
+    "safetyPosture": "Clone-only source scan; no target installs, package-manager scripts, target tests, target builds, submodules, or npx were run.",
+    "scopeQuestion": "Can an inferred baseline contract make minor-version source drift reviewable without treating language/plugin internals as maintainer-declared architecture?",
+    "commandSurface": "axi infer --json + axi graph --json + axi diff + axi observe --baseline",
+    "mainSignal": "The inferred baseline preserves seven collapsed cycles, five large-file pressure notes, and two new current-ref edges into plugin surfaces.",
+    "gapClass": "advisory-signal-calibration / scan-scope",
+    "decision": "Do not change validator behavior; keep deep-import and coupling warnings opt-in and use this as CLI-tool artifact calibration.",
+    "codeChanged": "No validator behavior changed; this smoke only verifies report classification metadata.",
+    "followUp": "Run additional missing-shape smokes for app repositories, mixed CJS/ESM packages, generated-code-heavy projects, and non-pnpm workspaces before broad integrations."
+  },
   "baselineInference": {
     "schemaVersion": "axiom.infer.v8",
     "reviewStory": {
@@ -6350,13 +6361,13 @@
     ]
   },
   "timingsMs": {
-    "cloneBaseline": 23399.3,
-    "cloneCurrent": 27033.3,
-    "infer": 3723.4,
-    "baselineGraph": 3668.5,
-    "diffJson": 2871.9,
-    "diffMarkdown": 3106.9,
-    "observeMarkdown": 4006.6,
-    "diffMermaid": 3425.1
+    "cloneBaseline": 28077.2,
+    "cloneCurrent": 31414.1,
+    "infer": 1597,
+    "baselineGraph": 1649.9,
+    "diffJson": 1571.8,
+    "diffMarkdown": 2023.9,
+    "observeMarkdown": 3881.8,
+    "diffMermaid": 2221.6
   }
 }

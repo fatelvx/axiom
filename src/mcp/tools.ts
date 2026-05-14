@@ -1,4 +1,5 @@
 import process from "node:process";
+import { buildInferObserveTopSignals, buildPayloadTopSignals, type AxiomMcpTopSignal } from "./topSignals.js";
 
 export const AXIOM_MCP_TOOL_NAMES = [
   "axiom_roots",
@@ -120,6 +121,7 @@ export interface AxiomMcpResultSummary {
     summary?: string;
   };
   status?: string;
+  topSignals?: AxiomMcpTopSignal[];
 }
 
 const SUMMARY_SCHEMA: JsonSchema = {
@@ -186,6 +188,25 @@ const SUMMARY_SCHEMA: JsonSchema = {
         },
         nextStep: { type: "string" },
         summary: { type: "string" }
+      }
+    },
+    topSignals: {
+      type: "array",
+      items: {
+        type: "object",
+        additionalProperties: false,
+        required: ["kind", "title"],
+        properties: {
+          count: { type: "integer" },
+          detail: { type: "string" },
+          fromModule: { type: "string" },
+          kind: { type: "string" },
+          location: { type: "string" },
+          module: { type: "string" },
+          severity: { type: "string" },
+          title: { type: "string" },
+          toModule: { type: "string" }
+        }
       }
     }
   }
@@ -764,6 +785,7 @@ function createResultSummary(invocation: AxiomMcpCliInvocation, payload: unknown
   );
   const drift = buildDriftSummary(readRecordProperty(payloadRecord, "drift"));
   const gate = buildGateSummary(invocation, architectureSummary);
+  const topSignals = buildPayloadTopSignals(payloadRecord);
 
   return {
     agentHint: buildAgentHint(invocation.command, ok),
@@ -773,7 +795,8 @@ function createResultSummary(invocation: AxiomMcpCliInvocation, payload: unknown
     kind: resultSummaryKind(invocation.command),
     ...(ok !== undefined ? { ok } : {}),
     ...(reviewStory ? { reviewStory } : {}),
-    ...(readStringProperty(architectureSummary, "status") ? { status: readStringProperty(architectureSummary, "status") } : {})
+    ...(readStringProperty(architectureSummary, "status") ? { status: readStringProperty(architectureSummary, "status") } : {}),
+    ...(topSignals.length > 0 ? { topSignals } : {})
   };
 }
 
@@ -791,6 +814,7 @@ function createInferObserveSummary(inferencePayload: unknown, observePayload: un
 
   const reviewStory = buildReviewStorySummary(readRecordProperty(architectureSummary, "reviewStory")) ??
     buildReviewStorySummary(readRecordProperty(inferenceRecord, "reviewStory"));
+  const topSignals = buildInferObserveTopSignals(inferenceRecord, observeRecord);
   const gate = buildGateSummary(
     {
       acceptedExitCodes: [0],
@@ -814,7 +838,8 @@ function createInferObserveSummary(inferencePayload: unknown, observePayload: un
     gate,
     kind: "review",
     ...(reviewStory ? { reviewStory } : {}),
-    ...(readStringProperty(architectureSummary, "status") ? { status: readStringProperty(architectureSummary, "status") } : {})
+    ...(readStringProperty(architectureSummary, "status") ? { status: readStringProperty(architectureSummary, "status") } : {}),
+    ...(topSignals.length > 0 ? { topSignals } : {})
   };
 }
 

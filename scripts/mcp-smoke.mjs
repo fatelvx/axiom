@@ -25,7 +25,7 @@ async function main() {
   console.log("- listed 7 read-only Axiom tools");
   console.log("- exercised all 7 read-only Axiom tools through tools/call");
   console.log("- reported allowed MCP roots through axiom_roots");
-  console.log("- included agent-readable summary fields for gate, review, drift, inference, and tool errors");
+  console.log("- included agent-readable summary fields for gate, review, top signals, drift, inference, and tool errors");
   console.log("- checked the current repository through axiom_check");
   console.log("- treated fixture contract violations as structured evidence");
   console.log("- rejected a tool call outside the configured allow-root");
@@ -178,6 +178,11 @@ async function runMainSmoke() {
       inferredObserve.result?.structuredContent?.payload?.observe?.schemaVersion,
       "axiom.graph.v12",
       "inferred observe observe payload"
+    );
+    assertEqual(
+      (inferredObserve.result?.structuredContent?.summary?.topSignals?.length ?? 0) > 0,
+      true,
+      "inferred observe includes top signals"
     );
   } finally {
     try {

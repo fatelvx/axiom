@@ -62,6 +62,7 @@ The smoke uses a temporary copy of `examples/spec-first-pilot` and verifies:
 - `axiom_observe` and `axiom_diff` remain advisory review evidence,
 - `axiom_infer_contract` returns starter-contract evidence marked as not declared intent,
 - `axiom_observe_inferred_contract` returns temporary inferred review evidence without persisting `.axi`,
+- `structuredContent.summary.topSignals[]`, when present, is treated as an index into existing payload evidence rather than a new gate or a replacement for raw arrays,
 - the explicit graph baseline is not rewritten during review.
 
 This smoke does not prove that an arbitrary client UI renders the tools well. It proves the server behavior that a client or agent should receive.

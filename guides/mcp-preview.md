@@ -54,6 +54,7 @@ The important product rule is that MCP does not create new semantics. If the CLI
 - unexpected CLI exits become tool execution errors with `isError: true`.
 - wrong or missing Axiom `schemaVersion` also becomes `isError: true`.
 - successful and failed tool results include `structuredContent.summary`, a small agent-readable index over the payload.
+- successful architecture results may include `structuredContent.summary.topSignals[]`, a compact look-here-first list derived from the same payload evidence.
 - `axiom_observe_inferred_contract` returns `schemaVersion: axiom.mcp.infer_observe.v1` with both the infer payload and observe payload preserved under `structuredContent.payload`.
 
 This keeps the hard gate where it belongs:
@@ -76,10 +77,11 @@ For fast routing, the wrapper also includes `structuredContent.summary`:
 | `ok` | The `axi check` pass/fail boolean when available. |
 | `counts` | Common counts copied from CLI summaries, plus drift counts when present. |
 | `reviewStory` | A compact copy of the review story summary, next step, caveat, and first pressure when present. |
+| `topSignals` | A compact ordered list of the first evidence to inspect: hard violation groups, collapsed cycles, warning roots, large files, drift, or dependency pressure. |
 | `drift` | Advisory new/removed observed-edge counts from diff-capable payloads. |
 | `agentHint` | A short instruction for how an agent should treat the result. |
 
-The summary is not a second validation model and not a health score. It is an index card over the same evidence so agents can decide where to look first without parsing Markdown or scanning the full payload on every turn.
+The summary is not a second validation model and not a health score. `topSignals[]` does not hide or truncate the source evidence; it only points at objects that still live in `payload.violations[]`, `payload.warnings[]`, `payload.drift`, `payload.inference`, or the observed dependency arrays. Use it as an index card so agents can decide where to look first without parsing Markdown or scanning the full payload on every turn.
 
 ## Guardrails
 

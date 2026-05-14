@@ -3,6 +3,7 @@ import test from "node:test";
 import {
   AXIOM_MCP_TOOL_NAMES,
   buildAxiomMcpCliInvocation,
+  createAxiomMcpInferObserveToolResult,
   createAxiomMcpRootsToolResult,
   createAxiomMcpToolResult,
   getAxiomMcpToolDescriptor,
@@ -266,6 +267,7 @@ test("mcp tool result summarizes review and inference evidence for agents", () =
   assert.equal(graphResult.structuredContent.summary.counts?.newObservedEdges, 1);
   assert.equal(graphResult.structuredContent.summary.drift?.removedObservedEdges, 2);
   assert.equal(graphResult.structuredContent.summary.reviewStory?.firstPressure?.title, "Hard violations");
+  assert.equal(graphResult.structuredContent.summary.topSignals?.[0]?.kind, "advisory_observed_edge_drift");
   assert.match(graphResult.structuredContent.summary.agentHint, /advisory review evidence/);
 
   const inferInvocation = buildAxiomMcpCliInvocation("axiom_infer_contract", { root: "." }, { cliPath: "dist/cli.js", nodeExecutable: "node" });
@@ -286,7 +288,15 @@ test("mcp tool result summarizes review and inference evidence for agents", () =
         modules: 3,
         observedDependencies: 2,
         sourceFiles: 5
-      }
+      },
+      architecturePressureNotes: [
+        {
+          kind: "large_source_file",
+          filePath: "src/main.ts",
+          lineCount: 900,
+          functionLikeCount: 12
+        }
+      ]
     })
   });
 
@@ -294,7 +304,130 @@ test("mcp tool result summarizes review and inference evidence for agents", () =
   assert.equal(inferResult.structuredContent.summary.counts?.sourceFiles, 5);
   assert.equal(inferResult.structuredContent.summary.counts?.architecturePressureNotes, 1);
   assert.equal(inferResult.structuredContent.summary.reviewStory?.summary, "Starter contract inferred 3 modules.");
+  assert.equal(inferResult.structuredContent.summary.topSignals?.[0]?.kind, "large_source_file");
   assert.match(inferResult.structuredContent.summary.agentHint, /not declared architecture intent/);
+});
+
+test("mcp inferred-observe summary exposes compact top signals without hiding payloads", () => {
+  const result = createAxiomMcpInferObserveToolResult(
+    {
+      schemaVersion: "axiom.infer.v8",
+      summary: {
+        architecturePressureNotes: 1,
+        collapsedCycles: 1,
+        importsScanned: 690,
+        modules: 8,
+        observedDependencies: 18,
+        sourceFiles: 199
+      },
+      collapsedCycles: [
+        {
+          module: "ServicesStore",
+          sourceGroups: ["Services", "Store"],
+          cycleBreakingCandidates: [{ fromGroup: "Services", toGroup: "Store", count: 13 }]
+        }
+      ],
+      architecturePressureNotes: [
+        {
+          kind: "large_source_file",
+          filePath: "src/services/aiService.ts",
+          lineCount: 1193,
+          functionLikeCount: 36
+        }
+      ],
+      observedDependencies: [
+        { fromModule: "ServicesStore", toModule: "Contracts", count: 83 },
+        { fromModule: "Components", toModule: "ServicesStore", count: 58 }
+      ]
+    },
+    {
+      schemaVersion: "axiom.graph.v12",
+      architectureSummary: {
+        status: "needs_review",
+        gate: {
+          command: "axi check",
+          currentCommandIsGate: false,
+          hardViolationsFailCheck: true
+        },
+        reviewStory: {
+          summary: "Review visible architecture pressure.",
+          nextStep: "Inspect the ambiguous public boundary first.",
+          pressures: [{ kind: "warning_roots", severity: "warning", title: "Ambiguous public boundary" }]
+        }
+      },
+      summary: {
+        modules: 8,
+        observedDependencies: 278,
+        shownObservedDependencies: 0,
+        violations: 0,
+        intentionalViolations: 0,
+        warnings: 4
+      },
+      violations: [],
+      warnings: [
+        {
+          code: "deep_internal_import",
+          message: "Components imports ServicesStore through a deep relative path with no clear source-group entry point.",
+          location: { filePath: "src/components/SettingsPanel.tsx", line: 12 },
+          details: {
+            fromModule: "Components",
+            toModule: "ServicesStore",
+            importedPath: "src/services/internal/settings.ts",
+            deepImportGroup: "src/services/internal/*",
+            entrypointConfidence: "ambiguous_entrypoints",
+            observed: "Components -> ServicesStore deep internal import"
+          }
+        },
+        {
+          code: "deep_internal_import",
+          message: "Hooks imports ServicesStore through a deep relative path with no clear source-group entry point.",
+          location: { filePath: "src/hooks/useSendMessage.ts", line: 8 },
+          details: {
+            fromModule: "Hooks",
+            toModule: "ServicesStore",
+            importedPath: "src/services/internal/send.ts",
+            deepImportGroup: "src/services/internal/*",
+            entrypointConfidence: "ambiguous_entrypoints",
+            observed: "Hooks -> ServicesStore deep internal import"
+          }
+        },
+        {
+          code: "large_module_file",
+          message: "Source file is large enough that architecture pressure may be hidden inside the file.",
+          location: { filePath: "src/components/BenchmarkPanel.tsx", line: 1 },
+          details: {
+            filePath: "src/components/BenchmarkPanel.tsx",
+            lineCount: 1458,
+            functionLikeCount: 80
+          }
+        },
+        {
+          code: "coupling_concentration",
+          message: "AppEntry composition root imports 4 modules.",
+          details: {
+            module: "AppEntry",
+            reviewKind: "composition_root_pressure",
+            observed: "AppEntry composition root imports 4 modules"
+          }
+        }
+      ]
+    }
+  );
+
+  const summary = result.structuredContent.summary;
+  const payload = result.structuredContent.payload as { inference?: unknown; observe?: unknown };
+
+  assert.equal(summary.kind, "review");
+  assert.equal(summary.counts?.warnings, 4);
+  assert.equal(summary.topSignals?.[0]?.kind, "collapsed_cycle");
+  assert.equal(summary.topSignals?.[0]?.module, "ServicesStore");
+  assert.equal(summary.topSignals?.[1]?.kind, "deep_internal_import");
+  assert.equal(summary.topSignals?.[1]?.count, 2);
+  assert.equal(summary.topSignals?.[2]?.kind, "composition_root_pressure");
+  assert.equal(summary.topSignals?.[3]?.kind, "large_module_file");
+  assert.match(summary.agentHint, /temporary inferred contract/);
+  assert.ok(payload.inference);
+  assert.ok(payload.observe);
 });
 
 test("mcp tool result marks unexpected CLI exits and wrong schemas as tool errors", () => {

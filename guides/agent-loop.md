@@ -90,6 +90,7 @@ Use the summary first:
 - `summary.gate.currentCommandIsGate`: decide whether the result can block a change.
 - `summary.counts`: read hard violations, warnings, visible debt, drift, and scan size without walking the whole payload.
 - `summary.reviewStory`: show the first narrative summary and next step.
+- `summary.topSignals`: choose the first payload objects to inspect, such as hard violation groups, collapsed cycles, warning roots, large files, drift, or dependency pressure.
 - `summary.agentHint`: preserve the intended handling of the result.
 
 Then use the payload for exact evidence:
@@ -102,7 +103,7 @@ Then use the payload for exact evidence:
 - `payload.axi`, `payload.modules[]`, and `payload.collapsedCycles[]` for inferred-contract review.
 - `payload.inference` and `payload.observe` from `axiom_observe_inferred_contract` when a no-contract project needs temporary inferred review evidence without saving `.axi`.
 
-Do not make decisions from `summary` alone. It is an index over the same evidence, not a replacement for the evidence.
+Do not make decisions from `summary` alone. `topSignals[]` is only an ordered index over the same evidence, not a replacement for the evidence and not a semantic health score.
 
 ## Thin MCP v0 Shape
 

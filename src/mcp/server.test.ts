@@ -1,5 +1,7 @@
 import assert from "node:assert/strict";
 import { spawn, type ChildProcessWithoutNullStreams } from "node:child_process";
+import fs from "node:fs";
+import os from "node:os";
 import path from "node:path";
 import readline from "node:readline";
 import test from "node:test";
@@ -136,6 +138,69 @@ test("mcp stdio server returns stable JSON-RPC errors for invalid tool calls", a
     assert.match(outsideSpec.error?.message ?? "", /specPaths is outside allowed MCP roots/);
   } finally {
     await server.close();
+  }
+});
+
+test("mcp stdio server wraps CLI failures and timeouts as tool errors", async () => {
+  const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), "axiom-mcp-cli-failure-"));
+  const missingCliPath = path.join(tempRoot, "missing-cli.js");
+
+  try {
+    const badCliServer = startServer(["--allow-root", repoRoot, "--timeout-ms", "20000", "--cli", missingCliPath]);
+
+    try {
+      await badCliServer.request("initialize", {
+        protocolVersion: "2025-11-25",
+        capabilities: {},
+        clientInfo: { name: "axiom-test", version: "0" }
+      });
+
+      const badCli = await badCliServer.request("tools/call", {
+        name: "axiom_observe",
+        arguments: {
+          root: repoRoot
+        }
+      });
+
+      assert.equal(badCli.error, undefined);
+      assert.equal(badCli.result?.isError, true);
+      assert.equal(badCli.result?.structuredContent?.tool, "axiom_observe");
+      assert.equal(badCli.result?.structuredContent?.exitCode, 1);
+      assert.match(badCli.result?.structuredContent?.error?.message ?? "", /unexpected status 1/);
+      assert.match(badCli.result?.structuredContent?.error?.stderr ?? "", /Cannot find module|MODULE_NOT_FOUND/);
+    } finally {
+      await badCliServer.close();
+    }
+
+    const slowCliPath = path.join(tempRoot, "slow-cli.js");
+    fs.writeFileSync(slowCliPath, "setTimeout(() => {}, 10000);\n", "utf8");
+    const timeoutServer = startServer(["--allow-root", repoRoot, "--timeout-ms", "50", "--cli", slowCliPath]);
+
+    try {
+      await timeoutServer.request("initialize", {
+        protocolVersion: "2025-11-25",
+        capabilities: {},
+        clientInfo: { name: "axiom-test", version: "0" }
+      });
+
+      const timedOut = await timeoutServer.request("tools/call", {
+        name: "axiom_observe",
+        arguments: {
+          root: repoRoot
+        }
+      });
+
+      assert.equal(timedOut.error, undefined);
+      assert.equal(timedOut.result?.isError, true);
+      assert.equal(timedOut.result?.structuredContent?.tool, "axiom_observe");
+      assert.equal(timedOut.result?.structuredContent?.exitCode, 124);
+      assert.match(timedOut.result?.structuredContent?.error?.message ?? "", /unexpected status 124/);
+      assert.match(timedOut.result?.structuredContent?.error?.stderr ?? "", /timed out after 50ms/);
+    } finally {
+      await timeoutServer.close();
+    }
+  } finally {
+    fs.rmSync(tempRoot, { force: true, recursive: true });
   }
 });
 

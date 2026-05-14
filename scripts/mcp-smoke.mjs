@@ -1,5 +1,6 @@
 import { spawn } from "node:child_process";
-import { existsSync } from "node:fs";
+import { existsSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
 import path from "node:path";
 import readline from "node:readline";
 
@@ -17,6 +18,7 @@ async function main() {
   await runMainSmoke();
   await runAllowRootSmoke();
   await runInvalidInputSmoke();
+  await runExecutionFailureSmoke();
 
   console.log("MCP stdio smoke passed.");
   console.log("- initialized the local stdio server");
@@ -25,6 +27,7 @@ async function main() {
   console.log("- treated fixture contract violations as structured evidence");
   console.log("- rejected a tool call outside the configured allow-root");
   console.log("- returned stable JSON-RPC errors for invalid tool input");
+  console.log("- wrapped CLI execution failures and timeouts as structured tool errors");
 }
 
 async function runMainSmoke() {
@@ -151,6 +154,79 @@ async function runInvalidInputSmoke() {
     );
   } finally {
     await server.close();
+  }
+}
+
+async function runExecutionFailureSmoke() {
+  const tempRoot = mkdtempSync(path.join(tmpdir(), "axiom-mcp-failure-smoke-"));
+  const missingCliPath = path.join(tempRoot, "missing-cli.js");
+
+  try {
+    const badCliServer = startServer(["--allow-root", repoRoot, "--timeout-ms", "20000", "--cli", missingCliPath]);
+
+    try {
+      const initialized = await badCliServer.request("initialize", {
+        protocolVersion,
+        capabilities: {},
+        clientInfo: { name: "axiom-mcp-smoke", version: "0" }
+      });
+      assertNoJsonRpcError(initialized, "bad-cli initialize");
+
+      const badCli = await callTool(badCliServer, "axiom_observe", {
+        root: repoRoot
+      });
+      assertNoJsonRpcError(badCli, "bad-cli tool response");
+      assertEqual(badCli.result?.isError, true, "bad-cli tool error flag");
+      assertEqual(badCli.result?.structuredContent?.tool, "axiom_observe", "bad-cli tool name");
+      assertEqual(badCli.result?.structuredContent?.exitCode, 1, "bad-cli exit code");
+      assertTextIncludes(
+        badCli.result?.structuredContent?.error?.message ?? "",
+        "unexpected status 1",
+        "bad-cli tool error message"
+      );
+      assertTextIncludes(
+        badCli.result?.structuredContent?.error?.stderr ?? "",
+        "Cannot find module",
+        "bad-cli stderr"
+      );
+    } finally {
+      await badCliServer.close();
+    }
+
+    const slowCliPath = path.join(tempRoot, "slow-cli.js");
+    writeFileSync(slowCliPath, "setTimeout(() => {}, 10000);\n", "utf8");
+    const timeoutServer = startServer(["--allow-root", repoRoot, "--timeout-ms", "50", "--cli", slowCliPath]);
+
+    try {
+      const initialized = await timeoutServer.request("initialize", {
+        protocolVersion,
+        capabilities: {},
+        clientInfo: { name: "axiom-mcp-smoke", version: "0" }
+      });
+      assertNoJsonRpcError(initialized, "timeout initialize");
+
+      const timedOut = await callTool(timeoutServer, "axiom_observe", {
+        root: repoRoot
+      });
+      assertNoJsonRpcError(timedOut, "timeout tool response");
+      assertEqual(timedOut.result?.isError, true, "timeout tool error flag");
+      assertEqual(timedOut.result?.structuredContent?.tool, "axiom_observe", "timeout tool name");
+      assertEqual(timedOut.result?.structuredContent?.exitCode, 124, "timeout exit code");
+      assertTextIncludes(
+        timedOut.result?.structuredContent?.error?.message ?? "",
+        "unexpected status 124",
+        "timeout tool error message"
+      );
+      assertTextIncludes(
+        timedOut.result?.structuredContent?.error?.stderr ?? "",
+        "timed out after 50ms",
+        "timeout stderr"
+      );
+    } finally {
+      await timeoutServer.close();
+    }
+  } finally {
+    rmSync(tempRoot, { force: true, recursive: true });
   }
 }
 

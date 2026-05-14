@@ -12,6 +12,8 @@ Do not ask an agent to "make Axiom green at all costs." That creates compliance-
 
 For the shared artifact convention that agents, CI, and future MCP wrappers should read, start with [Evidence Artifact Loop](evidence-artifact.md).
 
+For the dependency-free read-only tool contract now used inside the codebase, see [MCP Preview](mcp-preview.md).
+
 ## Safe Agent Loop
 
 Use this loop for Codex, Claude Code, Cursor, CI bots, or a future MCP adapter:
@@ -84,6 +86,8 @@ Candidate tools:
 - `axiom_graph`: run `axi graph --json` or `--mermaid`.
 - `axiom_diff`: run `axi diff <baseline> --json` for baseline drift.
 - `axiom_infer_contract`: run `axi infer --json` for a current-graph starter draft.
+
+The preview implementation lives in `src/mcp/tools.ts`. It defines tool descriptors, read-only annotations, JSON input/output schemas, and a CLI invocation adapter without adding an MCP SDK dependency. A future server should import that adapter instead of inventing new tool names or validation behavior.
 
 Candidate resources:
 

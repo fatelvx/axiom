@@ -75,6 +75,11 @@ depends on CheckRunner
 depends on Infer
 purpose "format validator, graph, and inference outputs"
 
+module MCP
+path "src/mcp/**"
+layer Interface
+purpose "define read-only MCP tool contracts and CLI adapter mappings over existing JSON evidence"
+
 module CLI
 path "src/cli.ts"
 layer Interface

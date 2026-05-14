@@ -119,7 +119,7 @@ Agents should read the same artifact instead of relying on remembered architectu
 4. Propose `.axi` contract changes only when the architecture intent changed.
 5. Ask for human approval before adding `accepts ... [at "path"] until ... because ...`.
 
-A safe MCP v0 should be read-only over these commands. It should not auto-edit contracts, update baselines, or accept debt.
+A safe MCP v0 should be read-only over these commands. It should not auto-edit contracts, update baselines, or accept debt. The preview tool contract is documented in [MCP Preview](mcp-preview.md).
 
 ## Updating The Artifact
 

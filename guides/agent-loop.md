@@ -87,7 +87,7 @@ Candidate tools:
 - `axiom_diff`: run `axi diff <baseline> --json` for baseline drift.
 - `axiom_infer_contract`: run `axi infer --json` for a current-graph starter draft.
 
-The preview implementation lives in `src/mcp/tools.ts`. It defines tool descriptors, read-only annotations, JSON input/output schemas, and a CLI invocation adapter without adding an MCP SDK dependency. A future server should import that adapter instead of inventing new tool names or validation behavior.
+The preview implementation lives in `src/mcp/tools.ts`, with a minimal stdio server in `src/mcp/server.ts`. It defines tool descriptors, read-only annotations, JSON input/output schemas, and a CLI invocation adapter without adding an MCP SDK dependency. Future server growth should keep importing that adapter instead of inventing new tool names or validation behavior.
 
 Candidate resources:
 

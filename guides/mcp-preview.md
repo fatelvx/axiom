@@ -2,7 +2,7 @@
 
 Axiom's MCP surface should be a thin read-only wrapper over the same CLI JSON evidence that local developers, CI, and agents already use.
 
-This preview intentionally does not ship a runnable MCP server yet. It defines the tool contract and adapter shape without adding an MCP SDK dependency during the current supply-chain risk window.
+This preview ships a minimal stdio server without adding an MCP SDK dependency during the current supply-chain risk window. The server is deliberately small: lifecycle, ping, `tools/list`, and `tools/call` only.
 
 ## Protocol Shape
 
@@ -69,15 +69,48 @@ MCP v0 must stay read-only:
 
 Future write-capable tools, if they ever exist, need a separate design review and human approval path.
 
+## Running The Stdio Server
+
+After building Axiom, run:
+
+```bash
+node dist/mcp/server.js --allow-root . --timeout-ms 60000
+```
+
+Installed package aliases:
+
+```bash
+axi-mcp --allow-root .
+axiom-mcp --allow-root .
+```
+
+Server options:
+
+| Option | Meaning |
+| --- | --- |
+| `--allow-root <path>` | Allow scans only inside this root. Repeat for multiple roots. Defaults to the current working directory. |
+| `--timeout-ms <ms>` | Kill a wrapped Axiom CLI command after this timeout. Defaults to `60000`. |
+| `--cli <path>` | Use a specific built `dist/cli.js`. Mostly useful for local testing. |
+
+The server speaks newline-delimited JSON-RPC over stdio. It writes only protocol messages to stdout. Logs and `--help` output go to stderr.
+
+Minimum supported methods:
+
+- `initialize`
+- `ping`
+- `tools/list`
+- `tools/call`
+- `notifications/initialized` as a no-op notification
+
 ## Server Implementation Notes
 
-A future server can import the preview adapter, execute the returned command with `spawn`, then pass `{ exitCode, stdout, stderr }` to `createAxiomMcpToolResult()`.
+`src/mcp/server.ts` imports the preview adapter, executes the returned command with `spawn`, then passes `{ exitCode, stdout, stderr }` to `createAxiomMcpToolResult()`.
 
 Minimum server responsibilities:
 
 - validate the requested project root against allowed workspace roots,
 - use timeouts for CLI execution,
-- show tool inputs to the user,
+- validate `configPath`, `baselinePath`, and `specPaths` against allowed roots before execution,
 - return raw arrays such as `violations[]`, `warnings[]`, `intentionalDebt[]`, and `drift`,
 - avoid creating baselines during PR review,
 - log tool calls without leaking private code or contracts to remote services.

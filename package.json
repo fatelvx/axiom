@@ -42,7 +42,9 @@
   ],
   "bin": {
     "axi": "dist/cli.js",
-    "axiom": "dist/cli.js"
+    "axi-mcp": "dist/mcp/server.js",
+    "axiom": "dist/cli.js",
+    "axiom-mcp": "dist/mcp/server.js"
   },
   "publishConfig": {
     "access": "public"

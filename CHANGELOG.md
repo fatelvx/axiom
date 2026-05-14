@@ -18,6 +18,7 @@
 - Refined composition-root advisory presentation so likely app entry fan-out appears as `composition_root_pressure` in human and Markdown review output while preserving `coupling_concentration` in structured validator warnings.
 - Added a spec-first pilot example and `npm run spec-first:smoke` harness that proves a reviewed `.axi` contract passes cleanly and catches deliberate visibility and layer drift as hard `axi check` failures.
 - Added a dependency-free read-only MCP preview contract with tool descriptors, JSON schemas, CLI invocation mapping, and structured-result wrapping for `axiom_check`, `axiom_observe`, `axiom_graph`, `axiom_diff`, and `axiom_infer_contract`.
+- Added a minimal dependency-free `axi-mcp` / `axiom-mcp` stdio server with MCP lifecycle, `tools/list`, `tools/call`, allowed-root validation, and CLI execution timeouts.
 - Included warning guardrails in focused graph output so `axi graph --violations-only` acts more like an architecture attention view.
 - Added `axi graph --attention` as a product-facing alias for the focused architecture attention view.
 - Added pnpm workspace package discovery for internal package export resolution.

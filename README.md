@@ -151,7 +151,7 @@ Choose your next step:
 - Teammate trial: send [10-Minute Pilot Card](guides/pilot-card.md) when someone wants to try Axiom without adding files to their repo.
 - CI path: read [GitHub Actions And PR Summaries](guides/github-actions.md), then compare it with the dogfooded workflow in [.github/workflows/ci.yml](.github/workflows/ci.yml).
 - Agent path: read [Agent And MCP Integration](guides/agent-loop.md) before giving Axiom output to an AI repair loop or MCP wrapper.
-- MCP preview: read [MCP Preview](guides/mcp-preview.md) for the read-only tool contract that wraps existing CLI JSON evidence without adding new validation semantics.
+- MCP preview: read [MCP Preview](guides/mcp-preview.md) for the read-only stdio server and tool contract that wraps existing CLI JSON evidence without adding new validation semantics.
 - Real contract shape: inspect [examples/monorepo-workspace](examples/monorepo-workspace) for package-level contracts.
 - Gate rehearsal: inspect [examples/spec-first-pilot](examples/spec-first-pilot) for a reviewed contract that passes cleanly before deliberate drift is introduced by the smoke harness.
 - Tool comparison: read [Comparison And Boundaries](guides/comparison.md) if you are asking how Axiom differs from ESLint, Dependency Cruiser, Nx, CodeQL, or custom scripts.

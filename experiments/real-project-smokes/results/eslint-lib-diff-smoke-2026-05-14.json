@@ -1,0 +1,624 @@
+{
+  "kind": "axiom.real-project-diff-smoke.v4",
+  "generatedAt": "2026-05-14T08:00:25.049Z",
+  "repo": "https://github.com/eslint/eslint.git",
+  "name": "eslint-lib",
+  "baselineRef": "v9.39.3",
+  "currentRef": "v9.39.4",
+  "groupBy": "folder",
+  "groupDepth": 2,
+  "sourceScope": {
+    "include": [
+      "lib/**"
+    ],
+    "exclude": [
+      "tests/**",
+      "docs/**",
+      "tools/**",
+      "fixtures/**"
+    ]
+  },
+  "warningFlags": [
+    "--warn-coupling-concentration",
+    "--warn-deep-internal-imports",
+    "--warn-unresolved-imports"
+  ],
+  "node": "v24.14.1",
+  "platform": "win32 x64",
+  "calibration": {
+    "repoShape": "Large npm-style JavaScript tooling repository with rule, linter, config, and CLI library modules",
+    "safetyPosture": "Clone-only source scan; no target installs, package-manager scripts, target tests, target builds, submodules, or npx were run.",
+    "scopeQuestion": "Can an inferred lib-scope baseline make patch-version architecture drift reviewable in a large tooling package without target installs?",
+    "commandSurface": "axi infer --json + axi graph --json + axi diff + axi observe --baseline",
+    "mainSignal": "This run calibrates large tooling-source drift, collapsed-cycle evidence, and advisory warning volume before any resolver changes.",
+    "gapClass": "advisory-signal-calibration",
+    "decision": "Do not change validator behavior from this run alone; use it to compare large tooling pressure with quieter framework controls.",
+    "codeChanged": "No Axiom code changed; this is a no-install calibration run.",
+    "followUp": "Check whether any warning pattern repeats across other large tooling or non-pnpm workspace smokes before changing defaults."
+  },
+  "baselineInference": {
+    "schemaVersion": "axiom.infer.v8",
+    "reviewStory": {
+      "summary": "Starter contract inferred 5 modules and 9 observed module edges from 392 source files.",
+      "setup": "Scanned 392 source files and 819 imports; 10 candidate groups became 5 starter modules. This is a current-graph snapshot, not declared architecture intent yet.",
+      "pressures": [
+        {
+          "kind": "collapsed_cycle",
+          "title": "Collapsed cycle: LibCycle",
+          "description": "1 cycle was merged so the starter contract mirrors current code without immediately failing on declared dependency cycles. Review cycle-breaking candidates before treating the merged module as intended architecture.",
+          "severity": "warning",
+          "modules": [
+            "LibCycle"
+          ],
+          "files": []
+        },
+        {
+          "kind": "large_source_file",
+          "title": "Large-file pressure in inferred scope",
+          "description": "8 large source files may hide responsibilities that folder and import inference cannot split. Inspect these files before judging the starter module map as complete.",
+          "severity": "warning",
+          "modules": [],
+          "files": [
+            "lib/rules/utils/ast-utils.js",
+            "lib/linter/linter.js",
+            "lib/linter/code-path-analysis/code-path-state.js",
+            "lib/rules/indent.js",
+            "lib/rules/no-unused-vars.js",
+            "lib/rules/no-extra-parens.js",
+            "lib/rule-tester/rule-tester.js",
+            "lib/eslint/eslint-helpers.js"
+          ]
+        },
+        {
+          "kind": "dependency_evidence",
+          "title": "Review inferred dependencies",
+          "description": "9 observed module edges became `depends on` lines with sample import evidence. Confirm each edge is intended before using this draft as a gate.",
+          "severity": "info",
+          "modules": [
+            "Lib",
+            "LibCycle",
+            "LibRuleTester",
+            "LibRules",
+            "LibShared"
+          ],
+          "files": []
+        }
+      ],
+      "nextStep": "Review collapsed-cycle candidates and large-file pressure notes, then run `axi observe --root . --spec <draft.axi> --markdown` before saving a graph baseline.",
+      "caveat": "Inference reads static imports and folder/package shape. It can lower authoring cost, but humans still decide module names, visibility, layers, accepted debt, and which edges are real architecture intent."
+    },
+    "summary": {
+      "sourceFiles": 392,
+      "importsScanned": 819,
+      "candidateModules": 10,
+      "modules": 5,
+      "observedDependencies": 9,
+      "collapsedCycles": 1,
+      "architecturePressureNotes": 8
+    },
+    "collapsedCycles": [
+      {
+        "module": "LibCycle",
+        "sourceGroups": [
+          "LibCliEngine",
+          "LibConfig",
+          "LibEslint",
+          "LibLanguages",
+          "LibLinter",
+          "LibServices"
+        ],
+        "cyclePathSamples": [
+          {
+            "groups": [
+              "LibCliEngine",
+              "LibLinter",
+              "LibConfig",
+              "LibServices",
+              "LibEslint",
+              "LibCliEngine"
+            ]
+          }
+        ],
+        "internalDependencyCount": 13,
+        "topInternalDependencies": [
+          {
+            "fromGroup": "LibCliEngine",
+            "toGroup": "LibLinter",
+            "count": 1,
+            "firstSample": {
+              "filePath": "lib/cli-engine/cli-engine.js",
+              "line": 36,
+              "specifier": "../linter",
+              "resolvedPath": "lib/linter/index.js"
+            }
+          },
+          {
+            "fromGroup": "LibConfig",
+            "toGroup": "LibLanguages",
+            "count": 1,
+            "firstSample": {
+              "filePath": "lib/config/default-config.js",
+              "line": 37,
+              "specifier": "../languages/js",
+              "resolvedPath": "lib/languages/js/index.js"
+            }
+          },
+          {
+            "fromGroup": "LibConfig",
+            "toGroup": "LibServices",
+            "count": 1,
+            "firstSample": {
+              "filePath": "lib/config/config-loader.js",
+              "line": 18,
+              "specifier": "../services/warning-service",
+              "resolvedPath": "lib/services/warning-service.js"
+            }
+          },
+          {
+            "fromGroup": "LibEslint",
+            "toGroup": "LibCliEngine",
+            "count": 3,
+            "firstSample": {
+              "filePath": "lib/eslint/eslint-helpers.js",
+              "line": 17,
+              "specifier": "../cli-engine/hash",
+              "resolvedPath": "lib/cli-engine/hash.js"
+            }
+          },
+          {
+            "fromGroup": "LibEslint",
+            "toGroup": "LibConfig",
+            "count": 4,
+            "firstSample": {
+              "filePath": "lib/eslint/eslint-helpers.js",
+              "line": 23,
+              "specifier": "../config/config-loader",
+              "resolvedPath": "lib/config/config-loader.js"
+            }
+          }
+        ],
+        "cycleBreakingCandidates": [
+          {
+            "fromGroup": "LibEslint",
+            "toGroup": "LibConfig",
+            "count": 4,
+            "firstSample": {
+              "filePath": "lib/eslint/eslint-helpers.js",
+              "line": 23,
+              "specifier": "../config/config-loader",
+              "resolvedPath": "lib/config/config-loader.js"
+            },
+            "rationale": "LibEslint -> LibConfig participates in the collapsed cycle with 4 import sites; inspect whether this edge should become an explicit boundary, interface, event, or accepted merged responsibility."
+          },
+          {
+            "fromGroup": "LibLinter",
+            "toGroup": "LibConfig",
+            "count": 4,
+            "firstSample": {
+              "filePath": "lib/linter/apply-disable-directives.js",
+              "line": 22,
+              "specifier": "../config/config.js",
+              "resolvedPath": "lib/config/config.js"
+            },
+            "rationale": "LibLinter -> LibConfig participates in the collapsed cycle with 4 import sites; inspect whether this edge should become an explicit boundary, interface, event, or accepted merged responsibility."
+          },
+          {
+            "fromGroup": "LibEslint",
+            "toGroup": "LibCliEngine",
+            "count": 3,
+            "firstSample": {
+              "filePath": "lib/eslint/eslint-helpers.js",
+              "line": 17,
+              "specifier": "../cli-engine/hash",
+              "resolvedPath": "lib/cli-engine/hash.js"
+            },
+            "rationale": "LibEslint -> LibCliEngine participates in the collapsed cycle with 3 import sites; inspect whether this edge should become an explicit boundary, interface, event, or accepted merged responsibility."
+          },
+          {
+            "fromGroup": "LibEslint",
+            "toGroup": "LibLinter",
+            "count": 3,
+            "firstSample": {
+              "filePath": "lib/eslint/eslint-helpers.js",
+              "line": 20,
+              "specifier": "../linter",
+              "resolvedPath": "lib/linter/index.js"
+            },
+            "rationale": "LibEslint -> LibLinter participates in the collapsed cycle with 3 import sites; inspect whether this edge should become an explicit boundary, interface, event, or accepted merged responsibility."
+          },
+          {
+            "fromGroup": "LibLinter",
+            "toGroup": "LibServices",
+            "count": 3,
+            "firstSample": {
+              "filePath": "lib/linter/linter.js",
+              "line": 56,
+              "specifier": "../services/parser-service",
+              "resolvedPath": "lib/services/parser-service.js"
+            },
+            "rationale": "LibLinter -> LibServices participates in the collapsed cycle with 3 import sites; inspect whether this edge should become an explicit boundary, interface, event, or accepted merged responsibility."
+          }
+        ]
+      }
+    ],
+    "architecturePressureNotes": [
+      {
+        "kind": "large_source_file",
+        "filePath": "lib/rules/utils/ast-utils.js",
+        "lineCount": 2734,
+        "functionLikeCount": 93,
+        "importsScanned": 7,
+        "exportsScanned": 0,
+        "classCount": 0,
+        "message": "lib/rules/utils/ast-utils.js has 2734 lines; inferred module boundaries may miss responsibilities concentrated inside this file."
+      },
+      {
+        "kind": "large_source_file",
+        "filePath": "lib/linter/linter.js",
+        "lineCount": 2677,
+        "functionLikeCount": 90,
+        "importsScanned": 33,
+        "exportsScanned": 0,
+        "classCount": 1,
+        "message": "lib/linter/linter.js has 2677 lines; inferred module boundaries may miss responsibilities concentrated inside this file."
+      },
+      {
+        "kind": "large_source_file",
+        "filePath": "lib/linter/code-path-analysis/code-path-state.js",
+        "lineCount": 2371,
+        "functionLikeCount": 63,
+        "importsScanned": 2,
+        "exportsScanned": 0,
+        "classCount": 12,
+        "message": "lib/linter/code-path-analysis/code-path-state.js has 2371 lines; inferred module boundaries may miss responsibilities concentrated inside this file."
+      },
+      {
+        "kind": "large_source_file",
+        "filePath": "lib/rules/indent.js",
+        "lineCount": 2335,
+        "functionLikeCount": 91,
+        "importsScanned": 1,
+        "exportsScanned": 0,
+        "classCount": 3,
+        "message": "lib/rules/indent.js has 2335 lines; inferred module boundaries may miss responsibilities concentrated inside this file."
+      },
+      {
+        "kind": "large_source_file",
+        "filePath": "lib/rules/no-unused-vars.js",
+        "lineCount": 1740,
+        "functionLikeCount": 53,
+        "importsScanned": 1,
+        "exportsScanned": 0,
+        "classCount": 0,
+        "message": "lib/rules/no-unused-vars.js has 1740 lines; inferred module boundaries may miss responsibilities concentrated inside this file."
+      },
+      {
+        "kind": "large_source_file",
+        "filePath": "lib/rules/no-extra-parens.js",
+        "lineCount": 1670,
+        "functionLikeCount": 85,
+        "importsScanned": 2,
+        "exportsScanned": 0,
+        "classCount": 0,
+        "message": "lib/rules/no-extra-parens.js has 1670 lines; inferred module boundaries may miss responsibilities concentrated inside this file."
+      },
+      {
+        "kind": "large_source_file",
+        "filePath": "lib/rule-tester/rule-tester.js",
+        "lineCount": 1580,
+        "functionLikeCount": 69,
+        "importsScanned": 16,
+        "exportsScanned": 0,
+        "classCount": 1,
+        "message": "lib/rule-tester/rule-tester.js has 1580 lines; inferred module boundaries may miss responsibilities concentrated inside this file."
+      },
+      {
+        "kind": "large_source_file",
+        "filePath": "lib/eslint/eslint-helpers.js",
+        "lineCount": 1466,
+        "functionLikeCount": 59,
+        "importsScanned": 14,
+        "exportsScanned": 0,
+        "classCount": 4,
+        "message": "lib/eslint/eslint-helpers.js has 1466 lines; inferred module boundaries may miss responsibilities concentrated inside this file."
+      }
+    ]
+  },
+  "baseline": {
+    "ref": "v9.39.3",
+    "commit": "a7d5fe6",
+    "packageVersion": "9.39.3",
+    "summary": {
+      "modules": 5,
+      "declaredDependencies": 9,
+      "forbiddenDependencies": 0,
+      "exposedPaths": 0,
+      "hiddenPaths": 0,
+      "observedDependencies": 66,
+      "shownObservedDependencies": 66,
+      "violations": 0,
+      "intentionalViolations": 0,
+      "warnings": 16
+    }
+  },
+  "current": {
+    "ref": "v9.39.4",
+    "commit": "f5770b0",
+    "packageVersion": "9.39.4",
+    "summary": {
+      "modules": 5,
+      "declaredDependencies": 9,
+      "forbiddenDependencies": 0,
+      "exposedPaths": 0,
+      "hiddenPaths": 0,
+      "observedDependencies": 66,
+      "shownObservedDependencies": 66,
+      "violations": 0,
+      "intentionalViolations": 0,
+      "warnings": 16
+    }
+  },
+  "drift": {
+    "kind": "advisory_observed_edge_drift",
+    "baseline": {
+      "schemaVersion": "axiom.graph.v12",
+      "observedDependencies": 66
+    },
+    "newObservedEdges": [],
+    "removedObservedEdges": []
+  },
+  "warnings": {
+    "byCode": {
+      "coupling_concentration": 2,
+      "deep_internal_import": 14
+    },
+    "details": [
+      {
+        "code": "coupling_concentration",
+        "message": "Lib has concentrated fan-out to 4 modules.",
+        "observed": "Lib fan-out to 4 modules",
+        "module": "Lib",
+        "incomingModules": [],
+        "outgoingModules": [
+          "LibCycle",
+          "LibRuleTester",
+          "LibRules",
+          "LibShared"
+        ]
+      },
+      {
+        "code": "coupling_concentration",
+        "message": "LibShared has concentrated fan-in from 4 modules.",
+        "observed": "LibShared fan-in from 4 modules",
+        "module": "LibShared",
+        "incomingModules": [
+          "Lib",
+          "LibCycle",
+          "LibRuleTester",
+          "LibRules"
+        ],
+        "outgoingModules": []
+      },
+      {
+        "code": "deep_internal_import",
+        "message": "Lib imports LibCycle through a deep relative path instead of a likely source-group entry point.",
+        "location": {
+          "filePath": "lib/api.js",
+          "line": 12
+        },
+        "observed": "Lib -> LibCycle deep internal import",
+        "fromModule": "Lib",
+        "toModule": "LibCycle",
+        "specifier": "./eslint/eslint",
+        "importedPath": "lib/eslint/eslint.js",
+        "incomingModules": [],
+        "outgoingModules": []
+      },
+      {
+        "code": "deep_internal_import",
+        "message": "Lib imports LibCycle through a deep relative path instead of a likely source-group entry point.",
+        "location": {
+          "filePath": "lib/api.js",
+          "line": 13
+        },
+        "observed": "Lib -> LibCycle deep internal import",
+        "fromModule": "Lib",
+        "toModule": "LibCycle",
+        "specifier": "./eslint/legacy-eslint",
+        "importedPath": "lib/eslint/legacy-eslint.js",
+        "incomingModules": [],
+        "outgoingModules": []
+      },
+      {
+        "code": "deep_internal_import",
+        "message": "Lib imports LibCycle through a deep relative path instead of a likely source-group entry point.",
+        "location": {
+          "filePath": "lib/cli.js",
+          "line": 27
+        },
+        "observed": "Lib -> LibCycle deep internal import",
+        "fromModule": "Lib",
+        "toModule": "LibCycle",
+        "specifier": "./eslint/eslint",
+        "importedPath": "lib/eslint/eslint.js",
+        "incomingModules": [],
+        "outgoingModules": []
+      },
+      {
+        "code": "deep_internal_import",
+        "message": "Lib imports LibCycle through a deep relative path instead of a likely source-group entry point.",
+        "location": {
+          "filePath": "lib/cli.js",
+          "line": 32
+        },
+        "observed": "Lib -> LibCycle deep internal import",
+        "fromModule": "Lib",
+        "toModule": "LibCycle",
+        "specifier": "./eslint/eslint-helpers",
+        "importedPath": "lib/eslint/eslint-helpers.js",
+        "incomingModules": [],
+        "outgoingModules": []
+      },
+      {
+        "code": "deep_internal_import",
+        "message": "Lib imports LibCycle through a deep relative path with no clear source-group entry point.",
+        "location": {
+          "filePath": "lib/cli.js",
+          "line": 33
+        },
+        "observed": "Lib -> LibCycle deep internal import",
+        "fromModule": "Lib",
+        "toModule": "LibCycle",
+        "specifier": "./services/suppressions-service",
+        "importedPath": "lib/services/suppressions-service.js",
+        "incomingModules": [],
+        "outgoingModules": []
+      },
+      {
+        "code": "deep_internal_import",
+        "message": "Lib imports LibCycle through a deep relative path with no clear source-group entry point.",
+        "location": {
+          "filePath": "lib/cli.js",
+          "line": 223
+        },
+        "observed": "Lib -> LibCycle deep internal import",
+        "fromModule": "Lib",
+        "toModule": "LibCycle",
+        "specifier": "./services/warning-service",
+        "importedPath": "lib/services/warning-service.js",
+        "incomingModules": [],
+        "outgoingModules": []
+      },
+      {
+        "code": "deep_internal_import",
+        "message": "LibRuleTester imports LibCycle through a deep relative path with no clear source-group entry point.",
+        "location": {
+          "filePath": "lib/rule-tester/rule-tester.js",
+          "line": 18
+        },
+        "observed": "LibRuleTester -> LibCycle deep internal import",
+        "fromModule": "LibRuleTester",
+        "toModule": "LibCycle",
+        "specifier": "../config/config",
+        "importedPath": "lib/config/config.js",
+        "incomingModules": [],
+        "outgoingModules": []
+      },
+      {
+        "code": "deep_internal_import",
+        "message": "LibRuleTester imports LibCycle through a deep relative path instead of a likely source-group entry point.",
+        "location": {
+          "filePath": "lib/rule-tester/rule-tester.js",
+          "line": 20
+        },
+        "observed": "LibRuleTester -> LibCycle deep internal import",
+        "fromModule": "LibRuleTester",
+        "toModule": "LibCycle",
+        "specifier": "../linter/interpolate",
+        "importedPath": "lib/linter/interpolate.js",
+        "incomingModules": [],
+        "outgoingModules": []
+      },
+      {
+        "code": "deep_internal_import",
+        "message": "LibRuleTester imports LibCycle through a deep relative path with no clear source-group entry point.",
+        "location": {
+          "filePath": "lib/rule-tester/rule-tester.js",
+          "line": 23
+        },
+        "observed": "LibRuleTester -> LibCycle deep internal import",
+        "fromModule": "LibRuleTester",
+        "toModule": "LibCycle",
+        "specifier": "../config/flat-config-array",
+        "importedPath": "lib/config/flat-config-array.js",
+        "incomingModules": [],
+        "outgoingModules": []
+      },
+      {
+        "code": "deep_internal_import",
+        "message": "LibRuleTester imports LibCycle through a deep relative path with no clear source-group entry point.",
+        "location": {
+          "filePath": "lib/rule-tester/rule-tester.js",
+          "line": 27
+        },
+        "observed": "LibRuleTester -> LibCycle deep internal import",
+        "fromModule": "LibRuleTester",
+        "toModule": "LibCycle",
+        "specifier": "../config/default-config",
+        "importedPath": "lib/config/default-config.js",
+        "incomingModules": [],
+        "outgoingModules": []
+      },
+      {
+        "code": "deep_internal_import",
+        "message": "Lib imports LibCycle through a deep relative path instead of a likely source-group entry point.",
+        "location": {
+          "filePath": "lib/universal.js",
+          "line": 8
+        },
+        "observed": "Lib -> LibCycle deep internal import",
+        "fromModule": "Lib",
+        "toModule": "LibCycle",
+        "specifier": "./linter/linter",
+        "importedPath": "lib/linter/linter.js",
+        "incomingModules": [],
+        "outgoingModules": []
+      },
+      {
+        "code": "deep_internal_import",
+        "message": "Lib imports LibCycle through a deep relative path instead of a likely source-group entry point.",
+        "location": {
+          "filePath": "lib/unsupported-api.js",
+          "line": 14
+        },
+        "observed": "Lib -> LibCycle deep internal import",
+        "fromModule": "Lib",
+        "toModule": "LibCycle",
+        "specifier": "./cli-engine/file-enumerator",
+        "importedPath": "lib/cli-engine/file-enumerator.js",
+        "incomingModules": [],
+        "outgoingModules": []
+      },
+      {
+        "code": "deep_internal_import",
+        "message": "Lib imports LibCycle through a deep relative path instead of a likely source-group entry point.",
+        "location": {
+          "filePath": "lib/unsupported-api.js",
+          "line": 15
+        },
+        "observed": "Lib -> LibCycle deep internal import",
+        "fromModule": "Lib",
+        "toModule": "LibCycle",
+        "specifier": "./eslint/eslint",
+        "importedPath": "lib/eslint/eslint.js",
+        "incomingModules": [],
+        "outgoingModules": []
+      },
+      {
+        "code": "deep_internal_import",
+        "message": "Lib imports LibCycle through a deep relative path instead of a likely source-group entry point.",
+        "location": {
+          "filePath": "lib/unsupported-api.js",
+          "line": 16
+        },
+        "observed": "Lib -> LibCycle deep internal import",
+        "fromModule": "Lib",
+        "toModule": "LibCycle",
+        "specifier": "./eslint/legacy-eslint",
+        "importedPath": "lib/eslint/legacy-eslint.js",
+        "incomingModules": [],
+        "outgoingModules": []
+      }
+    ]
+  },
+  "timingsMs": {
+    "cloneBaseline": 28478.4,
+    "cloneCurrent": 23822.5,
+    "infer": 2053.8,
+    "baselineGraph": 1934.2,
+    "diffJson": 1890.7,
+    "diffMarkdown": 2456.4,
+    "observeMarkdown": 2060.6,
+    "diffMermaid": 1960.7
+  }
+}

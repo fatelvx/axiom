@@ -1,0 +1,127 @@
+{
+  "kind": "axiom.real-project-diff-smoke.v4",
+  "generatedAt": "2026-05-14T08:13:02.324Z",
+  "repo": "https://github.com/uuidjs/uuid.git",
+  "name": "uuid-src",
+  "baselineRef": "v11.0.5",
+  "currentRef": "v11.1.1",
+  "groupBy": "folder",
+  "groupDepth": 2,
+  "sourceScope": {
+    "include": [
+      "src/**"
+    ],
+    "exclude": [
+      "src/test/**",
+      "src/**/*.test.ts",
+      "src/**/*.spec.ts",
+      "examples/**",
+      "test/**"
+    ]
+  },
+  "warningFlags": [
+    "--warn-coupling-concentration",
+    "--warn-deep-internal-imports",
+    "--warn-unresolved-imports"
+  ],
+  "node": "v24.14.1",
+  "platform": "win32 x64",
+  "calibration": {
+    "repoShape": "Small TypeScript package with runtime source and mixed package export surface",
+    "safetyPosture": "Clone-only source scan; no target installs, package-manager scripts, target tests, target builds, submodules, or npx were run.",
+    "scopeQuestion": "Can an inferred runtime-source baseline stay useful for a small package whose published surface supports multiple runtime import styles?",
+    "commandSurface": "axi infer --json + axi graph --json + axi diff + axi observe --baseline",
+    "mainSignal": "The runtime source graph stayed drift-quiet after excluding source-tree tests; this is a low-noise mixed package-surface control.",
+    "gapClass": "quiet-control / scan-scope",
+    "decision": "Do not change validator behavior; keep source-tree test folders explicit in small package pilots.",
+    "codeChanged": "No Axiom code changed; this is a no-install calibration run.",
+    "followUp": "If package export surface issues appear later, compare against this low-noise UUID control before changing resolver behavior."
+  },
+  "baselineInference": {
+    "schemaVersion": "axiom.infer.v8",
+    "reviewStory": {
+      "summary": "Starter contract inferred 1 module and 0 observed module edges from 27 source files.",
+      "setup": "Scanned 27 source files and 61 imports; 1 candidate group became 1 starter module. This is a current-graph snapshot, not declared architecture intent yet.",
+      "pressures": [
+        {
+          "kind": "quiet_snapshot",
+          "title": "Quiet starter snapshot",
+          "description": "No cross-module import edges, collapsed cycles, or large-file pressure notes were found in this inference scope. Confirm the scan scope is the architecture you meant to model before saving a baseline.",
+          "severity": "info",
+          "modules": [],
+          "files": []
+        }
+      ],
+      "nextStep": "Rename modules, confirm inferred dependency evidence, then run `axi observe --root . --spec <draft.axi> --markdown` before saving a graph baseline.",
+      "caveat": "Inference reads static imports and folder/package shape. It can lower authoring cost, but humans still decide module names, visibility, layers, accepted debt, and which edges are real architecture intent."
+    },
+    "summary": {
+      "sourceFiles": 27,
+      "importsScanned": 61,
+      "candidateModules": 1,
+      "modules": 1,
+      "observedDependencies": 0,
+      "collapsedCycles": 0,
+      "architecturePressureNotes": 0
+    },
+    "collapsedCycles": [],
+    "architecturePressureNotes": []
+  },
+  "baseline": {
+    "ref": "v11.0.5",
+    "commit": "46ada3c",
+    "packageVersion": "11.0.5",
+    "summary": {
+      "modules": 1,
+      "declaredDependencies": 0,
+      "forbiddenDependencies": 0,
+      "exposedPaths": 0,
+      "hiddenPaths": 0,
+      "observedDependencies": 0,
+      "shownObservedDependencies": 0,
+      "violations": 0,
+      "intentionalViolations": 0,
+      "warnings": 0
+    }
+  },
+  "current": {
+    "ref": "v11.1.1",
+    "commit": "7269a96",
+    "packageVersion": "11.1.1",
+    "summary": {
+      "modules": 1,
+      "declaredDependencies": 0,
+      "forbiddenDependencies": 0,
+      "exposedPaths": 0,
+      "hiddenPaths": 0,
+      "observedDependencies": 0,
+      "shownObservedDependencies": 0,
+      "violations": 0,
+      "intentionalViolations": 0,
+      "warnings": 0
+    }
+  },
+  "drift": {
+    "kind": "advisory_observed_edge_drift",
+    "baseline": {
+      "schemaVersion": "axiom.graph.v12",
+      "observedDependencies": 0
+    },
+    "newObservedEdges": [],
+    "removedObservedEdges": []
+  },
+  "warnings": {
+    "byCode": {},
+    "details": []
+  },
+  "timingsMs": {
+    "cloneBaseline": 2411.3,
+    "cloneCurrent": 19729.2,
+    "infer": 827.6,
+    "baselineGraph": 624.5,
+    "diffJson": 500.6,
+    "diffMarkdown": 590.6,
+    "observeMarkdown": 506,
+    "diffMermaid": 496.9
+  }
+}

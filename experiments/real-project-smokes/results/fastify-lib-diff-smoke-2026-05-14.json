@@ -1,0 +1,150 @@
+{
+  "kind": "axiom.real-project-diff-smoke.v4",
+  "generatedAt": "2026-05-14T07:59:29.480Z",
+  "repo": "https://github.com/fastify/fastify.git",
+  "name": "fastify-lib",
+  "baselineRef": "v5.4.0",
+  "currentRef": "v5.5.0",
+  "groupBy": "folder",
+  "groupDepth": 2,
+  "sourceScope": {
+    "include": [
+      "lib/**"
+    ],
+    "exclude": [
+      "test/**",
+      "docs/**",
+      "examples/**",
+      "benchmark/**"
+    ]
+  },
+  "warningFlags": [
+    "--warn-coupling-concentration",
+    "--warn-deep-internal-imports",
+    "--warn-unresolved-imports"
+  ],
+  "node": "v24.14.1",
+  "platform": "win32 x64",
+  "calibration": {
+    "repoShape": "Node web framework package with plugin and runtime library modules",
+    "safetyPosture": "Clone-only source scan; no target installs, package-manager scripts, target tests, target builds, submodules, or npx were run.",
+    "scopeQuestion": "Can an inferred lib-scope baseline make minor-version architecture drift reviewable for a framework runtime package without target installs?",
+    "commandSurface": "axi infer --json + axi graph --json + axi diff + axi observe --baseline",
+    "mainSignal": "The minor-version lib graph stayed quiet while infer preserved two large-file pressure notes for human review.",
+    "gapClass": "quiet-control / advisory-signal-calibration",
+    "decision": "Do not change validator behavior; keep this as a quiet framework runtime control with intra-file pressure evidence.",
+    "codeChanged": "No Axiom code changed; this is a no-install calibration run.",
+    "followUp": "Compare large-file pressure handling across framework/runtime packages before making it more prominent."
+  },
+  "baselineInference": {
+    "schemaVersion": "axiom.infer.v8",
+    "reviewStory": {
+      "summary": "Starter contract inferred 1 module and 0 observed module edges from 28 source files.",
+      "setup": "Scanned 28 source files and 101 imports; 1 candidate group became 1 starter module. This is a current-graph snapshot, not declared architecture intent yet.",
+      "pressures": [
+        {
+          "kind": "large_source_file",
+          "title": "Large-file pressure in inferred scope",
+          "description": "2 large source files may hide responsibilities that folder and import inference cannot split. Inspect these files before judging the starter module map as complete.",
+          "severity": "warning",
+          "modules": [],
+          "files": [
+            "lib/configValidator.js",
+            "lib/reply.js"
+          ]
+        }
+      ],
+      "nextStep": "Inspect large-file pressure notes, adjust module boundaries if needed, then run `axi observe --root . --spec <draft.axi> --markdown`.",
+      "caveat": "Inference reads static imports and folder/package shape. It can lower authoring cost, but humans still decide module names, visibility, layers, accepted debt, and which edges are real architecture intent."
+    },
+    "summary": {
+      "sourceFiles": 28,
+      "importsScanned": 101,
+      "candidateModules": 1,
+      "modules": 1,
+      "observedDependencies": 0,
+      "collapsedCycles": 0,
+      "architecturePressureNotes": 2
+    },
+    "collapsedCycles": [],
+    "architecturePressureNotes": [
+      {
+        "kind": "large_source_file",
+        "filePath": "lib/configValidator.js",
+        "lineCount": 1105,
+        "functionLikeCount": 1,
+        "importsScanned": 0,
+        "exportsScanned": 0,
+        "classCount": 0,
+        "message": "lib/configValidator.js has 1105 lines; inferred module boundaries may miss responsibilities concentrated inside this file."
+      },
+      {
+        "kind": "large_source_file",
+        "filePath": "lib/reply.js",
+        "lineCount": 945,
+        "functionLikeCount": 60,
+        "importsScanned": 10,
+        "exportsScanned": 0,
+        "classCount": 0,
+        "message": "lib/reply.js has 945 lines; inferred module boundaries may miss responsibilities concentrated inside this file."
+      }
+    ]
+  },
+  "baseline": {
+    "ref": "v5.4.0",
+    "commit": "0111d0a",
+    "packageVersion": "5.4.0",
+    "summary": {
+      "modules": 1,
+      "declaredDependencies": 0,
+      "forbiddenDependencies": 0,
+      "exposedPaths": 0,
+      "hiddenPaths": 0,
+      "observedDependencies": 0,
+      "shownObservedDependencies": 0,
+      "violations": 0,
+      "intentionalViolations": 0,
+      "warnings": 0
+    }
+  },
+  "current": {
+    "ref": "v5.5.0",
+    "commit": "b84733e",
+    "packageVersion": "5.5.0",
+    "summary": {
+      "modules": 1,
+      "declaredDependencies": 0,
+      "forbiddenDependencies": 0,
+      "exposedPaths": 0,
+      "hiddenPaths": 0,
+      "observedDependencies": 0,
+      "shownObservedDependencies": 0,
+      "violations": 0,
+      "intentionalViolations": 0,
+      "warnings": 0
+    }
+  },
+  "drift": {
+    "kind": "advisory_observed_edge_drift",
+    "baseline": {
+      "schemaVersion": "axiom.graph.v12",
+      "observedDependencies": 0
+    },
+    "newObservedEdges": [],
+    "removedObservedEdges": []
+  },
+  "warnings": {
+    "byCode": {},
+    "details": []
+  },
+  "timingsMs": {
+    "cloneBaseline": 2634.2,
+    "cloneCurrent": 2878.1,
+    "infer": 623.4,
+    "baselineGraph": 640.7,
+    "diffJson": 762.8,
+    "diffMarkdown": 694.7,
+    "observeMarkdown": 692.6,
+    "diffMermaid": 1548.9
+  }
+}

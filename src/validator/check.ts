@@ -304,6 +304,7 @@ function inferModuleCandidates(root: string, sourceFiles: string[]): Array<Recor
       path: candidate.path,
       fileCount: 0
     };
+    existing.name = preferModuleCandidateName(existing.name, candidate.name);
     existing.fileCount += 1;
     candidates.set(candidate.path, existing);
   }
@@ -323,7 +324,7 @@ function inferModuleCandidateFromSegments(segments: string[]): { name: string; p
   if (segments[0] === "src") {
     const secondSegment = segments[1];
     if (!secondSegment || isSourceFileSegment(secondSegment)) {
-      return { name: "SrcRoot", path: "src/*" };
+      return { name: sourceRootEntryModuleName(secondSegment) ?? "SrcRoot", path: "src/*" };
     }
 
     return { name: toPascalCase(secondSegment), path: `src/${secondSegment}/**` };
@@ -339,6 +340,38 @@ function inferModuleCandidateFromSegments(segments: string[]): { name: string; p
 
 function isSourceFileSegment(segment: string): boolean {
   return /\.[cm]?[jt]sx?$/.test(segment);
+}
+
+function sourceRootEntryModuleName(fileName: string | undefined): string | undefined {
+  if (!fileName || !isSourceFileSegment(fileName)) {
+    return undefined;
+  }
+
+  const stem = fileName.replace(/\.[^.]+$/, "").toLowerCase();
+  if (stem === "bootstrap") {
+    return "Bootstrap";
+  }
+
+  if (
+    stem === "main" ||
+    stem === "index" ||
+    stem === "app" ||
+    stem === "entry" ||
+    stem === "startup" ||
+    stem === "start"
+  ) {
+    return "AppEntry";
+  }
+
+  return undefined;
+}
+
+function preferModuleCandidateName(existingName: string, candidateName: string): string {
+  if ((existingName === "SrcRoot" || existingName === "Root") && candidateName !== existingName) {
+    return candidateName;
+  }
+
+  return existingName;
 }
 
 function toPascalCase(value: string): string {

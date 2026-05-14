@@ -559,11 +559,16 @@ test("attention graph output labels composition root fan-out as review pressure"
   const output = formatGraphResult(result, { violationsOnly: true, attention: true });
   const payload = toGraphJson(result, { violationsOnly: true, attention: true });
 
-  assert.match(output, /coupling_concentration: AppEntry has composition-root fan-out to 4 modules\./);
+  assert.match(output, /composition_root_pressure: AppEntry composition root imports 4 modules\./);
+  assert.doesNotMatch(output, /coupling_concentration: AppEntry/);
   assert.match(output, /review kind: composition_root_pressure/);
   assert.match(output, /role hint: composition_root/);
   assert.match(output, /entry files: src\/main\.ts/);
   assert.equal(payload.architectureSummary.reviewStory.pressures[0]?.title, "Composition root pressure in AppEntry");
+
+  const markdown = formatGraphMarkdown(result, { violationsOnly: true, attention: true, observe: true });
+  assert.match(markdown, /`composition_root_pressure`: AppEntry composition root imports 4 modules\./);
+  assert.doesNotMatch(markdown, /`coupling_concentration`: AppEntry/);
 });
 
 test("attention graph output explains deep internal import warnings", () => {

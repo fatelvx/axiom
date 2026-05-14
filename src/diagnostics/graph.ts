@@ -1004,9 +1004,35 @@ function warningClusterToReviewPressure(cluster: WarningCluster): GraphJsonArchi
     };
   }
 
+  if (cluster.code === "composition_root_pressure") {
+    const moduleName =
+      modules[0] ??
+      cluster.subject
+        .replace(" composition root imports", "")
+        .replace(" composition root fan-out", "");
+    return {
+      kind: "advisory_warning_root",
+      title: `Composition root pressure in ${moduleName}`,
+      description: `${cluster.count} concentration warning${pluralize(
+        cluster.count
+      )} likely comes from entry-point wiring; review whether the entry file only composes modules or is also accumulating product logic.`,
+      severity: "review",
+      count: cluster.count,
+      code: cluster.code,
+      modules
+    };
+  }
+
   if (cluster.code === "coupling_concentration") {
-    if (cluster.subject.includes("composition root fan-out")) {
-      const moduleName = modules[0] ?? cluster.subject.replace(" composition root fan-out", "");
+    if (
+      cluster.subject.includes("composition root fan-out") ||
+      cluster.subject.includes("composition root imports")
+    ) {
+      const moduleName =
+        modules[0] ??
+        cluster.subject
+          .replace(" composition root fan-out", "")
+          .replace(" composition root imports", "");
       return {
         kind: "advisory_warning_root",
         title: `Composition root pressure in ${moduleName}`,
@@ -1079,6 +1105,7 @@ function readWarningClusterModules(cluster: WarningCluster): string[] {
     " tool boundary pressure",
     " ambiguous public boundary",
     " public-entry bypass",
+    " composition root imports",
     " composition root fan-out"
   ];
   for (const marker of markers) {
@@ -1716,7 +1743,7 @@ function formatMarkdownWarnings(graph: GraphJsonResult): string[] {
 
   for (const warning of graph.warnings) {
     const location = warning.location ? ` at ${markdownCode(formatLocation(warning.location))}` : "";
-    lines.push(`- ${markdownCode(warning.code)}${location}: ${warning.message}`);
+    lines.push(`- ${markdownCode(warningDisplayCode(warning))}${location}: ${warning.message}`);
     appendMarkdownWarningDetails(lines, warning);
   }
 
@@ -2123,7 +2150,7 @@ function formatWarnings(graph: GraphJsonResult): string[] {
 
   for (const warning of graph.warnings) {
     const location = warning.location ? ` ${warning.location.filePath}:${warning.location.line}` : "";
-    lines.push(`  ${warning.code}${location}: ${warning.message}`);
+    lines.push(`  ${warningDisplayCode(warning)}${location}: ${warning.message}`);
     const observed = readString(warning.details?.observed);
     if (observed) {
       lines.push(`  observed: ${observed}`);
@@ -2414,10 +2441,11 @@ function buildWarningClusters(warnings: GraphJsonViolation[]): WarningCluster[] 
 
   for (const warning of warnings) {
     const subject = warningClusterSubject(warning);
-    const key = `${warning.code}\0${subject}`;
+    const code = warningDisplayCode(warning);
+    const key = `${code}\0${subject}`;
     const existing = clusters.get(key) ?? {
       key,
-      code: warning.code,
+      code,
       subject,
       count: 0
     };
@@ -2448,7 +2476,7 @@ function warningClusterSubject(warning: GraphJsonViolation): string {
     readString(warning.details?.reviewKind) === "composition_root_pressure"
   ) {
     const moduleName = readString(warning.details?.module);
-    return moduleName ? `${moduleName} composition root fan-out` : "composition root fan-out";
+    return moduleName ? `${moduleName} composition root imports` : "composition root imports";
   }
 
   const fromModule = readString(warning.details?.fromModule);
@@ -2468,6 +2496,17 @@ function warningClusterSubject(warning: GraphJsonViolation): string {
   }
 
   return "general";
+}
+
+function warningDisplayCode(warning: GraphJsonViolation): string {
+  if (
+    warning.code === "coupling_concentration" &&
+    readString(warning.details?.reviewKind) === "composition_root_pressure"
+  ) {
+    return "composition_root_pressure";
+  }
+
+  return warning.code;
 }
 
 function deepInternalImportClusterSubject(warning: GraphJsonViolation): string {

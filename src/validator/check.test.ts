@@ -64,13 +64,24 @@ test("no-spec first runs surface likely scan scope noise", () => {
     fs.mkdirSync(path.join(root, ".agent-runtime/profile"), { recursive: true });
     fs.mkdirSync(path.join(root, "src"), { recursive: true });
     fs.writeFileSync(path.join(root, ".agent-runtime/profile/runtime_background.js"), "export const runtimeState = 1;\n");
-    fs.writeFileSync(path.join(root, "src/app.ts"), "export const app = 1;\n");
+    fs.writeFileSync(path.join(root, "src/main.ts"), "export const app = 1;\n");
 
     const result = runCheck({ root });
     const noSpecViolation = result.violations.find((violation) => violation.code === "no_spec_files");
     const scopeHints = noSpecViolation?.details?.scopeHints as Array<Record<string, unknown>> | undefined;
+    const inferredModuleCandidates = noSpecViolation?.details?.inferredModuleCandidates as
+      | Array<Record<string, unknown>>
+      | undefined;
 
     assert.equal(noSpecViolation?.code, "no_spec_files");
+    assert.ok(
+      inferredModuleCandidates?.some(
+        (candidate) =>
+          candidate.name === "AppEntry" &&
+          candidate.path === "src/*" &&
+          candidate.fileCount === 1
+      )
+    );
     assert.deepEqual(scopeHints?.[0]?.matchedFolders, [".agent-runtime"]);
     assert.deepEqual(scopeHints?.[0]?.samplePaths, [".agent-runtime/profile/runtime_background.js"]);
     assert.match(String(scopeHints?.[0]?.suggestion), /--include "src\/\*\*"/);
@@ -306,7 +317,7 @@ test("coupling concentration labels likely composition root fan-out without supp
   assert.equal(result.warnings.length, 1);
   assert.deepEqual(result.warnings[0], {
     code: "coupling_concentration",
-    message: "AppEntry has composition-root fan-out to 4 modules.",
+    message: "AppEntry composition root imports 4 modules.",
     details: {
       module: "AppEntry",
       direction: "fan_out",
@@ -320,7 +331,7 @@ test("coupling concentration labels likely composition root fan-out without supp
         fanInModules: 4,
         fanOutModules: 4
       },
-      observed: "AppEntry composition-root fan-out to 4 modules",
+      observed: "AppEntry composition root imports 4 modules",
       reviewKind: "composition_root_pressure",
       roleHint: "composition_root",
       entryFiles: ["src/main.ts"],

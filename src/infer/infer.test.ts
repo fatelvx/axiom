@@ -344,6 +344,40 @@ test("infer supports deeper source grouping", () => {
   assert.deepEqual(deep.modules.find((module) => module.name === "Ui")?.depends, ["ServicesAgent", "ServicesTools"]);
 });
 
+test("infer names source-root entry files as app entry candidates", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "axi-infer-app-entry-"));
+
+  try {
+    fs.mkdirSync(path.join(root, "src/engine"), { recursive: true });
+    fs.writeFileSync(path.join(root, "src/main.ts"), 'import { createEngine } from "./engine";\ncreateEngine();\n');
+    fs.writeFileSync(path.join(root, "src/engine/index.ts"), "export function createEngine() {}\n");
+
+    const result = runInfer({ root });
+
+    assert.deepEqual(
+      result.modules.map((module) => ({
+        name: module.name,
+        paths: module.paths,
+        depends: module.depends
+      })),
+      [
+        {
+          name: "AppEntry",
+          paths: ["src/*"],
+          depends: ["Engine"]
+        },
+        {
+          name: "Engine",
+          paths: ["src/engine/**"],
+          depends: []
+        }
+      ]
+    );
+  } finally {
+    fs.rmSync(root, { force: true, recursive: true });
+  }
+});
+
 test("infer keeps parent and child folder ownership non-overlapping for deeper grouping", () => {
   const result = runInfer({ root: path.join(repoRoot, "fixtures/infer-overlap-folders"), groupDepth: 2 });
 

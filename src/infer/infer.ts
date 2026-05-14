@@ -418,6 +418,7 @@ function buildCandidateGroups(
       files: []
     };
 
+    group.name = preferCandidateGroupName(group.name, classification.name);
     group.paths.add(classification.pathPattern);
     group.files.push(sourceFile);
     groups.set(classification.key, group);
@@ -518,7 +519,7 @@ function classifySourceFile(relativePath: string, groupDepth: number): { key: st
 
     return {
       key: "src/*",
-      name: "SrcRoot",
+      name: sourceRootEntryModuleName(segments.at(-1)) ?? "SrcRoot",
       pathPattern: "src/*"
     };
   }
@@ -1032,6 +1033,38 @@ function toIdentifier(value: string): string {
 
 function stripExtension(value: string): string {
   return value.replace(/\.[^.]+$/, "");
+}
+
+function sourceRootEntryModuleName(fileName: string | undefined): string | undefined {
+  if (!fileName || !/\.[cm]?[jt]sx?$/.test(fileName)) {
+    return undefined;
+  }
+
+  const stem = stripExtension(fileName).toLowerCase();
+  if (stem === "bootstrap") {
+    return "Bootstrap";
+  }
+
+  if (
+    stem === "main" ||
+    stem === "index" ||
+    stem === "app" ||
+    stem === "entry" ||
+    stem === "startup" ||
+    stem === "start"
+  ) {
+    return "AppEntry";
+  }
+
+  return undefined;
+}
+
+function preferCandidateGroupName(existingName: string, candidateName: string): string {
+  if ((existingName === "SrcRoot" || existingName === "Root") && candidateName !== existingName) {
+    return candidateName;
+  }
+
+  return existingName;
 }
 
 function relativePath(root: string, filePath: string): string {

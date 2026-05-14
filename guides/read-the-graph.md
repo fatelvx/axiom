@@ -100,6 +100,8 @@ Advisory warnings are review prompts, not proof of bad architecture.
 
 `coupling_concentration` means a module has high observed fan-in or fan-out. That module may be a stable public boundary, or it may be becoming a coordination hub.
 
+`composition_root_pressure` is the entry-point version of that warning in review output. It usually means a likely app entry file such as `src/main.ts`, `src/index.ts`, `App.tsx`, or `bootstrap.ts` imports several modules. That can be normal composition-root wiring. Review whether the entry file is only assembling modules, or whether product logic is accumulating there.
+
 `deep_internal_import` means one module imported another module through a relative non-entry file while the target module appears to have an `index.*` entry point. That may be a public-entry bypass, or it may mean the contract needs a more precise public surface.
 
 `large_module_file` means a source file crossed the current large-file threshold. It does not mean the file is wrong. It means import graph analysis may be missing architecture pressure because too many responsibilities live inside one file.

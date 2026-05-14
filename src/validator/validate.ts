@@ -1127,7 +1127,7 @@ function formatCouplingConcentrationMessage(
   const hasConcentratedFanOut = fanOutModules >= couplingConcentrationModuleThreshold;
 
   if (isCompositionRootFanOut && hasConcentratedFanOut) {
-    return `${moduleName} has composition-root fan-out to ${fanOutModules} modules.`;
+    return `${moduleName} composition root imports ${fanOutModules} modules.`;
   }
 
   if (hasConcentratedFanIn && hasConcentratedFanOut) {
@@ -1159,7 +1159,7 @@ function formatCouplingConcentrationObserved(
   const hasConcentratedFanOut = fanOutModules >= couplingConcentrationModuleThreshold;
 
   if (isCompositionRootFanOut && hasConcentratedFanOut) {
-    return `${moduleName} composition-root fan-out to ${fanOutModules} modules`;
+    return `${moduleName} composition root imports ${fanOutModules} modules`;
   }
 
   if (hasConcentratedFanIn && hasConcentratedFanOut) {

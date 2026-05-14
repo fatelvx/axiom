@@ -24,7 +24,7 @@ try {
 
   const packageJson = JSON.parse(readFileSync(packageJsonPath, "utf8"));
   assertEqual(packageJson.name, "@fatelvx/axiom", "package name");
-  assertEqual(packageJson.version, "0.6.0-alpha.1", "package version");
+  assertEqual(packageJson.version, "0.6.0-alpha.2", "package version");
   assertDeepEqual(packageJson.bin, {
     axi: "dist/cli.js",
     "axi-mcp": "dist/mcp/server.js",

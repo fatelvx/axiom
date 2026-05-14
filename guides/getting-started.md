@@ -14,9 +14,23 @@ Use it first to make drift visible. Promote rules to hard CI failures only when 
 
 ## 1. Install
 
-Axiom's npm package target is `@fatelvx/axiom`. The unscoped `axiom` package name is already used by another package, so the first alpha release uses a scoped package.
+Axiom's npm package target is `@fatelvx/axiom`. The unscoped `axiom` package name is already used by another package, so the public alpha uses a scoped package.
 
-Until the first npm publish, install from this repository checkout:
+In a project:
+
+```bash
+npm install -D @fatelvx/axiom@alpha --save-exact
+npx axi --help
+```
+
+For a first read-only architecture pass:
+
+```bash
+npx axi infer --root . --include "src/**"
+npx axi observe --root . --include "src/**" --warn-large-files
+```
+
+From this repository checkout:
 
 ```bash
 npm install
@@ -34,14 +48,6 @@ You can also use the local build without global install:
 
 ```bash
 node dist/cli.js check --root examples/basic-app
-```
-
-After the first npm publish:
-
-```bash
-npm install -D @fatelvx/axiom
-npx axi check --root .
-npx @fatelvx/axiom check --root .
 ```
 
 ## 2. Run The Example

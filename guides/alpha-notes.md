@@ -1,6 +1,6 @@
 # Alpha Notes
 
-Axiom `v0.6.0-alpha.1` is the first Static Contract Loop milestone.
+Axiom `v0.6.0-alpha.2` is the first Static Contract Loop milestone.
 
 It is an alpha because the core loop is real, but the public API and surrounding ecosystem are still intentionally small:
 

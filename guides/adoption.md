@@ -203,10 +203,10 @@ This keeps the debt visible without pretending Axiom can prove full symbol-level
 
 ## CI
 
-After the first npm publish, install the scoped package:
+Install the scoped package:
 
 ```bash
-npm install -D @fatelvx/axiom
+npm install -D @fatelvx/axiom@alpha --save-exact
 ```
 
 Then add a script:

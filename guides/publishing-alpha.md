@@ -53,13 +53,13 @@ npm publish --access public --tag alpha
 After publishing, users should be able to run:
 
 ```bash
-npm install -D @fatelvx/axiom
+npm install -D @fatelvx/axiom@alpha --save-exact
 npx axi check --root .
 npx @fatelvx/axiom check --root .
 ```
 
 ## Post-Publish
 
-Update README install wording if it still says the package is not published yet.
+Verify the published package from a clean temporary project with `npm install --ignore-scripts`.
 
 Then create a GitHub release for the published version.

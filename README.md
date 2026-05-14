@@ -54,15 +54,22 @@ It is not a prompt wrapper and not a style linter. It is an architecture observa
 
 ## Quick Start
 
-From this repository:
+Install the public alpha:
 
 ```bash
-npm install
-npm run build
-node dist/cli.js check --root examples/basic-app
+npm install -D @fatelvx/axiom@alpha --save-exact
+npx axi infer --root . --include "src/**"
 ```
 
-The example intentionally fails:
+`axi infer` is read-only starter evidence. It mirrors the graph Axiom can currently see; review it before turning it into a contract.
+
+To try the hard gate, add a small `axiom/main.axi` contract like the one below, then run:
+
+```bash
+npx axi check --root . --include "src/**"
+```
+
+When the code violates the reviewed contract, `axi check` exits `1` and reports file-level errors such as:
 
 ```text
 error unexposed_import src/ui/view.ts:2
@@ -75,15 +82,18 @@ error hidden_import src/ui/view.ts:3
 Try the review surface:
 
 ```bash
-node dist/cli.js observe --root examples/basic-app
-node dist/cli.js graph --root examples/basic-app --attention
+npx axi observe --root . --include "src/**" --warn-large-files
+npx axi graph --root . --include "src/**" --attention
 ```
 
-Try the spec-first gate rehearsal:
+Want a controlled example first?
 
 ```bash
+git clone https://github.com/fatelvx/axiom.git
+cd axiom
+npm install
+npm run build
 node dist/cli.js check --root examples/spec-first-pilot
-npm run spec-first:smoke
 ```
 
 ## Example Contract
@@ -124,7 +134,7 @@ The hidden internal import becomes an explicit contract violation when `hides` s
 
 ## Static v0 Coverage
 
-Axiom v0.6.0-alpha.1 is focused on static TypeScript and JavaScript architecture evidence, including Vue single-file component script imports.
+Axiom v0.6.0-alpha.2 is focused on static TypeScript and JavaScript architecture evidence, including Vue single-file component script imports.
 
 | Area | Supported |
 | --- | --- |
@@ -174,7 +184,17 @@ Requirements:
 - Node.js 20+
 - npm
 
-Local checkout:
+Axiom's npm package target is `@fatelvx/axiom`. The unscoped `axiom` package name is already used by another package, so the public alpha uses a scoped package.
+
+Project install:
+
+```bash
+npm install -D @fatelvx/axiom@alpha --save-exact
+npx axi check --root .
+npx @fatelvx/axiom check --root .
+```
+
+Local checkout for contributors:
 
 ```bash
 npm install
@@ -186,16 +206,6 @@ Optional global install from this checkout:
 ```bash
 npm install -g .
 axi check --root examples/basic-app
-```
-
-Axiom's npm package target is `@fatelvx/axiom`. The unscoped `axiom` package name is already used by another package, so the first alpha release uses a scoped package.
-
-Until the first npm publish, use this repository checkout. After publishing:
-
-```bash
-npm install -D @fatelvx/axiom
-npx axi check --root .
-npx @fatelvx/axiom check --root .
 ```
 
 ## Commands
@@ -412,7 +422,7 @@ Questions, contract-design discussions, and rough ideas are welcome. Use [GitHub
 
 Current milestone:
 
-- `v0.6.0-alpha.1`: Static Contract Loop. The static TS/JS validator, review surfaces, GitHub Actions examples, and read-only MCP evidence loop are being packaged as the first public alpha milestone.
+- `v0.6.0-alpha.2`: Static Contract Loop. The static TS/JS validator, review surfaces, GitHub Actions examples, and read-only MCP evidence loop are packaged as the first public alpha milestone.
 
 Next:
 

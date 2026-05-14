@@ -12,9 +12,12 @@ From the Axiom repository:
 
 ```bash
 npm run build
+npm run mcp:smoke
 ```
 
 During npm supply-chain risk periods, prefer the existing dependency tree. Do not run dependency installs or package-manager updates just to register MCP.
+
+The smoke starts the local stdio server, lists the read-only tool set, runs `axiom_check` against the current repository, confirms hard contract failures return as structured evidence, and verifies `--allow-root` rejection. Passing this smoke means the server binary works before any MCP client reload behavior enters the picture.
 
 ## Register With Codex
 
@@ -55,6 +58,7 @@ If a running session cannot see the tools yet, that does not mean the server is 
 
 ```powershell
 codex mcp get axiom
+npm run mcp:smoke
 ```
 
 Then reload the client. A shell-level JSON-RPC smoke can still call the server while the current session waits for a reload, but native tool access usually requires a fresh session.

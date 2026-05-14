@@ -772,6 +772,7 @@ Axiom can currently report:
 npm run ci
 npm test
 npm run axiom:self
+npm run mcp:smoke
 npm run perf:smoke
 npm run github-actions:smoke
 npm run alpha:check

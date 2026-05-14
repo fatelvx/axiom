@@ -79,6 +79,12 @@ After building Axiom, run:
 node dist/mcp/server.js --allow-root . --timeout-ms 60000
 ```
 
+For a repeatable local smoke before registering an MCP client:
+
+```bash
+npm run mcp:smoke
+```
+
 Installed package aliases:
 
 ```bash

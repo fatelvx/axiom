@@ -863,3 +863,29 @@ Detailed result:
 ```text
 experiments/axiom-forecast/results/mirofish-framework-tooling-calibration-target-2026-05-14.md
 ```
+
+### MCP Roots / Agent Loop Target Backtest
+
+Before this target backtest, Axiom had shipped and pushed:
+
+- `axiom_roots` as a server-native read-only MCP tool for configured `--allow-root` visibility.
+- updated MCP docs for explicit root registration, `axiom_roots`, and Lumina-style sibling project access.
+- `npm run mcp:agent-loop:smoke`, a temp-only workflow that calls roots, passes the spec-first contract, saves a graph baseline, introduces deliberate drift, and verifies check / observe / diff / infer evidence.
+
+Method:
+
+Attempted the local MiroFish `LLMClient` path first, but the backend dependency environment was not installed in the temp clone. To avoid dependency installation during the current supply-chain risk period, the run used the existing MiroFish `.env` with the same OpenAI-compatible model endpoint directly through `curl.exe`. The full seed hit a direct endpoint body-size limit on the first route, and a PowerShell UTF-8 BOM request caused one JSON parse failure. The retained run used a compact prompt derived from the seed and was lightly normalized to remove local encoding artifacts.
+
+Primary result:
+
+- `axiom_roots` materially improves MCP trust because agents can inspect root policy before scanning, but explicit root registration remains manual and should stay narrow.
+- The temp-only MCP agent-loop smoke proves evidence shape and sequencing, but not LLM judgment under ambiguous prompts.
+- The next highest-signal step is an MCP tool-consumption conformance spec and agent-behavior scenarios: roots first, check as gate, observe/graph/diff as review, infer as authoring evidence, no contract/baseline/debt writes without explicit approval.
+- In-memory infer-then-observe and compact result consumption are plausible next MCP workflow polish, but should follow conformance scenarios.
+- Python and dynamic analysis should wait until the TypeScript/JavaScript validator plus MCP evidence loop survive real agent workflows.
+
+Detailed result:
+
+```text
+experiments/axiom-forecast/results/mirofish-mcp-roots-agent-loop-target-2026-05-14.md
+```

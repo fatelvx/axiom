@@ -1848,6 +1848,13 @@ function appendMarkdownWarningDetails(lines: string[], warning: GraphJsonViolati
     );
   }
 
+  const nameTokenClusters = formatNameTokenClusters(warning.details?.nameTokenClusters, markdownCode);
+  if (nameTokenClusters) {
+    appendMarkdownDetail(lines, "Name clusters", nameTokenClusters);
+  }
+
+  appendMarkdownDetail(lines, "Responsibility hint", readString(warning.details?.responsibilityHint));
+
   const incomingModules = readStringArray(warning.details?.incomingModules);
   if (incomingModules.length > 0) {
     appendMarkdownDetail(lines, "Fan-in modules", incomingModules.join(", "));
@@ -2246,6 +2253,16 @@ function formatWarnings(graph: GraphJsonResult): string[] {
           functionLikeCount ?? 0
         } functions, ${classCount ?? 0} classes`
       );
+    }
+
+    const nameTokenClusters = formatNameTokenClusters(warning.details?.nameTokenClusters, (value) => value);
+    if (nameTokenClusters) {
+      lines.push(`  name clusters: ${nameTokenClusters}`);
+    }
+
+    const responsibilityHint = readString(warning.details?.responsibilityHint);
+    if (responsibilityHint) {
+      lines.push(`  responsibility hint: ${responsibilityHint}`);
     }
 
     const scope = readString(warning.details?.scope);
@@ -3086,6 +3103,25 @@ function readRecordArray(value: unknown): Array<Record<string, unknown>> {
   return Array.isArray(value)
     ? value.filter((item): item is Record<string, unknown> => Boolean(readRecord(item)))
     : [];
+}
+
+function formatNameTokenClusters(value: unknown, formatValue: (value: string) => string): string | undefined {
+  const clusters = readRecordArray(value)
+    .map((cluster) => {
+      const token = readString(cluster.token);
+      const count = readNumber(cluster.count);
+      const samples = readStringArray(cluster.samples);
+      if (!token || count === undefined) {
+        return undefined;
+      }
+
+      const sampleText =
+        samples.length > 0 ? `: ${samples.slice(0, 3).map(formatValue).join(", ")}` : "";
+      return `${formatValue(token)} (${count}${sampleText})`;
+    })
+    .filter((cluster): cluster is string => cluster !== undefined);
+
+  return clusters.length > 0 ? clusters.join("; ") : undefined;
 }
 
 function readLocation(value: unknown): GraphJsonLocation | undefined {

@@ -395,6 +395,49 @@ test("large file warnings are opt-in advisory diagnostics", () => {
   }
 });
 
+test("large file warnings include declaration-name clusters when several themes repeat", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "axi-large-file-clusters-"));
+
+  try {
+    fs.mkdirSync(path.join(root, "axiom"), { recursive: true });
+    fs.mkdirSync(path.join(root, "src"), { recursive: true });
+    fs.writeFileSync(path.join(root, "axiom/main.axi"), ['module App', 'path "src/**"', ""].join("\n"));
+    fs.writeFileSync(
+      path.join(root, "src/main.ts"),
+      [
+        "export function renderScene() { return true; }",
+        "export function renderSprite() { return true; }",
+        "export function renderHud() { return true; }",
+        "export function physicsStep() { return true; }",
+        "export function physicsBody() { return true; }",
+        "export function physicsCollision() { return true; }",
+        ...Array.from({ length: 799 }, (_, index) => `// filler ${index}`)
+      ].join("\n")
+    );
+
+    const result = runCheck({ root, warnLargeFiles: true });
+
+    assert.deepEqual(result.violations, []);
+    assert.equal(result.warnings.length, 1);
+    assert.equal(result.warnings[0]?.code, "large_module_file");
+    assert.deepEqual(result.warnings[0]?.details?.nameTokenClusters, [
+      {
+        token: "physics",
+        count: 3,
+        samples: ["physicsStep", "physicsBody", "physicsCollision"]
+      },
+      {
+        token: "render",
+        count: 3,
+        samples: ["renderScene", "renderSprite", "renderHud"]
+      }
+    ]);
+    assert.match(String(result.warnings[0]?.details?.responsibilityHint), /lexical review hints/);
+  } finally {
+    fs.rmSync(root, { force: true, recursive: true });
+  }
+});
+
 test("deep internal import warnings are opt-in advisory diagnostics", () => {
   const root = path.join(repoRoot, "fixtures/deep-internal-import");
   const quietResult = runCheck({ root });

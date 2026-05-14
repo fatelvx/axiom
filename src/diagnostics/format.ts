@@ -256,6 +256,16 @@ function formatDetails(root: string, violation: Violation): string[] {
     );
   }
 
+  const nameTokenClusters = formatNameTokenClusters(violation.details.nameTokenClusters);
+  if (nameTokenClusters) {
+    lines.push(`  name clusters: ${nameTokenClusters}`);
+  }
+
+  const responsibilityHint = readString(violation.details.responsibilityHint);
+  if (responsibilityHint) {
+    lines.push(`  responsibility hint: ${responsibilityHint}`);
+  }
+
   const scope = readString(violation.details.scope);
   if (scope) {
     lines.push(`  scope: ${scope}`);
@@ -341,4 +351,22 @@ function readRecordArray(value: unknown): Array<Record<string, unknown>> {
 
 function readNumber(value: unknown): number | undefined {
   return typeof value === "number" && Number.isFinite(value) ? value : undefined;
+}
+
+function formatNameTokenClusters(value: unknown): string | undefined {
+  const clusters = readRecordArray(value)
+    .map((cluster) => {
+      const token = typeof cluster.token === "string" ? cluster.token : undefined;
+      const count = readNumber(cluster.count);
+      const samples = readStringArray(cluster.samples);
+      if (!token || count === undefined) {
+        return undefined;
+      }
+
+      const sampleText = samples.length > 0 ? `: ${samples.slice(0, 3).join(", ")}` : "";
+      return `${token} (${count}${sampleText})`;
+    })
+    .filter((cluster): cluster is string => cluster !== undefined);
+
+  return clusters.length > 0 ? clusters.join("; ") : undefined;
 }

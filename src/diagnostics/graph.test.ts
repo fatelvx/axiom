@@ -437,6 +437,37 @@ test("markdown warnings include large-file function counts", () => {
   }
 });
 
+test("markdown warnings include large-file declaration-name clusters", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "axiom-markdown-large-file-clusters-"));
+
+  try {
+    fs.mkdirSync(path.join(root, "axiom"), { recursive: true });
+    fs.mkdirSync(path.join(root, "src"), { recursive: true });
+    fs.writeFileSync(path.join(root, "axiom/main.axi"), ['module App', 'path "src/**"', ""].join("\n"));
+    fs.writeFileSync(
+      path.join(root, "src/main.ts"),
+      [
+        "export function renderScene() { return true; }",
+        "export function renderSprite() { return true; }",
+        "export function renderHud() { return true; }",
+        "export function physicsStep() { return true; }",
+        "export function physicsBody() { return true; }",
+        "export function physicsCollision() { return true; }",
+        ...Array.from({ length: 799 }, (_, index) => `// filler ${index}`)
+      ].join("\n")
+    );
+
+    const result = runCheck({ root, warnLargeFiles: true });
+    const output = formatGraphMarkdown(result, { violationsOnly: true, attention: true, observe: true });
+
+    assert.match(output, /Name clusters: .*`physics` \(3: `physicsStep`, `physicsBody`, `physicsCollision`\)/);
+    assert.match(output, /Name clusters: .*`render` \(3: `renderScene`, `renderSprite`, `renderHud`\)/);
+    assert.match(output, /Responsibility hint: Identifier token clusters are lexical review hints/);
+  } finally {
+    fs.rmSync(root, { force: true, recursive: true });
+  }
+});
+
 test("mermaid graph output visualizes observed module dependencies", () => {
   const result = runCheck({ root: path.join(repoRoot, "fixtures/basic-ts-invalid") });
   const output = formatGraphMermaid(result);

@@ -1,7 +1,13 @@
 import fs from "node:fs";
 import path from "node:path";
 import ts from "typescript";
-import type { ImportBinding, ImportRecord, LocalExportRecord, SourceFileScan } from "../axi/types.js";
+import type {
+  ImportBinding,
+  ImportRecord,
+  LocalExportRecord,
+  SourceFileNameTokenCluster,
+  SourceFileScan
+} from "../axi/types.js";
 import { resolveRelativeImport, type ImportResolver, type ImportResolveOptions } from "./importResolver.js";
 
 export interface ScanImportsOptions {
@@ -17,6 +23,7 @@ export function scanSourceFile(filePath: string, options: ScanImportsOptions = {
   const sourceFile = ts.createSourceFile(filePath, text, ts.ScriptTarget.Latest, true, getScriptKind(filePath));
   const imports: ImportRecord[] = [];
   const localExports: LocalExportRecord[] = [];
+  const declarationNames: string[] = [];
   let functionLikeCount = 0;
   let classCount = 0;
   const resolver = options.resolver ?? { resolve: resolveRelativeImport };
@@ -63,13 +70,33 @@ export function scanSourceFile(filePath: string, options: ScanImportsOptions = {
     });
   }
 
+  function recordDeclarationName(name: string | undefined): void {
+    if (!name) {
+      return;
+    }
+
+    declarationNames.push(name);
+  }
+
   function visit(node: ts.Node): void {
     if (isFunctionLikeNode(node)) {
       functionLikeCount += 1;
+      recordDeclarationName(readFunctionLikeName(node));
     }
 
     if (ts.isClassDeclaration(node) || ts.isClassExpression(node)) {
       classCount += 1;
+      recordDeclarationName(readDeclarationName(node.name));
+    }
+
+    if (ts.isVariableDeclaration(node) && node.initializer && isNameableResponsibilityInitializer(node.initializer)) {
+      recordDeclarationName(readBindingName(node.name));
+    } else if (
+      ts.isPropertyDeclaration(node) &&
+      node.initializer &&
+      isNameableResponsibilityInitializer(node.initializer)
+    ) {
+      recordDeclarationName(readPropertyName(node.name));
     }
 
     if (ts.isImportDeclaration(node)) {
@@ -130,7 +157,8 @@ export function scanSourceFile(filePath: string, options: ScanImportsOptions = {
       importCount: imports.length,
       exportCount: countExportRecords(imports, localExports),
       functionLikeCount,
-      classCount
+      classCount,
+      nameTokenClusters: buildNameTokenClusters(declarationNames)
     }
   };
 }
@@ -157,6 +185,129 @@ function isFunctionLikeNode(node: ts.Node): boolean {
     ts.isGetAccessorDeclaration(node) ||
     ts.isSetAccessorDeclaration(node)
   );
+}
+
+function isNameableResponsibilityInitializer(node: ts.Expression): boolean {
+  return isFunctionLikeNode(node) || ts.isClassExpression(node);
+}
+
+function readFunctionLikeName(node: ts.Node): string | undefined {
+  if (
+    ts.isFunctionDeclaration(node) ||
+    ts.isFunctionExpression(node) ||
+    ts.isMethodDeclaration(node) ||
+    ts.isGetAccessorDeclaration(node) ||
+    ts.isSetAccessorDeclaration(node)
+  ) {
+    return readDeclarationName(node.name);
+  }
+
+  return undefined;
+}
+
+function readDeclarationName(name: ts.PropertyName | ts.BindingName | undefined): string | undefined {
+  if (!name) {
+    return undefined;
+  }
+
+  return readPropertyName(name);
+}
+
+function readBindingName(name: ts.BindingName): string | undefined {
+  return ts.isIdentifier(name) ? name.text : undefined;
+}
+
+function readPropertyName(name: ts.PropertyName | ts.BindingName): string | undefined {
+  if (ts.isIdentifier(name) || ts.isStringLiteral(name) || ts.isNumericLiteral(name)) {
+    return name.text;
+  }
+
+  return undefined;
+}
+
+const nameClusterStopTokens = new Set([
+  "add",
+  "api",
+  "app",
+  "build",
+  "call",
+  "class",
+  "const",
+  "create",
+  "data",
+  "default",
+  "each",
+  "from",
+  "get",
+  "has",
+  "handle",
+  "init",
+  "into",
+  "item",
+  "make",
+  "new",
+  "node",
+  "run",
+  "set",
+  "the",
+  "this",
+  "type",
+  "use",
+  "used",
+  "value",
+  "with"
+]);
+
+function buildNameTokenClusters(names: string[]): SourceFileNameTokenCluster[] {
+  const clustersByToken = new Map<string, { count: number; samples: string[] }>();
+
+  for (const name of names) {
+    for (const token of tokenizeIdentifier(name)) {
+      const cluster = clustersByToken.get(token) ?? { count: 0, samples: [] };
+      cluster.count += 1;
+      if (cluster.samples.length < 5 && !cluster.samples.includes(name)) {
+        cluster.samples.push(name);
+      }
+      clustersByToken.set(token, cluster);
+    }
+  }
+
+  const clusters = [...clustersByToken.entries()]
+    .filter(([, cluster]) => cluster.count >= 3)
+    .map(([token, cluster]) => ({
+      token,
+      count: cluster.count,
+      samples: cluster.samples
+    }))
+    .sort((left, right) => {
+      if (right.count !== left.count) {
+        return right.count - left.count;
+      }
+
+      return left.token.localeCompare(right.token);
+    })
+    .slice(0, 5);
+
+  return clusters.length >= 2 ? clusters : [];
+}
+
+function tokenizeIdentifier(name: string): string[] {
+  const spaced = name
+    .replace(/([A-Z]+)([A-Z][a-z])/g, "$1 $2")
+    .replace(/([a-z0-9])([A-Z])/g, "$1 $2")
+    .replace(/[^A-Za-z0-9]+/g, " ");
+
+  const uniqueTokens = new Set<string>();
+  for (const part of spaced.split(/\s+/)) {
+    const token = part.toLowerCase().replace(/\d+/g, "");
+    if (token.length < 3 || nameClusterStopTokens.has(token)) {
+      continue;
+    }
+
+    uniqueTokens.add(token);
+  }
+
+  return [...uniqueTokens];
 }
 
 function readImportBindings(node: ts.ImportDeclaration): ImportBinding[] {

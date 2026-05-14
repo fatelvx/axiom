@@ -929,6 +929,13 @@ export function findLargeModuleFileWarnings(sourceFileMetrics: SourceFileMetric[
         exportsScanned: metric.exportCount,
         functionLikeCount: metric.functionLikeCount,
         classCount: metric.classCount,
+        ...(metric.nameTokenClusters.length > 0
+          ? {
+              nameTokenClusters: metric.nameTokenClusters,
+              responsibilityHint:
+                "Identifier token clusters are lexical review hints from declaration names. They are not proof that these are the correct module boundaries."
+            }
+          : {}),
         observed: `${relativePath(root, metric.filePath)} has ${metric.lineCount} lines`,
         scope: "intra_file_responsibility_pressure",
         suggestion:

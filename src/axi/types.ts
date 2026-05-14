@@ -118,6 +118,13 @@ export interface SourceFileMetric {
   exportCount: number;
   functionLikeCount: number;
   classCount: number;
+  nameTokenClusters: SourceFileNameTokenCluster[];
+}
+
+export interface SourceFileNameTokenCluster {
+  token: string;
+  count: number;
+  samples: string[];
 }
 
 export interface SourceFileScan {

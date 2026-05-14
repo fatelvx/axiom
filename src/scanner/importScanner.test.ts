@@ -350,6 +350,43 @@ test("scanner records imported bindings and local re-export names", () => {
   }
 });
 
+test("scanner summarizes declaration-name token clusters for large-file review hints", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "axi-imports-name-clusters-"));
+
+  try {
+    writeFile(
+      root,
+      "src/app.ts",
+      [
+        "export function renderScene() { return true; }",
+        "export function renderSprite() { return true; }",
+        "export function renderHud() { return true; }",
+        "export function physicsStep() { return true; }",
+        "export function physicsBody() { return true; }",
+        "export function physicsCollision() { return true; }"
+      ].join("\n")
+    );
+
+    const scan = scanSourceFile(path.join(root, "src/app.ts"));
+
+    assert.equal(scan.metrics.functionLikeCount, 6);
+    assert.deepEqual(scan.metrics.nameTokenClusters, [
+      {
+        token: "physics",
+        count: 3,
+        samples: ["physicsStep", "physicsBody", "physicsCollision"]
+      },
+      {
+        token: "render",
+        count: 3,
+        samples: ["renderScene", "renderSprite", "renderHud"]
+      }
+    ]);
+  } finally {
+    fs.rmSync(root, { force: true, recursive: true });
+  }
+});
+
 test("scanner resolves aliases through an injected resolver", () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "axi-imports-alias-"));
 

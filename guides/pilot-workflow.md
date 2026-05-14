@@ -86,6 +86,15 @@ Read the result in layers:
 
 If a strict contract produces many violations on day one, that is not failure. It means the project is not ready to gate that boundary yet. Keep using `axi observe`, tighten the public surface gradually, and promote only low-noise facts into `axi check`.
 
+Before promoting a boundary into CI, rehearse the hard gate deliberately:
+
+1. Run `axi check` on the clean reviewed contract and confirm it passes.
+2. Add one temporary violating import in a throwaway branch or temp copy.
+3. Confirm `axi check --json` exits non-zero with the exact expected violation code and file.
+4. Remove the temporary drift and only then wire the real gate.
+
+This repository dogfoods that loop with [examples/spec-first-pilot](../examples/spec-first-pilot) and `npm run spec-first:smoke`: the example passes at rest, then the harness writes deliberate visibility and layer drift into a temp copy and verifies hard failures.
+
 ## 4. Separate Health Audits From Boundary Drift
 
 A pilot should keep these outputs separate:

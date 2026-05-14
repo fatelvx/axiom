@@ -37,7 +37,8 @@
     "guides/",
     "examples/basic-app/",
     "examples/github-actions/",
-    "examples/monorepo-workspace/"
+    "examples/monorepo-workspace/",
+    "examples/spec-first-pilot/"
   ],
   "bin": {
     "axi": "dist/cli.js",
@@ -47,7 +48,7 @@
     "access": "public"
   },
   "scripts": {
-    "alpha:check": "npm run ci && npm run github-actions:smoke && npm run pack:dry-run",
+    "alpha:check": "npm run ci && npm run spec-first:smoke && npm run github-actions:smoke && npm run pack:dry-run",
     "build": "tsc -p tsconfig.json",
     "axiom:self": "npm run build && node dist/cli.js check --root . --strict",
     "check:fixture": "npm run build && node dist/cli.js check --root fixtures/basic-ts-valid",
@@ -58,6 +59,7 @@
     "prepare": "npm run build",
     "real-project:diff-smoke": "npm run build && node scripts/real-project-diff-smoke.mjs",
     "real-project:version-smoke": "npm run build && node scripts/real-project-version-smoke.mjs",
+    "spec-first:smoke": "npm run build && node scripts/spec-first-smoke.mjs",
     "test": "npm run build && node scripts/run-tests.mjs"
   },
   "dependencies": {

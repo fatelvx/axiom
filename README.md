@@ -132,6 +132,15 @@ node dist/cli.js graph --root examples/basic-app --violations-only
 node dist/cli.js graph --root examples/basic-app --attention
 ```
 
+For a pass-then-fail gate rehearsal, use the spec-first pilot example:
+
+```bash
+node dist/cli.js check --root examples/spec-first-pilot
+npm run spec-first:smoke
+```
+
+That smoke copies the valid example to a temporary directory, writes deliberate boundary drift, and confirms `axi check` fails on explicit visibility and layer rules.
+
 Choose your next step:
 
 - Existing project: start with `axi infer --root .`, then follow [Adopting Axiom In A Real Project](guides/adoption.md).
@@ -143,6 +152,7 @@ Choose your next step:
 - CI path: read [GitHub Actions And PR Summaries](guides/github-actions.md), then compare it with the dogfooded workflow in [.github/workflows/ci.yml](.github/workflows/ci.yml).
 - Agent path: read [Agent And MCP Integration](guides/agent-loop.md) before giving Axiom output to an AI repair loop or MCP wrapper.
 - Real contract shape: inspect [examples/monorepo-workspace](examples/monorepo-workspace) for package-level contracts.
+- Gate rehearsal: inspect [examples/spec-first-pilot](examples/spec-first-pilot) for a reviewed contract that passes cleanly before deliberate drift is introduced by the smoke harness.
 - Tool comparison: read [Comparison And Boundaries](guides/comparison.md) if you are asking how Axiom differs from ESLint, Dependency Cruiser, Nx, CodeQL, or custom scripts.
 - Product philosophy: read [Design Philosophy](guides/design-philosophy.md) to understand why Axiom prefers observability first and hard gates only for high-confidence contracts.
 

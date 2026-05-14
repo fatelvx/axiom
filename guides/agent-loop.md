@@ -16,6 +16,8 @@ For the dependency-free read-only tool contract now used inside the codebase, se
 
 For registering the stdio server in Codex or another MCP client, see [MCP Client Setup](mcp-client-setup.md).
 
+For testing a fresh agent with no internal project memory, use [MCP Conformance](mcp-conformance.md).
+
 ## Safe Agent Loop
 
 Use this loop for Codex, Claude Code, Cursor, CI bots, or a future MCP adapter:

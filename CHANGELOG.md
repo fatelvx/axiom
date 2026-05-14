@@ -24,6 +24,8 @@
 - Added `axiom_roots` as a read-only MCP tool so agents can inspect configured allowed roots before choosing a scan root.
 - Added `npm run mcp:smoke` to verify the local MCP stdio server, read-only tool listing, structured contract-failure evidence, and allowed-root rejection before client registration.
 - Added `npm run mcp:agent-loop:smoke` to verify a temp-only MCP workflow across roots, clean check, graph baseline, deliberate drift, observe, diff, and infer evidence.
+- Added an MCP conformance guide for blank-agent testing without internal project memory.
+- Added `npm run mcp:conformance:smoke` to verify roots-first handling, gate versus advisory semantics, inference-as-authoring-evidence, and baseline non-mutation.
 - Extended MCP stdio smoke and server tests to exercise all six read-only tools through `tools/call`: `axiom_roots`, `axiom_check`, `axiom_observe`, `axiom_graph`, `axiom_diff`, and `axiom_infer_contract`.
 - Extended MCP stdio smoke and server tests to cover invalid tool names, missing roots, malformed arguments, outside-root spec paths, and stable JSON-RPC error codes.
 - Extended MCP stdio smoke and server tests to wrap CLI execution failures and timeouts as structured tool errors instead of transport failures.

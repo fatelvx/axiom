@@ -6,6 +6,8 @@ This preview ships a minimal stdio server without adding an MCP SDK dependency d
 
 For copyable client registration commands, reload expectations, and allowed-root guidance, see [MCP Client Setup](mcp-client-setup.md).
 
+For a public conformance checklist and blank-agent drill, see [MCP Conformance](mcp-conformance.md).
+
 ## Protocol Shape
 
 The official MCP tools specification describes tools as named operations with an `inputSchema`, optional `outputSchema`, and optional annotations. It also says structured tool results live in `structuredContent` and should be mirrored as serialized JSON text for compatibility. The schema reference defines `readOnlyHint`, `destructiveHint`, and `openWorldHint` as annotations, while warning that annotations are hints and not a security boundary.
@@ -103,6 +105,7 @@ For a repeatable local smoke before registering an MCP client:
 
 ```bash
 npm run mcp:smoke
+npm run mcp:conformance:smoke
 ```
 
 Installed package aliases:

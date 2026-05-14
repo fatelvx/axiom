@@ -90,7 +90,7 @@ try {
   const baselinePayload = JSON.parse(baselineGraph.stdout);
   const diffPayload = JSON.parse(diffJson.stdout);
   const report = {
-    kind: "axiom.real-project-diff-smoke.v2",
+    kind: "axiom.real-project-diff-smoke.v3",
     generatedAt: startedAt.toISOString(),
     repo: options.repo,
     name: options.name,
@@ -534,6 +534,7 @@ function summarizeWarnings(warnings) {
 function summarizeInference(payload) {
   return {
     schemaVersion: payload.schemaVersion,
+    reviewStory: summarizeInferReviewStory(payload.reviewStory),
     summary: payload.summary ?? {
       sourceFiles: payload.sourceFiles?.length ?? 0,
       importsScanned: payload.importCount ?? 0,
@@ -561,6 +562,27 @@ function summarizeInference(payload) {
       classCount: note.classCount,
       message: note.message
     }))
+  };
+}
+
+function summarizeInferReviewStory(reviewStory) {
+  if (!reviewStory || typeof reviewStory !== "object") {
+    return undefined;
+  }
+
+  return {
+    summary: reviewStory.summary,
+    setup: reviewStory.setup,
+    pressures: (reviewStory.pressures ?? []).slice(0, 5).map((pressure) => ({
+      kind: pressure.kind,
+      title: pressure.title,
+      description: pressure.description,
+      severity: pressure.severity,
+      modules: pressure.modules ?? [],
+      files: pressure.files ?? []
+    })),
+    nextStep: reviewStory.nextStep,
+    caveat: reviewStory.caveat
   };
 }
 
@@ -688,6 +710,23 @@ function appendInferenceSummary(lines, inference) {
   lines.push(`- Inferred observed dependencies: ${inference.summary.observedDependencies ?? 0}`);
   lines.push(`- Collapsed cycles: ${inference.summary.collapsedCycles ?? inference.collapsedCycles.length}`);
   lines.push(`- Architecture pressure notes: ${inference.summary.architecturePressureNotes ?? inference.architecturePressureNotes.length}`);
+
+  if (inference.reviewStory) {
+    lines.push("", "### Inference Review Story");
+    lines.push(`- Summary: ${inference.reviewStory.summary}`);
+    lines.push(`- Setup: ${inference.reviewStory.setup}`);
+    for (const pressure of inference.reviewStory.pressures ?? []) {
+      lines.push(`- \`${pressure.title}\` (${pressure.severity}): ${pressure.description}`);
+      if (pressure.modules?.length > 0) {
+        lines.push(`  - modules: ${pressure.modules.map((module) => `\`${module}\``).join(", ")}`);
+      }
+      if (pressure.files?.length > 0) {
+        lines.push(`  - files: ${pressure.files.map((file) => `\`${file}\``).join(", ")}`);
+      }
+    }
+    lines.push(`- Next step: ${inference.reviewStory.nextStep}`);
+    lines.push(`- Caveat: ${inference.reviewStory.caveat}`);
+  }
 
   if (inference.collapsedCycles.length > 0) {
     lines.push("", "### Collapsed Cycles");

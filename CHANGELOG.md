@@ -11,6 +11,7 @@
 - Added `accepts ... until ... because ...` as the preferred `.axi` syntax for visible intentional violations.
 - Added optional `at "<path-or-glob>"` scopes for `.axi` intentional violations so accepted debt can be limited to one import site or exposed surface.
 - Added `axi infer` `reviewStory` output and bumped infer JSON to `axiom.infer.v8` so first-contract authoring surfaces can summarize setup, pressures, and next steps without treating inference as declared intent.
+- Preserved `axi infer` `reviewStory` in real-project diff smoke `baselineInference` reports and bumped the report kind to `axiom.real-project-diff-smoke.v3`.
 - Included warning guardrails in focused graph output so `axi graph --violations-only` acts more like an architecture attention view.
 - Added `axi graph --attention` as a product-facing alias for the focused architecture attention view.
 - Added pnpm workspace package discovery for internal package export resolution.

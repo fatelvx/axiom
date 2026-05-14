@@ -90,7 +90,7 @@ npm run real-project:diff-smoke -- \
 
 The script clones the baseline and current refs, optionally writes a small temporary `axiom.config.json` from `--include` / `--exclude`, runs `axi infer --group-by <mode> --json` on the baseline ref, saves an `axi graph --json` baseline, then runs `axi diff` and `axi observe --baseline --markdown` against the current ref with the inferred contract as an external `--spec`.
 
-The summarized JSON and Markdown report keeps a baseline inference section with source/import counts, collapsed-cycle evidence, cycle-breaking candidates, and large-file pressure notes. This matters when the inferred contract collapses a tangled source graph into one starter module: the graph baseline can be quiet while the inference evidence still shows what reviewers should inspect before treating the starter contract as intended architecture.
+The summarized JSON and Markdown report keeps a baseline inference section with `axi infer` `reviewStory`, source/import counts, collapsed-cycle evidence, cycle-breaking candidates, and large-file pressure notes. This matters when the inferred contract collapses a tangled source graph into one starter module: the graph baseline can be quiet while the inference evidence still shows what reviewers should inspect before treating the starter contract as intended architecture.
 
 This is closer to an Axiom pilot workflow than the version smoke harness. It asks: "If this was the contract snapshot we cared about, what architecture edges and advisory signals changed later?" The answer is still a smoke calibration result, not a maintainer-intent claim.
 
@@ -131,3 +131,4 @@ npm run real-project:diff-smoke -- \
 - [Vue core source-scoped diff smoke, 2026-05-14](results/vue-core-src-diff-smoke-2026-05-14.md)
 - [Headless UI React calibration, 2026-05-14](results/2026-05-14-headlessui-react-calibration.md)
 - [Headless UI React source-scoped diff smoke, 2026-05-14](results/headlessui-react-src-depth4-diff-smoke-2026-05-14.md)
+- [Prettier source-scoped diff smoke, 2026-05-14](results/prettier-src-diff-smoke-2026-05-14.md)

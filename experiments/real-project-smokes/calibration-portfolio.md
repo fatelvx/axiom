@@ -31,6 +31,7 @@ Each smoke should answer two questions before any implementation change:
 | yargs production diff smoke | CLI parser library with TypeScript source and ESM/Deno shims | Deno platform shim imports clone-missing `build/lib/yerror.js` while `lib/yerror.ts` exists | common-ecosystem-convention candidate | Do not change code yet; track relative build-output source mirrors for repeated evidence |
 | Vue core evidence artifact calibration | framework/compiler/runtime TypeScript workspace | inferred baseline plus graph baseline surfaced one precise minor-version edge drift and zero unresolved imports | quiet-control / advisory-signal-calibration | Do not change code; keep as artifact-loop evidence and continue portfolio coverage |
 | Headless UI React calibration | UI component library package with public facade | inferred starter collapsed six source groups into one cycle; public-surface probe exposed broad barrel/facade pressure | advisory-signal-calibration | Do not change validator behavior; preserve infer cycle evidence in diff-smoke reports and keep public API probes explicit |
+| Prettier source diff smoke | CLI formatter with language/plugin source packages | inferred baseline preserved seven collapsed-cycle stories, five large-file pressure notes, and two new minor-version edges into plugin surfaces | advisory-signal-calibration / scan-scope | Do not change validator behavior; keep deep-import warnings opt-in and use this as CLI-tool artifact calibration |
 
 ## Missing Coverage
 

@@ -6,12 +6,13 @@ export const AXIOM_MCP_TOOL_NAMES = [
   "axiom_observe",
   "axiom_graph",
   "axiom_diff",
-  "axiom_infer_contract"
+  "axiom_infer_contract",
+  "axiom_observe_inferred_contract"
 ] as const;
 
 export type AxiomMcpToolName = (typeof AXIOM_MCP_TOOL_NAMES)[number];
 
-type AxiomMcpCommand = "check" | "diff" | "graph" | "infer" | "observe" | "roots";
+type AxiomMcpCommand = "check" | "diff" | "graph" | "infer" | "infer_observe" | "observe" | "roots";
 type AxiomMcpAdoptionMode = "loose" | "strict" | "warn-unowned";
 type AxiomMcpGraphView = "attention" | "full" | "violationsOnly";
 type AxiomMcpGroupBy = "folder" | "workspace";
@@ -356,6 +357,35 @@ const TOOL_DESCRIPTORS: AxiomMcpToolDescriptor[] = [
     ),
     outputSchema: OUTPUT_SCHEMA,
     annotations: readOnlyAnnotations()
+  },
+  {
+    name: "axiom_observe_inferred_contract",
+    title: "Observe With Inferred Contract",
+    description: "Run `axi infer --json`, then run `axi observe --json` with a server-managed temporary inferred spec. This is advisory review evidence, not declared architecture intent.",
+    inputSchema: objectSchema(
+      {
+        root: COMMON_TOOL_PROPERTIES.root,
+        configPath: COMMON_TOOL_PROPERTIES.configPath,
+        include: COMMON_TOOL_PROPERTIES.include,
+        exclude: COMMON_TOOL_PROPERTIES.exclude,
+        adoptionMode: COMMON_TOOL_PROPERTIES.adoptionMode,
+        intentionalViolationWarningDays: COMMON_TOOL_PROPERTIES.intentionalViolationWarningDays,
+        warnings: COMMON_TOOL_PROPERTIES.warnings,
+        groupBy: {
+          type: "string",
+          description: "Inference grouping strategy used for the temporary starter contract.",
+          enum: ["folder", "workspace"]
+        },
+        groupDepth: {
+          type: "integer",
+          minimum: 1,
+          description: "Folder grouping depth used for the temporary starter contract."
+        }
+      },
+      ["root"]
+    ),
+    outputSchema: OUTPUT_SCHEMA,
+    annotations: readOnlyAnnotations()
   }
 ];
 
@@ -381,6 +411,10 @@ export function buildAxiomMcpCliInvocation(
 ): AxiomMcpCliInvocation {
   if (toolName === "axiom_roots") {
     throw new Error("axiom_roots is a server-native MCP tool and does not map to an Axiom CLI invocation.");
+  }
+
+  if (toolName === "axiom_observe_inferred_contract") {
+    throw new Error("axiom_observe_inferred_contract is a server workflow and does not map to one Axiom CLI invocation.");
   }
 
   const input = readInput(rawInput);
@@ -538,7 +572,69 @@ export function createAxiomMcpRootsToolResult(allowedRoots: string[]): AxiomMcpT
   };
 }
 
-function mcpToolToCliCommand(toolName: AxiomMcpToolName): Exclude<AxiomMcpCommand, "infer" | "roots"> {
+export function createAxiomMcpInferObserveToolResult(inferencePayload: unknown, observePayload: unknown): AxiomMcpToolResult {
+  const schemaVersion = "axiom.mcp.infer_observe.v1";
+  const payload = {
+    schemaVersion,
+    root: readStringProperty(isRecord(observePayload) ? observePayload : undefined, "root") ??
+      readStringProperty(isRecord(inferencePayload) ? inferencePayload : undefined, "root"),
+    contractSource: {
+      kind: "temporary_inferred_contract",
+      persisted: false,
+      notice: [
+        "This workflow used a server-managed temporary inferred contract.",
+        "The inferred contract mirrors the current graph; it is not declared architecture intent.",
+        "Do not save it, update baselines, accept debt, or treat this result as a hard gate without human review."
+      ]
+    },
+    inference: inferencePayload,
+    observe: observePayload
+  };
+
+  const structuredContent: AxiomMcpToolResult["structuredContent"] = {
+    command: "infer_observe",
+    exitCode: 0,
+    payload,
+    schemaVersion,
+    summary: createInferObserveSummary(inferencePayload, observePayload),
+    tool: "axiom_observe_inferred_contract"
+  };
+
+  return {
+    content: [{ type: "text", text: JSON.stringify(structuredContent, null, 2) }],
+    structuredContent
+  };
+}
+
+export function createAxiomMcpWorkflowErrorResult(
+  toolName: AxiomMcpToolName,
+  command: AxiomMcpCommand,
+  execution: AxiomMcpExecutionResult,
+  message: string
+): AxiomMcpToolResult {
+  const structuredContent: AxiomMcpToolResult["structuredContent"] = {
+    command,
+    error: {
+      message,
+      ...(execution.stderr ? { stderr: execution.stderr } : {}),
+      ...(execution.stdout ? { stdout: execution.stdout } : {})
+    },
+    exitCode: execution.exitCode,
+    summary: {
+      agentHint: "Treat this as an MCP workflow execution failure, not architecture evidence.",
+      kind: "tool_error"
+    },
+    tool: toolName
+  };
+
+  return {
+    content: [{ type: "text", text: JSON.stringify(structuredContent, null, 2) }],
+    isError: true,
+    structuredContent
+  };
+}
+
+function mcpToolToCliCommand(toolName: AxiomMcpToolName): Exclude<AxiomMcpCommand, "infer" | "infer_observe" | "roots"> {
   switch (toolName) {
     case "axiom_roots":
       throw new Error("axiom_roots is served by the MCP server without invoking the Axiom CLI.");
@@ -552,6 +648,8 @@ function mcpToolToCliCommand(toolName: AxiomMcpToolName): Exclude<AxiomMcpComman
       return "observe";
     case "axiom_infer_contract":
       throw new Error("axiom_infer_contract maps to infer through its dedicated branch.");
+    case "axiom_observe_inferred_contract":
+      throw new Error("axiom_observe_inferred_contract is served as an MCP workflow.");
   }
 }
 
@@ -674,6 +772,47 @@ function createResultSummary(invocation: AxiomMcpCliInvocation, payload: unknown
     ...(gate ? { gate } : {}),
     kind: resultSummaryKind(invocation.command),
     ...(ok !== undefined ? { ok } : {}),
+    ...(reviewStory ? { reviewStory } : {}),
+    ...(readStringProperty(architectureSummary, "status") ? { status: readStringProperty(architectureSummary, "status") } : {})
+  };
+}
+
+function createInferObserveSummary(inferencePayload: unknown, observePayload: unknown): AxiomMcpResultSummary {
+  const inferenceRecord = isRecord(inferencePayload) ? inferencePayload : {};
+  const observeRecord = isRecord(observePayload) ? observePayload : {};
+  const inferenceSummary = readRecordProperty(inferenceRecord, "summary");
+  const observeSummary = readRecordProperty(observeRecord, "summary");
+  const architectureSummary = readRecordProperty(observeRecord, "architectureSummary");
+  const counts = buildCounts(observeRecord, observeSummary);
+  addCount(counts, "architecturePressureNotes", readNumberProperty(inferenceSummary, "architecturePressureNotes"));
+  addCount(counts, "collapsedCycles", readNumberProperty(inferenceSummary, "collapsedCycles"));
+  addCount(counts, "importsScanned", readNumberProperty(inferenceSummary, "importsScanned"));
+  addCount(counts, "sourceFiles", readNumberProperty(inferenceSummary, "sourceFiles"));
+
+  const reviewStory = buildReviewStorySummary(readRecordProperty(architectureSummary, "reviewStory")) ??
+    buildReviewStorySummary(readRecordProperty(inferenceRecord, "reviewStory"));
+  const gate = buildGateSummary(
+    {
+      acceptedExitCodes: [0],
+      args: [],
+      command: "infer_observe",
+      executable: "",
+      payloadSchemaPrefix: "axiom.graph.",
+      readOnly: true,
+      toolName: "axiom_observe_inferred_contract"
+    },
+    architectureSummary
+  ) ?? {
+    command: "axi check",
+    currentCommandIsGate: false,
+    hardViolationsFailCheck: true
+  };
+
+  return {
+    agentHint: "Use this as advisory review evidence produced from a temporary inferred contract. The inferred contract mirrors the current graph and is not declared architecture intent; do not save it, update baselines, accept debt, or use it as a hard gate without human review.",
+    ...(Object.keys(counts).length > 0 ? { counts } : {}),
+    gate,
+    kind: "review",
     ...(reviewStory ? { reviewStory } : {}),
     ...(readStringProperty(architectureSummary, "status") ? { status: readStringProperty(architectureSummary, "status") } : {})
   };

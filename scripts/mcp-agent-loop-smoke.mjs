@@ -43,6 +43,7 @@ async function main() {
       introduceDrift(projectRoot);
       await verifyDriftEvidence(server, projectRoot, baselinePath);
       await verifyInferenceEvidence(server, projectRoot);
+      await verifyInferredObserveEvidence(server, projectRoot);
     } finally {
       await server.close();
     }
@@ -53,6 +54,7 @@ async function main() {
     console.log("- saved an explicit graph baseline under the temp project");
     console.log("- introduced hidden import and outward layer drift in temp only");
     console.log("- verified axiom_check hard violations, observe review evidence, diff drift, and infer authoring evidence");
+    console.log("- verified infer-to-observe temporary review evidence without writing a contract into the temp project");
   } finally {
     rmSync(tempRoot, { force: true, recursive: true });
   }
@@ -72,7 +74,7 @@ async function initializeServer(server) {
 async function verifyToolSurface(server, projectRoot) {
   const tools = await server.request("tools/list", {});
   assertNoJsonRpcError(tools, "tools/list");
-  assertEqual(tools.result?.tools?.length, 6, "tool count");
+  assertEqual(tools.result?.tools?.length, 7, "tool count");
   assertEqual(
     tools.result?.tools?.every((tool) => tool.annotations?.readOnlyHint === true),
     true,
@@ -188,6 +190,40 @@ async function verifyInferenceEvidence(server, projectRoot) {
     infer.result?.structuredContent?.summary?.agentHint ?? "",
     "not declared architecture intent",
     "infer agent hint"
+  );
+}
+
+async function verifyInferredObserveEvidence(server, projectRoot) {
+  const inferredObserve = await callTool(server, "axiom_observe_inferred_contract", {
+    root: projectRoot,
+    warnings: {
+      deepInternalImports: true,
+      largeFiles: true
+    }
+  });
+  assertNoJsonRpcError(inferredObserve, "axiom_observe_inferred_contract");
+  assertEqual(inferredObserve.result?.isError, undefined, "inferred observe tool error");
+  assertEqual(inferredObserve.result?.structuredContent?.schemaVersion, "axiom.mcp.infer_observe.v1", "inferred observe schema");
+  assertEqual(inferredObserve.result?.structuredContent?.summary?.kind, "review", "inferred observe summary kind");
+  assertEqual(
+    inferredObserve.result?.structuredContent?.summary?.gate?.currentCommandIsGate,
+    false,
+    "inferred observe is not gate"
+  );
+  assertEqual(
+    inferredObserve.result?.structuredContent?.payload?.contractSource?.persisted,
+    false,
+    "inferred observe contract persisted flag"
+  );
+  assertEqual(
+    inferredObserve.result?.structuredContent?.payload?.inference?.starterContract?.kind,
+    "current_graph_snapshot",
+    "inferred observe inference payload"
+  );
+  assertEqual(
+    inferredObserve.result?.structuredContent?.payload?.observe?.schemaVersion,
+    "axiom.graph.v12",
+    "inferred observe observe payload"
   );
 }
 

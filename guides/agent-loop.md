@@ -100,6 +100,7 @@ Then use the payload for exact evidence:
 - `payload.intentionalDebt[]` or `payload.intentionalViolations[]` for visible accepted debt.
 - `payload.drift` for observed-edge drift details.
 - `payload.axi`, `payload.modules[]`, and `payload.collapsedCycles[]` for inferred-contract review.
+- `payload.inference` and `payload.observe` from `axiom_observe_inferred_contract` when a no-contract project needs temporary inferred review evidence without saving `.axi`.
 
 Do not make decisions from `summary` alone. It is an index over the same evidence, not a replacement for the evidence.
 
@@ -115,6 +116,7 @@ Candidate tools:
 - `axiom_graph`: run `axi graph --json` or `--mermaid`.
 - `axiom_diff`: run `axi diff <baseline> --json` for baseline drift.
 - `axiom_infer_contract`: run `axi infer --json` for a current-graph starter draft.
+- `axiom_observe_inferred_contract`: run `axi infer --json`, then `axi observe --json` with a server-managed temporary inferred spec for advisory review.
 
 The preview implementation lives in `src/mcp/tools.ts`, with a minimal stdio server in `src/mcp/server.ts`. It defines tool descriptors, read-only annotations, JSON input/output schemas, and a CLI invocation adapter without adding an MCP SDK dependency. Future server growth should keep importing that adapter instead of inventing new tool names or validation behavior.
 
@@ -131,6 +133,8 @@ Do not expose write tools in v0:
 - no auto-accepted debt,
 - no hidden allowlists,
 - no automatic baseline updates during PR review.
+
+`axiom_observe_inferred_contract` is still read-only. It may create a temporary server-side spec file for the duration of one tool call, but it must not save `.axi` into the target repo or treat the inferred contract as declared intent.
 
 ## PR Comment Recipe
 

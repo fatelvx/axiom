@@ -23,7 +23,8 @@ const expectedToolNames = [
   "axiom_observe",
   "axiom_graph",
   "axiom_diff",
-  "axiom_infer_contract"
+  "axiom_infer_contract",
+  "axiom_observe_inferred_contract"
 ];
 const writeToolNamePattern = /(accept|approve|edit|fix|mutate|repair|rewrite|update|write)/i;
 
@@ -57,17 +58,19 @@ async function main() {
       await verifyFailingCheckGate(server, projectRoot);
       await verifyObserveAndDiffAreReviewEvidence(server, projectRoot, baselinePath);
       await verifyInferenceIsAuthoringEvidence(server, projectRoot);
+      await verifyInferredObserveIsTemporaryReviewEvidence(server, projectRoot);
       assertEqual(hashFile(baselinePath), baselineHashBefore, "baseline remains unchanged");
     } finally {
       await server.close();
     }
 
     console.log("MCP conformance smoke passed.");
-    console.log("- exposed the expected six read-only Axiom MCP tools");
+    console.log("- exposed the expected seven read-only Axiom MCP tools");
     console.log("- enforced roots-first handling and outside-root rejection");
     console.log("- treated axiom_check as the hard gate");
     console.log("- treated observe, graph, and diff as advisory review evidence");
     console.log("- treated infer output as authoring evidence, not declared intent");
+    console.log("- treated infer-to-observe output as temporary inferred review evidence");
     console.log("- left the explicit graph baseline unchanged during review");
   } finally {
     rmSync(tempRoot, { force: true, recursive: true });
@@ -245,6 +248,44 @@ async function verifyInferenceIsAuthoringEvidence(server, projectRoot) {
     infer.result?.structuredContent?.summary?.agentHint ?? "",
     "not declared architecture intent",
     "infer agent hint"
+  );
+}
+
+async function verifyInferredObserveIsTemporaryReviewEvidence(server, projectRoot) {
+  const inferredObserve = await callTool(server, "axiom_observe_inferred_contract", {
+    root: projectRoot,
+    warnings: {
+      deepInternalImports: true,
+      largeFiles: true
+    }
+  });
+  assertNoJsonRpcError(inferredObserve, "axiom_observe_inferred_contract");
+  assertEqual(inferredObserve.result?.isError, undefined, "inferred observe tool error");
+  assertEqual(inferredObserve.result?.structuredContent?.summary?.kind, "review", "inferred observe summary kind");
+  assertEqual(
+    inferredObserve.result?.structuredContent?.summary?.gate?.currentCommandIsGate,
+    false,
+    "inferred observe is not gate"
+  );
+  assertEqual(
+    inferredObserve.result?.structuredContent?.payload?.contractSource?.persisted,
+    false,
+    "inferred observe contract persisted flag"
+  );
+  assertTextIncludes(
+    inferredObserve.result?.structuredContent?.summary?.agentHint ?? "",
+    "not declared architecture intent",
+    "inferred observe agent hint"
+  );
+  assertEqual(
+    inferredObserve.result?.structuredContent?.payload?.inference?.starterContract?.kind,
+    "current_graph_snapshot",
+    "inferred observe starter contract kind"
+  );
+  assertEqual(
+    inferredObserve.result?.structuredContent?.payload?.observe?.architectureSummary?.gate?.currentCommandIsGate,
+    false,
+    "inferred observe payload gate"
   );
 }
 

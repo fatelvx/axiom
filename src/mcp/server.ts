@@ -1,16 +1,20 @@
 #!/usr/bin/env node
 import { spawn } from "node:child_process";
 import fs from "node:fs";
+import os from "node:os";
 import path from "node:path";
 import readline from "node:readline";
 import { fileURLToPath } from "node:url";
 import {
   AXIOM_MCP_TOOL_NAMES,
   buildAxiomMcpCliInvocation,
+  createAxiomMcpInferObserveToolResult,
   createAxiomMcpRootsToolResult,
   createAxiomMcpToolResult,
+  createAxiomMcpWorkflowErrorResult,
   listAxiomMcpTools,
   type AxiomMcpExecutionResult,
+  type AxiomMcpToolResult,
   type AxiomMcpToolName
 } from "./tools.js";
 
@@ -127,6 +131,10 @@ async function callTool(params: unknown): Promise<unknown> {
     return createAxiomMcpRootsToolResult(serverConfig.allowedRoots);
   }
 
+  if (call.name === "axiom_observe_inferred_contract") {
+    return callInferObserveTool(call.arguments);
+  }
+
   validateToolInputPaths(call.arguments);
   const invocation = buildAxiomMcpCliInvocation(call.name, call.arguments, {
     cliPath: serverConfig.cliPath
@@ -136,6 +144,90 @@ async function callTool(params: unknown): Promise<unknown> {
   });
 
   return createAxiomMcpToolResult(invocation, execution);
+}
+
+async function callInferObserveTool(input: Record<string, unknown>): Promise<unknown> {
+  assertKnownInputKeys(
+    input,
+    [
+      "adoptionMode",
+      "configPath",
+      "exclude",
+      "groupBy",
+      "groupDepth",
+      "include",
+      "intentionalViolationWarningDays",
+      "root",
+      "warnings"
+    ],
+    "axiom_observe_inferred_contract"
+  );
+  validateToolInputPaths(input);
+
+  const inferenceInput = pickInputFields(input, ["configPath", "exclude", "groupBy", "groupDepth", "include", "root"]);
+  const inferInvocation = buildAxiomMcpCliInvocation("axiom_infer_contract", inferenceInput, {
+    cliPath: serverConfig.cliPath
+  });
+  const inferExecution = await runInvocation(inferInvocation.executable, inferInvocation.args, {
+    timeoutMs: serverConfig.timeoutMs
+  });
+  const inferResult = createAxiomMcpToolResult(inferInvocation, inferExecution);
+  if (inferResult.isError) {
+    return createAxiomMcpWorkflowErrorResult(
+      "axiom_observe_inferred_contract",
+      "infer_observe",
+      inferExecution,
+      "Axiom infer step failed before observe could run."
+    );
+  }
+
+  const inferencePayload = inferResult.structuredContent.payload;
+  const inferredAxi = readPayloadString(inferencePayload, "axi");
+  if (!inferredAxi) {
+    return createAxiomMcpWorkflowErrorResult(
+      "axiom_observe_inferred_contract",
+      "infer_observe",
+      { exitCode: 1, stderr: "", stdout: JSON.stringify(inferencePayload) },
+      "Axiom infer step did not return an .axi draft."
+    );
+  }
+
+  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "axiom-mcp-inferred-spec-"));
+  const tempSpecPath = path.join(tempDir, "inferred.axi");
+  try {
+    fs.writeFileSync(tempSpecPath, inferredAxi, "utf8");
+    const observeInput = {
+      ...pickInputFields(input, [
+        "adoptionMode",
+        "configPath",
+        "exclude",
+        "include",
+        "intentionalViolationWarningDays",
+        "root",
+        "warnings"
+      ]),
+      specPaths: [tempSpecPath]
+    };
+    const observeInvocation = buildAxiomMcpCliInvocation("axiom_observe", observeInput, {
+      cliPath: serverConfig.cliPath
+    });
+    const observeExecution = await runInvocation(observeInvocation.executable, observeInvocation.args, {
+      timeoutMs: serverConfig.timeoutMs
+    });
+    const observeResult = createAxiomMcpToolResult(observeInvocation, observeExecution);
+    if (observeResult.isError) {
+      return createAxiomMcpWorkflowErrorResult(
+        "axiom_observe_inferred_contract",
+        "infer_observe",
+        observeExecution,
+        "Axiom observe step failed after temporary inference."
+      );
+    }
+
+    return createAxiomMcpInferObserveToolResult(inferencePayload, observeResult.structuredContent.payload);
+  } finally {
+    fs.rmSync(tempDir, { force: true, recursive: true });
+  }
 }
 
 function readToolCallParams(params: unknown): { arguments: Record<string, unknown>; name: AxiomMcpToolName } {
@@ -164,6 +256,33 @@ function assertNoArguments(input: Record<string, unknown>, toolName: AxiomMcpToo
   if (keys.length > 0) {
     throw new Error(`Invalid params: ${toolName} does not accept input fields: ${keys.join(", ")}.`);
   }
+}
+
+function assertKnownInputKeys(input: Record<string, unknown>, allowedKeys: string[], toolName: AxiomMcpToolName): void {
+  const allowed = new Set(allowedKeys);
+  const unknownKeys = Object.keys(input).filter((key) => !allowed.has(key));
+  if (unknownKeys.length > 0) {
+    throw new Error(`Invalid params: ${toolName} received unsupported input field${unknownKeys.length === 1 ? "" : "s"}: ${unknownKeys.join(", ")}.`);
+  }
+}
+
+function pickInputFields(input: Record<string, unknown>, keys: string[]): Record<string, unknown> {
+  const picked: Record<string, unknown> = {};
+  for (const key of keys) {
+    if (input[key] !== undefined) {
+      picked[key] = input[key];
+    }
+  }
+  return picked;
+}
+
+function readPayloadString(payload: AxiomMcpToolResult["structuredContent"]["payload"], key: string): string | undefined {
+  if (!isRecord(payload)) {
+    return undefined;
+  }
+
+  const value = payload[key];
+  return typeof value === "string" ? value : undefined;
 }
 
 function validateToolInputPaths(input: Record<string, unknown>): void {

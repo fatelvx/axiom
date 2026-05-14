@@ -26,7 +26,8 @@
 - Added `npm run mcp:agent-loop:smoke` to verify a temp-only MCP workflow across roots, clean check, graph baseline, deliberate drift, observe, diff, and infer evidence.
 - Added an MCP conformance guide for blank-agent testing without internal project memory.
 - Added `npm run mcp:conformance:smoke` to verify roots-first handling, gate versus advisory semantics, inference-as-authoring-evidence, and baseline non-mutation.
-- Extended MCP stdio smoke and server tests to exercise all six read-only tools through `tools/call`: `axiom_roots`, `axiom_check`, `axiom_observe`, `axiom_graph`, `axiom_diff`, and `axiom_infer_contract`.
+- Added `axiom_observe_inferred_contract`, a read-only MCP workflow that runs inference, observes with a server-managed temporary inferred spec, and returns both payloads without writing `.axi` into the target repository.
+- Extended MCP stdio smoke and server tests to exercise all seven read-only tools through `tools/call`: `axiom_roots`, `axiom_check`, `axiom_observe`, `axiom_graph`, `axiom_diff`, `axiom_infer_contract`, and `axiom_observe_inferred_contract`.
 - Extended MCP stdio smoke and server tests to cover invalid tool names, missing roots, malformed arguments, outside-root spec paths, and stable JSON-RPC error codes.
 - Extended MCP stdio smoke and server tests to wrap CLI execution failures and timeouts as structured tool errors instead of transport failures.
 - Included warning guardrails in focused graph output so `axi graph --violations-only` acts more like an architecture attention view.

@@ -26,7 +26,7 @@ test("mcp stdio server initializes, lists tools, and calls read-only tools", asy
     server.notify("notifications/initialized", {});
 
     const tools = await server.request("tools/list", {});
-    assert.equal(tools.result?.tools?.length, 6);
+    assert.equal(tools.result?.tools?.length, 7);
     assert.equal(
       tools.result?.tools?.every((tool: { annotations?: { readOnlyHint?: boolean } }) => tool.annotations?.readOnlyHint === true),
       true
@@ -102,6 +102,26 @@ test("mcp stdio server initializes, lists tools, and calls read-only tools", asy
     assert.equal(infer.result?.structuredContent?.schemaVersion, "axiom.infer.v8");
     assert.equal(infer.result?.structuredContent?.summary?.kind, "inference");
     assert.match(infer.result?.structuredContent?.payload?.axi ?? "", /module Physics/);
+
+    const inferredObserve = await server.request("tools/call", {
+      name: "axiom_observe_inferred_contract",
+      arguments: {
+        root: "fixtures/basic-ts-valid",
+        warnings: {
+          deepInternalImports: true
+        }
+      }
+    });
+    assert.equal(inferredObserve.result?.isError, undefined);
+    assert.equal(inferredObserve.result?.structuredContent?.tool, "axiom_observe_inferred_contract");
+    assert.equal(inferredObserve.result?.structuredContent?.command, "infer_observe");
+    assert.equal(inferredObserve.result?.structuredContent?.schemaVersion, "axiom.mcp.infer_observe.v1");
+    assert.equal(inferredObserve.result?.structuredContent?.summary?.kind, "review");
+    assert.equal(inferredObserve.result?.structuredContent?.summary?.gate?.currentCommandIsGate, false);
+    assert.match(inferredObserve.result?.structuredContent?.summary?.agentHint ?? "", /temporary inferred contract/);
+    assert.equal(inferredObserve.result?.structuredContent?.payload?.contractSource?.persisted, false);
+    assert.equal(inferredObserve.result?.structuredContent?.payload?.inference?.schemaVersion, "axiom.infer.v8");
+    assert.equal(inferredObserve.result?.structuredContent?.payload?.observe?.schemaVersion, "axiom.graph.v12");
   } finally {
     try {
       await server.close();
@@ -191,6 +211,16 @@ test("mcp stdio server returns stable JSON-RPC errors for invalid tool calls", a
     });
     assert.equal(outsideSpec.error?.code, -32602);
     assert.match(outsideSpec.error?.message ?? "", /specPaths is outside allowed MCP roots/);
+
+    const inferredObserveWithSpec = await server.request("tools/call", {
+      name: "axiom_observe_inferred_contract",
+      arguments: {
+        root: repoRoot,
+        specPaths: ["axiom/main.axi"]
+      }
+    });
+    assert.equal(inferredObserveWithSpec.error?.code, -32602);
+    assert.match(inferredObserveWithSpec.error?.message ?? "", /unsupported input field/);
   } finally {
     await server.close();
   }

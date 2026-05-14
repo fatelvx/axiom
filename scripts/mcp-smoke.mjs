@@ -22,8 +22,8 @@ async function main() {
 
   console.log("MCP stdio smoke passed.");
   console.log("- initialized the local stdio server");
-  console.log("- listed 6 read-only Axiom tools");
-  console.log("- exercised all 6 read-only Axiom tools through tools/call");
+  console.log("- listed 7 read-only Axiom tools");
+  console.log("- exercised all 7 read-only Axiom tools through tools/call");
   console.log("- reported allowed MCP roots through axiom_roots");
   console.log("- included agent-readable summary fields for gate, review, drift, inference, and tool errors");
   console.log("- checked the current repository through axiom_check");
@@ -53,7 +53,7 @@ async function runMainSmoke() {
 
     const tools = await server.request("tools/list", {});
     assertNoJsonRpcError(tools, "tools/list");
-    assertEqual(tools.result?.tools?.length, 6, "tool count");
+    assertEqual(tools.result?.tools?.length, 7, "tool count");
     assertEqual(
       tools.result?.tools?.every((tool) => tool.annotations?.readOnlyHint === true),
       true,
@@ -147,6 +147,38 @@ async function runMainSmoke() {
     assertEqual(infer.result?.structuredContent?.schemaVersion, "axiom.infer.v8", "infer schema");
     assertEqual(infer.result?.structuredContent?.summary?.kind, "inference", "infer summary kind");
     assertTextIncludes(infer.result?.structuredContent?.payload?.axi ?? "", "module Physics", "infer generated contract");
+
+    const inferredObserve = await callTool(server, "axiom_observe_inferred_contract", {
+      root: fixtureRoot,
+      warnings: {
+        deepInternalImports: true
+      }
+    });
+    assertEqual(inferredObserve.result?.isError, undefined, "inferred observe is not a tool error");
+    assertEqual(inferredObserve.result?.structuredContent?.tool, "axiom_observe_inferred_contract", "inferred observe tool name");
+    assertEqual(inferredObserve.result?.structuredContent?.command, "infer_observe", "inferred observe command");
+    assertEqual(inferredObserve.result?.structuredContent?.schemaVersion, "axiom.mcp.infer_observe.v1", "inferred observe schema");
+    assertEqual(inferredObserve.result?.structuredContent?.summary?.kind, "review", "inferred observe summary kind");
+    assertEqual(
+      inferredObserve.result?.structuredContent?.summary?.gate?.currentCommandIsGate,
+      false,
+      "inferred observe is not a gate"
+    );
+    assertEqual(
+      inferredObserve.result?.structuredContent?.payload?.contractSource?.persisted,
+      false,
+      "inferred observe does not persist contract"
+    );
+    assertEqual(
+      inferredObserve.result?.structuredContent?.payload?.inference?.schemaVersion,
+      "axiom.infer.v8",
+      "inferred observe inference payload"
+    );
+    assertEqual(
+      inferredObserve.result?.structuredContent?.payload?.observe?.schemaVersion,
+      "axiom.graph.v12",
+      "inferred observe observe payload"
+    );
   } finally {
     try {
       await server.close();

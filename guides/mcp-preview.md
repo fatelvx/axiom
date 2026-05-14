@@ -2,7 +2,7 @@
 
 Axiom's MCP surface should be a thin read-only wrapper over the same CLI JSON evidence that local developers, CI, and agents already use.
 
-This preview ships a minimal stdio server without adding an MCP SDK dependency during the current supply-chain risk window. The server is deliberately small: lifecycle, ping, `tools/list`, and `tools/call` only. Architecture evidence still comes from the CLI; `axiom_roots` is the only server-native tool, and it only reports the current root policy.
+This preview ships a minimal stdio server without adding an MCP SDK dependency during the current supply-chain risk window. The server is deliberately small: lifecycle, ping, `tools/list`, and `tools/call` only. Architecture evidence still comes from the CLI; `axiom_roots` reports the current root policy, and `axiom_observe_inferred_contract` composes existing infer plus observe evidence through a server-managed temporary spec.
 
 For copyable client registration commands, reload expectations, and allowed-root guidance, see [MCP Client Setup](mcp-client-setup.md).
 
@@ -29,7 +29,7 @@ References:
 
 ## Tool Set
 
-The preview defines six tools:
+The preview defines seven tools:
 
 | MCP tool | Wrapped CLI command | Role |
 | --- | --- | --- |
@@ -39,12 +39,13 @@ The preview defines six tools:
 | `axiom_graph` | `axi graph --json` | Declared and observed graph evidence, optionally focused. |
 | `axiom_diff` | `axi diff --json` | Advisory observed-edge drift against an existing graph baseline. |
 | `axiom_infer_contract` | `axi infer --json` | Current-graph starter contract evidence for authoring. |
+| `axiom_observe_inferred_contract` | `axi infer --json` then `axi observe --json --spec <temporary inferred spec>` | Advisory review evidence using a temporary inferred contract without writing `.axi` into the target repository. |
 
 The important product rule is that MCP does not create new semantics. If the CLI would not fail, the MCP wrapper does not invent a failure. If the CLI says drift is advisory, the MCP wrapper returns advisory drift.
 
 ## Adapter Contract
 
-`buildAxiomMcpCliInvocation()` maps architecture tool input into a `node dist/cli.js ... --json` invocation. It never builds a shell string; it returns an executable plus an argument array. `axiom_roots` is handled directly by the server because it reports server configuration rather than project architecture evidence.
+`buildAxiomMcpCliInvocation()` maps single-command architecture tool input into a `node dist/cli.js ... --json` invocation. It never builds a shell string; it returns an executable plus an argument array. `axiom_roots` is handled directly by the server because it reports server configuration rather than project architecture evidence. `axiom_observe_inferred_contract` is also handled by the server because it composes two CLI commands with a temporary spec file that is removed after the call.
 
 `createAxiomMcpToolResult()` maps CLI execution output into MCP-shaped result content:
 
@@ -53,6 +54,7 @@ The important product rule is that MCP does not create new semantics. If the CLI
 - unexpected CLI exits become tool execution errors with `isError: true`.
 - wrong or missing Axiom `schemaVersion` also becomes `isError: true`.
 - successful and failed tool results include `structuredContent.summary`, a small agent-readable index over the payload.
+- `axiom_observe_inferred_contract` returns `schemaVersion: axiom.mcp.infer_observe.v1` with both the infer payload and observe payload preserved under `structuredContent.payload`.
 
 This keeps the hard gate where it belongs:
 
@@ -69,7 +71,7 @@ For fast routing, the wrapper also includes `structuredContent.summary`:
 
 | Field | Meaning |
 | --- | --- |
-| `kind` | `roots`, `check`, `review`, `inference`, or `tool_error`. |
+| `kind` | `roots`, `check`, `review`, `inference`, or `tool_error`. `axiom_observe_inferred_contract` is still `review` because its output is advisory. |
 | `gate` | Whether this command is the hard gate. `axiom_check` is the gate; graph, observe, and diff are review context. |
 | `ok` | The `axi check` pass/fail boolean when available. |
 | `counts` | Common counts copied from CLI summaries, plus drift counts when present. |
@@ -87,6 +89,7 @@ MCP v0 must stay read-only:
 - no adding `accepts ... until ... because ...`,
 - no updating baselines,
 - no rewriting source imports,
+- no persisting inferred MCP temp specs into the target repository,
 - no Markdown parsing when JSON is available,
 - no MCP-only validation rules,
 - no model-hosted private architecture state.
@@ -137,6 +140,8 @@ Minimum supported methods:
 
 `src/mcp/server.ts` imports the preview adapter, executes the returned command with `spawn`, then passes `{ exitCode, stdout, stderr }` to `createAxiomMcpToolResult()`.
 
+For `axiom_observe_inferred_contract`, the server runs `axi infer --json`, writes the inferred `.axi` text to a temporary server-managed file, runs `axi observe --json --spec <temp-file>`, returns both payloads, then removes the temporary file. The target repository is not modified.
+
 Minimum server responsibilities:
 
 - validate the requested project root against allowed workspace roots,
@@ -144,6 +149,7 @@ Minimum server responsibilities:
 - expose `axiom_roots` so agents can inspect the allowed-root policy before picking a scan root,
 - validate `configPath`, `baselinePath`, and `specPaths` against allowed roots before execution,
 - return raw arrays such as `violations[]`, `warnings[]`, `intentionalDebt[]`, and `drift`,
+- keep inferred-contract observe workflows marked as temporary and advisory,
 - avoid creating baselines during PR review,
 - log tool calls without leaking private code or contracts to remote services.
 

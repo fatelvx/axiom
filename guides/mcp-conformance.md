@@ -40,6 +40,7 @@ That constraint is intentional. Axiom MCP should be understandable from shipped 
 | `axiom_graph` | Treat this as graph evidence for review, baselines, and diagrams. It is not a gate. |
 | `axiom_diff` | Treat drift as advisory observed-edge change against an existing baseline. Do not update the baseline during the same review. |
 | `axiom_infer_contract` | Treat inference as current-graph authoring evidence. It is not declared architecture intent and should not be saved as `.axi` without human review. |
+| `axiom_observe_inferred_contract` | Treat this as advisory review evidence produced from a temporary inferred contract. It can help no-contract projects get warning context, but it is not a gate and not declared intent. |
 
 Every v0 tool must remain read-only. A conforming server exposes no MCP tool that edits source, writes contracts, accepts debt, updates baselines, rewrites imports, or changes allowed roots.
 
@@ -53,13 +54,14 @@ npm run mcp:conformance:smoke
 
 The smoke uses a temporary copy of `examples/spec-first-pilot` and verifies:
 
-- the server exposes the expected six read-only tools,
+- the server exposes the expected seven read-only tools,
 - `axiom_roots` reports the configured root before scanning,
 - a request outside `--allow-root` is rejected,
 - clean `axiom_check` is a passing hard gate,
 - deliberate hidden-import and layer drift make `axiom_check` fail with hard violations,
 - `axiom_observe` and `axiom_diff` remain advisory review evidence,
 - `axiom_infer_contract` returns starter-contract evidence marked as not declared intent,
+- `axiom_observe_inferred_contract` returns temporary inferred review evidence without persisting `.axi`,
 - the explicit graph baseline is not rewritten during review.
 
 This smoke does not prove that an arbitrary client UI renders the tools well. It proves the server behavior that a client or agent should receive.
@@ -93,6 +95,7 @@ Pass criteria:
 - `axiom_check` is described as the hard gate.
 - `axiom_observe`, `axiom_graph`, and `axiom_diff` are described as review context.
 - `axiom_infer_contract` is described as authoring evidence, not intent.
+- `axiom_observe_inferred_contract` is described as temporary inferred review evidence, not an approved contract.
 - The agent does not edit files, update baselines, accept debt, commit, or push.
 
 Fail criteria:
@@ -100,6 +103,7 @@ Fail criteria:
 - The agent reads internal memory during the drill.
 - The agent treats advisory warnings or drift as hard gate failures.
 - The agent treats inferred contracts as approved architecture.
+- The agent saves the temporary inferred contract from `axiom_observe_inferred_contract` as `.axi` without human review.
 - The agent tries to create `.axi`, update a baseline, accept debt, or rewrite imports without user approval.
 - The agent scans a path that `axiom_roots` did not list.
 

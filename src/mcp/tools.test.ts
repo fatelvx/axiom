@@ -185,6 +185,19 @@ test("mcp infer invocation stays spec-free and maps grouping options", () => {
   ]);
 });
 
+test("mcp infer-observe workflow is server-native and read-only", () => {
+  assert.throws(
+    () => buildAxiomMcpCliInvocation("axiom_observe_inferred_contract", { root: "." }),
+    /server workflow/
+  );
+
+  const descriptor = getAxiomMcpToolDescriptor("axiom_observe_inferred_contract");
+  assert.equal(descriptor.annotations.readOnlyHint, true);
+  assert.equal(descriptor.inputSchema.properties?.specPaths, undefined);
+  assert.equal(descriptor.inputSchema.properties?.baselinePath, undefined);
+  assert.equal(descriptor.inputSchema.properties?.warnings?.type, "object");
+});
+
 test("mcp tool result treats check violations as structured evidence, not tool errors", () => {
   const invocation = buildAxiomMcpCliInvocation("axiom_check", { root: "." }, { cliPath: "dist/cli.js", nodeExecutable: "node" });
   const result = createAxiomMcpToolResult(invocation, {

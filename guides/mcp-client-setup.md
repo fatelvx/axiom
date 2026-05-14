@@ -20,7 +20,7 @@ During npm supply-chain risk periods, prefer the existing dependency tree. Do no
 
 The smoke starts the local stdio server, lists the read-only tool set, calls `axiom_roots`, runs `axiom_check` against the current repository, confirms hard contract failures return as structured evidence, and verifies `--allow-root` rejection. Passing this smoke means the server binary works before any MCP client reload behavior enters the picture.
 
-The conformance smoke goes one step higher: it verifies roots-first behavior, gate versus advisory semantics, inference-as-authoring-evidence, and baseline non-mutation in a temporary spec-first project. Use [MCP Conformance](mcp-conformance.md) before asking a blank agent to test the integration.
+The conformance smoke goes one step higher: it verifies roots-first behavior, gate versus advisory semantics, inference-as-authoring-evidence, temporary infer-to-observe review evidence, and baseline non-mutation in a temporary spec-first project. Use [MCP Conformance](mcp-conformance.md) before asking a blank agent to test the integration.
 
 ## Register With Codex
 

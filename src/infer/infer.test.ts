@@ -24,6 +24,9 @@ test("infer creates a starter contract from source folders", () => {
 
   const output = formatInferResult(result);
   assert.match(output, /not a recommended architecture/);
+  assert.match(output, /# inference review story:/);
+  assert.match(output, /# summary: Starter contract inferred 3 modules and 1 observed module edge from 3 source files\./);
+  assert.match(output, /# pressure: Review inferred dependencies - 1 observed module edge became `depends on` lines/);
   assert.match(output, /# authoring checklist:/);
   assert.match(output, /# 1\. Rename modules so they match the team's architecture vocabulary/);
   assert.match(output, /# next commands:/);
@@ -134,7 +137,9 @@ test("infer collapses cyclic candidate groups into one starter module", () => {
   assert.match(output, /Review collapsed cycles as boundary tangles/);
 
   const payload = toInferJson(result);
-  assert.equal(payload.schemaVersion, "axiom.infer.v7");
+  assert.equal(payload.schemaVersion, "axiom.infer.v8");
+  assert.equal(payload.reviewStory.pressures[0]?.kind, "collapsed_cycle");
+  assert.match(payload.reviewStory.nextStep, /Review collapsed-cycle candidates/);
   assert.deepEqual(payload.collapsedCycles[0]?.cycleBreakingCandidates?.map((candidate) => ({
     fromGroup: candidate.fromGroup,
     toGroup: candidate.toGroup,
@@ -198,7 +203,7 @@ test("infer JSON includes the generated .axi draft", () => {
   const result = runInfer({ root: path.join(repoRoot, "fixtures/basic-ts-valid") });
   const payload = toInferJson(result);
 
-  assert.equal(payload.schemaVersion, "axiom.infer.v7");
+  assert.equal(payload.schemaVersion, "axiom.infer.v8");
   assert.deepEqual(payload.starterContract, {
     kind: "current_graph_snapshot",
     notice: [
@@ -223,6 +228,25 @@ test("infer JSON includes the generated .axi draft", () => {
     ]
   });
   assert.equal(payload.summary.sourceFiles, 3);
+  assert.deepEqual(payload.reviewStory, {
+    summary: "Starter contract inferred 3 modules and 1 observed module edge from 3 source files.",
+    setup:
+      "Scanned 3 source files and 1 import; 3 candidate groups became 3 starter modules. This is a current-graph snapshot, not declared architecture intent yet.",
+    pressures: [
+      {
+        kind: "dependency_evidence",
+        title: "Review inferred dependencies",
+        description:
+          "1 observed module edge became `depends on` lines with sample import evidence. Confirm each edge is intended before using this draft as a gate.",
+        severity: "info",
+        modules: ["Physics", "Simulation"]
+      }
+    ],
+    nextStep:
+      "Rename modules, confirm inferred dependency evidence, then run `axi observe --root . --spec <draft.axi> --markdown` before saving a graph baseline.",
+    caveat:
+      "Inference reads static imports and folder/package shape. It can lower authoring cost, but humans still decide module names, visibility, layers, accepted debt, and which edges are real architecture intent."
+  });
   assert.equal(payload.summary.architecturePressureNotes, 0);
   assert.deepEqual(payload.architecturePressureNotes, []);
   assert.equal(payload.summary.modules, 3);
@@ -273,9 +297,11 @@ test("infer includes architecture pressure notes for large source files", () => 
         "src/main.ts has 805 lines; inferred module boundaries may miss responsibilities concentrated inside this file."
     });
     assert.match(output, /# architecture pressure notes:/);
+    assert.match(output, /# pressure: Large-file pressure in inferred scope - 1 large source file may hide responsibilities/);
     assert.match(output, /# - src\/main\.ts: 805 lines, 0 imports, 0 functions, 0 classes/);
     assert.match(output, /quiet inferred import graph can still hide responsibilities inside very large files/);
     assert.equal(payload.summary.architecturePressureNotes, 1);
+    assert.equal(payload.reviewStory.pressures[0]?.kind, "large_source_file");
     assert.equal(payload.architecturePressureNotes[0]?.filePath, "src/main.ts");
   } finally {
     fs.rmSync(root, { force: true, recursive: true });

@@ -13,7 +13,7 @@ Each JSON payload starts with a `schemaVersion`:
 ```text
 axiom.check.v4
 axiom.graph.v12
-axiom.infer.v7
+axiom.infer.v8
 ```
 
 Treat the prefix as the command family:
@@ -153,6 +153,7 @@ Treat `drift.newObservedEdges[]` and `drift.removedObservedEdges[]` as review co
 - `starterContract.kind: "current_graph_snapshot"` to mark the output as a mirror of today's dependency graph.
 - `starterContract.notice[]` with the same human-facing warning printed in `.axi` comments.
 - `starterContract.authoringChecklist[]` and `starterContract.nextCommands[]` for tools that want to guide first-contract review.
+- `reviewStory` with the inferred setup, top authoring pressures, next step, and caveat.
 - `modules[].dependencyEvidence[]` with the target module, observed import-site count, and sample import sites for each inferred dependency.
 - `observedDependencies[]` with counts and sample import sites behind inferred edges.
 - `collapsedCycles[].cyclePathSamples[]` with a compact source-group path such as `Services -> Tools -> Services` explaining why inference merged a cycle.
@@ -161,6 +162,8 @@ Treat `drift.newObservedEdges[]` and `drift.removedObservedEdges[]` as review co
 - `axi` containing the generated starter contract text.
 
 Do not treat inferred modules, collapsed cycles, or dependencies as maintainer intent until a human reviews and edits the contract. They are onboarding material for authoring a real `.axi` contract.
+
+`reviewStory` is a shortcut for presentation, not a substitute for evidence. It can tell an agent or UI to show collapsed cycles or large-file pressure first, but exact decisions should still read `collapsedCycles[]`, `architecturePressureNotes[]`, and `modules[].dependencyEvidence[]`.
 
 ## Agent Use
 

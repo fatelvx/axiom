@@ -175,7 +175,7 @@ Axiom v0.5.8 currently supports:
 - Markdown architecture review summaries for PRs and agent repair loops with `axi observe --markdown`.
 - Agent-friendly graph JSON summaries with `architectureSummary.interpretation` for CI dashboards, PR bots, and future MCP adapters.
 - Mermaid dependency diagrams for observed module graphs with `axi graph --mermaid` or `axi observe --mermaid`.
-- Starter contract inference with `axi infer`, explicitly marked as a current-graph snapshot rather than recommended architecture, with an authoring checklist and next commands.
+- Starter contract inference with `axi infer`, explicitly marked as a current-graph snapshot rather than recommended architecture, with a review story, authoring checklist, and next commands.
 - Architecture attention output with `axi observe`, including a visible review model that separates advisory review from CI gates.
 - Baseline-aware observed edge drift with `axi observe --baseline <graph-json>`.
 - Focused graph output with `axi graph --violations-only`.
@@ -386,7 +386,7 @@ For monorepos:
 axi infer --root . --group-by workspace
 ```
 
-Inference prints a draft to stdout and does not write files. The output says up front that it mirrors the current dependency graph, not recommended architecture. It also includes an authoring checklist, next commands, and evidence comments before each inferred `depends on` edge so reviewers can see which import sites created the edge. Treat it as a starting point: rename modules, add layers, tighten `depends on`, and add `exposes` or `hides` after review. When `axi infer` collapses cyclic candidate groups, it lists the included groups, a cycle path sample, and observed internal edges so the cycle is useful architecture feedback instead of just a strange generated name. If very large files appear, infer also prints advisory architecture pressure notes so a quiet folder graph does not hide responsibilities concentrated inside one file.
+Inference prints a draft to stdout and does not write files. The output says up front that it mirrors the current dependency graph, not recommended architecture. It also includes a short inference review story, an authoring checklist, next commands, and evidence comments before each inferred `depends on` edge so reviewers can see which import sites created the edge. Treat it as a starting point: rename modules, add layers, tighten `depends on`, and add `exposes` or `hides` after review. When `axi infer` collapses cyclic candidate groups, it lists the included groups, a cycle path sample, and observed internal edges so the cycle is useful architecture feedback instead of just a strange generated name. If very large files appear, infer also prints advisory architecture pressure notes so a quiet folder graph does not hide responsibilities concentrated inside one file.
 
 For a quick first-value loop, save a baseline and then use `axi diff` after a change:
 

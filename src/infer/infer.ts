@@ -87,9 +87,27 @@ export interface InferArchitecturePressureNote {
   message: string;
 }
 
+export interface InferReviewPressure {
+  kind: "collapsed_cycle" | "large_source_file" | "dependency_evidence" | "quiet_snapshot";
+  title: string;
+  description: string;
+  severity: "info" | "warning";
+  modules?: string[];
+  files?: string[];
+}
+
+export interface InferReviewStory {
+  summary: string;
+  setup: string;
+  pressures: InferReviewPressure[];
+  nextStep: string;
+  caveat: string;
+}
+
 export interface InferResult {
   root: string;
   starterContract: InferStarterContract;
+  reviewStory: InferReviewStory;
   sourceFiles: string[];
   importCount: number;
   candidateModules: number;
@@ -181,6 +199,15 @@ export function runInfer(options: InferOptions): InferResult {
   return {
     root,
     starterContract: buildStarterContract(collapsedCycles, architecturePressureNotes),
+    reviewStory: buildInferReviewStory({
+      sourceFileCount: sourceFiles.length,
+      importCount: imports.length,
+      candidateModules: candidateGroups.length,
+      modules,
+      observedDependencies,
+      collapsedCycles,
+      architecturePressureNotes
+    }),
     sourceFiles,
     importCount: imports.length,
     candidateModules: candidateGroups.length,
@@ -189,6 +216,114 @@ export function runInfer(options: InferOptions): InferResult {
     modules,
     observedDependencies
   };
+}
+
+function buildInferReviewStory(input: {
+  sourceFileCount: number;
+  importCount: number;
+  candidateModules: number;
+  modules: InferredModule[];
+  observedDependencies: InferredDependency[];
+  collapsedCycles: CollapsedCycle[];
+  architecturePressureNotes: InferArchitecturePressureNote[];
+}): InferReviewStory {
+  const pressures: InferReviewPressure[] = [];
+
+  if (input.collapsedCycles.length > 0) {
+    const cycleModules = input.collapsedCycles.map((cycle) => cycle.module);
+    const firstCycle = input.collapsedCycles[0];
+    const mergedVerb = input.collapsedCycles.length === 1 ? "was" : "were";
+    pressures.push({
+      kind: "collapsed_cycle",
+      title: input.collapsedCycles.length === 1
+        ? `Collapsed cycle: ${firstCycle?.module ?? "merged module"}`
+        : `${input.collapsedCycles.length} collapsed cycles`,
+      description:
+        `${formatCount(input.collapsedCycles.length, "cycle")} ${mergedVerb} merged so the starter contract mirrors current code without immediately failing on declared dependency cycles. Review cycle-breaking candidates before treating the merged module as intended architecture.`,
+      severity: "warning",
+      modules: cycleModules
+    });
+  }
+
+  if (input.architecturePressureNotes.length > 0) {
+    const files = input.architecturePressureNotes.map((note) => note.filePath);
+    pressures.push({
+      kind: "large_source_file",
+      title: "Large-file pressure in inferred scope",
+      description:
+        `${formatCount(input.architecturePressureNotes.length, "large source file")} may hide responsibilities that folder and import inference cannot split. Inspect these files before judging the starter module map as complete.`,
+      severity: "warning",
+      files
+    });
+  }
+
+  if (input.observedDependencies.length > 0) {
+    pressures.push({
+      kind: "dependency_evidence",
+      title: "Review inferred dependencies",
+      description:
+        `${formatCount(input.observedDependencies.length, "observed module edge")} became \`depends on\` lines with sample import evidence. Confirm each edge is intended before using this draft as a gate.`,
+      severity: "info",
+      modules: dependencyModules(input.observedDependencies)
+    });
+  }
+
+  if (pressures.length === 0) {
+    pressures.push({
+      kind: "quiet_snapshot",
+      title: "Quiet starter snapshot",
+      description:
+        "No cross-module import edges, collapsed cycles, or large-file pressure notes were found in this inference scope. Confirm the scan scope is the architecture you meant to model before saving a baseline.",
+      severity: "info"
+    });
+  }
+
+  return {
+    summary:
+      `Starter contract inferred ${formatCount(input.modules.length, "module")} and ${formatCount(
+        input.observedDependencies.length,
+        "observed module edge"
+      )} from ${formatCount(input.sourceFileCount, "source file")}.`,
+    setup:
+      `Scanned ${formatCount(input.sourceFileCount, "source file")} and ${formatCount(
+        input.importCount,
+        "import"
+      )}; ${formatCount(input.candidateModules, "candidate group")} became ${formatCount(
+        input.modules.length,
+        "starter module"
+      )}. This is a current-graph snapshot, not declared architecture intent yet.`,
+    pressures,
+    nextStep: buildInferReviewNextStep(input.collapsedCycles.length, input.architecturePressureNotes.length),
+    caveat:
+      "Inference reads static imports and folder/package shape. It can lower authoring cost, but humans still decide module names, visibility, layers, accepted debt, and which edges are real architecture intent."
+  };
+}
+
+function buildInferReviewNextStep(collapsedCycleCount: number, pressureNoteCount: number): string {
+  if (collapsedCycleCount > 0 && pressureNoteCount > 0) {
+    return "Review collapsed-cycle candidates and large-file pressure notes, then run `axi observe --root . --spec <draft.axi> --markdown` before saving a graph baseline.";
+  }
+
+  if (collapsedCycleCount > 0) {
+    return "Review collapsed-cycle candidates, rename or split merged modules if needed, then run `axi observe --root . --spec <draft.axi> --markdown`.";
+  }
+
+  if (pressureNoteCount > 0) {
+    return "Inspect large-file pressure notes, adjust module boundaries if needed, then run `axi observe --root . --spec <draft.axi> --markdown`.";
+  }
+
+  return "Rename modules, confirm inferred dependency evidence, then run `axi observe --root . --spec <draft.axi> --markdown` before saving a graph baseline.";
+}
+
+function dependencyModules(dependencies: InferredDependency[]): string[] {
+  const modules = new Set<string>();
+
+  for (const dependency of dependencies) {
+    modules.add(dependency.fromModule);
+    modules.add(dependency.toModule);
+  }
+
+  return [...modules].sort();
 }
 
 function buildStarterContract(
@@ -789,6 +924,10 @@ function buildCycleBreakingCandidates(
 
 function formatImportSiteCount(count: number): string {
   return count === 1 ? "1 import site" : `${count} import sites`;
+}
+
+function formatCount(count: number, noun: string): string {
+  return count === 1 ? `1 ${noun}` : `${count} ${noun}s`;
 }
 
 function buildCyclePathSamples(

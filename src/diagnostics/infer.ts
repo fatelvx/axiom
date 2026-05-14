@@ -1,6 +1,6 @@
 import type { InferArchitecturePressureNote, InferResult, InferredDependency, InferredModule } from "../infer/infer.js";
 
-export const inferJsonSchemaVersion = "axiom.infer.v7";
+export const inferJsonSchemaVersion = "axiom.infer.v8";
 
 export interface InferJsonModule extends InferredModule {
   dependencyEvidence: InferJsonDependencyEvidence[];
@@ -16,6 +16,7 @@ export interface InferJsonResult {
   schemaVersion: typeof inferJsonSchemaVersion;
   root: string;
   starterContract: InferResult["starterContract"];
+  reviewStory: InferResult["reviewStory"];
   summary: {
     sourceFiles: number;
     importsScanned: number;
@@ -44,6 +45,22 @@ export function formatInferResult(result: InferResult): string {
     ...result.starterContract.notice.map((line) => `# ${line}`),
     ""
   ];
+
+  lines.push("# inference review story:");
+  lines.push(`# summary: ${result.reviewStory.summary}`);
+  lines.push(`# setup: ${result.reviewStory.setup}`);
+  for (const pressure of result.reviewStory.pressures) {
+    lines.push(`# pressure: ${pressure.title} - ${pressure.description}`);
+    if (pressure.modules && pressure.modules.length > 0) {
+      lines.push(`#   modules: ${pressure.modules.join(", ")}`);
+    }
+    if (pressure.files && pressure.files.length > 0) {
+      lines.push(`#   files: ${pressure.files.join(", ")}`);
+    }
+  }
+  lines.push(`# next: ${result.reviewStory.nextStep}`);
+  lines.push(`# caveat: ${result.reviewStory.caveat}`);
+  lines.push("");
 
   lines.push("# authoring checklist:");
   result.starterContract.authoringChecklist.forEach((item, index) => {
@@ -148,6 +165,7 @@ export function toInferJson(result: InferResult): InferJsonResult {
     schemaVersion: inferJsonSchemaVersion,
     root: normalizePath(result.root),
     starterContract: result.starterContract,
+    reviewStory: result.reviewStory,
     summary: {
       sourceFiles: result.sourceFiles.length,
       importsScanned: result.importCount,

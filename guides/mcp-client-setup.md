@@ -2,7 +2,7 @@
 
 Axiom's MCP server is a local, read-only stdio wrapper over the existing CLI JSON evidence.
 
-Use it when an agent should query `axi check`, `axi observe`, `axi graph`, `axi diff`, or `axi infer` through MCP instead of remembering CLI flags or parsing Markdown.
+Use it when an agent should query allowed roots, `axi check`, `axi observe`, `axi graph`, `axi diff`, or `axi infer` through MCP instead of remembering CLI flags or parsing Markdown.
 
 The server does not edit contracts, update baselines, accept debt, or create new validation rules.
 
@@ -17,7 +17,7 @@ npm run mcp:smoke
 
 During npm supply-chain risk periods, prefer the existing dependency tree. Do not run dependency installs or package-manager updates just to register MCP.
 
-The smoke starts the local stdio server, lists the read-only tool set, runs `axiom_check` against the current repository, confirms hard contract failures return as structured evidence, and verifies `--allow-root` rejection. Passing this smoke means the server binary works before any MCP client reload behavior enters the picture.
+The smoke starts the local stdio server, lists the read-only tool set, calls `axiom_roots`, runs `axiom_check` against the current repository, confirms hard contract failures return as structured evidence, and verifies `--allow-root` rejection. Passing this smoke means the server binary works before any MCP client reload behavior enters the picture.
 
 ## Register With Codex
 
@@ -80,6 +80,15 @@ codex mcp remove axiom
 codex mcp add axiom -- node "C:\path\to\axiom\dist\mcp\server.js" --allow-root "C:\path\to\repo-a" --allow-root "C:\path\to\repo-b" --timeout-ms 60000
 ```
 
+For example, if an agent also needs to scan a sibling application such as Lumina, re-register with the Axiom repo root plus that application root:
+
+```powershell
+codex mcp remove axiom
+codex mcp add axiom -- node "C:\path\to\axiom\dist\mcp\server.js" --allow-root "C:\path\to\axiom" --allow-root "C:\path\to\Lumina\lumina-app" --timeout-ms 60000
+```
+
+After re-registering, start a new client session and call `axiom_roots` first. If the target root is not listed, other Axiom MCP tools should reject the scan instead of guessing.
+
 Avoid:
 
 ```powershell
@@ -96,11 +105,12 @@ In a fresh MCP-aware session, ask the agent to do only this first:
 ```text
 Check whether the Axiom MCP tools are available.
 Do not edit files, commit, or push.
-If available, call tools/list if the client exposes it, then run axiom_check on the current repository and summarize the structured result.
+If available, call tools/list if the client exposes it, call axiom_roots, then run axiom_check on the current repository and summarize the structured result.
 ```
 
 Expected behavior for a clean reviewed contract:
 
+- `axiom_roots` returns the configured allowed roots.
 - `axiom_check` returns structured evidence.
 - `structuredContent.payload.ok` is `true`.
 - `structuredContent.payload.summary.violations` is `0`.

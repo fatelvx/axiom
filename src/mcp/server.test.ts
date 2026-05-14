@@ -26,11 +26,20 @@ test("mcp stdio server initializes, lists tools, and calls read-only tools", asy
     server.notify("notifications/initialized", {});
 
     const tools = await server.request("tools/list", {});
-    assert.equal(tools.result?.tools?.length, 5);
+    assert.equal(tools.result?.tools?.length, 6);
     assert.equal(
       tools.result?.tools?.every((tool: { annotations?: { readOnlyHint?: boolean } }) => tool.annotations?.readOnlyHint === true),
       true
     );
+
+    const roots = await server.request("tools/call", {
+      name: "axiom_roots",
+      arguments: {}
+    });
+    assert.equal(roots.result?.isError, undefined);
+    assert.equal(roots.result?.structuredContent?.tool, "axiom_roots");
+    assert.equal(roots.result?.structuredContent?.summary?.kind, "roots");
+    assert.deepEqual(roots.result?.structuredContent?.payload?.allowedRoots, [path.normalize(repoRoot), path.normalize(tempRoot)]);
 
     const passingCheck = await server.request("tools/call", {
       name: "axiom_check",
@@ -156,6 +165,15 @@ test("mcp stdio server returns stable JSON-RPC errors for invalid tool calls", a
     });
     assert.equal(missingRoot.error?.code, -32602);
     assert.match(missingRoot.error?.message ?? "", /root must be a non-empty string/);
+
+    const rootsWithInput = await server.request("tools/call", {
+      name: "axiom_roots",
+      arguments: {
+        root: repoRoot
+      }
+    });
+    assert.equal(rootsWithInput.error?.code, -32602);
+    assert.match(rootsWithInput.error?.message ?? "", /does not accept input fields/);
 
     const invalidArguments = await server.request("tools/call", {
       name: "axiom_check",

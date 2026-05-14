@@ -3,6 +3,7 @@ import test from "node:test";
 import {
   AXIOM_MCP_TOOL_NAMES,
   buildAxiomMcpCliInvocation,
+  createAxiomMcpRootsToolResult,
   createAxiomMcpToolResult,
   getAxiomMcpToolDescriptor,
   listAxiomMcpTools
@@ -31,6 +32,24 @@ test("mcp descriptor callers cannot mutate the shared tool registry", () => {
   descriptor.title = "mutated";
 
   assert.equal(getAxiomMcpToolDescriptor("axiom_check").title, "Run Axiom Check");
+});
+
+test("mcp roots result is server-native read-only evidence", () => {
+  assert.throws(
+    () => buildAxiomMcpCliInvocation("axiom_roots", {}),
+    /server-native MCP tool/
+  );
+
+  const result = createAxiomMcpRootsToolResult(["C:\\repo-a", "C:\\repo-b"]);
+
+  assert.equal(result.isError, undefined);
+  assert.equal(result.structuredContent.tool, "axiom_roots");
+  assert.equal(result.structuredContent.command, "roots");
+  assert.equal(result.structuredContent.exitCode, 0);
+  assert.equal(result.structuredContent.summary.kind, "roots");
+  assert.equal(result.structuredContent.summary.counts?.allowedRoots, 2);
+  assert.deepEqual((result.structuredContent.payload as { allowedRoots?: string[] }).allowedRoots, ["C:\\repo-a", "C:\\repo-b"]);
+  assert.match(result.structuredContent.summary.agentHint, /allowed roots/);
 });
 
 test("mcp check invocation wraps axi check json and accepts hard gate exit codes", () => {

@@ -20,11 +20,12 @@ For registering the stdio server in Codex or another MCP client, see [MCP Client
 
 Use this loop for Codex, Claude Code, Cursor, CI bots, or a future MCP adapter:
 
-1. Run `axi check --json`.
-2. Treat hard `violations[]` as required repairs.
-3. Run `axi observe --json` for visible debt, warnings, drift, and `architectureSummary.reviewStory`.
-4. If a baseline exists, run `axi diff <baseline.json> --json` or `axi observe --baseline <baseline.json> --json`.
-5. Ask the agent to summarize:
+1. If using MCP, call `axiom_roots` and choose a scan root from the configured allowed roots.
+2. Run `axi check --json`.
+3. Treat hard `violations[]` as required repairs.
+4. Run `axi observe --json` for visible debt, warnings, drift, and `architectureSummary.reviewStory`.
+5. If a baseline exists, run `axi diff <baseline.json> --json` or `axi observe --baseline <baseline.json> --json`.
+6. Ask the agent to summarize:
    - hard fixes made,
    - advisory pressure left for review,
    - whether the contract should change,
@@ -83,7 +84,7 @@ When the MCP preview is available, every tool result keeps exact CLI JSON under 
 
 Use the summary first:
 
-- `summary.kind`: choose the workflow: hard check, advisory review, inference authoring, or tool error.
+- `summary.kind`: choose the workflow: roots policy, hard check, advisory review, inference authoring, or tool error.
 - `summary.gate.currentCommandIsGate`: decide whether the result can block a change.
 - `summary.counts`: read hard violations, warnings, visible debt, drift, and scan size without walking the whole payload.
 - `summary.reviewStory`: show the first narrative summary and next step.
@@ -91,6 +92,7 @@ Use the summary first:
 
 Then use the payload for exact evidence:
 
+- `payload.allowedRoots[]` from `axiom_roots` before choosing another tool's `root`.
 - `payload.violations[]` for required repairs.
 - `payload.warnings[]` for advisory pressure.
 - `payload.intentionalDebt[]` or `payload.intentionalViolations[]` for visible accepted debt.
@@ -105,6 +107,7 @@ A safe MCP v0 should be read-only and wrap existing CLI behavior.
 
 Candidate tools:
 
+- `axiom_roots`: list configured allowed roots for this local MCP server.
 - `axiom_check`: run `axi check --json` and return pass/fail plus hard diagnostics.
 - `axiom_observe`: run `axi observe --json` and return review context.
 - `axiom_graph`: run `axi graph --json` or `--mermaid`.

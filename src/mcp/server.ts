@@ -7,6 +7,7 @@ import { fileURLToPath } from "node:url";
 import {
   AXIOM_MCP_TOOL_NAMES,
   buildAxiomMcpCliInvocation,
+  createAxiomMcpRootsToolResult,
   createAxiomMcpToolResult,
   listAxiomMcpTools,
   type AxiomMcpExecutionResult,
@@ -121,6 +122,11 @@ async function handleRequest(method: string, params: unknown): Promise<unknown> 
 
 async function callTool(params: unknown): Promise<unknown> {
   const call = readToolCallParams(params);
+  if (call.name === "axiom_roots") {
+    assertNoArguments(call.arguments, call.name);
+    return createAxiomMcpRootsToolResult(serverConfig.allowedRoots);
+  }
+
   validateToolInputPaths(call.arguments);
   const invocation = buildAxiomMcpCliInvocation(call.name, call.arguments, {
     cliPath: serverConfig.cliPath
@@ -151,6 +157,13 @@ function readToolCallParams(params: unknown): { arguments: Record<string, unknow
     arguments: rawArguments,
     name: rawName
   };
+}
+
+function assertNoArguments(input: Record<string, unknown>, toolName: AxiomMcpToolName): void {
+  const keys = Object.keys(input);
+  if (keys.length > 0) {
+    throw new Error(`Invalid params: ${toolName} does not accept input fields: ${keys.join(", ")}.`);
+  }
 }
 
 function validateToolInputPaths(input: Record<string, unknown>): void {

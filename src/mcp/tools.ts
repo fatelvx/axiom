@@ -1,6 +1,7 @@
 import process from "node:process";
 
 export const AXIOM_MCP_TOOL_NAMES = [
+  "axiom_roots",
   "axiom_check",
   "axiom_observe",
   "axiom_graph",
@@ -10,7 +11,7 @@ export const AXIOM_MCP_TOOL_NAMES = [
 
 export type AxiomMcpToolName = (typeof AXIOM_MCP_TOOL_NAMES)[number];
 
-type AxiomMcpCommand = "check" | "diff" | "graph" | "infer" | "observe";
+type AxiomMcpCommand = "check" | "diff" | "graph" | "infer" | "observe" | "roots";
 type AxiomMcpAdoptionMode = "loose" | "strict" | "warn-unowned";
 type AxiomMcpGraphView = "attention" | "full" | "violationsOnly";
 type AxiomMcpGroupBy = "folder" | "workspace";
@@ -81,6 +82,7 @@ export interface AxiomMcpInvocationOptions {
 export interface AxiomMcpResultSummary {
   agentHint: string;
   counts?: {
+    allowedRoots?: number;
     architecturePressureNotes?: number;
     collapsedCycles?: number;
     importsScanned?: number;
@@ -104,7 +106,7 @@ export interface AxiomMcpResultSummary {
     currentCommandIsGate: boolean;
     hardViolationsFailCheck: boolean;
   };
-  kind: "check" | "inference" | "review" | "tool_error";
+  kind: "check" | "inference" | "review" | "roots" | "tool_error";
   ok?: boolean;
   reviewStory?: {
     caveat?: string;
@@ -142,6 +144,7 @@ const SUMMARY_SCHEMA: JsonSchema = {
       type: "object",
       additionalProperties: false,
       properties: {
+        allowedRoots: { type: "integer" },
         architecturePressureNotes: { type: "integer" },
         collapsedCycles: { type: "integer" },
         importsScanned: { type: "integer" },
@@ -266,6 +269,14 @@ const BASELINE_PROPERTY: JsonSchema = {
 
 const TOOL_DESCRIPTORS: AxiomMcpToolDescriptor[] = [
   {
+    name: "axiom_roots",
+    title: "List Allowed Axiom Roots",
+    description: "List the local roots this MCP server is allowed to scan. Use this before choosing a root for other Axiom MCP tools.",
+    inputSchema: objectSchema({}, []),
+    outputSchema: OUTPUT_SCHEMA,
+    annotations: readOnlyAnnotations()
+  },
+  {
     name: "axiom_check",
     title: "Run Axiom Check",
     description: "Run `axi check --json` as the hard contract gate. Exit code 1 from hard violations is returned as structured evidence, not a tool crash.",
@@ -368,6 +379,10 @@ export function buildAxiomMcpCliInvocation(
   rawInput: unknown,
   options: AxiomMcpInvocationOptions = {}
 ): AxiomMcpCliInvocation {
+  if (toolName === "axiom_roots") {
+    throw new Error("axiom_roots is a server-native MCP tool and does not map to an Axiom CLI invocation.");
+  }
+
   const input = readInput(rawInput);
   const cliPath = options.cliPath ?? "dist/cli.js";
   const executable = options.nodeExecutable ?? process.execPath;
@@ -499,8 +514,34 @@ export function createAxiomMcpToolResult(
   };
 }
 
-function mcpToolToCliCommand(toolName: AxiomMcpToolName): Exclude<AxiomMcpCommand, "infer"> {
+export function createAxiomMcpRootsToolResult(allowedRoots: string[]): AxiomMcpToolResult {
+  const payload = {
+    allowedRoots: [...allowedRoots]
+  };
+  const structuredContent: AxiomMcpToolResult["structuredContent"] = {
+    command: "roots",
+    exitCode: 0,
+    payload,
+    summary: {
+      agentHint: "Use these allowed roots when choosing the root for axiom_check, axiom_observe, axiom_graph, axiom_diff, or axiom_infer_contract. Re-register or restart the MCP client to add roots.",
+      counts: {
+        allowedRoots: allowedRoots.length
+      },
+      kind: "roots"
+    },
+    tool: "axiom_roots"
+  };
+
+  return {
+    content: [{ type: "text", text: JSON.stringify(structuredContent, null, 2) }],
+    structuredContent
+  };
+}
+
+function mcpToolToCliCommand(toolName: AxiomMcpToolName): Exclude<AxiomMcpCommand, "infer" | "roots"> {
   switch (toolName) {
+    case "axiom_roots":
+      throw new Error("axiom_roots is served by the MCP server without invoking the Axiom CLI.");
     case "axiom_check":
       return "check";
     case "axiom_diff":
@@ -647,6 +688,10 @@ function resultSummaryKind(command: AxiomMcpCommand): AxiomMcpResultSummary["kin
     return "inference";
   }
 
+  if (command === "roots") {
+    return "roots";
+  }
+
   return "review";
 }
 
@@ -659,6 +704,10 @@ function buildAgentHint(command: AxiomMcpCommand, ok: boolean | undefined): stri
 
   if (command === "infer") {
     return "This is current-graph authoring evidence, not declared architecture intent. Review before saving as .axi.";
+  }
+
+  if (command === "roots") {
+    return "Use these allowed roots when choosing a root for Axiom MCP scans. Re-register or restart the MCP client to add more roots.";
   }
 
   return "Use this as advisory review evidence. The hard gate remains axiom_check / axi check.";

@@ -2,7 +2,7 @@
 
 Axiom's MCP surface should be a thin read-only wrapper over the same CLI JSON evidence that local developers, CI, and agents already use.
 
-This preview ships a minimal stdio server without adding an MCP SDK dependency during the current supply-chain risk window. The server is deliberately small: lifecycle, ping, `tools/list`, and `tools/call` only.
+This preview ships a minimal stdio server without adding an MCP SDK dependency during the current supply-chain risk window. The server is deliberately small: lifecycle, ping, `tools/list`, and `tools/call` only. Architecture evidence still comes from the CLI; `axiom_roots` is the only server-native tool, and it only reports the current root policy.
 
 For copyable client registration commands, reload expectations, and allowed-root guidance, see [MCP Client Setup](mcp-client-setup.md).
 
@@ -27,10 +27,11 @@ References:
 
 ## Tool Set
 
-The preview defines five tools:
+The preview defines six tools:
 
 | MCP tool | Wrapped CLI command | Role |
 | --- | --- | --- |
+| `axiom_roots` | server-native | Lists the local roots this MCP server is allowed to scan. |
 | `axiom_check` | `axi check --json` | Hard gate for reviewed `.axi` contracts. |
 | `axiom_observe` | `axi observe --json` | Review story, warnings, visible debt, and optional baseline drift. |
 | `axiom_graph` | `axi graph --json` | Declared and observed graph evidence, optionally focused. |
@@ -41,7 +42,7 @@ The important product rule is that MCP does not create new semantics. If the CLI
 
 ## Adapter Contract
 
-`buildAxiomMcpCliInvocation()` maps tool input into a `node dist/cli.js ... --json` invocation. It never builds a shell string; it returns an executable plus an argument array.
+`buildAxiomMcpCliInvocation()` maps architecture tool input into a `node dist/cli.js ... --json` invocation. It never builds a shell string; it returns an executable plus an argument array. `axiom_roots` is handled directly by the server because it reports server configuration rather than project architecture evidence.
 
 `createAxiomMcpToolResult()` maps CLI execution output into MCP-shaped result content:
 
@@ -66,7 +67,7 @@ For fast routing, the wrapper also includes `structuredContent.summary`:
 
 | Field | Meaning |
 | --- | --- |
-| `kind` | `check`, `review`, `inference`, or `tool_error`. |
+| `kind` | `roots`, `check`, `review`, `inference`, or `tool_error`. |
 | `gate` | Whether this command is the hard gate. `axiom_check` is the gate; graph, observe, and diff are review context. |
 | `ok` | The `axi check` pass/fail boolean when available. |
 | `counts` | Common counts copied from CLI summaries, plus drift counts when present. |
@@ -137,6 +138,7 @@ Minimum server responsibilities:
 
 - validate the requested project root against allowed workspace roots,
 - use timeouts for CLI execution,
+- expose `axiom_roots` so agents can inspect the allowed-root policy before picking a scan root,
 - validate `configPath`, `baselinePath`, and `specPaths` against allowed roots before execution,
 - return raw arrays such as `violations[]`, `warnings[]`, `intentionalDebt[]`, and `drift`,
 - avoid creating baselines during PR review,

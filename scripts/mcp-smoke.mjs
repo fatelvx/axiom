@@ -22,8 +22,9 @@ async function main() {
 
   console.log("MCP stdio smoke passed.");
   console.log("- initialized the local stdio server");
-  console.log("- listed 5 read-only Axiom tools");
-  console.log("- exercised all 5 read-only Axiom tools through tools/call");
+  console.log("- listed 6 read-only Axiom tools");
+  console.log("- exercised all 6 read-only Axiom tools through tools/call");
+  console.log("- reported allowed MCP roots through axiom_roots");
   console.log("- included agent-readable summary fields for gate, review, drift, inference, and tool errors");
   console.log("- checked the current repository through axiom_check");
   console.log("- treated fixture contract violations as structured evidence");
@@ -52,11 +53,27 @@ async function runMainSmoke() {
 
     const tools = await server.request("tools/list", {});
     assertNoJsonRpcError(tools, "tools/list");
-    assertEqual(tools.result?.tools?.length, 5, "tool count");
+    assertEqual(tools.result?.tools?.length, 6, "tool count");
     assertEqual(
       tools.result?.tools?.every((tool) => tool.annotations?.readOnlyHint === true),
       true,
       "all tools are read-only"
+    );
+
+    const roots = await callTool(server, "axiom_roots", {});
+    assertEqual(roots.result?.isError, undefined, "roots is not a tool error");
+    assertEqual(roots.result?.structuredContent?.tool, "axiom_roots", "roots tool name");
+    assertEqual(roots.result?.structuredContent?.summary?.kind, "roots", "roots summary kind");
+    assertEqual(roots.result?.structuredContent?.summary?.counts?.allowedRoots, 2, "roots count");
+    assertArrayIncludes(
+      roots.result?.structuredContent?.payload?.allowedRoots ?? [],
+      repoRoot,
+      "roots payload includes repo root"
+    );
+    assertArrayIncludes(
+      roots.result?.structuredContent?.payload?.allowedRoots ?? [],
+      tempRoot,
+      "roots payload includes temp root"
     );
 
     const selfCheck = await callTool(server, "axiom_check", {
@@ -185,6 +202,16 @@ async function runInvalidInputSmoke() {
     const missingRoot = await callTool(server, "axiom_check", {});
     assertEqual(missingRoot.error?.code, -32602, "missing root error code");
     assertTextIncludes(missingRoot.error?.message ?? "", "root must be a non-empty string", "missing root error message");
+
+    const rootsWithInput = await callTool(server, "axiom_roots", {
+      root: repoRoot
+    });
+    assertEqual(rootsWithInput.error?.code, -32602, "roots unexpected input error code");
+    assertTextIncludes(
+      rootsWithInput.error?.message ?? "",
+      "does not accept input fields",
+      "roots unexpected input error message"
+    );
 
     const badArguments = await server.request("tools/call", {
       name: "axiom_check",
@@ -380,6 +407,12 @@ function assertEqual(actual, expected, label) {
 function assertTextIncludes(text, expected, label) {
   if (!text.includes(expected)) {
     throw new Error(`Expected ${label} to include ${JSON.stringify(expected)}.\nActual output:\n${text}`);
+  }
+}
+
+function assertArrayIncludes(values, expected, label) {
+  if (!Array.isArray(values) || !values.includes(expected)) {
+    throw new Error(`Expected ${label} to include ${JSON.stringify(expected)}.\nActual values:\n${JSON.stringify(values)}`);
   }
 }
 

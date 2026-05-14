@@ -49,6 +49,7 @@ The important product rule is that MCP does not create new semantics. If the CLI
 - the graph, observe, diff, and infer tools expect exit code `0`.
 - unexpected CLI exits become tool execution errors with `isError: true`.
 - wrong or missing Axiom `schemaVersion` also becomes `isError: true`.
+- successful and failed tool results include `structuredContent.summary`, a small agent-readable index over the payload.
 
 This keeps the hard gate where it belongs:
 
@@ -56,6 +57,24 @@ This keeps the hard gate where it belongs:
 axi check --json = gate evidence
 MCP result = transport wrapper over that evidence
 ```
+
+## Result Consumption
+
+Every `tools/call` result preserves the full CLI JSON under `structuredContent.payload`. Agents should read that payload for exact `violations[]`, `warnings[]`, `intentionalDebt[]`, `drift`, import locations, and inferred contract evidence.
+
+For fast routing, the wrapper also includes `structuredContent.summary`:
+
+| Field | Meaning |
+| --- | --- |
+| `kind` | `check`, `review`, `inference`, or `tool_error`. |
+| `gate` | Whether this command is the hard gate. `axiom_check` is the gate; graph, observe, and diff are review context. |
+| `ok` | The `axi check` pass/fail boolean when available. |
+| `counts` | Common counts copied from CLI summaries, plus drift counts when present. |
+| `reviewStory` | A compact copy of the review story summary, next step, caveat, and first pressure when present. |
+| `drift` | Advisory new/removed observed-edge counts from diff-capable payloads. |
+| `agentHint` | A short instruction for how an agent should treat the result. |
+
+The summary is not a second validation model and not a health score. It is an index card over the same evidence so agents can decide where to look first without parsing Markdown or scanning the full payload on every turn.
 
 ## Guardrails
 

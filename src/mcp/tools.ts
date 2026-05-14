@@ -68,6 +68,7 @@ export interface AxiomMcpToolResult {
     exitCode: number;
     payload?: unknown;
     schemaVersion?: string;
+    summary: AxiomMcpResultSummary;
     tool: AxiomMcpToolName;
   };
 }
@@ -77,15 +78,125 @@ export interface AxiomMcpInvocationOptions {
   nodeExecutable?: string;
 }
 
+export interface AxiomMcpResultSummary {
+  agentHint: string;
+  counts?: {
+    architecturePressureNotes?: number;
+    collapsedCycles?: number;
+    importsScanned?: number;
+    intentionalDebt?: number;
+    modules?: number;
+    newObservedEdges?: number;
+    observedDependencies?: number;
+    removedObservedEdges?: number;
+    shownObservedDependencies?: number;
+    sourceFiles?: number;
+    violations?: number;
+    warnings?: number;
+  };
+  drift?: {
+    kind?: string;
+    newObservedEdges: number;
+    removedObservedEdges: number;
+  };
+  gate?: {
+    command: string;
+    currentCommandIsGate: boolean;
+    hardViolationsFailCheck: boolean;
+  };
+  kind: "check" | "inference" | "review" | "tool_error";
+  ok?: boolean;
+  reviewStory?: {
+    caveat?: string;
+    firstPressure?: {
+      kind?: string;
+      severity?: string;
+      title?: string;
+    };
+    nextStep?: string;
+    summary?: string;
+  };
+  status?: string;
+}
+
+const SUMMARY_SCHEMA: JsonSchema = {
+  type: "object",
+  additionalProperties: false,
+  required: ["kind", "agentHint"],
+  properties: {
+    kind: { type: "string" },
+    agentHint: { type: "string" },
+    ok: { type: "boolean" },
+    status: { type: "string" },
+    gate: {
+      type: "object",
+      additionalProperties: false,
+      required: ["command", "currentCommandIsGate", "hardViolationsFailCheck"],
+      properties: {
+        command: { type: "string" },
+        currentCommandIsGate: { type: "boolean" },
+        hardViolationsFailCheck: { type: "boolean" }
+      }
+    },
+    counts: {
+      type: "object",
+      additionalProperties: false,
+      properties: {
+        architecturePressureNotes: { type: "integer" },
+        collapsedCycles: { type: "integer" },
+        importsScanned: { type: "integer" },
+        intentionalDebt: { type: "integer" },
+        modules: { type: "integer" },
+        newObservedEdges: { type: "integer" },
+        observedDependencies: { type: "integer" },
+        removedObservedEdges: { type: "integer" },
+        shownObservedDependencies: { type: "integer" },
+        sourceFiles: { type: "integer" },
+        violations: { type: "integer" },
+        warnings: { type: "integer" }
+      }
+    },
+    drift: {
+      type: "object",
+      additionalProperties: false,
+      required: ["newObservedEdges", "removedObservedEdges"],
+      properties: {
+        kind: { type: "string" },
+        newObservedEdges: { type: "integer" },
+        removedObservedEdges: { type: "integer" }
+      }
+    },
+    reviewStory: {
+      type: "object",
+      additionalProperties: false,
+      properties: {
+        caveat: { type: "string" },
+        firstPressure: {
+          type: "object",
+          additionalProperties: false,
+          properties: {
+            kind: { type: "string" },
+            severity: { type: "string" },
+            title: { type: "string" }
+          }
+        },
+        nextStep: { type: "string" },
+        summary: { type: "string" }
+      }
+    }
+  }
+};
+
 const OUTPUT_SCHEMA: JsonSchema = {
   type: "object",
   additionalProperties: false,
-  required: ["tool", "command", "exitCode"],
+  required: ["tool", "command", "exitCode", "summary"],
   properties: {
     tool: { type: "string" },
     command: { type: "string" },
     exitCode: { type: "integer" },
     schemaVersion: { type: "string" },
+    summary: SUMMARY_SCHEMA,
     payload: { type: "object" },
     error: {
       type: "object",
@@ -378,6 +489,7 @@ export function createAxiomMcpToolResult(
     exitCode: execution.exitCode,
     payload,
     schemaVersion,
+    summary: createResultSummary(invocation, payload),
     tool: invocation.toolName
   };
 
@@ -488,6 +600,10 @@ function errorResult(
       ...(execution.stdout ? { stdout: execution.stdout } : {})
     },
     exitCode: execution.exitCode,
+    summary: {
+      agentHint: "Treat this as an Axiom CLI or MCP execution failure, not architecture evidence.",
+      kind: "tool_error"
+    },
     tool: invocation.toolName
   };
 
@@ -496,6 +612,164 @@ function errorResult(
     isError: true,
     structuredContent
   };
+}
+
+function createResultSummary(invocation: AxiomMcpCliInvocation, payload: unknown): AxiomMcpResultSummary {
+  const payloadRecord = isRecord(payload) ? payload : {};
+  const payloadSummary = readRecordProperty(payloadRecord, "summary");
+  const architectureSummary = readRecordProperty(payloadRecord, "architectureSummary");
+  const ok = readBooleanProperty(payloadRecord, "ok");
+  const counts = buildCounts(payloadRecord, payloadSummary);
+  const reviewStory = buildReviewStorySummary(
+    readRecordProperty(architectureSummary, "reviewStory") ?? readRecordProperty(payloadRecord, "reviewStory")
+  );
+  const drift = buildDriftSummary(readRecordProperty(payloadRecord, "drift"));
+  const gate = buildGateSummary(invocation, architectureSummary);
+
+  return {
+    agentHint: buildAgentHint(invocation.command, ok),
+    ...(Object.keys(counts).length > 0 ? { counts } : {}),
+    ...(drift ? { drift } : {}),
+    ...(gate ? { gate } : {}),
+    kind: resultSummaryKind(invocation.command),
+    ...(ok !== undefined ? { ok } : {}),
+    ...(reviewStory ? { reviewStory } : {}),
+    ...(readStringProperty(architectureSummary, "status") ? { status: readStringProperty(architectureSummary, "status") } : {})
+  };
+}
+
+function resultSummaryKind(command: AxiomMcpCommand): AxiomMcpResultSummary["kind"] {
+  if (command === "check") {
+    return "check";
+  }
+
+  if (command === "infer") {
+    return "inference";
+  }
+
+  return "review";
+}
+
+function buildAgentHint(command: AxiomMcpCommand, ok: boolean | undefined): string {
+  if (command === "check") {
+    return ok === false
+      ? "Repair hard violations from payload.violations; do not edit contracts or accepted debt unless the user approves."
+      : "This is the hard gate result. Use observe, graph, or diff for advisory context when needed.";
+  }
+
+  if (command === "infer") {
+    return "This is current-graph authoring evidence, not declared architecture intent. Review before saving as .axi.";
+  }
+
+  return "Use this as advisory review evidence. The hard gate remains axiom_check / axi check.";
+}
+
+function buildGateSummary(
+  invocation: AxiomMcpCliInvocation,
+  architectureSummary: Record<string, unknown> | undefined
+): AxiomMcpResultSummary["gate"] | undefined {
+  if (invocation.command === "check") {
+    return {
+      command: "axi check",
+      currentCommandIsGate: true,
+      hardViolationsFailCheck: true
+    };
+  }
+
+  const gate = readRecordProperty(architectureSummary, "gate");
+  if (!gate) {
+    return undefined;
+  }
+
+  return {
+    command: readStringProperty(gate, "command") ?? "axi check",
+    currentCommandIsGate: readBooleanProperty(gate, "currentCommandIsGate") ?? false,
+    hardViolationsFailCheck: readBooleanProperty(gate, "hardViolationsFailCheck") ?? true
+  };
+}
+
+function buildCounts(
+  payload: Record<string, unknown>,
+  payloadSummary: Record<string, unknown> | undefined
+): NonNullable<AxiomMcpResultSummary["counts"]> {
+  const counts: NonNullable<AxiomMcpResultSummary["counts"]> = {};
+  addCount(counts, "architecturePressureNotes", readNumberProperty(payloadSummary, "architecturePressureNotes"));
+  addCount(counts, "collapsedCycles", readNumberProperty(payloadSummary, "collapsedCycles"));
+  addCount(counts, "importsScanned", readNumberProperty(payloadSummary, "importsScanned"));
+  addCount(counts, "intentionalDebt", readNumberProperty(payloadSummary, "intentionalViolations"));
+  addCount(counts, "modules", readNumberProperty(payloadSummary, "modules"));
+  addCount(counts, "observedDependencies", readNumberProperty(payloadSummary, "observedDependencies"));
+  addCount(counts, "shownObservedDependencies", readNumberProperty(payloadSummary, "shownObservedDependencies"));
+  addCount(counts, "sourceFiles", readNumberProperty(payloadSummary, "sourceFiles"));
+  addCount(counts, "violations", readNumberProperty(payloadSummary, "violations"));
+  addCount(counts, "warnings", readNumberProperty(payloadSummary, "warnings"));
+
+  if (counts.intentionalDebt === undefined) {
+    const intentionalDebtCount = readArrayCount(payload, "intentionalDebt") ?? readArrayCount(payload, "intentionalViolations");
+    addCount(counts, "intentionalDebt", intentionalDebtCount);
+  }
+
+  const drift = readRecordProperty(payload, "drift");
+  addCount(counts, "newObservedEdges", readArrayCount(drift, "newObservedEdges"));
+  addCount(counts, "removedObservedEdges", readArrayCount(drift, "removedObservedEdges"));
+
+  return counts;
+}
+
+function buildDriftSummary(drift: Record<string, unknown> | undefined): AxiomMcpResultSummary["drift"] | undefined {
+  if (!drift) {
+    return undefined;
+  }
+
+  return {
+    ...(readStringProperty(drift, "kind") ? { kind: readStringProperty(drift, "kind") } : {}),
+    newObservedEdges: readArrayCount(drift, "newObservedEdges") ?? 0,
+    removedObservedEdges: readArrayCount(drift, "removedObservedEdges") ?? 0
+  };
+}
+
+function buildReviewStorySummary(
+  reviewStory: Record<string, unknown> | undefined
+): AxiomMcpResultSummary["reviewStory"] | undefined {
+  if (!reviewStory) {
+    return undefined;
+  }
+
+  const firstPressure = readFirstPressure(reviewStory);
+  const summary = {
+    ...(readStringProperty(reviewStory, "caveat") ? { caveat: readStringProperty(reviewStory, "caveat") } : {}),
+    ...(firstPressure ? { firstPressure } : {}),
+    ...(readStringProperty(reviewStory, "nextStep") ? { nextStep: readStringProperty(reviewStory, "nextStep") } : {}),
+    ...(readStringProperty(reviewStory, "summary") ? { summary: readStringProperty(reviewStory, "summary") } : {})
+  };
+
+  return Object.keys(summary).length > 0 ? summary : undefined;
+}
+
+function readFirstPressure(reviewStory: Record<string, unknown>): NonNullable<AxiomMcpResultSummary["reviewStory"]>["firstPressure"] | undefined {
+  const pressures = reviewStory.pressures;
+  if (!Array.isArray(pressures) || !isRecord(pressures[0])) {
+    return undefined;
+  }
+
+  const pressure = pressures[0];
+  const firstPressure = {
+    ...(readStringProperty(pressure, "kind") ? { kind: readStringProperty(pressure, "kind") } : {}),
+    ...(readStringProperty(pressure, "severity") ? { severity: readStringProperty(pressure, "severity") } : {}),
+    ...(readStringProperty(pressure, "title") ? { title: readStringProperty(pressure, "title") } : {})
+  };
+
+  return Object.keys(firstPressure).length > 0 ? firstPressure : undefined;
+}
+
+function addCount(
+  counts: NonNullable<AxiomMcpResultSummary["counts"]>,
+  key: keyof NonNullable<AxiomMcpResultSummary["counts"]>,
+  value: number | undefined
+): void {
+  if (value !== undefined) {
+    counts[key] = value;
+  }
 }
 
 function readInput(rawInput: unknown): Record<string, unknown> {
@@ -598,6 +872,31 @@ function readSchemaVersion(payload: unknown): string | undefined {
   }
 
   return typeof payload.schemaVersion === "string" ? payload.schemaVersion : undefined;
+}
+
+function readArrayCount(record: Record<string, unknown> | undefined, key: string): number | undefined {
+  const value = record?.[key];
+  return Array.isArray(value) ? value.length : undefined;
+}
+
+function readBooleanProperty(record: Record<string, unknown> | undefined, key: string): boolean | undefined {
+  const value = record?.[key];
+  return typeof value === "boolean" ? value : undefined;
+}
+
+function readNumberProperty(record: Record<string, unknown> | undefined, key: string): number | undefined {
+  const value = record?.[key];
+  return typeof value === "number" && Number.isFinite(value) ? value : undefined;
+}
+
+function readRecordProperty(record: Record<string, unknown> | undefined, key: string): Record<string, unknown> | undefined {
+  const value = record?.[key];
+  return isRecord(value) ? value : undefined;
+}
+
+function readStringProperty(record: Record<string, unknown> | undefined, key: string): string | undefined {
+  const value = record?.[key];
+  return typeof value === "string" ? value : undefined;
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {

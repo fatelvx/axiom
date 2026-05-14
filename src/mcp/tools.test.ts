@@ -182,7 +182,87 @@ test("mcp tool result treats check violations as structured evidence, not tool e
   assert.equal(result.isError, undefined);
   assert.equal(result.structuredContent.schemaVersion, "axiom.check.v4");
   assert.equal((result.structuredContent.payload as { ok?: unknown }).ok, false);
+  assert.equal(result.structuredContent.summary.kind, "check");
+  assert.equal(result.structuredContent.summary.ok, false);
+  assert.equal(result.structuredContent.summary.gate?.currentCommandIsGate, true);
+  assert.equal(result.structuredContent.summary.counts?.violations, 1);
+  assert.match(result.structuredContent.summary.agentHint, /Repair hard violations/);
   assert.match(result.content[0]?.text ?? "", /hidden_import/);
+});
+
+test("mcp tool result summarizes review and inference evidence for agents", () => {
+  const graphInvocation = buildAxiomMcpCliInvocation("axiom_observe", { root: "." }, { cliPath: "dist/cli.js", nodeExecutable: "node" });
+  const graphResult = createAxiomMcpToolResult(graphInvocation, {
+    exitCode: 0,
+    stderr: "",
+    stdout: JSON.stringify({
+      schemaVersion: "axiom.graph.v12",
+      architectureSummary: {
+        status: "failing_contract",
+        gate: {
+          command: "axi check",
+          currentCommandIsGate: false,
+          hardViolationsFailCheck: true
+        },
+        reviewStory: {
+          summary: "Review visible architecture pressure.",
+          nextStep: "Inspect hard violations first.",
+          caveat: "This is review context.",
+          pressures: [{ kind: "hard_violations", severity: "error", title: "Hard violations" }]
+        }
+      },
+      summary: {
+        modules: 2,
+        observedDependencies: 3,
+        shownObservedDependencies: 1,
+        violations: 1,
+        intentionalViolations: 0,
+        warnings: 2
+      },
+      drift: {
+        kind: "advisory_observed_edge_drift",
+        newObservedEdges: [{}],
+        removedObservedEdges: [{}, {}]
+      }
+    })
+  });
+
+  assert.equal(graphResult.structuredContent.summary.kind, "review");
+  assert.equal(graphResult.structuredContent.summary.status, "failing_contract");
+  assert.equal(graphResult.structuredContent.summary.gate?.currentCommandIsGate, false);
+  assert.equal(graphResult.structuredContent.summary.counts?.warnings, 2);
+  assert.equal(graphResult.structuredContent.summary.counts?.newObservedEdges, 1);
+  assert.equal(graphResult.structuredContent.summary.drift?.removedObservedEdges, 2);
+  assert.equal(graphResult.structuredContent.summary.reviewStory?.firstPressure?.title, "Hard violations");
+  assert.match(graphResult.structuredContent.summary.agentHint, /advisory review evidence/);
+
+  const inferInvocation = buildAxiomMcpCliInvocation("axiom_infer_contract", { root: "." }, { cliPath: "dist/cli.js", nodeExecutable: "node" });
+  const inferResult = createAxiomMcpToolResult(inferInvocation, {
+    exitCode: 0,
+    stderr: "",
+    stdout: JSON.stringify({
+      schemaVersion: "axiom.infer.v8",
+      reviewStory: {
+        summary: "Starter contract inferred 3 modules.",
+        nextStep: "Review inferred dependencies.",
+        pressures: [{ kind: "dependency_evidence", severity: "info", title: "Review inferred dependencies" }]
+      },
+      summary: {
+        architecturePressureNotes: 1,
+        collapsedCycles: 0,
+        importsScanned: 4,
+        modules: 3,
+        observedDependencies: 2,
+        sourceFiles: 5
+      }
+    })
+  });
+
+  assert.equal(inferResult.structuredContent.summary.kind, "inference");
+  assert.equal(inferResult.structuredContent.summary.counts?.sourceFiles, 5);
+  assert.equal(inferResult.structuredContent.summary.counts?.architecturePressureNotes, 1);
+  assert.equal(inferResult.structuredContent.summary.reviewStory?.summary, "Starter contract inferred 3 modules.");
+  assert.match(inferResult.structuredContent.summary.agentHint, /not declared architecture intent/);
 });
 
 test("mcp tool result marks unexpected CLI exits and wrong schemas as tool errors", () => {
@@ -194,6 +274,7 @@ test("mcp tool result marks unexpected CLI exits and wrong schemas as tool error
     stdout: ""
   });
   assert.equal(exitError.isError, true);
+  assert.equal(exitError.structuredContent.summary.kind, "tool_error");
   assert.match(exitError.structuredContent.error?.message ?? "", /unexpected status/);
 
   const schemaError = createAxiomMcpToolResult(invocation, {

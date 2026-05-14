@@ -77,6 +77,28 @@ Do not treat reviewStory as a score or automatic PR decision.
 Do not add accepts rules unless the user explicitly approves visible debt.
 ```
 
+## Reading MCP Results
+
+When the MCP preview is available, every tool result keeps exact CLI JSON under `structuredContent.payload` and adds a small `structuredContent.summary` for routing.
+
+Use the summary first:
+
+- `summary.kind`: choose the workflow: hard check, advisory review, inference authoring, or tool error.
+- `summary.gate.currentCommandIsGate`: decide whether the result can block a change.
+- `summary.counts`: read hard violations, warnings, visible debt, drift, and scan size without walking the whole payload.
+- `summary.reviewStory`: show the first narrative summary and next step.
+- `summary.agentHint`: preserve the intended handling of the result.
+
+Then use the payload for exact evidence:
+
+- `payload.violations[]` for required repairs.
+- `payload.warnings[]` for advisory pressure.
+- `payload.intentionalDebt[]` or `payload.intentionalViolations[]` for visible accepted debt.
+- `payload.drift` for observed-edge drift details.
+- `payload.axi`, `payload.modules[]`, and `payload.collapsedCycles[]` for inferred-contract review.
+
+Do not make decisions from `summary` alone. It is an index over the same evidence, not a replacement for the evidence.
+
 ## Thin MCP v0 Shape
 
 A safe MCP v0 should be read-only and wrap existing CLI behavior.

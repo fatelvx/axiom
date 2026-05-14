@@ -24,6 +24,7 @@ async function main() {
   console.log("- initialized the local stdio server");
   console.log("- listed 5 read-only Axiom tools");
   console.log("- exercised all 5 read-only Axiom tools through tools/call");
+  console.log("- included agent-readable summary fields for gate, review, drift, inference, and tool errors");
   console.log("- checked the current repository through axiom_check");
   console.log("- treated fixture contract violations as structured evidence");
   console.log("- rejected a tool call outside the configured allow-root");
@@ -67,6 +68,8 @@ async function runMainSmoke() {
     assertEqual(selfCheck.result?.structuredContent?.exitCode, 0, "self check exit code");
     assertEqual(selfCheck.result?.structuredContent?.payload?.ok, true, "self check ok");
     assertEqual(selfCheck.result?.structuredContent?.payload?.summary?.violations, 0, "self check hard violations");
+    assertEqual(selfCheck.result?.structuredContent?.summary?.kind, "check", "self check summary kind");
+    assertEqual(selfCheck.result?.structuredContent?.summary?.gate?.currentCommandIsGate, true, "self check summary gate");
 
     const failingCheck = await callTool(server, "axiom_check", {
       root: path.join(repoRoot, "fixtures/basic-ts-invalid")
@@ -74,6 +77,7 @@ async function runMainSmoke() {
     assertEqual(failingCheck.result?.isError, undefined, "failing check is not a tool error");
     assertEqual(failingCheck.result?.structuredContent?.exitCode, 1, "failing check exit code");
     assertEqual(failingCheck.result?.structuredContent?.payload?.ok, false, "failing check ok flag");
+    assertEqual(failingCheck.result?.structuredContent?.summary?.ok, false, "failing check summary ok");
     assertEqual(
       failingCheck.result?.structuredContent?.payload?.violations?.[0]?.code,
       "forbidden_dependency",
@@ -87,6 +91,8 @@ async function runMainSmoke() {
     assertEqual(observe.result?.isError, undefined, "observe is not a tool error");
     assertEqual(observe.result?.structuredContent?.schemaVersion, "axiom.graph.v12", "observe schema");
     assertEqual(observe.result?.structuredContent?.payload?.architectureSummary?.gate?.currentCommandIsGate, false, "observe is not a gate");
+    assertEqual(observe.result?.structuredContent?.summary?.kind, "review", "observe summary kind");
+    assertEqual(observe.result?.structuredContent?.summary?.gate?.currentCommandIsGate, false, "observe summary gate");
 
     const graph = await callTool(server, "axiom_graph", {
       root: fixtureRoot
@@ -94,6 +100,7 @@ async function runMainSmoke() {
     assertEqual(graph.result?.isError, undefined, "graph is not a tool error");
     assertEqual(graph.result?.structuredContent?.tool, "axiom_graph", "graph tool name");
     assertEqual(graph.result?.structuredContent?.schemaVersion, "axiom.graph.v12", "graph schema");
+    assertEqual(graph.result?.structuredContent?.summary?.kind, "review", "graph summary kind");
     assertEqual(
       graph.result?.structuredContent?.payload?.architectureSummary?.gate?.currentCommandIsGate,
       false,
@@ -108,6 +115,7 @@ async function runMainSmoke() {
     assertEqual(diff.result?.isError, undefined, "diff is not a tool error");
     assertEqual(diff.result?.structuredContent?.tool, "axiom_diff", "diff tool name");
     assertEqual(diff.result?.structuredContent?.schemaVersion, "axiom.graph.v12", "diff schema");
+    assertEqual(diff.result?.structuredContent?.summary?.drift?.kind, "advisory_observed_edge_drift", "diff summary drift kind");
     assertEqual(
       diff.result?.structuredContent?.payload?.drift?.kind,
       "advisory_observed_edge_drift",
@@ -120,6 +128,7 @@ async function runMainSmoke() {
     assertEqual(infer.result?.isError, undefined, "infer is not a tool error");
     assertEqual(infer.result?.structuredContent?.tool, "axiom_infer_contract", "infer tool name");
     assertEqual(infer.result?.structuredContent?.schemaVersion, "axiom.infer.v8", "infer schema");
+    assertEqual(infer.result?.structuredContent?.summary?.kind, "inference", "infer summary kind");
     assertTextIncludes(infer.result?.structuredContent?.payload?.axi ?? "", "module Physics", "infer generated contract");
   } finally {
     try {
@@ -219,6 +228,7 @@ async function runExecutionFailureSmoke() {
       });
       assertNoJsonRpcError(badCli, "bad-cli tool response");
       assertEqual(badCli.result?.isError, true, "bad-cli tool error flag");
+      assertEqual(badCli.result?.structuredContent?.summary?.kind, "tool_error", "bad-cli summary kind");
       assertEqual(badCli.result?.structuredContent?.tool, "axiom_observe", "bad-cli tool name");
       assertEqual(badCli.result?.structuredContent?.exitCode, 1, "bad-cli exit code");
       assertTextIncludes(
@@ -252,6 +262,7 @@ async function runExecutionFailureSmoke() {
       });
       assertNoJsonRpcError(timedOut, "timeout tool response");
       assertEqual(timedOut.result?.isError, true, "timeout tool error flag");
+      assertEqual(timedOut.result?.structuredContent?.summary?.kind, "tool_error", "timeout summary kind");
       assertEqual(timedOut.result?.structuredContent?.tool, "axiom_observe", "timeout tool name");
       assertEqual(timedOut.result?.structuredContent?.exitCode, 124, "timeout exit code");
       assertTextIncludes(

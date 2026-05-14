@@ -42,6 +42,8 @@ test("mcp stdio server initializes, lists tools, and calls read-only tools", asy
     assert.equal(passingCheck.result?.structuredContent?.tool, "axiom_check");
     assert.equal(passingCheck.result?.structuredContent?.exitCode, 0);
     assert.equal(passingCheck.result?.structuredContent?.payload?.ok, true);
+    assert.equal(passingCheck.result?.structuredContent?.summary?.kind, "check");
+    assert.equal(passingCheck.result?.structuredContent?.summary?.gate?.currentCommandIsGate, true);
 
     const failingCheck = await server.request("tools/call", {
       name: "axiom_check",
@@ -53,6 +55,7 @@ test("mcp stdio server initializes, lists tools, and calls read-only tools", asy
     assert.equal(failingCheck.result?.structuredContent?.exitCode, 1);
     assert.equal(failingCheck.result?.structuredContent?.payload?.ok, false);
     assert.equal(failingCheck.result?.structuredContent?.payload?.violations?.[0]?.code, "forbidden_dependency");
+    assert.equal(failingCheck.result?.structuredContent?.summary?.ok, false);
 
     const graph = await server.request("tools/call", {
       name: "axiom_graph",
@@ -64,6 +67,8 @@ test("mcp stdio server initializes, lists tools, and calls read-only tools", asy
     assert.equal(graph.result?.structuredContent?.tool, "axiom_graph");
     assert.equal(graph.result?.structuredContent?.schemaVersion, "axiom.graph.v12");
     assert.equal(graph.result?.structuredContent?.payload?.architectureSummary?.gate?.currentCommandIsGate, false);
+    assert.equal(graph.result?.structuredContent?.summary?.kind, "review");
+    assert.equal(graph.result?.structuredContent?.summary?.gate?.currentCommandIsGate, false);
     fs.writeFileSync(baselinePath, JSON.stringify(graph.result?.structuredContent?.payload), "utf8");
 
     const diff = await server.request("tools/call", {
@@ -77,6 +82,7 @@ test("mcp stdio server initializes, lists tools, and calls read-only tools", asy
     assert.equal(diff.result?.structuredContent?.tool, "axiom_diff");
     assert.equal(diff.result?.structuredContent?.schemaVersion, "axiom.graph.v12");
     assert.equal(diff.result?.structuredContent?.payload?.drift?.kind, "advisory_observed_edge_drift");
+    assert.equal(diff.result?.structuredContent?.summary?.drift?.kind, "advisory_observed_edge_drift");
 
     const infer = await server.request("tools/call", {
       name: "axiom_infer_contract",
@@ -85,6 +91,7 @@ test("mcp stdio server initializes, lists tools, and calls read-only tools", asy
       }
     });
     assert.equal(infer.result?.structuredContent?.schemaVersion, "axiom.infer.v8");
+    assert.equal(infer.result?.structuredContent?.summary?.kind, "inference");
     assert.match(infer.result?.structuredContent?.payload?.axi ?? "", /module Physics/);
   } finally {
     try {

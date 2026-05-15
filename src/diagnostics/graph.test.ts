@@ -385,6 +385,9 @@ test("markdown graph output summarizes reviewable architecture signals", () => {
   assert.match(output, /Review mode: observe \(advisory\)/);
   assert.match(output, /- Shown dependency edges: 1/);
   assert.match(output, /- Full observed dependencies: 2/);
+  assert.match(output, /Advisory warnings are review pressure, not a cleanup checklist or failure state/);
+  assert.match(output, /do not refactor solely to reach zero warnings/);
+  assert.match(output, /Before acting on advisory warnings, state the architecture hypothesis/);
   assert.match(output, /Axiom does not auto-accept debt/);
   assert.match(output, /Expired or invalid intentional violations are hard contract failures in `axi check`/);
   assert.match(output, /### Hard Violations/);
@@ -428,6 +431,8 @@ test("markdown warnings include large-file function counts", () => {
     const result = runCheck({ root, warnLargeFiles: true });
     const output = formatGraphMarkdown(result, { violationsOnly: true, attention: true, observe: true });
 
+    assert.match(output, /These are review-pressure signals, not a cleanup checklist/);
+    assert.match(output, /first name the architecture hypothesis and verification plan/);
     assert.match(output, /`large_module_file` at `src\/main\.ts:1`/);
     assert.match(output, /Line count: 805/);
     assert.match(output, /Threshold: lines >= 800/);
@@ -561,7 +566,9 @@ test("violations-only graph output includes warning guardrails", () => {
   assert.match(output, /violations: 0/);
   assert.match(output, /warnings: 1/);
   assert.match(output, /violating dependencies:\n  none/);
-  assert.match(output, /warnings:\n  unused_suppression axiom\/main\.axi:7: Simulation has an unused intentional violation for Rendering\./);
+  assert.match(output, /note: advisory warnings are review pressure, not a cleanup checklist or failure state/);
+  assert.match(output, /note: do not refactor solely to reach zero warnings; first name the architecture hypothesis/);
+  assert.match(output, /unused_suppression axiom\/main\.axi:7: Simulation has an unused intentional violation for Rendering\./);
   assert.match(output, /rule: Simulation accepts forbidden_dependency to Rendering until 2099-01-01 \(axiom\/main\.axi:7\)/);
   assert.match(output, /expires: 2099-01-01/);
   assert.match(output, /reason: legacy renderer migration/);

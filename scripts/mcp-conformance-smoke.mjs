@@ -217,6 +217,11 @@ async function verifyObserveAndDiffAreReviewEvidence(server, projectRoot, baseli
     "advisory review evidence",
     "observe agent hint"
   );
+  assertTextIncludes(
+    observe.result?.structuredContent?.summary?.agentHint ?? "",
+    "do not refactor solely to reach zero warnings",
+    "observe warning guardrail"
+  );
 
   const diff = await callTool(server, "axiom_diff", {
     baselinePath,
@@ -228,6 +233,11 @@ async function verifyObserveAndDiffAreReviewEvidence(server, projectRoot, baseli
   assertEqual(diff.result?.structuredContent?.summary?.drift?.kind, "advisory_observed_edge_drift", "diff drift kind");
   assertMin(diff.result?.structuredContent?.summary?.drift?.newObservedEdges ?? 0, 1, "diff new drift edges");
   assertTextIncludes(diff.result?.structuredContent?.summary?.agentHint ?? "", "advisory review evidence", "diff agent hint");
+  assertTextIncludes(
+    diff.result?.structuredContent?.summary?.agentHint ?? "",
+    "do not refactor solely to reach zero warnings",
+    "diff warning guardrail"
+  );
 }
 
 async function verifyInferenceIsAuthoringEvidence(server, projectRoot) {
@@ -276,6 +286,11 @@ async function verifyInferredObserveIsTemporaryReviewEvidence(server, projectRoo
     inferredObserve.result?.structuredContent?.summary?.agentHint ?? "",
     "not declared architecture intent",
     "inferred observe agent hint"
+  );
+  assertTextIncludes(
+    inferredObserve.result?.structuredContent?.summary?.agentHint ?? "",
+    "do not refactor solely to reach zero warnings",
+    "inferred observe warning guardrail"
   );
   assertEqual(
     inferredObserve.result?.structuredContent?.payload?.inference?.starterContract?.kind,

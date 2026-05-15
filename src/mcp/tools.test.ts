@@ -272,6 +272,9 @@ test("mcp tool result summarizes review and inference evidence for agents", () =
   assert.equal(graphResult.structuredContent.summary.reviewStory?.firstPressure?.title, "Hard violations");
   assert.equal(graphResult.structuredContent.summary.topSignals?.[0]?.kind, "advisory_observed_edge_drift");
   assert.match(graphResult.structuredContent.summary.agentHint, /advisory review evidence/);
+  assert.match(graphResult.structuredContent.summary.agentHint, /not a cleanup checklist/);
+  assert.match(graphResult.structuredContent.summary.agentHint, /do not refactor solely to reach zero warnings/);
+  assert.match(graphResult.structuredContent.summary.agentHint, /State a refactor hypothesis/);
 
   const inferInvocation = buildAxiomMcpCliInvocation("axiom_infer_contract", { root: "." }, { cliPath: "dist/cli.js", nodeExecutable: "node" });
   const inferResult = createAxiomMcpToolResult(inferInvocation, {
@@ -429,6 +432,8 @@ test("mcp inferred-observe summary exposes compact top signals without hiding pa
   assert.equal(summary.topSignals?.[2]?.kind, "composition_root_pressure");
   assert.equal(summary.topSignals?.[3]?.kind, "large_module_file");
   assert.match(summary.agentHint, /temporary inferred contract/);
+  assert.match(summary.agentHint, /not a cleanup checklist/);
+  assert.match(summary.agentHint, /do not refactor solely to reach zero warnings/);
   assert.ok(payload.inference);
   assert.ok(payload.observe);
 });

@@ -123,6 +123,8 @@ export interface AxiomMcpResultSummary {
 }
 
 const TOOL_BY_NAME = new Map(TOOL_DESCRIPTORS.map((tool) => [tool.name, tool]));
+const ADVISORY_REFACTOR_GUARDRAIL =
+  "Advisory warnings are review pressure, not a cleanup checklist; do not refactor solely to reach zero warnings. State a refactor hypothesis before changing code.";
 
 export function listAxiomMcpTools(): AxiomMcpToolDescriptor[] {
   return TOOL_DESCRIPTORS.map((tool) => cloneJson(tool));
@@ -349,7 +351,7 @@ function createInferObserveSummary(inferencePayload: unknown, observePayload: un
   };
 
   return {
-    agentHint: "Use this as advisory review evidence produced from a temporary inferred contract. The inferred contract mirrors the current graph and is not declared architecture intent; do not save it, update baselines, accept debt, or use it as a hard gate without human review.",
+    agentHint: `Use this as advisory review evidence produced from a temporary inferred contract. The inferred contract mirrors the current graph and is not declared architecture intent; do not save it, update baselines, accept debt, or use it as a hard gate without human review. ${ADVISORY_REFACTOR_GUARDRAIL}`,
     ...(Object.keys(counts).length > 0 ? { counts } : {}),
     gate,
     kind: "review",
@@ -390,7 +392,7 @@ function buildAgentHint(command: AxiomMcpCommand, ok: boolean | undefined): stri
     return "Use these allowed roots when choosing a root for Axiom MCP scans. Re-register or restart the MCP client to add more roots.";
   }
 
-  return "Use this as advisory review evidence. The hard gate remains axiom_check / axi check.";
+  return `Use this as advisory review evidence. The hard gate remains axiom_check / axi check. ${ADVISORY_REFACTOR_GUARDRAIL}`;
 }
 
 function buildGateSummary(

@@ -603,6 +603,8 @@ function formatMarkdownReviewNotes(graph: GraphJsonResult): string[] {
     "- This is review output; use `axi check` when you want a CI gate.",
     "- Hard violations are contract failures.",
     "- Intentional violations, warnings, and drift are visible debt or advisory signals.",
+    "- Advisory warnings are review pressure, not a cleanup checklist or failure state; do not refactor solely to reach zero warnings.",
+    "- Before acting on advisory warnings, state the architecture hypothesis and verify the change with tests, audits, or Axiom evidence.",
     "- Advisory warning counts include only warning checks enabled for this command or config.",
     "- Axiom does not auto-accept debt; accepted debt must be declared in `.axi` with an expiration date and reason.",
     "- Expired or invalid intentional violations are hard contract failures in `axi check`."
@@ -711,9 +713,12 @@ function formatMarkdownWarnings(graph: GraphJsonResult): string[] {
 
   if (graph.warnings.length === 0) {
     lines.push("- None");
+    lines.push("- Zero advisory warnings is not proof of architecture health; compare the graph with intended ownership and responsibilities.");
     return lines;
   }
 
+  lines.push("- These are review-pressure signals, not a cleanup checklist.");
+  lines.push("- Do not refactor solely to reach zero warnings; first name the architecture hypothesis and verification plan.");
   lines.push(...formatMarkdownWarningClusters(graph.warnings));
 
   for (const warning of graph.warnings) {
@@ -1079,10 +1084,13 @@ function formatWarnings(graph: GraphJsonResult): string[] {
 
   if (graph.warnings.length === 0) {
     lines.push("  none");
+    lines.push("  note: zero advisory warnings is not proof of architecture health");
     lines.push("  note: advisory warning counts include only checks enabled for this command or config");
     return lines;
   }
 
+  lines.push("  note: advisory warnings are review pressure, not a cleanup checklist or failure state");
+  lines.push("  note: do not refactor solely to reach zero warnings; first name the architecture hypothesis");
   lines.push(...formatWarningClusters(graph.warnings));
 
   for (const warning of graph.warnings) {

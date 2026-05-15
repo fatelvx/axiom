@@ -126,6 +126,99 @@ test("mcp graph invocation can request attention view and baseline drift", () =>
   ]);
 });
 
+test("mcp graph invocation can request portable full graph output", () => {
+  const invocation = buildAxiomMcpCliInvocation(
+    "axiom_graph",
+    {
+      root: ".",
+      portable: true,
+      view: "full"
+    },
+    { cliPath: "dist/cli.js", nodeExecutable: "node" }
+  );
+
+  assert.deepEqual(invocation.args, [
+    "dist/cli.js",
+    "graph",
+    "--root",
+    ".",
+    "--json",
+    "--portable"
+  ]);
+
+  assert.throws(
+    () =>
+      buildAxiomMcpCliInvocation(
+        "axiom_graph",
+        {
+          root: ".",
+          portable: true,
+          view: "attention"
+        },
+        { cliPath: "dist/cli.js", nodeExecutable: "node" }
+      ),
+    /portable graph output requires view to be full/
+  );
+
+  assert.throws(
+    () =>
+      buildAxiomMcpCliInvocation(
+        "axiom_graph",
+        {
+          root: ".",
+          baselinePath: ".axi/baselines/current.graph.json",
+          portable: true
+        },
+        { cliPath: "dist/cli.js", nodeExecutable: "node" }
+      ),
+    /portable graph output cannot be combined with baselinePath/
+  );
+});
+
+test("mcp portable graph result tells agents not to persist without approval", () => {
+  const invocation = buildAxiomMcpCliInvocation(
+    "axiom_graph",
+    {
+      root: ".",
+      portable: true
+    },
+    { cliPath: "dist/cli.js", nodeExecutable: "node" }
+  );
+  const result = createAxiomMcpToolResult(invocation, {
+    exitCode: 0,
+    stderr: "",
+    stdout: JSON.stringify({
+      schemaVersion: "axiom.graph.v12",
+      root: ".",
+      artifact: {
+        kind: "graph_baseline",
+        pathMode: "portable"
+      },
+      architectureSummary: {
+        status: "clear",
+        gate: {
+          command: "axi check",
+          currentCommandIsGate: false,
+          hardViolationsFailCheck: true
+        }
+      },
+      summary: {
+        modules: 1,
+        observedDependencies: 0,
+        shownObservedDependencies: 0,
+        violations: 0,
+        intentionalViolations: 0,
+        warnings: 0
+      }
+    })
+  });
+
+  assert.equal(result.structuredContent.summary.kind, "review");
+  assert.match(result.structuredContent.summary.agentHint, /portable graph evidence/);
+  assert.match(result.structuredContent.summary.agentHint, /did not save or update a baseline/);
+  assert.match(result.structuredContent.summary.agentHint, /unless the user explicitly approves/);
+});
+
 test("mcp diff invocation requires an existing baseline path input", () => {
   assert.throws(
     () => buildAxiomMcpCliInvocation("axiom_diff", { root: "." }),

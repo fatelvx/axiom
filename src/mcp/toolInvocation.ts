@@ -60,6 +60,7 @@ export function buildAxiomMcpCliInvocation(
       "exclude",
       "include",
       "intentionalViolationWarningDays",
+      "portable",
       "root",
       "specPaths",
       "view",
@@ -93,6 +94,16 @@ export function buildAxiomMcpCliInvocation(
 
   if (command === "graph") {
     const view = readOptionalEnum<AxiomMcpGraphView>(input, "view", ["attention", "full", "violationsOnly"]) ?? "full";
+    const portable = readOptionalBoolean(input, "portable");
+    if (portable && view !== "full") {
+      throw new Error("portable graph output requires view to be full.");
+    }
+    if (portable && readOptionalString(input, "baselinePath")) {
+      throw new Error("portable graph output cannot be combined with baselinePath.");
+    }
+    if (portable) {
+      args.push("--portable");
+    }
     if (view === "attention") {
       args.push("--attention");
     } else if (view === "violationsOnly") {
@@ -229,6 +240,19 @@ function readOptionalString(record: Record<string, unknown>, key: string): strin
 
   if (typeof value !== "string" || value.length === 0) {
     throw new Error(`${key} must be a non-empty string when provided.`);
+  }
+
+  return value;
+}
+
+function readOptionalBoolean(record: Record<string, unknown>, key: string): boolean {
+  const value = record[key];
+  if (value === undefined) {
+    return false;
+  }
+
+  if (typeof value !== "boolean") {
+    throw new Error(`${key} must be a boolean when provided.`);
   }
 
   return value;

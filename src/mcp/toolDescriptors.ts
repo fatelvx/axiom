@@ -211,11 +211,15 @@ export const TOOL_DESCRIPTORS: AxiomMcpToolDescriptor[] = [
   {
     name: "axiom_graph",
     title: "Run Axiom Graph",
-    description: "Run `axi graph --json` for the declared and observed dependency graph, optionally focused as attention output.",
+    description: "Run `axi graph --json` for the declared and observed dependency graph, optionally focused as attention output or emitted as a portable baseline payload.",
     inputSchema: objectSchema(
       {
         ...COMMON_TOOL_PROPERTIES,
         baselinePath: BASELINE_PROPERTY,
+        portable: {
+          type: "boolean",
+          description: "Emit `axi graph --json --portable` metadata for a shared graph baseline. Only valid with the full unfiltered graph and no baselinePath."
+        },
         view: {
           type: "string",
           description: "Graph view. Full is the unfiltered graph; attention and violationsOnly match the CLI focus flags.",

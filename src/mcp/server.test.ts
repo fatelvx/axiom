@@ -69,15 +69,20 @@ test("mcp stdio server initializes, lists tools, and calls read-only tools", asy
     const graph = await server.request("tools/call", {
       name: "axiom_graph",
       arguments: {
+        portable: true,
         root: "fixtures/basic-ts-valid"
       }
     });
     assert.equal(graph.result?.isError, undefined);
     assert.equal(graph.result?.structuredContent?.tool, "axiom_graph");
     assert.equal(graph.result?.structuredContent?.schemaVersion, "axiom.graph.v12");
+    assert.equal(graph.result?.structuredContent?.payload?.root, ".");
+    assert.equal(graph.result?.structuredContent?.payload?.artifact?.kind, "graph_baseline");
+    assert.equal(graph.result?.structuredContent?.payload?.artifact?.pathMode, "portable");
     assert.equal(graph.result?.structuredContent?.payload?.architectureSummary?.gate?.currentCommandIsGate, false);
     assert.equal(graph.result?.structuredContent?.summary?.kind, "review");
     assert.equal(graph.result?.structuredContent?.summary?.gate?.currentCommandIsGate, false);
+    assert.match(graph.result?.structuredContent?.summary?.agentHint ?? "", /did not save or update a baseline/);
     fs.writeFileSync(baselinePath, JSON.stringify(graph.result?.structuredContent?.payload), "utf8");
 
     const diff = await server.request("tools/call", {

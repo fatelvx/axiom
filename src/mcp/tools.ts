@@ -306,7 +306,7 @@ function createResultSummary(invocation: AxiomMcpCliInvocation, payload: unknown
   const topSignals = buildPayloadTopSignals(payloadRecord);
 
   return {
-    agentHint: buildAgentHint(invocation.command, ok),
+    agentHint: buildAgentHint(invocation, ok),
     ...(Object.keys(counts).length > 0 ? { counts } : {}),
     ...(drift ? { drift } : {}),
     ...(gate ? { gate } : {}),
@@ -377,7 +377,9 @@ function resultSummaryKind(command: AxiomMcpCommand): AxiomMcpResultSummary["kin
   return "review";
 }
 
-function buildAgentHint(command: AxiomMcpCommand, ok: boolean | undefined): string {
+function buildAgentHint(invocation: AxiomMcpCliInvocation, ok: boolean | undefined): string {
+  const command = invocation.command;
+
   if (command === "check") {
     return ok === false
       ? "Repair hard violations from payload.violations; do not edit contracts or accepted debt unless the user approves."
@@ -390,6 +392,10 @@ function buildAgentHint(command: AxiomMcpCommand, ok: boolean | undefined): stri
 
   if (command === "roots") {
     return "Use these allowed roots when choosing a root for Axiom MCP scans. Re-register or restart the MCP client to add more roots.";
+  }
+
+  if (command === "graph" && invocation.args.includes("--portable")) {
+    return `Use this as portable graph evidence for baseline review. This MCP call did not save or update a baseline; do not persist it as .axi/baselines/current.graph.json unless the user explicitly approves that artifact change. ${ADVISORY_REFACTOR_GUARDRAIL}`;
   }
 
   return `Use this as advisory review evidence. The hard gate remains axiom_check / axi check. ${ADVISORY_REFACTOR_GUARDRAIL}`;

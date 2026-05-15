@@ -37,7 +37,7 @@ That constraint is intentional. Axiom MCP should be understandable from shipped 
 | `axiom_roots` | Call this first. Use only listed roots. If the desired target is missing, ask the user to re-register the server with a narrow `--allow-root`; do not guess a parent directory. |
 | `axiom_check` | Treat this as the hard gate. Valid exit code `1` with Axiom JSON is architecture evidence, not a tool crash. Repair hard `payload.violations[]` only when repair is in scope. |
 | `axiom_observe` | Treat this as advisory review evidence. It may show warnings, visible debt, review story, and baseline drift, but it is not the gate. |
-| `axiom_graph` | Treat this as graph evidence for review, baselines, and diagrams. It is not a gate. |
+| `axiom_graph` | Treat this as graph evidence for review, baselines, and diagrams. `portable: true` may return shared-baseline metadata for the full graph, but it still does not save or update a baseline. It is not a gate. |
 | `axiom_diff` | Treat drift as advisory observed-edge change against an existing baseline. Do not update the baseline during the same review. |
 | `axiom_infer_contract` | Treat inference as current-graph authoring evidence. It is not declared architecture intent and should not be saved as `.axi` without human review. |
 | `axiom_observe_inferred_contract` | Treat this as advisory review evidence produced from a temporary inferred contract. It can help no-contract projects get warning context, but it is not a gate and not declared intent. |
@@ -60,6 +60,7 @@ The smoke uses a temporary copy of `examples/spec-first-pilot` and verifies:
 - clean `axiom_check` is a passing hard gate,
 - deliberate hidden-import and layer drift make `axiom_check` fail with hard violations,
 - `axiom_observe` and `axiom_diff` remain advisory review evidence,
+- `axiom_graph` can return portable full-graph baseline evidence without writing the baseline itself,
 - `axiom_infer_contract` returns starter-contract evidence marked as not declared intent,
 - `axiom_observe_inferred_contract` returns temporary inferred review evidence without persisting `.axi`,
 - `structuredContent.summary.topSignals[]`, when present, is treated as an index into existing payload evidence rather than a new gate or a replacement for raw arrays,

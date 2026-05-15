@@ -36,12 +36,14 @@ The preview defines seven tools:
 | `axiom_roots` | server-native | Lists the local roots this MCP server is allowed to scan. |
 | `axiom_check` | `axi check --json` | Hard gate for reviewed `.axi` contracts. |
 | `axiom_observe` | `axi observe --json` | Review story, warnings, visible debt, and optional baseline drift. |
-| `axiom_graph` | `axi graph --json` | Declared and observed graph evidence, optionally focused. |
+| `axiom_graph` | `axi graph --json` | Declared and observed graph evidence, optionally focused or emitted as a portable baseline payload. |
 | `axiom_diff` | `axi diff --json` | Advisory observed-edge drift against an existing graph baseline. |
 | `axiom_infer_contract` | `axi infer --json` | Current-graph starter contract evidence for authoring. |
 | `axiom_observe_inferred_contract` | `axi infer --json` then `axi observe --json --spec <temporary inferred spec>` | Advisory review evidence using a temporary inferred contract without writing `.axi` into the target repository. |
 
 The important product rule is that MCP does not create new semantics. If the CLI would not fail, the MCP wrapper does not invent a failure. If the CLI says drift is advisory, the MCP wrapper returns advisory drift.
+
+`axiom_graph` accepts `portable: true` when an agent needs the same payload shape as `axi graph --json --portable`. This is still read-only graph evidence: it returns `root: "."` plus `artifact.pathMode: "portable"` so a client can review or save a shared baseline outside the tool call. It is only valid for the full unfiltered graph and cannot be combined with `baselinePath`.
 
 ## Adapter Contract
 
@@ -90,6 +92,7 @@ MCP v0 must stay read-only:
 - no auto-editing `.axi` files,
 - no adding `accepts ... until ... because ...`,
 - no updating baselines,
+- no creating or saving baselines by itself, even when `axiom_graph` returns portable graph evidence,
 - no rewriting source imports,
 - no persisting inferred MCP temp specs into the target repository,
 - no Markdown parsing when JSON is available,

@@ -115,7 +115,7 @@ Candidate tools:
 - `axiom_roots`: list configured allowed roots for this local MCP server.
 - `axiom_check`: run `axi check --json` and return pass/fail plus hard diagnostics.
 - `axiom_observe`: run `axi observe --json` and return review context.
-- `axiom_graph`: run `axi graph --json` or `--mermaid`.
+- `axiom_graph`: run `axi graph --json`; use `portable: true` only when the user explicitly wants a portable full graph baseline payload.
 - `axiom_diff`: run `axi diff <baseline> --json` for baseline drift.
 - `axiom_infer_contract`: run `axi infer --json` for a current-graph starter draft.
 - `axiom_observe_inferred_contract`: run `axi infer --json`, then `axi observe --json` with a server-managed temporary inferred spec for advisory review.
@@ -137,6 +137,8 @@ Do not expose write tools in v0:
 - no automatic baseline updates during PR review.
 
 `axiom_observe_inferred_contract` is still read-only. It may create a temporary server-side spec file for the duration of one tool call, but it must not save `.axi` into the target repo or treat the inferred contract as declared intent.
+
+`axiom_graph` with `portable: true` is also read-only. It returns portable graph evidence, but the agent should not save or update `.axi/baselines/current.graph.json` unless the user explicitly approves that artifact change.
 
 ## PR Comment Recipe
 

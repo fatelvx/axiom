@@ -112,12 +112,21 @@ async function runMainSmoke() {
     assertEqual(observe.result?.structuredContent?.summary?.gate?.currentCommandIsGate, false, "observe summary gate");
 
     const graph = await callTool(server, "axiom_graph", {
+      portable: true,
       root: fixtureRoot
     });
     assertEqual(graph.result?.isError, undefined, "graph is not a tool error");
     assertEqual(graph.result?.structuredContent?.tool, "axiom_graph", "graph tool name");
     assertEqual(graph.result?.structuredContent?.schemaVersion, "axiom.graph.v12", "graph schema");
     assertEqual(graph.result?.structuredContent?.summary?.kind, "review", "graph summary kind");
+    assertTextIncludes(
+      graph.result?.structuredContent?.summary?.agentHint ?? "",
+      "did not save or update a baseline",
+      "graph portable agent hint"
+    );
+    assertEqual(graph.result?.structuredContent?.payload?.root, ".", "graph portable root");
+    assertEqual(graph.result?.structuredContent?.payload?.artifact?.kind, "graph_baseline", "graph portable artifact kind");
+    assertEqual(graph.result?.structuredContent?.payload?.artifact?.pathMode, "portable", "graph portable artifact mode");
     assertEqual(
       graph.result?.structuredContent?.payload?.architectureSummary?.gate?.currentCommandIsGate,
       false,

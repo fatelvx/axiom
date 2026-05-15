@@ -144,12 +144,21 @@ async function verifyCleanCheckGate(server, projectRoot) {
 
 async function writeBaseline(server, projectRoot, baselinePath) {
   const graph = await callTool(server, "axiom_graph", {
+    portable: true,
     root: projectRoot
   });
   assertNoJsonRpcError(graph, "baseline graph");
   assertEqual(graph.result?.isError, undefined, "baseline graph tool error");
   assertEqual(graph.result?.structuredContent?.summary?.kind, "review", "baseline graph summary kind");
   assertEqual(graph.result?.structuredContent?.summary?.gate?.currentCommandIsGate, false, "baseline graph is not gate");
+  assertTextIncludes(
+    graph.result?.structuredContent?.summary?.agentHint ?? "",
+    "did not save or update a baseline",
+    "baseline graph portable agent hint"
+  );
+  assertEqual(graph.result?.structuredContent?.payload?.root, ".", "baseline graph portable root");
+  assertEqual(graph.result?.structuredContent?.payload?.artifact?.kind, "graph_baseline", "baseline graph artifact kind");
+  assertEqual(graph.result?.structuredContent?.payload?.artifact?.pathMode, "portable", "baseline graph artifact path mode");
   writeFileSync(baselinePath, JSON.stringify(graph.result?.structuredContent?.payload), "utf8");
 }
 

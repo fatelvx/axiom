@@ -7,6 +7,7 @@ import path from "node:path";
 const repoRoot = process.cwd();
 const cliPath = path.join(repoRoot, "dist/cli.js");
 const warningArgs = ["--warn-large-files", "--warn-coupling-concentration"];
+const committedBaselinePath = path.join(repoRoot, ".axi", "baselines", "current.graph.json");
 
 if (!existsSync(cliPath)) {
   console.error("dist/cli.js was not found. Run npm run build before Axiom self artifact smoke.");
@@ -16,6 +17,8 @@ if (!existsSync(cliPath)) {
 const tempDirectory = mkdtempSync(path.join(tmpdir(), "axiom-self-artifact-smoke-"));
 
 try {
+  let verifiedCommittedBaseline = false;
+
   const gate = runAxi(["check", "--root", ".", "--strict", "--json"], 0);
   const gatePayload = parseJson(gate.stdout, "self check output");
   assertEqual(gatePayload.ok, true, "self check ok");
@@ -27,49 +30,15 @@ try {
   );
 
   const baseline = createBaseline();
-  assertEqual(baseline.payload.root, ".", "self baseline uses portable root metadata");
-  assertEqual(baseline.payload.artifact?.kind, "graph_baseline", "self baseline artifact kind");
-  assertEqual(baseline.payload.artifact?.pathMode, "portable", "self baseline artifact path mode");
-  assertTextExcludes(baseline.text, normalizePath(repoRoot), "self portable baseline does not include the local repository root");
-  assertEqual(baseline.payload.filters?.violationsOnly, false, "self baseline is unfiltered");
-  assertEqual(baseline.payload.filters?.attention, false, "self baseline is not attention-filtered");
-  assertEqual(baseline.payload.architectureSummary?.gate?.currentCommandIsGate, false, "self baseline graph is not a gate");
-  assertEqual(baseline.payload.summary?.violations, 0, "self baseline hard violation count");
-  assertEqual(baseline.payload.summary?.intentionalViolations, gatePayload.summary?.intentionalViolations, "self baseline debt count");
-  assertEqual(readDriftCount(baseline.payload), 0, "self baseline drift count");
-  assertNonEmptyText(baseline.payload.architectureSummary?.reviewStory?.summary, "self baseline review story");
+  assertPortableBaseline(baseline, gatePayload, "temp self baseline");
+  verifyReviewCommands(baseline, gatePayload, "temp self baseline");
 
-  const observe = runAxi(
-    ["observe", "--root", ".", "--strict", "--baseline", baseline.path, "--json", ...warningArgs],
-    0
-  );
-  const observePayload = parseJson(observe.stdout, "self observe output");
-  assertEqual(observePayload.architectureSummary?.gate?.currentCommandIsGate, false, "self observe is not a gate");
-  assertEqual(observePayload.summary?.violations, 0, "self observe hard violation count");
-  assertEqual(observePayload.summary?.intentionalViolations, gatePayload.summary?.intentionalViolations, "self observe debt count");
-  assertEqual(readDriftCount(observePayload), 0, "self observe drift count");
-  assertNonEmptyText(observePayload.architectureSummary?.reviewStory?.summary, "self observe review story");
-  assertEqual(hashFile(baseline.path), baseline.hash, "self baseline is not rewritten by observe");
-
-  const observeMarkdown = runAxi(
-    ["observe", "--root", ".", "--strict", "--baseline", baseline.path, "--markdown", ...warningArgs],
-    0
-  );
-  assertTextIncludes(observeMarkdown.stdout, "Review mode: observe (advisory)", "self observe markdown advisory mode");
-  assertTextIncludes(observeMarkdown.stdout, "### Review Story", "self observe markdown review story");
-  assertTextIncludes(observeMarkdown.stdout, "### Advisory Signals", "self observe markdown advisory signals section");
-  assertTextIncludes(
-    observeMarkdown.stdout,
-    "do not refactor solely to reduce signal counts",
-    "self observe markdown advisory guardrail"
-  );
-
-  const diff = runAxi(["diff", baseline.path, "--root", ".", "--strict", "--json", ...warningArgs], 0);
-  const diffPayload = parseJson(diff.stdout, "self diff output");
-  assertEqual(diffPayload.architectureSummary?.gate?.currentCommandIsGate, false, "self diff is not a gate");
-  assertEqual(diffPayload.summary?.violations, 0, "self diff hard violation count");
-  assertEqual(readDriftCount(diffPayload), 0, "self diff drift count");
-  assertEqual(hashFile(baseline.path), baseline.hash, "self baseline is not rewritten by diff");
+  if (existsSync(committedBaselinePath)) {
+    const committedBaseline = readBaseline(committedBaselinePath, "committed self baseline");
+    assertPortableBaseline(committedBaseline, gatePayload, "committed self baseline");
+    verifyReviewCommands(committedBaseline, gatePayload, "committed self baseline");
+    verifiedCommittedBaseline = true;
+  }
 
   console.log("Axiom self artifact smoke passed.");
   console.log("- self-contract passed as the hard gate");
@@ -77,6 +46,9 @@ try {
   console.log("- observe and diff stayed advisory and reported zero baseline drift");
   console.log("- observe markdown preserved reviewStory and advisory-signal guardrails");
   console.log("- review commands did not rewrite the saved baseline");
+  if (verifiedCommittedBaseline) {
+    console.log("- verified the committed portable self graph baseline as repo dogfood policy");
+  }
 } finally {
   rmSync(tempDirectory, { force: true, recursive: true });
 }
@@ -95,6 +67,64 @@ function createBaseline() {
     payload,
     text: graph.stdout
   };
+}
+
+function readBaseline(filePath, label) {
+  const text = readFileSync(filePath, "utf8");
+  return {
+    hash: hashFile(filePath),
+    path: filePath,
+    payload: parseJson(text, `${label} graph output`),
+    text
+  };
+}
+
+function assertPortableBaseline(baseline, gatePayload, label) {
+  assertEqual(baseline.payload.root, ".", `${label} uses portable root metadata`);
+  assertEqual(baseline.payload.artifact?.kind, "graph_baseline", `${label} artifact kind`);
+  assertEqual(baseline.payload.artifact?.pathMode, "portable", `${label} artifact path mode`);
+  assertTextExcludes(baseline.text, normalizePath(repoRoot), `${label} does not include the local repository root`);
+  assertEqual(baseline.payload.filters?.violationsOnly, false, `${label} is unfiltered`);
+  assertEqual(baseline.payload.filters?.attention, false, `${label} is not attention-filtered`);
+  assertEqual(baseline.payload.architectureSummary?.gate?.currentCommandIsGate, false, `${label} graph is not a gate`);
+  assertEqual(baseline.payload.summary?.violations, 0, `${label} hard violation count`);
+  assertEqual(baseline.payload.summary?.intentionalViolations, gatePayload.summary?.intentionalViolations, `${label} debt count`);
+  assertEqual(readDriftCount(baseline.payload), 0, `${label} drift count`);
+  assertNonEmptyText(baseline.payload.architectureSummary?.reviewStory?.summary, `${label} review story`);
+}
+
+function verifyReviewCommands(baseline, gatePayload, label) {
+  const observe = runAxi(
+    ["observe", "--root", ".", "--strict", "--baseline", baseline.path, "--json", ...warningArgs],
+    0
+  );
+  const observePayload = parseJson(observe.stdout, `${label} observe output`);
+  assertEqual(observePayload.architectureSummary?.gate?.currentCommandIsGate, false, `${label} observe is not a gate`);
+  assertEqual(observePayload.summary?.violations, 0, `${label} observe hard violation count`);
+  assertEqual(observePayload.summary?.intentionalViolations, gatePayload.summary?.intentionalViolations, `${label} observe debt count`);
+  assertEqual(readDriftCount(observePayload), 0, `${label} observe drift count`);
+  assertNonEmptyText(observePayload.architectureSummary?.reviewStory?.summary, `${label} observe review story`);
+  assertEqual(hashFile(baseline.path), baseline.hash, `${label} is not rewritten by observe`);
+
+  const observeMarkdown = runAxi(
+    ["observe", "--root", ".", "--strict", "--baseline", baseline.path, "--markdown", ...warningArgs],
+    0
+  );
+  assertTextIncludes(observeMarkdown.stdout, "Review mode: observe (advisory)", `${label} observe markdown advisory mode`);
+  assertTextIncludes(observeMarkdown.stdout, "### Review Story", `${label} observe markdown review story`);
+  assertTextIncludes(observeMarkdown.stdout, "### Advisory Signals", `${label} observe markdown advisory signals section`);
+  assertTextIncludes(
+    observeMarkdown.stdout,
+    "do not refactor solely to reduce signal counts",
+    `${label} observe markdown advisory guardrail`
+  );
+
+  const diff = runAxi(["diff", baseline.path, "--root", ".", "--strict", "--json", ...warningArgs], 0);
+  const diffPayload = parseJson(diff.stdout, `${label} diff output`);
+  assertEqual(diffPayload.architectureSummary?.gate?.currentCommandIsGate, false, `${label} diff is not a gate`);
+  assertEqual(diffPayload.summary?.violations, 0, `${label} diff hard violation count`);
+  assertEqual(readDriftCount(diffPayload), 0, `${label} diff drift count`);
+  assertEqual(hashFile(baseline.path), baseline.hash, `${label} is not rewritten by diff`);
 }
 
 function runAxi(args, expectedStatus) {

@@ -337,6 +337,8 @@ npm ci
 npm run ci
 ```
 
+It also tracks a portable self graph baseline at `.axi/baselines/current.graph.json`. That file is Axiom's own dogfood policy, not a product default: `npm run axiom:self:artifact` verifies the baseline is portable, advisory review commands do not rewrite it, and current self-contract drift is zero.
+
 For your own project, add a script:
 
 ```json

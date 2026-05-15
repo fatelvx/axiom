@@ -1,0 +1,2003 @@
+{
+  "schemaVersion": "axiom.graph.v12",
+  "root": ".",
+  "artifact": {
+    "kind": "graph_baseline",
+    "pathMode": "portable"
+  },
+  "filters": {
+    "violationsOnly": false,
+    "attention": false
+  },
+  "architectureSummary": {
+    "model": "declared_intent_vs_observed_imports",
+    "mode": "graph",
+    "status": "clear",
+    "gate": {
+      "command": "axi check",
+      "currentCommandIsGate": false,
+      "hardViolationsFailCheck": true
+    },
+    "reviewFocus": "Full declared and observed module graph.",
+    "interpretation": {
+      "headline": "This scoped import graph is quiet: no hard failures, visible debt, advisory signals, or baseline drift were reported; graph center is CheckRunner, so compare that center with your intended architecture before saving a baseline. Quiet imports do not prove intra-file responsibilities are healthy.",
+      "quickRead": [
+        "Contract: no hard failures in this command output.",
+        "Graph center: CheckRunner (14 import sites, fan-in 2, fan-out 7), Infer (9 import sites, fan-in 2, fan-out 5).",
+        "Review pressure: no visible debt or advisory signals."
+      ],
+      "lookFirst": [
+        "Hard signals: read `violations[]`, `intentionalDebt[]`, and advisory `warnings[]` before judging the diagram.",
+        "Graph center: inspect CheckRunner; it carries the strongest observed coupling in this scan.",
+        "Shape fit: compare central modules, deep imports, drift, and any intra-file pressure signals with the architecture you expected for this repository."
+      ],
+      "centralModules": [
+        {
+          "module": "CheckRunner",
+          "role": "fan_out_hub",
+          "incomingModules": 2,
+          "outgoingModules": 7,
+          "incomingImportSites": 4,
+          "outgoingImportSites": 10,
+          "totalImportSites": 14
+        },
+        {
+          "module": "Infer",
+          "role": "fan_out_hub",
+          "incomingModules": 2,
+          "outgoingModules": 5,
+          "incomingImportSites": 2,
+          "outgoingImportSites": 7,
+          "totalImportSites": 9
+        },
+        {
+          "module": "CoreTypes",
+          "role": "fan_in_hub",
+          "incomingModules": 6,
+          "outgoingModules": 0,
+          "incomingImportSites": 12,
+          "outgoingImportSites": 0,
+          "totalImportSites": 12
+        }
+      ],
+      "caveat": "This is a graph interpretation over static imports, not proof of semantic architecture health. Compare it with the architecture you intended."
+    },
+    "reviewStory": {
+      "summary": "This scoped import graph is quiet. Confirm the graph center matches intended architecture before saving or updating a baseline; quiet imports do not prove intra-file responsibilities are healthy.",
+      "setup": "Scanned 12 declared modules and 40 observed import edges. This report is advisory unless you run `axi check` as the gate.",
+      "pressures": [
+        {
+          "kind": "graph_center",
+          "title": "Quiet graph center: CheckRunner",
+          "description": "No hard failures, visible debt, advisory signals, or drift were reported; compare this center with the architecture you expected before saving a baseline.",
+          "severity": "info",
+          "modules": [
+            "CheckRunner"
+          ]
+        }
+      ],
+      "nextStep": "Confirm scan scope and intended graph shape, then save a portable baseline with `axi graph --json --portable` if this is the shape to watch.",
+      "caveat": "This story is a review aid over static imports. It points to likely pressure, not proof that the architecture is good or bad; a quiet import graph can still hide intra-file responsibility concentration."
+    },
+    "topSignals": [],
+    "suggestedNextActions": [
+      "Save an unfiltered portable `axi graph --json --portable` baseline if you want future PRs to show architecture drift."
+    ]
+  },
+  "summary": {
+    "modules": 12,
+    "declaredDependencies": 27,
+    "forbiddenDependencies": 0,
+    "exposedPaths": 0,
+    "hiddenPaths": 0,
+    "observedDependencies": 40,
+    "shownObservedDependencies": 40,
+    "violations": 0,
+    "intentionalViolations": 0,
+    "warnings": 0
+  },
+  "modules": [
+    {
+      "name": "CoreTypes",
+      "paths": [
+        "src/axi/constants.ts",
+        "src/axi/types.ts"
+      ],
+      "layer": "Core",
+      "purpose": "shared architecture contract and diagnostic types",
+      "depends": [],
+      "forbidsModules": [],
+      "exposes": [],
+      "hides": [],
+      "location": {
+        "filePath": "axiom/main.axi",
+        "line": 3
+      }
+    },
+    {
+      "name": "Language",
+      "paths": [
+        "src/axi/parser.ts"
+      ],
+      "layer": "Engine",
+      "purpose": "parse .axi text into typed declarations",
+      "depends": [
+        "CoreTypes"
+      ],
+      "forbidsModules": [],
+      "exposes": [],
+      "hides": [],
+      "location": {
+        "filePath": "axiom/main.axi",
+        "line": 9
+      }
+    },
+    {
+      "name": "Config",
+      "paths": [
+        "src/config/**"
+      ],
+      "layer": "Engine",
+      "purpose": "load project discovery config",
+      "depends": [
+        "TextIO"
+      ],
+      "forbidsModules": [],
+      "exposes": [],
+      "hides": [],
+      "location": {
+        "filePath": "axiom/main.axi",
+        "line": 15
+      }
+    },
+    {
+      "name": "TextIO",
+      "paths": [
+        "src/fs/text.ts"
+      ],
+      "layer": "Engine",
+      "purpose": "read generated text artifacts across common shell encodings",
+      "depends": [],
+      "forbidsModules": [],
+      "exposes": [],
+      "hides": [],
+      "location": {
+        "filePath": "axiom/main.axi",
+        "line": 21
+      }
+    },
+    {
+      "name": "ValidatorCore",
+      "paths": [
+        "src/validator/glob.ts",
+        "src/validator/couplingWarnings.ts",
+        "src/validator/ownership.ts",
+        "src/validator/validate.ts"
+      ],
+      "layer": "Engine",
+      "purpose": "match source ownership and compare declared vs observed graphs",
+      "depends": [
+        "CoreTypes"
+      ],
+      "forbidsModules": [],
+      "exposes": [],
+      "hides": [],
+      "location": {
+        "filePath": "axiom/main.axi",
+        "line": 26
+      }
+    },
+    {
+      "name": "Discovery",
+      "paths": [
+        "src/fs/discover.ts"
+      ],
+      "layer": "Engine",
+      "purpose": "discover source and spec files",
+      "depends": [
+        "Config",
+        "TextIO",
+        "ValidatorCore"
+      ],
+      "forbidsModules": [],
+      "exposes": [],
+      "hides": [],
+      "location": {
+        "filePath": "axiom/main.axi",
+        "line": 35
+      }
+    },
+    {
+      "name": "Scanner",
+      "paths": [
+        "src/scanner/**"
+      ],
+      "layer": "Engine",
+      "purpose": "discover and resolve TypeScript and JavaScript imports",
+      "depends": [
+        "CoreTypes"
+      ],
+      "forbidsModules": [],
+      "exposes": [],
+      "hides": [],
+      "location": {
+        "filePath": "axiom/main.axi",
+        "line": 43
+      }
+    },
+    {
+      "name": "CheckRunner",
+      "paths": [
+        "src/validator/check.ts"
+      ],
+      "layer": "Engine",
+      "purpose": "orchestrate spec discovery, import scanning, and validation",
+      "depends": [
+        "CoreTypes",
+        "Language",
+        "Config",
+        "Discovery",
+        "Scanner",
+        "TextIO",
+        "ValidatorCore"
+      ],
+      "forbidsModules": [],
+      "exposes": [],
+      "hides": [],
+      "location": {
+        "filePath": "axiom/main.axi",
+        "line": 49
+      }
+    },
+    {
+      "name": "Infer",
+      "paths": [
+        "src/infer/**"
+      ],
+      "layer": "Engine",
+      "purpose": "infer starter contracts from observed source graphs",
+      "depends": [
+        "CoreTypes",
+        "Config",
+        "Discovery",
+        "Scanner",
+        "ValidatorCore"
+      ],
+      "forbidsModules": [],
+      "exposes": [],
+      "hides": [],
+      "location": {
+        "filePath": "axiom/main.axi",
+        "line": 61
+      }
+    },
+    {
+      "name": "Diagnostics",
+      "paths": [
+        "src/diagnostics/**"
+      ],
+      "layer": "Interface",
+      "purpose": "format validator, graph, and inference outputs",
+      "depends": [
+        "CoreTypes",
+        "CheckRunner",
+        "Infer"
+      ],
+      "forbidsModules": [],
+      "exposes": [],
+      "hides": [],
+      "location": {
+        "filePath": "axiom/main.axi",
+        "line": 71
+      }
+    },
+    {
+      "name": "MCP",
+      "paths": [
+        "src/mcp/**"
+      ],
+      "layer": "Interface",
+      "purpose": "define read-only MCP tool contracts and CLI adapter mappings over existing JSON evidence",
+      "depends": [],
+      "forbidsModules": [],
+      "exposes": [],
+      "hides": [],
+      "location": {
+        "filePath": "axiom/main.axi",
+        "line": 79
+      }
+    },
+    {
+      "name": "CLI",
+      "paths": [
+        "src/cli.ts"
+      ],
+      "layer": "Interface",
+      "purpose": "provide command line entry points",
+      "depends": [
+        "Diagnostics",
+        "Discovery",
+        "CheckRunner",
+        "Infer",
+        "TextIO"
+      ],
+      "forbidsModules": [],
+      "exposes": [],
+      "hides": [],
+      "location": {
+        "filePath": "axiom/main.axi",
+        "line": 84
+      }
+    }
+  ],
+  "declaredDependencies": [
+    {
+      "fromModule": "Language",
+      "toModule": "CoreTypes",
+      "ruleLocation": {
+        "filePath": "axiom/main.axi",
+        "line": 12
+      }
+    },
+    {
+      "fromModule": "Config",
+      "toModule": "TextIO",
+      "ruleLocation": {
+        "filePath": "axiom/main.axi",
+        "line": 18
+      }
+    },
+    {
+      "fromModule": "ValidatorCore",
+      "toModule": "CoreTypes",
+      "ruleLocation": {
+        "filePath": "axiom/main.axi",
+        "line": 32
+      }
+    },
+    {
+      "fromModule": "Discovery",
+      "toModule": "Config",
+      "ruleLocation": {
+        "filePath": "axiom/main.axi",
+        "line": 38
+      }
+    },
+    {
+      "fromModule": "Discovery",
+      "toModule": "TextIO",
+      "ruleLocation": {
+        "filePath": "axiom/main.axi",
+        "line": 39
+      }
+    },
+    {
+      "fromModule": "Discovery",
+      "toModule": "ValidatorCore",
+      "ruleLocation": {
+        "filePath": "axiom/main.axi",
+        "line": 40
+      }
+    },
+    {
+      "fromModule": "Scanner",
+      "toModule": "CoreTypes",
+      "ruleLocation": {
+        "filePath": "axiom/main.axi",
+        "line": 46
+      }
+    },
+    {
+      "fromModule": "CheckRunner",
+      "toModule": "CoreTypes",
+      "ruleLocation": {
+        "filePath": "axiom/main.axi",
+        "line": 52
+      }
+    },
+    {
+      "fromModule": "CheckRunner",
+      "toModule": "Language",
+      "ruleLocation": {
+        "filePath": "axiom/main.axi",
+        "line": 53
+      }
+    },
+    {
+      "fromModule": "CheckRunner",
+      "toModule": "Config",
+      "ruleLocation": {
+        "filePath": "axiom/main.axi",
+        "line": 54
+      }
+    },
+    {
+      "fromModule": "CheckRunner",
+      "toModule": "Discovery",
+      "ruleLocation": {
+        "filePath": "axiom/main.axi",
+        "line": 55
+      }
+    },
+    {
+      "fromModule": "CheckRunner",
+      "toModule": "Scanner",
+      "ruleLocation": {
+        "filePath": "axiom/main.axi",
+        "line": 56
+      }
+    },
+    {
+      "fromModule": "CheckRunner",
+      "toModule": "TextIO",
+      "ruleLocation": {
+        "filePath": "axiom/main.axi",
+        "line": 57
+      }
+    },
+    {
+      "fromModule": "CheckRunner",
+      "toModule": "ValidatorCore",
+      "ruleLocation": {
+        "filePath": "axiom/main.axi",
+        "line": 58
+      }
+    },
+    {
+      "fromModule": "Infer",
+      "toModule": "CoreTypes",
+      "ruleLocation": {
+        "filePath": "axiom/main.axi",
+        "line": 64
+      }
+    },
+    {
+      "fromModule": "Infer",
+      "toModule": "Config",
+      "ruleLocation": {
+        "filePath": "axiom/main.axi",
+        "line": 65
+      }
+    },
+    {
+      "fromModule": "Infer",
+      "toModule": "Discovery",
+      "ruleLocation": {
+        "filePath": "axiom/main.axi",
+        "line": 66
+      }
+    },
+    {
+      "fromModule": "Infer",
+      "toModule": "Scanner",
+      "ruleLocation": {
+        "filePath": "axiom/main.axi",
+        "line": 67
+      }
+    },
+    {
+      "fromModule": "Infer",
+      "toModule": "ValidatorCore",
+      "ruleLocation": {
+        "filePath": "axiom/main.axi",
+        "line": 68
+      }
+    },
+    {
+      "fromModule": "Diagnostics",
+      "toModule": "CoreTypes",
+      "ruleLocation": {
+        "filePath": "axiom/main.axi",
+        "line": 74
+      }
+    },
+    {
+      "fromModule": "Diagnostics",
+      "toModule": "CheckRunner",
+      "ruleLocation": {
+        "filePath": "axiom/main.axi",
+        "line": 75
+      }
+    },
+    {
+      "fromModule": "Diagnostics",
+      "toModule": "Infer",
+      "ruleLocation": {
+        "filePath": "axiom/main.axi",
+        "line": 76
+      }
+    },
+    {
+      "fromModule": "CLI",
+      "toModule": "Diagnostics",
+      "ruleLocation": {
+        "filePath": "axiom/main.axi",
+        "line": 87
+      }
+    },
+    {
+      "fromModule": "CLI",
+      "toModule": "Discovery",
+      "ruleLocation": {
+        "filePath": "axiom/main.axi",
+        "line": 88
+      }
+    },
+    {
+      "fromModule": "CLI",
+      "toModule": "CheckRunner",
+      "ruleLocation": {
+        "filePath": "axiom/main.axi",
+        "line": 89
+      }
+    },
+    {
+      "fromModule": "CLI",
+      "toModule": "Infer",
+      "ruleLocation": {
+        "filePath": "axiom/main.axi",
+        "line": 90
+      }
+    },
+    {
+      "fromModule": "CLI",
+      "toModule": "TextIO",
+      "ruleLocation": {
+        "filePath": "axiom/main.axi",
+        "line": 91
+      }
+    }
+  ],
+  "forbiddenDependencies": [],
+  "exposedPaths": [],
+  "hiddenPaths": [],
+  "allObservedDependencies": [
+    {
+      "fromModule": "Language",
+      "toModule": "CoreTypes",
+      "import": {
+        "filePath": "src/axi/parser.ts",
+        "line": 1,
+        "specifier": "./types.js",
+        "resolvedPath": "src/axi/types.ts"
+      },
+      "violations": [],
+      "intentionalViolations": []
+    },
+    {
+      "fromModule": "CLI",
+      "toModule": "Diagnostics",
+      "import": {
+        "filePath": "src/cli.ts",
+        "line": 4,
+        "specifier": "./diagnostics/format.js",
+        "resolvedPath": "src/diagnostics/format.ts"
+      },
+      "violations": [],
+      "intentionalViolations": []
+    },
+    {
+      "fromModule": "CLI",
+      "toModule": "Diagnostics",
+      "import": {
+        "filePath": "src/cli.ts",
+        "line": 5,
+        "specifier": "./diagnostics/graph.js",
+        "resolvedPath": "src/diagnostics/graph.ts"
+      },
+      "violations": [],
+      "intentionalViolations": []
+    },
+    {
+      "fromModule": "CLI",
+      "toModule": "Diagnostics",
+      "import": {
+        "filePath": "src/cli.ts",
+        "line": 12,
+        "specifier": "./diagnostics/infer.js",
+        "resolvedPath": "src/diagnostics/infer.ts"
+      },
+      "violations": [],
+      "intentionalViolations": []
+    },
+    {
+      "fromModule": "CLI",
+      "toModule": "Diagnostics",
+      "import": {
+        "filePath": "src/cli.ts",
+        "line": 13,
+        "specifier": "./diagnostics/json.js",
+        "resolvedPath": "src/diagnostics/json.ts"
+      },
+      "violations": [],
+      "intentionalViolations": []
+    },
+    {
+      "fromModule": "CLI",
+      "toModule": "TextIO",
+      "import": {
+        "filePath": "src/cli.ts",
+        "line": 14,
+        "specifier": "./fs/text.js",
+        "resolvedPath": "src/fs/text.ts"
+      },
+      "violations": [],
+      "intentionalViolations": []
+    },
+    {
+      "fromModule": "CLI",
+      "toModule": "Infer",
+      "import": {
+        "filePath": "src/cli.ts",
+        "line": 15,
+        "specifier": "./infer/infer.js",
+        "resolvedPath": "src/infer/infer.ts"
+      },
+      "violations": [],
+      "intentionalViolations": []
+    },
+    {
+      "fromModule": "CLI",
+      "toModule": "CheckRunner",
+      "import": {
+        "filePath": "src/cli.ts",
+        "line": 16,
+        "specifier": "./validator/check.js",
+        "resolvedPath": "src/validator/check.ts"
+      },
+      "violations": [],
+      "intentionalViolations": []
+    },
+    {
+      "fromModule": "Config",
+      "toModule": "TextIO",
+      "import": {
+        "filePath": "src/config/config.ts",
+        "line": 3,
+        "specifier": "../fs/text.js",
+        "resolvedPath": "src/fs/text.ts"
+      },
+      "violations": [],
+      "intentionalViolations": []
+    },
+    {
+      "fromModule": "Diagnostics",
+      "toModule": "CoreTypes",
+      "import": {
+        "filePath": "src/diagnostics/format.ts",
+        "line": 2,
+        "specifier": "../axi/types.js",
+        "resolvedPath": "src/axi/types.ts"
+      },
+      "violations": [],
+      "intentionalViolations": []
+    },
+    {
+      "fromModule": "Diagnostics",
+      "toModule": "CheckRunner",
+      "import": {
+        "filePath": "src/diagnostics/format.ts",
+        "line": 3,
+        "specifier": "../validator/check.js",
+        "resolvedPath": "src/validator/check.ts"
+      },
+      "violations": [],
+      "intentionalViolations": []
+    },
+    {
+      "fromModule": "Diagnostics",
+      "toModule": "CoreTypes",
+      "import": {
+        "filePath": "src/diagnostics/graph.ts",
+        "line": 2,
+        "specifier": "../axi/types.js",
+        "resolvedPath": "src/axi/types.ts"
+      },
+      "violations": [],
+      "intentionalViolations": []
+    },
+    {
+      "fromModule": "Diagnostics",
+      "toModule": "CheckRunner",
+      "import": {
+        "filePath": "src/diagnostics/graph.ts",
+        "line": 3,
+        "specifier": "../validator/check.js",
+        "resolvedPath": "src/validator/check.ts"
+      },
+      "violations": [],
+      "intentionalViolations": []
+    },
+    {
+      "fromModule": "Diagnostics",
+      "toModule": "Infer",
+      "import": {
+        "filePath": "src/diagnostics/infer.ts",
+        "line": 1,
+        "specifier": "../infer/infer.js",
+        "resolvedPath": "src/infer/infer.ts"
+      },
+      "violations": [],
+      "intentionalViolations": []
+    },
+    {
+      "fromModule": "Diagnostics",
+      "toModule": "CoreTypes",
+      "import": {
+        "filePath": "src/diagnostics/json.ts",
+        "line": 2,
+        "specifier": "../axi/types.js",
+        "resolvedPath": "src/axi/types.ts"
+      },
+      "violations": [],
+      "intentionalViolations": []
+    },
+    {
+      "fromModule": "Diagnostics",
+      "toModule": "CheckRunner",
+      "import": {
+        "filePath": "src/diagnostics/json.ts",
+        "line": 3,
+        "specifier": "../validator/check.js",
+        "resolvedPath": "src/validator/check.ts"
+      },
+      "violations": [],
+      "intentionalViolations": []
+    },
+    {
+      "fromModule": "Discovery",
+      "toModule": "Config",
+      "import": {
+        "filePath": "src/fs/discover.ts",
+        "line": 3,
+        "specifier": "../config/config.js",
+        "resolvedPath": "src/config/config.ts"
+      },
+      "violations": [],
+      "intentionalViolations": []
+    },
+    {
+      "fromModule": "Discovery",
+      "toModule": "ValidatorCore",
+      "import": {
+        "filePath": "src/fs/discover.ts",
+        "line": 4,
+        "specifier": "../validator/glob.js",
+        "resolvedPath": "src/validator/glob.ts"
+      },
+      "violations": [],
+      "intentionalViolations": []
+    },
+    {
+      "fromModule": "Infer",
+      "toModule": "CoreTypes",
+      "import": {
+        "filePath": "src/infer/infer.ts",
+        "line": 2,
+        "specifier": "../axi/constants.js",
+        "resolvedPath": "src/axi/constants.ts"
+      },
+      "violations": [],
+      "intentionalViolations": []
+    },
+    {
+      "fromModule": "Infer",
+      "toModule": "CoreTypes",
+      "import": {
+        "filePath": "src/infer/infer.ts",
+        "line": 3,
+        "specifier": "../axi/types.js",
+        "resolvedPath": "src/axi/types.ts"
+      },
+      "violations": [],
+      "intentionalViolations": []
+    },
+    {
+      "fromModule": "Infer",
+      "toModule": "Config",
+      "import": {
+        "filePath": "src/infer/infer.ts",
+        "line": 4,
+        "specifier": "../config/config.js",
+        "resolvedPath": "src/config/config.ts"
+      },
+      "violations": [],
+      "intentionalViolations": []
+    },
+    {
+      "fromModule": "Infer",
+      "toModule": "Discovery",
+      "import": {
+        "filePath": "src/infer/infer.ts",
+        "line": 5,
+        "specifier": "../fs/discover.js",
+        "resolvedPath": "src/fs/discover.ts"
+      },
+      "violations": [],
+      "intentionalViolations": []
+    },
+    {
+      "fromModule": "Infer",
+      "toModule": "Scanner",
+      "import": {
+        "filePath": "src/infer/infer.ts",
+        "line": 6,
+        "specifier": "../scanner/importResolver.js",
+        "resolvedPath": "src/scanner/importResolver.ts"
+      },
+      "violations": [],
+      "intentionalViolations": []
+    },
+    {
+      "fromModule": "Infer",
+      "toModule": "Scanner",
+      "import": {
+        "filePath": "src/infer/infer.ts",
+        "line": 7,
+        "specifier": "../scanner/importScanner.js",
+        "resolvedPath": "src/scanner/importScanner.ts"
+      },
+      "violations": [],
+      "intentionalViolations": []
+    },
+    {
+      "fromModule": "Infer",
+      "toModule": "ValidatorCore",
+      "import": {
+        "filePath": "src/infer/infer.ts",
+        "line": 8,
+        "specifier": "../validator/glob.js",
+        "resolvedPath": "src/validator/glob.ts"
+      },
+      "violations": [],
+      "intentionalViolations": []
+    },
+    {
+      "fromModule": "Scanner",
+      "toModule": "CoreTypes",
+      "import": {
+        "filePath": "src/scanner/importScanner.ts",
+        "line": 4,
+        "specifier": "../axi/types.js",
+        "resolvedPath": "src/axi/types.ts"
+      },
+      "violations": [],
+      "intentionalViolations": []
+    },
+    {
+      "fromModule": "CheckRunner",
+      "toModule": "CoreTypes",
+      "import": {
+        "filePath": "src/validator/check.ts",
+        "line": 3,
+        "specifier": "../axi/types.js",
+        "resolvedPath": "src/axi/types.ts"
+      },
+      "violations": [],
+      "intentionalViolations": []
+    },
+    {
+      "fromModule": "CheckRunner",
+      "toModule": "Language",
+      "import": {
+        "filePath": "src/validator/check.ts",
+        "line": 13,
+        "specifier": "../axi/parser.js",
+        "resolvedPath": "src/axi/parser.ts"
+      },
+      "violations": [],
+      "intentionalViolations": []
+    },
+    {
+      "fromModule": "CheckRunner",
+      "toModule": "Config",
+      "import": {
+        "filePath": "src/validator/check.ts",
+        "line": 14,
+        "specifier": "../config/config.js",
+        "resolvedPath": "src/config/config.ts"
+      },
+      "violations": [],
+      "intentionalViolations": []
+    },
+    {
+      "fromModule": "CheckRunner",
+      "toModule": "Discovery",
+      "import": {
+        "filePath": "src/validator/check.ts",
+        "line": 15,
+        "specifier": "../fs/discover.js",
+        "resolvedPath": "src/fs/discover.ts"
+      },
+      "violations": [],
+      "intentionalViolations": []
+    },
+    {
+      "fromModule": "CheckRunner",
+      "toModule": "TextIO",
+      "import": {
+        "filePath": "src/validator/check.ts",
+        "line": 16,
+        "specifier": "../fs/text.js",
+        "resolvedPath": "src/fs/text.ts"
+      },
+      "violations": [],
+      "intentionalViolations": []
+    },
+    {
+      "fromModule": "CheckRunner",
+      "toModule": "Scanner",
+      "import": {
+        "filePath": "src/validator/check.ts",
+        "line": 17,
+        "specifier": "../scanner/importResolver.js",
+        "resolvedPath": "src/scanner/importResolver.ts"
+      },
+      "violations": [],
+      "intentionalViolations": []
+    },
+    {
+      "fromModule": "CheckRunner",
+      "toModule": "Scanner",
+      "import": {
+        "filePath": "src/validator/check.ts",
+        "line": 18,
+        "specifier": "../scanner/importScanner.js",
+        "resolvedPath": "src/scanner/importScanner.ts"
+      },
+      "violations": [],
+      "intentionalViolations": []
+    },
+    {
+      "fromModule": "CheckRunner",
+      "toModule": "ValidatorCore",
+      "import": {
+        "filePath": "src/validator/check.ts",
+        "line": 19,
+        "specifier": "./couplingWarnings.js",
+        "resolvedPath": "src/validator/couplingWarnings.ts"
+      },
+      "violations": [],
+      "intentionalViolations": []
+    },
+    {
+      "fromModule": "CheckRunner",
+      "toModule": "ValidatorCore",
+      "import": {
+        "filePath": "src/validator/check.ts",
+        "line": 20,
+        "specifier": "./ownership.js",
+        "resolvedPath": "src/validator/ownership.ts"
+      },
+      "violations": [],
+      "intentionalViolations": []
+    },
+    {
+      "fromModule": "CheckRunner",
+      "toModule": "ValidatorCore",
+      "import": {
+        "filePath": "src/validator/check.ts",
+        "line": 21,
+        "specifier": "./validate.js",
+        "resolvedPath": "src/validator/validate.ts"
+      },
+      "violations": [],
+      "intentionalViolations": []
+    },
+    {
+      "fromModule": "ValidatorCore",
+      "toModule": "CoreTypes",
+      "import": {
+        "filePath": "src/validator/couplingWarnings.ts",
+        "line": 2,
+        "specifier": "../axi/types.js",
+        "resolvedPath": "src/axi/types.ts"
+      },
+      "violations": [],
+      "intentionalViolations": []
+    },
+    {
+      "fromModule": "ValidatorCore",
+      "toModule": "CoreTypes",
+      "import": {
+        "filePath": "src/validator/ownership.ts",
+        "line": 2,
+        "specifier": "../axi/types.js",
+        "resolvedPath": "src/axi/types.ts"
+      },
+      "violations": [],
+      "intentionalViolations": []
+    },
+    {
+      "fromModule": "ValidatorCore",
+      "toModule": "CoreTypes",
+      "import": {
+        "filePath": "src/validator/validate.ts",
+        "line": 2,
+        "specifier": "../axi/types.js",
+        "resolvedPath": "src/axi/types.ts"
+      },
+      "violations": [],
+      "intentionalViolations": []
+    },
+    {
+      "fromModule": "ValidatorCore",
+      "toModule": "CoreTypes",
+      "import": {
+        "filePath": "src/validator/validate.ts",
+        "line": 17,
+        "specifier": "../axi/constants.js",
+        "resolvedPath": "src/axi/constants.ts"
+      },
+      "violations": [],
+      "intentionalViolations": []
+    }
+  ],
+  "shownObservedDependencies": [
+    {
+      "fromModule": "Language",
+      "toModule": "CoreTypes",
+      "import": {
+        "filePath": "src/axi/parser.ts",
+        "line": 1,
+        "specifier": "./types.js",
+        "resolvedPath": "src/axi/types.ts"
+      },
+      "violations": [],
+      "intentionalViolations": []
+    },
+    {
+      "fromModule": "CLI",
+      "toModule": "Diagnostics",
+      "import": {
+        "filePath": "src/cli.ts",
+        "line": 4,
+        "specifier": "./diagnostics/format.js",
+        "resolvedPath": "src/diagnostics/format.ts"
+      },
+      "violations": [],
+      "intentionalViolations": []
+    },
+    {
+      "fromModule": "CLI",
+      "toModule": "Diagnostics",
+      "import": {
+        "filePath": "src/cli.ts",
+        "line": 5,
+        "specifier": "./diagnostics/graph.js",
+        "resolvedPath": "src/diagnostics/graph.ts"
+      },
+      "violations": [],
+      "intentionalViolations": []
+    },
+    {
+      "fromModule": "CLI",
+      "toModule": "Diagnostics",
+      "import": {
+        "filePath": "src/cli.ts",
+        "line": 12,
+        "specifier": "./diagnostics/infer.js",
+        "resolvedPath": "src/diagnostics/infer.ts"
+      },
+      "violations": [],
+      "intentionalViolations": []
+    },
+    {
+      "fromModule": "CLI",
+      "toModule": "Diagnostics",
+      "import": {
+        "filePath": "src/cli.ts",
+        "line": 13,
+        "specifier": "./diagnostics/json.js",
+        "resolvedPath": "src/diagnostics/json.ts"
+      },
+      "violations": [],
+      "intentionalViolations": []
+    },
+    {
+      "fromModule": "CLI",
+      "toModule": "TextIO",
+      "import": {
+        "filePath": "src/cli.ts",
+        "line": 14,
+        "specifier": "./fs/text.js",
+        "resolvedPath": "src/fs/text.ts"
+      },
+      "violations": [],
+      "intentionalViolations": []
+    },
+    {
+      "fromModule": "CLI",
+      "toModule": "Infer",
+      "import": {
+        "filePath": "src/cli.ts",
+        "line": 15,
+        "specifier": "./infer/infer.js",
+        "resolvedPath": "src/infer/infer.ts"
+      },
+      "violations": [],
+      "intentionalViolations": []
+    },
+    {
+      "fromModule": "CLI",
+      "toModule": "CheckRunner",
+      "import": {
+        "filePath": "src/cli.ts",
+        "line": 16,
+        "specifier": "./validator/check.js",
+        "resolvedPath": "src/validator/check.ts"
+      },
+      "violations": [],
+      "intentionalViolations": []
+    },
+    {
+      "fromModule": "Config",
+      "toModule": "TextIO",
+      "import": {
+        "filePath": "src/config/config.ts",
+        "line": 3,
+        "specifier": "../fs/text.js",
+        "resolvedPath": "src/fs/text.ts"
+      },
+      "violations": [],
+      "intentionalViolations": []
+    },
+    {
+      "fromModule": "Diagnostics",
+      "toModule": "CoreTypes",
+      "import": {
+        "filePath": "src/diagnostics/format.ts",
+        "line": 2,
+        "specifier": "../axi/types.js",
+        "resolvedPath": "src/axi/types.ts"
+      },
+      "violations": [],
+      "intentionalViolations": []
+    },
+    {
+      "fromModule": "Diagnostics",
+      "toModule": "CheckRunner",
+      "import": {
+        "filePath": "src/diagnostics/format.ts",
+        "line": 3,
+        "specifier": "../validator/check.js",
+        "resolvedPath": "src/validator/check.ts"
+      },
+      "violations": [],
+      "intentionalViolations": []
+    },
+    {
+      "fromModule": "Diagnostics",
+      "toModule": "CoreTypes",
+      "import": {
+        "filePath": "src/diagnostics/graph.ts",
+        "line": 2,
+        "specifier": "../axi/types.js",
+        "resolvedPath": "src/axi/types.ts"
+      },
+      "violations": [],
+      "intentionalViolations": []
+    },
+    {
+      "fromModule": "Diagnostics",
+      "toModule": "CheckRunner",
+      "import": {
+        "filePath": "src/diagnostics/graph.ts",
+        "line": 3,
+        "specifier": "../validator/check.js",
+        "resolvedPath": "src/validator/check.ts"
+      },
+      "violations": [],
+      "intentionalViolations": []
+    },
+    {
+      "fromModule": "Diagnostics",
+      "toModule": "Infer",
+      "import": {
+        "filePath": "src/diagnostics/infer.ts",
+        "line": 1,
+        "specifier": "../infer/infer.js",
+        "resolvedPath": "src/infer/infer.ts"
+      },
+      "violations": [],
+      "intentionalViolations": []
+    },
+    {
+      "fromModule": "Diagnostics",
+      "toModule": "CoreTypes",
+      "import": {
+        "filePath": "src/diagnostics/json.ts",
+        "line": 2,
+        "specifier": "../axi/types.js",
+        "resolvedPath": "src/axi/types.ts"
+      },
+      "violations": [],
+      "intentionalViolations": []
+    },
+    {
+      "fromModule": "Diagnostics",
+      "toModule": "CheckRunner",
+      "import": {
+        "filePath": "src/diagnostics/json.ts",
+        "line": 3,
+        "specifier": "../validator/check.js",
+        "resolvedPath": "src/validator/check.ts"
+      },
+      "violations": [],
+      "intentionalViolations": []
+    },
+    {
+      "fromModule": "Discovery",
+      "toModule": "Config",
+      "import": {
+        "filePath": "src/fs/discover.ts",
+        "line": 3,
+        "specifier": "../config/config.js",
+        "resolvedPath": "src/config/config.ts"
+      },
+      "violations": [],
+      "intentionalViolations": []
+    },
+    {
+      "fromModule": "Discovery",
+      "toModule": "ValidatorCore",
+      "import": {
+        "filePath": "src/fs/discover.ts",
+        "line": 4,
+        "specifier": "../validator/glob.js",
+        "resolvedPath": "src/validator/glob.ts"
+      },
+      "violations": [],
+      "intentionalViolations": []
+    },
+    {
+      "fromModule": "Infer",
+      "toModule": "CoreTypes",
+      "import": {
+        "filePath": "src/infer/infer.ts",
+        "line": 2,
+        "specifier": "../axi/constants.js",
+        "resolvedPath": "src/axi/constants.ts"
+      },
+      "violations": [],
+      "intentionalViolations": []
+    },
+    {
+      "fromModule": "Infer",
+      "toModule": "CoreTypes",
+      "import": {
+        "filePath": "src/infer/infer.ts",
+        "line": 3,
+        "specifier": "../axi/types.js",
+        "resolvedPath": "src/axi/types.ts"
+      },
+      "violations": [],
+      "intentionalViolations": []
+    },
+    {
+      "fromModule": "Infer",
+      "toModule": "Config",
+      "import": {
+        "filePath": "src/infer/infer.ts",
+        "line": 4,
+        "specifier": "../config/config.js",
+        "resolvedPath": "src/config/config.ts"
+      },
+      "violations": [],
+      "intentionalViolations": []
+    },
+    {
+      "fromModule": "Infer",
+      "toModule": "Discovery",
+      "import": {
+        "filePath": "src/infer/infer.ts",
+        "line": 5,
+        "specifier": "../fs/discover.js",
+        "resolvedPath": "src/fs/discover.ts"
+      },
+      "violations": [],
+      "intentionalViolations": []
+    },
+    {
+      "fromModule": "Infer",
+      "toModule": "Scanner",
+      "import": {
+        "filePath": "src/infer/infer.ts",
+        "line": 6,
+        "specifier": "../scanner/importResolver.js",
+        "resolvedPath": "src/scanner/importResolver.ts"
+      },
+      "violations": [],
+      "intentionalViolations": []
+    },
+    {
+      "fromModule": "Infer",
+      "toModule": "Scanner",
+      "import": {
+        "filePath": "src/infer/infer.ts",
+        "line": 7,
+        "specifier": "../scanner/importScanner.js",
+        "resolvedPath": "src/scanner/importScanner.ts"
+      },
+      "violations": [],
+      "intentionalViolations": []
+    },
+    {
+      "fromModule": "Infer",
+      "toModule": "ValidatorCore",
+      "import": {
+        "filePath": "src/infer/infer.ts",
+        "line": 8,
+        "specifier": "../validator/glob.js",
+        "resolvedPath": "src/validator/glob.ts"
+      },
+      "violations": [],
+      "intentionalViolations": []
+    },
+    {
+      "fromModule": "Scanner",
+      "toModule": "CoreTypes",
+      "import": {
+        "filePath": "src/scanner/importScanner.ts",
+        "line": 4,
+        "specifier": "../axi/types.js",
+        "resolvedPath": "src/axi/types.ts"
+      },
+      "violations": [],
+      "intentionalViolations": []
+    },
+    {
+      "fromModule": "CheckRunner",
+      "toModule": "CoreTypes",
+      "import": {
+        "filePath": "src/validator/check.ts",
+        "line": 3,
+        "specifier": "../axi/types.js",
+        "resolvedPath": "src/axi/types.ts"
+      },
+      "violations": [],
+      "intentionalViolations": []
+    },
+    {
+      "fromModule": "CheckRunner",
+      "toModule": "Language",
+      "import": {
+        "filePath": "src/validator/check.ts",
+        "line": 13,
+        "specifier": "../axi/parser.js",
+        "resolvedPath": "src/axi/parser.ts"
+      },
+      "violations": [],
+      "intentionalViolations": []
+    },
+    {
+      "fromModule": "CheckRunner",
+      "toModule": "Config",
+      "import": {
+        "filePath": "src/validator/check.ts",
+        "line": 14,
+        "specifier": "../config/config.js",
+        "resolvedPath": "src/config/config.ts"
+      },
+      "violations": [],
+      "intentionalViolations": []
+    },
+    {
+      "fromModule": "CheckRunner",
+      "toModule": "Discovery",
+      "import": {
+        "filePath": "src/validator/check.ts",
+        "line": 15,
+        "specifier": "../fs/discover.js",
+        "resolvedPath": "src/fs/discover.ts"
+      },
+      "violations": [],
+      "intentionalViolations": []
+    },
+    {
+      "fromModule": "CheckRunner",
+      "toModule": "TextIO",
+      "import": {
+        "filePath": "src/validator/check.ts",
+        "line": 16,
+        "specifier": "../fs/text.js",
+        "resolvedPath": "src/fs/text.ts"
+      },
+      "violations": [],
+      "intentionalViolations": []
+    },
+    {
+      "fromModule": "CheckRunner",
+      "toModule": "Scanner",
+      "import": {
+        "filePath": "src/validator/check.ts",
+        "line": 17,
+        "specifier": "../scanner/importResolver.js",
+        "resolvedPath": "src/scanner/importResolver.ts"
+      },
+      "violations": [],
+      "intentionalViolations": []
+    },
+    {
+      "fromModule": "CheckRunner",
+      "toModule": "Scanner",
+      "import": {
+        "filePath": "src/validator/check.ts",
+        "line": 18,
+        "specifier": "../scanner/importScanner.js",
+        "resolvedPath": "src/scanner/importScanner.ts"
+      },
+      "violations": [],
+      "intentionalViolations": []
+    },
+    {
+      "fromModule": "CheckRunner",
+      "toModule": "ValidatorCore",
+      "import": {
+        "filePath": "src/validator/check.ts",
+        "line": 19,
+        "specifier": "./couplingWarnings.js",
+        "resolvedPath": "src/validator/couplingWarnings.ts"
+      },
+      "violations": [],
+      "intentionalViolations": []
+    },
+    {
+      "fromModule": "CheckRunner",
+      "toModule": "ValidatorCore",
+      "import": {
+        "filePath": "src/validator/check.ts",
+        "line": 20,
+        "specifier": "./ownership.js",
+        "resolvedPath": "src/validator/ownership.ts"
+      },
+      "violations": [],
+      "intentionalViolations": []
+    },
+    {
+      "fromModule": "CheckRunner",
+      "toModule": "ValidatorCore",
+      "import": {
+        "filePath": "src/validator/check.ts",
+        "line": 21,
+        "specifier": "./validate.js",
+        "resolvedPath": "src/validator/validate.ts"
+      },
+      "violations": [],
+      "intentionalViolations": []
+    },
+    {
+      "fromModule": "ValidatorCore",
+      "toModule": "CoreTypes",
+      "import": {
+        "filePath": "src/validator/couplingWarnings.ts",
+        "line": 2,
+        "specifier": "../axi/types.js",
+        "resolvedPath": "src/axi/types.ts"
+      },
+      "violations": [],
+      "intentionalViolations": []
+    },
+    {
+      "fromModule": "ValidatorCore",
+      "toModule": "CoreTypes",
+      "import": {
+        "filePath": "src/validator/ownership.ts",
+        "line": 2,
+        "specifier": "../axi/types.js",
+        "resolvedPath": "src/axi/types.ts"
+      },
+      "violations": [],
+      "intentionalViolations": []
+    },
+    {
+      "fromModule": "ValidatorCore",
+      "toModule": "CoreTypes",
+      "import": {
+        "filePath": "src/validator/validate.ts",
+        "line": 2,
+        "specifier": "../axi/types.js",
+        "resolvedPath": "src/axi/types.ts"
+      },
+      "violations": [],
+      "intentionalViolations": []
+    },
+    {
+      "fromModule": "ValidatorCore",
+      "toModule": "CoreTypes",
+      "import": {
+        "filePath": "src/validator/validate.ts",
+        "line": 17,
+        "specifier": "../axi/constants.js",
+        "resolvedPath": "src/axi/constants.ts"
+      },
+      "violations": [],
+      "intentionalViolations": []
+    }
+  ],
+  "observedDependencies": [
+    {
+      "fromModule": "Language",
+      "toModule": "CoreTypes",
+      "import": {
+        "filePath": "src/axi/parser.ts",
+        "line": 1,
+        "specifier": "./types.js",
+        "resolvedPath": "src/axi/types.ts"
+      },
+      "violations": [],
+      "intentionalViolations": []
+    },
+    {
+      "fromModule": "CLI",
+      "toModule": "Diagnostics",
+      "import": {
+        "filePath": "src/cli.ts",
+        "line": 4,
+        "specifier": "./diagnostics/format.js",
+        "resolvedPath": "src/diagnostics/format.ts"
+      },
+      "violations": [],
+      "intentionalViolations": []
+    },
+    {
+      "fromModule": "CLI",
+      "toModule": "Diagnostics",
+      "import": {
+        "filePath": "src/cli.ts",
+        "line": 5,
+        "specifier": "./diagnostics/graph.js",
+        "resolvedPath": "src/diagnostics/graph.ts"
+      },
+      "violations": [],
+      "intentionalViolations": []
+    },
+    {
+      "fromModule": "CLI",
+      "toModule": "Diagnostics",
+      "import": {
+        "filePath": "src/cli.ts",
+        "line": 12,
+        "specifier": "./diagnostics/infer.js",
+        "resolvedPath": "src/diagnostics/infer.ts"
+      },
+      "violations": [],
+      "intentionalViolations": []
+    },
+    {
+      "fromModule": "CLI",
+      "toModule": "Diagnostics",
+      "import": {
+        "filePath": "src/cli.ts",
+        "line": 13,
+        "specifier": "./diagnostics/json.js",
+        "resolvedPath": "src/diagnostics/json.ts"
+      },
+      "violations": [],
+      "intentionalViolations": []
+    },
+    {
+      "fromModule": "CLI",
+      "toModule": "TextIO",
+      "import": {
+        "filePath": "src/cli.ts",
+        "line": 14,
+        "specifier": "./fs/text.js",
+        "resolvedPath": "src/fs/text.ts"
+      },
+      "violations": [],
+      "intentionalViolations": []
+    },
+    {
+      "fromModule": "CLI",
+      "toModule": "Infer",
+      "import": {
+        "filePath": "src/cli.ts",
+        "line": 15,
+        "specifier": "./infer/infer.js",
+        "resolvedPath": "src/infer/infer.ts"
+      },
+      "violations": [],
+      "intentionalViolations": []
+    },
+    {
+      "fromModule": "CLI",
+      "toModule": "CheckRunner",
+      "import": {
+        "filePath": "src/cli.ts",
+        "line": 16,
+        "specifier": "./validator/check.js",
+        "resolvedPath": "src/validator/check.ts"
+      },
+      "violations": [],
+      "intentionalViolations": []
+    },
+    {
+      "fromModule": "Config",
+      "toModule": "TextIO",
+      "import": {
+        "filePath": "src/config/config.ts",
+        "line": 3,
+        "specifier": "../fs/text.js",
+        "resolvedPath": "src/fs/text.ts"
+      },
+      "violations": [],
+      "intentionalViolations": []
+    },
+    {
+      "fromModule": "Diagnostics",
+      "toModule": "CoreTypes",
+      "import": {
+        "filePath": "src/diagnostics/format.ts",
+        "line": 2,
+        "specifier": "../axi/types.js",
+        "resolvedPath": "src/axi/types.ts"
+      },
+      "violations": [],
+      "intentionalViolations": []
+    },
+    {
+      "fromModule": "Diagnostics",
+      "toModule": "CheckRunner",
+      "import": {
+        "filePath": "src/diagnostics/format.ts",
+        "line": 3,
+        "specifier": "../validator/check.js",
+        "resolvedPath": "src/validator/check.ts"
+      },
+      "violations": [],
+      "intentionalViolations": []
+    },
+    {
+      "fromModule": "Diagnostics",
+      "toModule": "CoreTypes",
+      "import": {
+        "filePath": "src/diagnostics/graph.ts",
+        "line": 2,
+        "specifier": "../axi/types.js",
+        "resolvedPath": "src/axi/types.ts"
+      },
+      "violations": [],
+      "intentionalViolations": []
+    },
+    {
+      "fromModule": "Diagnostics",
+      "toModule": "CheckRunner",
+      "import": {
+        "filePath": "src/diagnostics/graph.ts",
+        "line": 3,
+        "specifier": "../validator/check.js",
+        "resolvedPath": "src/validator/check.ts"
+      },
+      "violations": [],
+      "intentionalViolations": []
+    },
+    {
+      "fromModule": "Diagnostics",
+      "toModule": "Infer",
+      "import": {
+        "filePath": "src/diagnostics/infer.ts",
+        "line": 1,
+        "specifier": "../infer/infer.js",
+        "resolvedPath": "src/infer/infer.ts"
+      },
+      "violations": [],
+      "intentionalViolations": []
+    },
+    {
+      "fromModule": "Diagnostics",
+      "toModule": "CoreTypes",
+      "import": {
+        "filePath": "src/diagnostics/json.ts",
+        "line": 2,
+        "specifier": "../axi/types.js",
+        "resolvedPath": "src/axi/types.ts"
+      },
+      "violations": [],
+      "intentionalViolations": []
+    },
+    {
+      "fromModule": "Diagnostics",
+      "toModule": "CheckRunner",
+      "import": {
+        "filePath": "src/diagnostics/json.ts",
+        "line": 3,
+        "specifier": "../validator/check.js",
+        "resolvedPath": "src/validator/check.ts"
+      },
+      "violations": [],
+      "intentionalViolations": []
+    },
+    {
+      "fromModule": "Discovery",
+      "toModule": "Config",
+      "import": {
+        "filePath": "src/fs/discover.ts",
+        "line": 3,
+        "specifier": "../config/config.js",
+        "resolvedPath": "src/config/config.ts"
+      },
+      "violations": [],
+      "intentionalViolations": []
+    },
+    {
+      "fromModule": "Discovery",
+      "toModule": "ValidatorCore",
+      "import": {
+        "filePath": "src/fs/discover.ts",
+        "line": 4,
+        "specifier": "../validator/glob.js",
+        "resolvedPath": "src/validator/glob.ts"
+      },
+      "violations": [],
+      "intentionalViolations": []
+    },
+    {
+      "fromModule": "Infer",
+      "toModule": "CoreTypes",
+      "import": {
+        "filePath": "src/infer/infer.ts",
+        "line": 2,
+        "specifier": "../axi/constants.js",
+        "resolvedPath": "src/axi/constants.ts"
+      },
+      "violations": [],
+      "intentionalViolations": []
+    },
+    {
+      "fromModule": "Infer",
+      "toModule": "CoreTypes",
+      "import": {
+        "filePath": "src/infer/infer.ts",
+        "line": 3,
+        "specifier": "../axi/types.js",
+        "resolvedPath": "src/axi/types.ts"
+      },
+      "violations": [],
+      "intentionalViolations": []
+    },
+    {
+      "fromModule": "Infer",
+      "toModule": "Config",
+      "import": {
+        "filePath": "src/infer/infer.ts",
+        "line": 4,
+        "specifier": "../config/config.js",
+        "resolvedPath": "src/config/config.ts"
+      },
+      "violations": [],
+      "intentionalViolations": []
+    },
+    {
+      "fromModule": "Infer",
+      "toModule": "Discovery",
+      "import": {
+        "filePath": "src/infer/infer.ts",
+        "line": 5,
+        "specifier": "../fs/discover.js",
+        "resolvedPath": "src/fs/discover.ts"
+      },
+      "violations": [],
+      "intentionalViolations": []
+    },
+    {
+      "fromModule": "Infer",
+      "toModule": "Scanner",
+      "import": {
+        "filePath": "src/infer/infer.ts",
+        "line": 6,
+        "specifier": "../scanner/importResolver.js",
+        "resolvedPath": "src/scanner/importResolver.ts"
+      },
+      "violations": [],
+      "intentionalViolations": []
+    },
+    {
+      "fromModule": "Infer",
+      "toModule": "Scanner",
+      "import": {
+        "filePath": "src/infer/infer.ts",
+        "line": 7,
+        "specifier": "../scanner/importScanner.js",
+        "resolvedPath": "src/scanner/importScanner.ts"
+      },
+      "violations": [],
+      "intentionalViolations": []
+    },
+    {
+      "fromModule": "Infer",
+      "toModule": "ValidatorCore",
+      "import": {
+        "filePath": "src/infer/infer.ts",
+        "line": 8,
+        "specifier": "../validator/glob.js",
+        "resolvedPath": "src/validator/glob.ts"
+      },
+      "violations": [],
+      "intentionalViolations": []
+    },
+    {
+      "fromModule": "Scanner",
+      "toModule": "CoreTypes",
+      "import": {
+        "filePath": "src/scanner/importScanner.ts",
+        "line": 4,
+        "specifier": "../axi/types.js",
+        "resolvedPath": "src/axi/types.ts"
+      },
+      "violations": [],
+      "intentionalViolations": []
+    },
+    {
+      "fromModule": "CheckRunner",
+      "toModule": "CoreTypes",
+      "import": {
+        "filePath": "src/validator/check.ts",
+        "line": 3,
+        "specifier": "../axi/types.js",
+        "resolvedPath": "src/axi/types.ts"
+      },
+      "violations": [],
+      "intentionalViolations": []
+    },
+    {
+      "fromModule": "CheckRunner",
+      "toModule": "Language",
+      "import": {
+        "filePath": "src/validator/check.ts",
+        "line": 13,
+        "specifier": "../axi/parser.js",
+        "resolvedPath": "src/axi/parser.ts"
+      },
+      "violations": [],
+      "intentionalViolations": []
+    },
+    {
+      "fromModule": "CheckRunner",
+      "toModule": "Config",
+      "import": {
+        "filePath": "src/validator/check.ts",
+        "line": 14,
+        "specifier": "../config/config.js",
+        "resolvedPath": "src/config/config.ts"
+      },
+      "violations": [],
+      "intentionalViolations": []
+    },
+    {
+      "fromModule": "CheckRunner",
+      "toModule": "Discovery",
+      "import": {
+        "filePath": "src/validator/check.ts",
+        "line": 15,
+        "specifier": "../fs/discover.js",
+        "resolvedPath": "src/fs/discover.ts"
+      },
+      "violations": [],
+      "intentionalViolations": []
+    },
+    {
+      "fromModule": "CheckRunner",
+      "toModule": "TextIO",
+      "import": {
+        "filePath": "src/validator/check.ts",
+        "line": 16,
+        "specifier": "../fs/text.js",
+        "resolvedPath": "src/fs/text.ts"
+      },
+      "violations": [],
+      "intentionalViolations": []
+    },
+    {
+      "fromModule": "CheckRunner",
+      "toModule": "Scanner",
+      "import": {
+        "filePath": "src/validator/check.ts",
+        "line": 17,
+        "specifier": "../scanner/importResolver.js",
+        "resolvedPath": "src/scanner/importResolver.ts"
+      },
+      "violations": [],
+      "intentionalViolations": []
+    },
+    {
+      "fromModule": "CheckRunner",
+      "toModule": "Scanner",
+      "import": {
+        "filePath": "src/validator/check.ts",
+        "line": 18,
+        "specifier": "../scanner/importScanner.js",
+        "resolvedPath": "src/scanner/importScanner.ts"
+      },
+      "violations": [],
+      "intentionalViolations": []
+    },
+    {
+      "fromModule": "CheckRunner",
+      "toModule": "ValidatorCore",
+      "import": {
+        "filePath": "src/validator/check.ts",
+        "line": 19,
+        "specifier": "./couplingWarnings.js",
+        "resolvedPath": "src/validator/couplingWarnings.ts"
+      },
+      "violations": [],
+      "intentionalViolations": []
+    },
+    {
+      "fromModule": "CheckRunner",
+      "toModule": "ValidatorCore",
+      "import": {
+        "filePath": "src/validator/check.ts",
+        "line": 20,
+        "specifier": "./ownership.js",
+        "resolvedPath": "src/validator/ownership.ts"
+      },
+      "violations": [],
+      "intentionalViolations": []
+    },
+    {
+      "fromModule": "CheckRunner",
+      "toModule": "ValidatorCore",
+      "import": {
+        "filePath": "src/validator/check.ts",
+        "line": 21,
+        "specifier": "./validate.js",
+        "resolvedPath": "src/validator/validate.ts"
+      },
+      "violations": [],
+      "intentionalViolations": []
+    },
+    {
+      "fromModule": "ValidatorCore",
+      "toModule": "CoreTypes",
+      "import": {
+        "filePath": "src/validator/couplingWarnings.ts",
+        "line": 2,
+        "specifier": "../axi/types.js",
+        "resolvedPath": "src/axi/types.ts"
+      },
+      "violations": [],
+      "intentionalViolations": []
+    },
+    {
+      "fromModule": "ValidatorCore",
+      "toModule": "CoreTypes",
+      "import": {
+        "filePath": "src/validator/ownership.ts",
+        "line": 2,
+        "specifier": "../axi/types.js",
+        "resolvedPath": "src/axi/types.ts"
+      },
+      "violations": [],
+      "intentionalViolations": []
+    },
+    {
+      "fromModule": "ValidatorCore",
+      "toModule": "CoreTypes",
+      "import": {
+        "filePath": "src/validator/validate.ts",
+        "line": 2,
+        "specifier": "../axi/types.js",
+        "resolvedPath": "src/axi/types.ts"
+      },
+      "violations": [],
+      "intentionalViolations": []
+    },
+    {
+      "fromModule": "ValidatorCore",
+      "toModule": "CoreTypes",
+      "import": {
+        "filePath": "src/validator/validate.ts",
+        "line": 17,
+        "specifier": "../axi/constants.js",
+        "resolvedPath": "src/axi/constants.ts"
+      },
+      "violations": [],
+      "intentionalViolations": []
+    }
+  ],
+  "violations": [],
+  "intentionalDebt": [],
+  "warnings": []
+}

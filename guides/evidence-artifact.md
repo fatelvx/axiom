@@ -92,6 +92,8 @@ npm run axiom:self:artifact
 
 That smoke writes a portable self graph baseline only to a temporary directory, then verifies `axi observe --baseline` and `axi diff` stay advisory, preserve `reviewStory` and advisory-signal guardrails, report zero baseline drift, and do not rewrite the saved baseline.
 
+This repository also commits its current self baseline at `.axi/baselines/current.graph.json` as a public dogfood artifact. `npm run axiom:self:artifact` verifies that committed baseline with the same portability, advisory-mode, zero-drift, and non-mutation checks. That is Axiom's repository policy, not a product default: projects should commit a baseline only after the team agrees the observed graph shape is intentional enough to watch.
+
 Use `axi observe` for review context:
 
 ```bash

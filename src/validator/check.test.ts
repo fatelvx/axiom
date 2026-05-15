@@ -345,6 +345,65 @@ test("coupling concentration labels likely composition root fan-out without supp
   });
 });
 
+test("composition root fan-out includes type-only imports in the entry file", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "axi-composition-root-type-import-"));
+
+  try {
+    fs.mkdirSync(path.join(root, "axiom"), { recursive: true });
+    fs.mkdirSync(path.join(root, "src/engine"), { recursive: true });
+    fs.mkdirSync(path.join(root, "src/phases"), { recursive: true });
+    fs.mkdirSync(path.join(root, "src/render"), { recursive: true });
+    fs.mkdirSync(path.join(root, "src/ui"), { recursive: true });
+    fs.writeFileSync(
+      path.join(root, "axiom/main.axi"),
+      [
+        "module AppEntry",
+        'path "src/*"',
+        "depends Engine",
+        "depends Phases",
+        "depends Render",
+        "depends Ui",
+        "",
+        "module Engine",
+        'path "src/engine/**"',
+        "",
+        "module Phases",
+        'path "src/phases/**"',
+        "",
+        "module Render",
+        'path "src/render/**"',
+        "",
+        "module Ui",
+        'path "src/ui/**"',
+        ""
+      ].join("\n")
+    );
+    fs.writeFileSync(
+      path.join(root, "src/main.ts"),
+      [
+        'import type { EngineConfig } from "./engine/types";',
+        'import { phaseModules } from "./phases/registry";',
+        'import { CanvasRenderer } from "./render/CanvasRenderer";',
+        'import { Controller } from "./ui/createController";',
+        "export const app = { phaseModules, CanvasRenderer, Controller };"
+      ].join("\n")
+    );
+    fs.writeFileSync(path.join(root, "src/engine/types.ts"), "export interface EngineConfig { seed: string }\n");
+    fs.writeFileSync(path.join(root, "src/phases/registry.ts"), "export const phaseModules = [];\n");
+    fs.writeFileSync(path.join(root, "src/render/CanvasRenderer.ts"), "export class CanvasRenderer {}\n");
+    fs.writeFileSync(path.join(root, "src/ui/createController.ts"), "export class Controller {}\n");
+
+    const result = runCheck({ root, warnCouplingConcentration: true });
+
+    assert.equal(result.warnings.length, 1);
+    assert.equal(result.warnings[0]?.details?.reviewKind, "composition_root_pressure");
+    assert.equal(result.warnings[0]?.details?.entryFileFanOutModules, 4);
+    assert.equal(result.warnings[0]?.details?.entryFileImportSites, 4);
+  } finally {
+    fs.rmSync(root, { force: true, recursive: true });
+  }
+});
+
 test("large file warnings are opt-in advisory diagnostics", () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "axi-large-file-"));
 

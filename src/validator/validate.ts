@@ -41,8 +41,8 @@ interface CouplingStats {
   outgoingModules: Set<string>;
   incomingImportSites: number;
   outgoingImportSites: number;
-  outgoingRuntimeImportFiles: Map<string, number>;
-  outgoingRuntimeModulesByFile: Map<string, Set<string>>;
+  outgoingCompositionImportFiles: Map<string, number>;
+  outgoingCompositionModulesByFile: Map<string, Set<string>>;
 }
 
 interface PublicEntrypointCouplingStats {
@@ -886,9 +886,9 @@ export function findCouplingConcentrationWarnings(observedDependencies: Observed
 
     fromStats.outgoingModules.add(dependency.toModule);
     fromStats.outgoingImportSites += 1;
-    if (isRuntimeCompositionImport(dependency.importRecord)) {
-      incrementMapCount(fromStats.outgoingRuntimeImportFiles, dependency.importRecord.filePath);
-      ensureMapSet(fromStats.outgoingRuntimeModulesByFile, dependency.importRecord.filePath).add(dependency.toModule);
+    if (isCompositionRootImport(dependency.importRecord)) {
+      incrementMapCount(fromStats.outgoingCompositionImportFiles, dependency.importRecord.filePath);
+      ensureMapSet(fromStats.outgoingCompositionModulesByFile, dependency.importRecord.filePath).add(dependency.toModule);
     }
     toStats.incomingModules.add(dependency.fromModule);
     toStats.incomingImportSites += 1;
@@ -1162,8 +1162,8 @@ function ensureCouplingStats(
     outgoingModules: new Set<string>(),
     incomingImportSites: 0,
     outgoingImportSites: 0,
-    outgoingRuntimeImportFiles: new Map<string, number>(),
-    outgoingRuntimeModulesByFile: new Map<string, Set<string>>()
+    outgoingCompositionImportFiles: new Map<string, number>(),
+    outgoingCompositionModulesByFile: new Map<string, Set<string>>()
   };
   statsByModule.set(moduleName, created);
   return created;
@@ -1239,12 +1239,12 @@ function describeCompositionRootFanOut(
       suggestion: string;
     }
   | undefined {
-  const entryFiles = [...stats.outgoingRuntimeModulesByFile.entries()]
+  const entryFiles = [...stats.outgoingCompositionModulesByFile.entries()]
     .map(([filePath, modules]) => ({
       filePath,
       relativeFilePath: relativePath(root, filePath),
       modules,
-      importSites: stats.outgoingRuntimeImportFiles.get(filePath) ?? 0
+      importSites: stats.outgoingCompositionImportFiles.get(filePath) ?? 0
     }))
     .filter((entry) => isLikelyCompositionRootFile(entry.relativeFilePath) && entry.modules.size > 0)
     .sort((left, right) => left.relativeFilePath.localeCompare(right.relativeFilePath));
@@ -1267,8 +1267,8 @@ function describeCompositionRootFanOut(
   };
 }
 
-function isRuntimeCompositionImport(importRecord: ImportRecord): boolean {
-  return importRecord.kind !== "export" && importRecord.kind !== "import_type" && importRecord.isTypeOnly !== true;
+function isCompositionRootImport(importRecord: ImportRecord): boolean {
+  return importRecord.kind !== "export";
 }
 
 function isLikelyCompositionRootFile(relativeFilePath: string): boolean {

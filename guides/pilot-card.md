@@ -86,7 +86,7 @@ If the graph is quiet, still ask whether the center and scope are right before s
 Once the contract scope is worth tracking:
 
 ```bash
-axi graph --root ../target-app --spec contracts/target-app.inferred.axi --json > axiom-baseline.json
+axi graph --root ../target-app --spec contracts/target-app.inferred.axi --json --portable > axiom-baseline.json
 axi diff axiom-baseline.json --root ../target-app --spec contracts/target-app.inferred.axi --markdown
 ```
 

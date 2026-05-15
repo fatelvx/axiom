@@ -125,7 +125,7 @@ The Mermaid output is a review artifact. It includes a visible legend and marks 
 Once the external contract is useful, save an unfiltered graph:
 
 ```bash
-axi graph --root ../target-app --spec contracts/target-app.axi --json > axiom-baseline.json
+axi graph --root ../target-app --spec contracts/target-app.axi --json --portable > axiom-baseline.json
 ```
 
 Then compare later edits:
@@ -187,7 +187,7 @@ Only then move the reviewed contract into the target repo and add CI.
 ```bash
 axi infer --root ../target-app --group-depth 2 > contracts/target-app.inferred.axi
 axi graph --root ../target-app --spec contracts/target-app.axi --mermaid
-axi graph --root ../target-app --spec contracts/target-app.axi --json > axiom-baseline.json
+axi graph --root ../target-app --spec contracts/target-app.axi --json --portable > axiom-baseline.json
 axi diff axiom-baseline.json --root ../target-app --spec contracts/target-app.axi --markdown
 axi observe --root ../target-app --spec contracts/target-app.axi --markdown --warn-deep-internal-imports
 axi check --root ../target-app --spec contracts/target-app.axi

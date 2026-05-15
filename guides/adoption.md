@@ -49,7 +49,7 @@ For existing projects, the safer first-run loop is:
 axi infer --root . > axiom-starter.axi
 axi observe --root . --spec axiom-starter.axi --markdown
 axi graph --root . --spec axiom-starter.axi --mermaid
-axi graph --root . --spec axiom-starter.axi --json > axiom-baseline.json
+axi graph --root . --spec axiom-starter.axi --json --portable > axiom-baseline.json
 axi diff axiom-baseline.json --root . --spec axiom-starter.axi
 ```
 
@@ -303,7 +303,7 @@ axi graph --root . --attention
 axi graph --root . --mermaid
 axi observe --root . --markdown
 axi check --root . --json
-axi graph --root . --json > axiom-baseline.json
+axi graph --root . --json --portable > axiom-baseline.json
 axi observe --root . --baseline axiom-baseline.json
 axi observe --root . --baseline axiom-baseline.json --markdown
 axi observe --root . --warn-unresolved-imports --warn-dynamic-imports --warn-coupling-concentration --warn-deep-internal-imports
@@ -323,7 +323,7 @@ For a concrete GitHub Actions setup, read [GitHub Actions And PR Summaries](gith
 
 If you build on JSON output, read [JSON Consumers](json-consumers.md). Use `axi check --json` for gates, tolerate additive graph fields, and read top-level `intentionalDebt[]` when reviewing accepted debt.
 
-`axi observe --root . --baseline axiom-baseline.json` compares the current observed module edges with an unfiltered `axi graph --json` snapshot. JSON marks this as `advisory_observed_edge_drift`; treat new and removed edges as PR review context first, and promote only the parts that prove consistently useful into stricter automation.
+`axi observe --root . --baseline axiom-baseline.json` compares the current observed module edges with an unfiltered `axi graph --json --portable` snapshot. JSON marks this as `advisory_observed_edge_drift`; treat new and removed edges as PR review context first, and promote only the parts that prove consistently useful into stricter automation. Use `--portable` for shared baselines so local absolute root paths do not churn in commits.
 
 `axi diff axiom-baseline.json --root .` is the shortest first-value view over the same baseline model. It shows only new and removed observed module edges, exits `0`, and stays advisory. Use it when you want architecture drift to be visible before the contract is mature enough to gate.
 

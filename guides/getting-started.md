@@ -175,7 +175,7 @@ axi check --root . --warn-deep-internal-imports
 Use this when you want to see architecture drift since a known graph snapshot:
 
 ```bash
-axi graph --root . --json > axiom-baseline.json
+axi graph --root . --json --portable > axiom-baseline.json
 axi diff axiom-baseline.json --root .
 axi diff axiom-baseline.json --root . --markdown
 axi observe --root . --baseline axiom-baseline.json

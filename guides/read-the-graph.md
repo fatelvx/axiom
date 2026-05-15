@@ -28,7 +28,7 @@ For an existing contract:
 axi observe --root . --warn-coupling-concentration --warn-deep-internal-imports
 axi observe --root . --warn-large-files
 axi graph --root . --mermaid
-axi graph --root . --json > axiom-baseline.json
+axi graph --root . --json --portable > axiom-baseline.json
 axi diff axiom-baseline.json --root .
 ```
 
@@ -82,10 +82,10 @@ Look for:
 - Whether important runtime wiring is outside static imports.
 - Whether responsibilities are hidden inside a few huge files; use `--warn-large-files` when a project has very few files or a suspiciously quiet import graph.
 
-If the shape matches the intended architecture, save an unfiltered baseline:
+If the shape matches the intended architecture, save an unfiltered portable baseline:
 
 ```bash
-axi graph --root . --json > axiom-baseline.json
+axi graph --root . --json --portable > axiom-baseline.json
 ```
 
 Then compare later changes:

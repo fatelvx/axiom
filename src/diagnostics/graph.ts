@@ -108,6 +108,7 @@ export interface GraphFormatOptions {
   attention?: boolean;
   observe?: boolean;
   driftOnly?: boolean;
+  portable?: boolean;
   baseline?: GraphBaseline;
 }
 
@@ -145,6 +146,10 @@ interface GraphJsonDriftEdge {
 export interface GraphJsonResult {
   schemaVersion: typeof graphJsonSchemaVersion;
   root: string;
+  artifact?: {
+    kind: "graph_baseline";
+    pathMode: "portable";
+  };
   filters: {
     violationsOnly: boolean;
     attention: boolean;
@@ -446,7 +451,15 @@ export function toGraphJson(result: CheckResult, options: GraphFormatOptions = {
 
   return {
     schemaVersion: graphJsonSchemaVersion,
-    root: normalizePath(result.root),
+    root: options.portable === true ? "." : normalizePath(result.root),
+    ...(options.portable === true
+      ? {
+          artifact: {
+            kind: "graph_baseline" as const,
+            pathMode: "portable" as const
+          }
+        }
+      : {}),
     filters,
     architectureSummary: buildArchitectureSummary({
       filters,

@@ -217,13 +217,13 @@ test("infer JSON includes the generated .axi draft", () => {
       "Turn commented `exposes` and `hides` suggestions into real rules only after confirming the public/internal boundary.",
       "Add `layers` and `layer` statements only when dependency direction is clear enough to enforce.",
       "Use `accepts ... [at \"path\"] until ... because ...` only for reviewed migration debt; do not blanket-accept first-run problems.",
-      "Save an unfiltered graph JSON baseline when the draft is useful so future runs can show drift over time.",
+      "Save an unfiltered portable graph JSON baseline when the draft is useful so future runs can show drift over time without local root-path churn.",
       "If the module map feels too broad or too detailed, rerun inference with `--group-depth` or `--group-by workspace`."
     ],
     nextCommands: [
       "axi observe --root . --spec <draft.axi> --markdown",
       "axi graph --root . --spec <draft.axi> --mermaid",
-      "axi graph --root . --spec <draft.axi> --json > axiom-baseline.json",
+      "axi graph --root . --spec <draft.axi> --json --portable > axiom-baseline.json",
       "axi diff --root . --spec <draft.axi> axiom-baseline.json"
     ]
   });

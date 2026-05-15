@@ -86,6 +86,7 @@ Do not hard-gate on `axi graph`, `axi observe`, or Markdown output unless your o
 Important fields:
 
 - `architectureSummary`: agent-friendly status, review mode, interpretation, review story, top signals, and suggested next actions over the same graph result.
+- `root`: checked project root. It is an absolute path by default; committed baselines created with `axi graph --json --portable` use `"."` and include `artifact.pathMode: "portable"`.
 - `summary`: counts for modules, observed dependencies, violations, intentional violations, and warnings.
 - `filters`: tells whether output is full graph, attention, or violations-only.
 - `allObservedDependencies[]`: the full observed module graph.
@@ -127,10 +128,10 @@ Use `reviewStory` to decide what to show first in a PR comment, dashboard, or ag
 
 ## Baseline Drift
 
-Baseline drift compares current observed module edges against an unfiltered `axi graph --json` snapshot:
+Baseline drift compares current observed module edges against an unfiltered portable `axi graph --json --portable` snapshot:
 
 ```bash
-axi graph --root . --json > axiom-baseline.json
+axi graph --root . --json --portable > axiom-baseline.json
 axi observe --root . --baseline axiom-baseline.json --json
 ```
 

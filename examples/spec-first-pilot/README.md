@@ -14,7 +14,7 @@ Run:
 ```bash
 node ../../dist/cli.js check --root .
 node ../../dist/cli.js observe --root . --markdown
-node ../../dist/cli.js graph --root . --json > .axi/baselines/current.graph.json
+node ../../dist/cli.js graph --root . --json --portable > .axi/baselines/current.graph.json
 node ../../dist/cli.js diff .axi/baselines/current.graph.json --root .
 ```
 

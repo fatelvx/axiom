@@ -158,7 +158,7 @@ Start with three questions:
 
 `axi graph`, `axi observe`, and JSON summaries now include an interpretation layer for this first read. It can say, for example, that the scoped graph is quiet, that a module is becoming a fan-in hub, or that a contract is failing before the diagram should be treated as stable. The interpretation is intentionally conservative: it helps you navigate the graph, but the evidence still lives in the exact violation, warning, drift, and import-site lists.
 
-When a scan is quiet, the next step is not "declare victory". Compare the graph center with the shape you expected, check whether huge files are hiding responsibilities inside one module, then save an unfiltered `axi graph --json` baseline if that shape is intentional.
+When a scan is quiet, the next step is not "declare victory". Compare the graph center with the shape you expected, check whether huge files are hiding responsibilities inside one module, then save an unfiltered portable `axi graph --json --portable` baseline if that shape is intentional.
 
 For concrete examples of failing contracts, quiet graphs, advisory pressure, and React plus Pixi game clients, read [Read The Graph](guides/read-the-graph.md).
 
@@ -317,10 +317,10 @@ Use these in `observe` first. Promote only high-confidence intent into `.axi` ha
 
 `axi check --json` emits `axiom.check.v4`; `axi graph --json` and `axi observe --json` emit `axiom.graph.v12`.
 
-Use an unfiltered graph JSON file as a baseline when you want to inspect architecture drift:
+Use an unfiltered portable graph JSON file as a baseline when you want to inspect architecture drift:
 
 ```bash
-axi graph --root . --json > axiom-baseline.json
+axi graph --root . --json --portable > axiom-baseline.json
 axi observe --root . --baseline axiom-baseline.json
 ```
 

@@ -291,6 +291,51 @@ test("cli graph --json returns parseable graph output", () => {
   assert.equal(payload.violations[0].code, "unexposed_import");
 });
 
+test("cli graph --json --portable emits a shareable graph baseline", () => {
+  const directory = mkdtempSync(path.join(tmpdir(), "axiom-portable-baseline-"));
+  const baselinePath = path.join(directory, "current.graph.json");
+
+  try {
+    const graph = spawnSync(
+      process.execPath,
+      [cliPath, "graph", "--root", "fixtures/basic-ts-valid", "--json", "--portable"],
+      { cwd: repoRoot, encoding: "utf8" }
+    );
+
+    assert.equal(graph.status, 0, graph.stderr);
+    const payload = JSON.parse(graph.stdout);
+    assert.equal(payload.schemaVersion, "axiom.graph.v12");
+    assert.equal(payload.root, ".");
+    assert.deepEqual(payload.artifact, { kind: "graph_baseline", pathMode: "portable" });
+    assert.equal(graph.stdout.includes(path.join(repoRoot, "fixtures/basic-ts-valid").replace(/\\/g, "/")), false);
+
+    writeFileSync(baselinePath, graph.stdout, "utf8");
+
+    const observe = spawnSync(
+      process.execPath,
+      [cliPath, "observe", "--root", "fixtures/basic-ts-valid", "--baseline", baselinePath, "--json"],
+      { cwd: repoRoot, encoding: "utf8" }
+    );
+    assert.equal(observe.status, 0, observe.stderr);
+    const observePayload = JSON.parse(observe.stdout);
+    assert.equal(
+      (observePayload.drift?.newObservedEdges?.length ?? 0) + (observePayload.drift?.removedObservedEdges?.length ?? 0),
+      0
+    );
+
+    const diff = spawnSync(
+      process.execPath,
+      [cliPath, "diff", baselinePath, "--root", "fixtures/basic-ts-valid", "--json"],
+      { cwd: repoRoot, encoding: "utf8" }
+    );
+    assert.equal(diff.status, 0, diff.stderr);
+    const diffPayload = JSON.parse(diff.stdout);
+    assert.equal((diffPayload.drift?.newObservedEdges?.length ?? 0) + (diffPayload.drift?.removedObservedEdges?.length ?? 0), 0);
+  } finally {
+    rmSync(directory, { recursive: true, force: true });
+  }
+});
+
 test("cli graph --violations-only filters observed dependency output", () => {
   const result = spawnSync(
     process.execPath,
@@ -652,6 +697,28 @@ test("cli graph rejects mermaid and json together", () => {
 
   assert.equal(result.status, 1);
   assert.match(result.stderr, /Use only one of --json, --markdown, or --mermaid/);
+});
+
+test("cli graph --portable requires json output", () => {
+  const result = spawnSync(
+    process.execPath,
+    [cliPath, "graph", "--root", "fixtures/basic-ts-valid", "--portable"],
+    { cwd: repoRoot, encoding: "utf8" }
+  );
+
+  assert.equal(result.status, 1);
+  assert.match(result.stderr, /--portable requires axi graph --json/);
+});
+
+test("cli observe rejects portable output", () => {
+  const result = spawnSync(
+    process.execPath,
+    [cliPath, "observe", "--root", "fixtures/basic-ts-valid", "--json", "--portable"],
+    { cwd: repoRoot, encoding: "utf8" }
+  );
+
+  assert.equal(result.status, 1);
+  assert.match(result.stderr, /--portable is only supported by graph JSON output/);
 });
 
 test("cli check rejects markdown output", () => {

@@ -108,7 +108,7 @@ npx axi observe --root . --markdown \
 If your team keeps an unfiltered graph snapshot, use it as review context:
 
 ```bash
-axi graph --root . --json > axiom-baseline.json
+axi graph --root . --json --portable > axiom-baseline.json
 axi observe --root . --baseline axiom-baseline.json --markdown
 ```
 

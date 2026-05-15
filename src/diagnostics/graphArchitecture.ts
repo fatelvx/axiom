@@ -428,7 +428,7 @@ function formatReviewStoryNextStep(
     return "Inspect new and removed observed edges, then update the baseline only if the drift matches intended architecture.";
   }
 
-  return "Confirm scan scope and intended graph shape, then save a baseline with `axi graph --json` if this is the shape to watch.";
+  return "Confirm scan scope and intended graph shape, then save a portable baseline with `axi graph --json --portable` if this is the shape to watch.";
 }
 
 function formatArchitectureHeadline(

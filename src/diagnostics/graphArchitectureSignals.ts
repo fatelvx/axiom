@@ -126,7 +126,7 @@ export function formatArchitectureSummaryNextActions(input: {
   if (driftCount > 0) {
     actions.push("Review `drift` as baseline-aware architecture change before updating the baseline or contract.");
   } else if (actions.length === 0) {
-    actions.push("Save an unfiltered `axi graph --json` baseline if you want future PRs to show architecture drift.");
+    actions.push("Save an unfiltered portable `axi graph --json --portable` baseline if you want future PRs to show architecture drift.");
   }
 
   return actions;

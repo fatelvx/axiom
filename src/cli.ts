@@ -29,6 +29,7 @@ interface CliOptions {
   groupBy?: InferGroupBy;
   graphViolationsOnly: boolean;
   graphAttention: boolean;
+  graphPortable: boolean;
   baselinePath?: string;
   intentionalViolationExpiryWarningDays?: number;
   warnUnresolvedImports: boolean;
@@ -109,6 +110,7 @@ try {
         attention: options.graphAttention,
         observe: command === "observe",
         driftOnly: command === "diff",
+        portable: options.graphPortable,
         baseline
       })
     );
@@ -119,6 +121,7 @@ try {
         attention: options.graphAttention,
         observe: command === "observe",
         driftOnly: command === "diff",
+        portable: options.graphPortable,
         baseline
       })
     );
@@ -129,6 +132,7 @@ try {
         attention: options.graphAttention,
         observe: command === "observe",
         driftOnly: command === "diff",
+        portable: options.graphPortable,
         baseline
       })
     );
@@ -139,6 +143,7 @@ try {
         attention: options.graphAttention,
         observe: command === "observe",
         driftOnly: command === "diff",
+        portable: options.graphPortable,
         baseline
       })
     );
@@ -170,6 +175,7 @@ function parseOptions(values: string[], command: CliCommand): CliOptions {
     adoptionMode: "loose",
     graphViolationsOnly: command === "observe",
     graphAttention: command === "observe",
+    graphPortable: false,
     warnUnresolvedImports: false,
     warnDynamicImports: false,
     warnPublicApiSurface: false,
@@ -400,6 +406,16 @@ function parseOptions(values: string[], command: CliCommand): CliOptions {
       continue;
     }
 
+    if (value === "--portable") {
+      if (command !== "graph") {
+        console.error("--portable is only supported by graph JSON output.");
+        process.exit(1);
+      }
+
+      options.graphPortable = true;
+      continue;
+    }
+
     if (value === "--violations-only") {
       if (command !== "graph" && command !== "observe") {
         console.error("--violations-only is only supported by graph and observe.");
@@ -467,6 +483,11 @@ function parseOptions(values: string[], command: CliCommand): CliOptions {
     }
 
     console.error(`Unknown option '${value}'.`);
+    process.exit(1);
+  }
+
+  if (options.graphPortable && !options.json) {
+    console.error("--portable requires axi graph --json.");
     process.exit(1);
   }
 
@@ -593,7 +614,7 @@ function printHelp(): void {
 
 Usage:
   axi check [--root <path>] [--config <path>] [--include <glob>] [--exclude <glob>] [--spec <path>] [--json] [--warn-unowned] [--strict] [--intentional-violation-warning-days <n>] [--warn-unresolved-imports] [--warn-dynamic-imports] [--warn-public-api-surface] [--warn-coupling-concentration] [--warn-deep-internal-imports] [--warn-large-files]
-  axi graph [--root <path>] [--config <path>] [--include <glob>] [--exclude <glob>] [--spec <path>] [--json|--markdown|--mermaid] [--warn-unowned] [--strict] [--violations-only|--attention] [--baseline <graph-json>] [--intentional-violation-warning-days <n>] [--warn-unresolved-imports] [--warn-dynamic-imports] [--warn-public-api-surface] [--warn-coupling-concentration] [--warn-deep-internal-imports] [--warn-large-files]
+  axi graph [--root <path>] [--config <path>] [--include <glob>] [--exclude <glob>] [--spec <path>] [--json|--markdown|--mermaid] [--portable] [--warn-unowned] [--strict] [--violations-only|--attention] [--baseline <graph-json>] [--intentional-violation-warning-days <n>] [--warn-unresolved-imports] [--warn-dynamic-imports] [--warn-public-api-surface] [--warn-coupling-concentration] [--warn-deep-internal-imports] [--warn-large-files]
   axi observe [--root <path>] [--config <path>] [--include <glob>] [--exclude <glob>] [--spec <path>] [--json|--markdown|--mermaid] [--warn-unowned] [--strict] [--baseline <graph-json>] [--intentional-violation-warning-days <n>] [--warn-unresolved-imports] [--warn-dynamic-imports] [--warn-public-api-surface] [--warn-coupling-concentration] [--warn-deep-internal-imports] [--warn-large-files]
   axi diff <baseline-json> [--root <path>] [--config <path>] [--include <glob>] [--exclude <glob>] [--spec <path>] [--json|--markdown|--mermaid] [--warn-unowned] [--strict] [--intentional-violation-warning-days <n>] [--warn-unresolved-imports] [--warn-dynamic-imports] [--warn-public-api-surface] [--warn-coupling-concentration] [--warn-deep-internal-imports] [--warn-large-files]
   axi infer [--root <path>] [--config <path>] [--include <glob>] [--exclude <glob>] [--json] [--group-depth <n>] [--group-by folder|workspace]
@@ -610,6 +631,7 @@ Graph:
   --attention        Alias for --violations-only with awareness-oriented human output.
   --baseline <graph-json>
                     Compare observed module edges against an unfiltered axi graph --json baseline.
+  --portable        With graph --json, write project-relative root metadata for committed baselines.
   diff              Product-facing baseline drift command; exits 0 and does not act as a gate.
   --markdown        Print a PR/agent-friendly architecture review summary for graph, observe, or diff.
                     This is presentation output; use axi check for a CI gate.
@@ -683,10 +705,11 @@ Options:
 Print declared and observed architecture graphs. This is a review surface and exits 0 even when violations exist.
 
 Usage:
-  axi graph [--root <path>] [--config <path>] [--include <glob>] [--exclude <glob>] [--spec <path>] [--json|--markdown|--mermaid] [--warn-unowned] [--strict] [--violations-only|--attention] [--baseline <graph-json>] [--intentional-violation-warning-days <n>] [--warn-unresolved-imports] [--warn-dynamic-imports] [--warn-public-api-surface] [--warn-coupling-concentration] [--warn-deep-internal-imports] [--warn-large-files]
+  axi graph [--root <path>] [--config <path>] [--include <glob>] [--exclude <glob>] [--spec <path>] [--json|--markdown|--mermaid] [--portable] [--warn-unowned] [--strict] [--violations-only|--attention] [--baseline <graph-json>] [--intentional-violation-warning-days <n>] [--warn-unresolved-imports] [--warn-dynamic-imports] [--warn-public-api-surface] [--warn-coupling-concentration] [--warn-deep-internal-imports] [--warn-large-files]
 
 Options:
   --json             Print axiom.graph JSON.
+  --portable         With --json, emit project-relative root metadata for committed baselines.
   --markdown         Print a PR/agent-friendly review summary.
   --mermaid          Print a Mermaid observed dependency diagram.
   --violations-only  Show only observed dependency edges with violations or accepted debt.

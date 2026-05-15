@@ -312,8 +312,12 @@ function createBaseline(projectRoot) {
   const baselinePath = path.join(projectRoot, ".axi", "baselines", "current.graph.json");
   mkdirSync(path.dirname(baselinePath), { recursive: true });
 
-  const graph = runAxi(["graph", "--root", projectRoot, "--json"], 0);
+  const graph = runAxi(["graph", "--root", projectRoot, "--json", "--portable"], 0);
   const payload = parseJson(graph.stdout, `${path.basename(projectRoot)} baseline graph output`);
+  assertEqual(payload.root, ".", `${path.basename(projectRoot)} baseline uses portable root metadata`);
+  assertEqual(payload.artifact?.kind, "graph_baseline", `${path.basename(projectRoot)} baseline artifact kind`);
+  assertEqual(payload.artifact?.pathMode, "portable", `${path.basename(projectRoot)} baseline artifact path mode`);
+  assertTextExcludes(graph.stdout, normalizePath(projectRoot), `${path.basename(projectRoot)} baseline excludes local root path`);
   writeFileSync(baselinePath, graph.stdout, "utf8");
 
   return {
@@ -403,6 +407,12 @@ function assertTextIncludes(text, expected, label) {
   }
 }
 
+function assertTextExcludes(text, unexpected, label) {
+  if (text.includes(unexpected)) {
+    throw new Error(`Expected ${label} to exclude ${JSON.stringify(unexpected)}.\nActual output:\n${text}`);
+  }
+}
+
 function safeSegment(value) {
   return value.replace(/[^A-Za-z0-9._-]+/g, "-");
 }
@@ -413,4 +423,8 @@ function hashFile(filePath) {
 
 function readDriftCount(payload) {
   return (payload.drift?.newObservedEdges?.length ?? 0) + (payload.drift?.removedObservedEdges?.length ?? 0);
+}
+
+function normalizePath(filePath) {
+  return filePath.replace(/\\/g, "/");
 }

@@ -37,7 +37,7 @@ The agent may suggest a `.axi` change, but it should not auto-accept debt or sil
 
 ## Baseline Lifecycle
 
-Baseline drift only works if the baseline is a real architecture snapshot, not a graph generated from the same checkout being reviewed.
+Baseline drift only works if the baseline is a real architecture snapshot, not a graph generated from the same checkout being reviewed. Committed baselines should be created with `--portable` so the graph JSON does not preserve one developer machine's absolute root path.
 
 Recommended convention for pilots:
 
@@ -48,7 +48,7 @@ Recommended convention for pilots:
 Create or update it only after the team agrees that the current observed shape is intentional:
 
 ```bash
-axi graph --root . --json > .axi/baselines/current.graph.json
+axi graph --root . --json --portable > .axi/baselines/current.graph.json
 ```
 
 Review drift later:

@@ -27,6 +27,10 @@ try {
   );
 
   const baseline = createBaseline();
+  assertEqual(baseline.payload.root, ".", "self baseline uses portable root metadata");
+  assertEqual(baseline.payload.artifact?.kind, "graph_baseline", "self baseline artifact kind");
+  assertEqual(baseline.payload.artifact?.pathMode, "portable", "self baseline artifact path mode");
+  assertTextExcludes(baseline.text, normalizePath(repoRoot), "self portable baseline does not include the local repository root");
   assertEqual(baseline.payload.filters?.violationsOnly, false, "self baseline is unfiltered");
   assertEqual(baseline.payload.filters?.attention, false, "self baseline is not attention-filtered");
   assertEqual(baseline.payload.architectureSummary?.gate?.currentCommandIsGate, false, "self baseline graph is not a gate");
@@ -69,7 +73,7 @@ try {
 
   console.log("Axiom self artifact smoke passed.");
   console.log("- self-contract passed as the hard gate");
-  console.log("- saved an unfiltered graph baseline in a temp directory");
+  console.log("- saved a portable unfiltered graph baseline in a temp directory");
   console.log("- observe and diff stayed advisory and reported zero baseline drift");
   console.log("- observe markdown preserved reviewStory and advisory-signal guardrails");
   console.log("- review commands did not rewrite the saved baseline");
@@ -81,14 +85,15 @@ function createBaseline() {
   const baselinePath = path.join(tempDirectory, "axiom-self.graph.json");
   mkdirSync(path.dirname(baselinePath), { recursive: true });
 
-  const graph = runAxi(["graph", "--root", ".", "--strict", "--json", ...warningArgs], 0);
+  const graph = runAxi(["graph", "--root", ".", "--strict", "--json", "--portable", ...warningArgs], 0);
   const payload = parseJson(graph.stdout, "self graph baseline output");
   writeFileSync(baselinePath, graph.stdout, "utf8");
 
   return {
     hash: hashFile(baselinePath),
     path: baselinePath,
-    payload
+    payload,
+    text: graph.stdout
   };
 }
 
@@ -140,10 +145,20 @@ function assertTextIncludes(text, expected, label) {
   }
 }
 
+function assertTextExcludes(text, unexpected, label) {
+  if (text.includes(unexpected)) {
+    throw new Error(`Expected ${label} to exclude ${JSON.stringify(unexpected)}.\nActual output:\n${text}`);
+  }
+}
+
 function hashFile(filePath) {
   return createHash("sha256").update(readFileSync(filePath)).digest("hex");
 }
 
 function readDriftCount(payload) {
   return (payload.drift?.newObservedEdges?.length ?? 0) + (payload.drift?.removedObservedEdges?.length ?? 0);
+}
+
+function normalizePath(filePath) {
+  return filePath.replace(/\\/g, "/");
 }

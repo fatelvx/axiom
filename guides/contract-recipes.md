@@ -14,7 +14,7 @@ Use them to lower the empty-page cost:
 axi infer --root . > contracts/current-graph.axi
 axi observe --root . --spec contracts/app.axi --markdown
 axi graph --root . --spec contracts/app.axi --mermaid
-axi graph --root . --spec contracts/app.axi --json > axiom-baseline.json
+axi graph --root . --spec contracts/app.axi --json --portable > axiom-baseline.json
 axi diff axiom-baseline.json --root . --spec contracts/app.axi
 ```
 
@@ -193,7 +193,7 @@ Start with workspace-aware inference:
 ```bash
 axi infer --root . --group-by workspace > contracts/workspace.current.axi
 axi observe --root . --spec contracts/workspace.axi --markdown
-axi graph --root . --spec contracts/workspace.axi --json > axiom-baseline.json
+axi graph --root . --spec contracts/workspace.axi --json --portable > axiom-baseline.json
 axi diff axiom-baseline.json --root . --spec contracts/workspace.axi
 ```
 
@@ -215,7 +215,7 @@ target-app/
 axi infer --root ../target-app --group-depth 2 > contracts/target-app.inferred.axi
 axi observe --root ../target-app --spec contracts/target-app.axi --markdown --warn-deep-internal-imports
 axi graph --root ../target-app --spec contracts/target-app.axi --mermaid
-axi graph --root ../target-app --spec contracts/target-app.axi --json > target-app-baseline.json
+axi graph --root ../target-app --spec contracts/target-app.axi --json --portable > target-app-baseline.json
 axi diff target-app-baseline.json --root ../target-app --spec contracts/target-app.axi
 ```
 
@@ -240,7 +240,7 @@ The first contract should have an owner and a review rhythm. A practical startin
 
 - update the contract when a module boundary or public entry point intentionally changes,
 - review visible intentional debt before its expiration window,
-- save an unfiltered `axi graph --json` baseline when the contract becomes useful,
+- save an unfiltered portable `axi graph --json --portable` baseline when the contract becomes useful,
 - compare future changes with `axi observe --baseline`,
 - delete rules that no one can explain.
 

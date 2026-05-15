@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Added opt-in `--warn-dynamic-imports` / `warnDynamicImports` advisory warnings for non-literal `import()` and `require()` expressions that static graphing cannot resolve into observed dependency edges.
+- Dynamic dependency warnings now include a short expression preview in JSON, human, and Markdown output so reviewers can distinguish internal runtime wiring from external plugin lookups.
 
 ## 0.6.0-alpha.1 - Static Contract Loop
 

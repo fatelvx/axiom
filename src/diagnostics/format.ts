@@ -135,6 +135,10 @@ function formatDetails(root: string, violation: Violation): string[] {
   if (dependencyKind || expressionKind) {
     lines.push(`  dependency expression: ${dependencyKind ?? "unknown"} (${expressionKind ?? "unknown"})`);
   }
+  const expressionPreview = readString(violation.details.expressionPreview);
+  if (expressionPreview) {
+    lines.push(`  expression: ${expressionPreview}`);
+  }
 
   const importedPath = readString(violation.details.importedPath);
   if (importedPath) {

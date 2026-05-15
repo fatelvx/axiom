@@ -1757,6 +1757,17 @@ function appendMarkdownWarningDetails(lines: string[], warning: GraphJsonViolati
     appendMarkdownDetail(lines, "Specifier", markdownCode(specifier));
   }
 
+  const dependencyKind = readString(warning.details?.dependencyKind);
+  const expressionKind = readString(warning.details?.expressionKind);
+  if (dependencyKind || expressionKind) {
+    appendMarkdownDetail(lines, "Dependency expression", `${dependencyKind ?? "unknown"} (${expressionKind ?? "unknown"})`);
+  }
+
+  const expressionPreview = readString(warning.details?.expressionPreview);
+  if (expressionPreview) {
+    appendMarkdownDetail(lines, "Expression", markdownCode(expressionPreview));
+  }
+
   const rule = readString(warning.details?.rule);
   const ruleLocation = readLocation(warning.details?.ruleLocation);
   if (rule) {
@@ -2166,6 +2177,17 @@ function formatWarnings(graph: GraphJsonResult): string[] {
     const specifier = readString(warning.details?.specifier);
     if (specifier) {
       lines.push(`  specifier: "${specifier}"`);
+    }
+
+    const dependencyKind = readString(warning.details?.dependencyKind);
+    const expressionKind = readString(warning.details?.expressionKind);
+    if (dependencyKind || expressionKind) {
+      lines.push(`  dependency expression: ${dependencyKind ?? "unknown"} (${expressionKind ?? "unknown"})`);
+    }
+
+    const expressionPreview = readString(warning.details?.expressionPreview);
+    if (expressionPreview) {
+      lines.push(`  expression: ${expressionPreview}`);
     }
 
     const rule = readString(warning.details?.rule);

@@ -216,6 +216,16 @@ test("cli observe --warn-dynamic-imports reports advisory non-literal dependency
     assert.equal(payload.warnings[0].code, "dynamic_dependency_expression");
     assert.equal(payload.warnings[0].details.dependencyKind, "import()");
     assert.equal(payload.warnings[0].details.expressionKind, "TemplateExpression");
+    assert.equal(payload.warnings[0].details.expressionPreview, "`./routes/${route}`");
+
+    const humanResult = spawnSync(process.execPath, [cliPath, "observe", "--root", root, "--warn-dynamic-imports"], {
+      cwd: repoRoot,
+      encoding: "utf8"
+    });
+
+    assert.equal(humanResult.status, 0);
+    assert.match(humanResult.stdout, /dependency expression: import\(\) \(TemplateExpression\)/);
+    assert.match(humanResult.stdout, /expression: `\.\/routes\/\$\{route\}`/);
   } finally {
     rmSync(root, { force: true, recursive: true });
   }

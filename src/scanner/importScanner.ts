@@ -84,7 +84,8 @@ export function scanSourceFile(filePath: string, options: ScanImportsOptions = {
       filePath,
       line,
       kind,
-      expressionKind: formatSyntaxKind(expression.kind)
+      expressionKind: formatSyntaxKind(expression.kind),
+      expressionPreview: formatExpressionPreview(expression, sourceFile)
     });
   }
 
@@ -513,6 +514,15 @@ function readDynamicDependencyExpression(
 function formatSyntaxKind(kind: ts.SyntaxKind): string {
   const name = ts.SyntaxKind[kind];
   return typeof name === "string" ? name : String(kind);
+}
+
+function formatExpressionPreview(expression: ts.Expression, sourceFile: ts.SourceFile): string {
+  const text = expression.getText(sourceFile).replace(/\s+/g, " ").trim();
+  if (text.length <= 120) {
+    return text;
+  }
+
+  return `${text.slice(0, 117)}...`;
 }
 
 function readImportTypeSpecifier(node: ts.ImportTypeNode): string | undefined {

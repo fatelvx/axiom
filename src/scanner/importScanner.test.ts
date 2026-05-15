@@ -105,23 +105,27 @@ test("scanner records non-literal dynamic dependency expressions without inventi
       scan.dynamicDependencyExpressions.map((record) => ({
         line: record.line,
         kind: record.kind,
-        expressionKind: record.expressionKind
+        expressionKind: record.expressionKind,
+        expressionPreview: record.expressionPreview
       })),
       [
         {
           line: 2,
           kind: "dynamic_import_expression",
-          expressionKind: "Identifier"
+          expressionKind: "Identifier",
+          expressionPreview: "lazyName"
         },
         {
           line: 3,
           kind: "dynamic_import_expression",
-          expressionKind: "TemplateExpression"
+          expressionKind: "TemplateExpression",
+          expressionPreview: "`./pages/${lazyName}`"
         },
         {
           line: 4,
           kind: "require_expression",
-          expressionKind: "Identifier"
+          expressionKind: "Identifier",
+          expressionPreview: "lazyName"
         }
       ]
     );

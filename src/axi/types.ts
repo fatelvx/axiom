@@ -103,6 +103,7 @@ export interface DynamicDependencyExpressionRecord {
   line: number;
   kind: "dynamic_import_expression" | "require_expression";
   expressionKind: string;
+  expressionPreview: string;
 }
 
 export interface ImportBinding {

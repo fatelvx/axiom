@@ -156,6 +156,8 @@ axi observe --root . --warn-dynamic-imports
 axi check --root . --warn-dynamic-imports
 ```
 
+Warnings include the dependency kind, syntax kind, and a short expression preview. Treat them as graph-completeness prompts, not violations to suppress.
+
 Use this when you want advisory review prompts for modules that may be turning into coupling hubs:
 
 ```bash

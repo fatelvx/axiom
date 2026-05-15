@@ -859,6 +859,7 @@ export function findDynamicDependencyExpressionWarnings(
             module: fromModule.name,
             dependencyKind,
             expressionKind: record.expressionKind,
+            expressionPreview: record.expressionPreview,
             observed: `${fromModule.name} dynamic dependency expression`,
             resolution: "not_statically_resolved",
             scope: "dynamic_dependency_expression",

@@ -16,11 +16,11 @@ import { findAxiomFiles, findSourceFiles } from "../fs/discover.js";
 import { readTextFile } from "../fs/text.js";
 import { createImportResolver } from "../scanner/importResolver.js";
 import { scanSourceFile } from "../scanner/importScanner.js";
+import { findCouplingConcentrationWarnings } from "./couplingWarnings.js";
 import { createOwnershipIndex, validateOwnership } from "./ownership.js";
 import {
   applySuppressions,
   buildObservedDependencies,
-  findCouplingConcentrationWarnings,
   findDeepInternalImportWarnings,
   findDynamicDependencyExpressionWarnings,
   findExpiringSuppressions,

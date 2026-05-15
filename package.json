@@ -39,7 +39,8 @@
     "examples/basic-app/",
     "examples/github-actions/",
     "examples/monorepo-workspace/",
-    "examples/spec-first-pilot/"
+    "examples/spec-first-pilot/",
+    "examples/spec-first-services-pilot/"
   ],
   "bin": {
     "axi": "dist/cli.js",

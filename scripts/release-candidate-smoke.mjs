@@ -44,7 +44,8 @@ try {
     "guides/mcp-preview.md",
     "guides/mcp-client-setup.md",
     "examples/basic-app/axiom/main.axi",
-    "examples/spec-first-pilot/axiom/main.axi"
+    "examples/spec-first-pilot/axiom/main.axi",
+    "examples/spec-first-services-pilot/axiom/main.axi"
   ]) {
     assertFile(path.join(packageRoot, filePath), filePath);
   }

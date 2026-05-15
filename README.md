@@ -94,6 +94,7 @@ cd axiom
 npm install
 npm run build
 node dist/cli.js check --root examples/spec-first-pilot
+node dist/cli.js check --root examples/spec-first-services-pilot
 ```
 
 ## Example Contract

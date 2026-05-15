@@ -15,6 +15,7 @@ import path from "node:path";
 const repoRoot = process.cwd();
 const cliPath = path.join(repoRoot, "dist/cli.js");
 const exampleRoot = path.join(repoRoot, "examples/spec-first-pilot");
+const servicesExampleRoot = path.join(repoRoot, "examples/spec-first-services-pilot");
 
 if (!existsSync(cliPath)) {
   console.error("dist/cli.js was not found. Run npm run build before spec-first smoke.");
@@ -82,12 +83,15 @@ try {
     expectedMinimumDrift: 1
   });
 
+  runServicesBoundaryPilot();
+
   console.log("Spec-first validator smoke passed.");
   console.log("- reviewed example contract passed axi check");
   console.log("- baseline, diff, and observe review story stayed advisory in the clean artifact loop");
   console.log("- path-scoped intentional debt stayed visible without becoming a hidden allowlist");
   console.log("- hidden internal bypass failed as a hard visibility violation");
   console.log("- outward domain-to-UI import failed as a hard layer violation");
+  console.log("- services-boundary pilot caught new deep service bypass and Services <-> Store drift");
 } finally {
   rmSync(tempDirectory, { recursive: true, force: true });
 }
@@ -135,10 +139,130 @@ function runIntentionalDebtScenario() {
   assertEqual(hashFile(baseline.path), baseline.hash, "intentional debt baseline is not rewritten");
 }
 
+function runServicesBoundaryPilot() {
+  const cleanRoot = copyExample("services-boundary-clean", servicesExampleRoot);
+  const cleanCheck = runAxi(["check", "--root", cleanRoot, "--json"], 0);
+  const checkPayload = parseJson(cleanCheck.stdout, "services boundary check output");
+  assertEqual(checkPayload.summary?.violations, 0, "services boundary hard violation count");
+  assertEqual(checkPayload.summary?.intentionalViolations, 1, "services boundary visible debt count");
+  assertEqual(checkPayload.intentionalViolations?.[0]?.code, "hidden_import", "services boundary debt code");
+  assertEqual(
+    checkPayload.intentionalViolations?.[0]?.contract?.pathScope,
+    "src/components/LegacySettingsBridge.ts",
+    "services boundary debt path scope"
+  );
+
+  const baseline = createBaseline(cleanRoot);
+  assertEqual(baseline.payload.summary?.violations, 0, "services boundary baseline hard violation count");
+  assertEqual(baseline.payload.summary?.intentionalViolations, 1, "services boundary baseline debt count");
+
+  const observe = runAxi(["observe", "--root", cleanRoot, "--baseline", baseline.path, "--json"], 0);
+  const observePayload = parseJson(observe.stdout, "services boundary observe output");
+  assertEqual(observePayload.architectureSummary?.gate?.currentCommandIsGate, false, "services boundary observe is not a gate");
+  assertEqual(observePayload.summary?.violations, 0, "services boundary observe hard violation count");
+  assertEqual(observePayload.summary?.intentionalViolations, 1, "services boundary observe debt count");
+  assertTextIncludes(
+    observePayload.architectureSummary?.reviewStory?.summary ?? "",
+    "visible",
+    "services boundary debt review story"
+  );
+  assertEqual(hashFile(baseline.path), baseline.hash, "services boundary baseline is not rewritten");
+
+  runMultiFileDriftScenario({
+    name: "services-hidden-bypass",
+    sourceRoot: servicesExampleRoot,
+    files: [
+      {
+        filePath: "src/hooks/useUnsafeServiceStatus.ts",
+        contents: [
+          'import { readServiceStatus } from "../services/internal/agentLoop";',
+          "",
+          "export function useUnsafeServiceStatus(): string {",
+          "  return readServiceStatus();",
+          "}",
+          ""
+        ].join("\n")
+      }
+    ],
+    expectedCodes: ["hidden_import"],
+    expectedLocations: ["src/hooks/useUnsafeServiceStatus.ts"],
+    expectedIntentionalViolations: 1,
+    expectedMinimumDrift: 0
+  });
+
+  runMultiFileDriftScenario({
+    name: "services-store-cycle-pressure",
+    sourceRoot: servicesExampleRoot,
+    files: [
+      {
+        filePath: "src/services/internal/agentLoop.ts",
+        contents: [
+          'import type { MessageDraft, SendReceipt } from "../../contracts";',
+          'import { readLastQueuedConversation } from "../../store";',
+          "",
+          "export function runAgentLoop(draft: MessageDraft): SendReceipt {",
+          "  return {",
+          "    conversationId: readLastQueuedConversation() ?? draft.conversationId,",
+          "    queued: draft.text.trim().length > 0",
+          "  };",
+          "}",
+          "",
+          "export function readServiceStatus(): string {",
+          "  return \"ready\";",
+          "}",
+          ""
+        ].join("\n")
+      },
+      {
+        filePath: "src/store/internal/chatState.ts",
+        contents: [
+          'import type { SendReceipt } from "../../contracts";',
+          'import { sendMessage } from "../../services";',
+          "",
+          "let lastReceipt: SendReceipt | undefined;",
+          "",
+          "export function rememberReceipt(receipt: SendReceipt): void {",
+          "  lastReceipt = receipt;",
+          "}",
+          "",
+          "export function readLastReceipt(): SendReceipt | undefined {",
+          "  return lastReceipt;",
+          "}",
+          "",
+          "export function replayLastReceipt(): SendReceipt | undefined {",
+          "  return lastReceipt ? sendMessage({ conversationId: lastReceipt.conversationId, text: \"replay\" }) : undefined;",
+          "}",
+          ""
+        ].join("\n")
+      }
+    ],
+    expectedCodes: ["undeclared_dependency"],
+    expectedLocations: ["src/services/internal/agentLoop.ts", "src/store/internal/chatState.ts"],
+    expectedIntentionalViolations: 1,
+    expectedMinimumDrift: 2
+  });
+}
+
 function runDriftScenario(scenario) {
-  const scenarioRoot = copyExample(scenario.name);
+  runMultiFileDriftScenario({
+    ...scenario,
+    files: [
+      {
+        filePath: scenario.filePath,
+        contents: scenario.contents
+      }
+    ],
+    expectedLocations: [scenario.filePath]
+  });
+}
+
+function runMultiFileDriftScenario(scenario) {
+  const scenarioRoot = copyExample(scenario.name, scenario.sourceRoot ?? exampleRoot);
   const baseline = createBaseline(scenarioRoot);
-  writeDriftFile(scenarioRoot, scenario.filePath, scenario.contents);
+
+  for (const file of scenario.files) {
+    writeDriftFile(scenarioRoot, file.filePath, file.contents);
+  }
 
   const failedCheck = runAxi(["check", "--root", scenarioRoot, "--json"], 1);
   const payload = parseJson(failedCheck.stdout, `${scenario.name} check output`);
@@ -154,7 +278,18 @@ function runDriftScenario(scenario) {
       .map((violation) => violation.location?.filePath)
       .filter(Boolean)
   );
-  assertIncludes(locations, scenario.filePath.replaceAll("\\", "/"), `${scenario.name} violation location`);
+
+  for (const location of scenario.expectedLocations) {
+    assertIncludes(locations, location.replaceAll("\\", "/"), `${scenario.name} violation location`);
+  }
+
+  if (typeof scenario.expectedIntentionalViolations === "number") {
+    assertEqual(
+      payload.summary?.intentionalViolations,
+      scenario.expectedIntentionalViolations,
+      `${scenario.name} visible debt count`
+    );
+  }
 
   const review = runAxi(["observe", "--root", scenarioRoot, "--baseline", baseline.path, "--markdown"], 0);
   assertTextIncludes(review.stdout, "Status: failing contract", `${scenario.name} observe status`);
@@ -194,9 +329,9 @@ function writeDriftFile(projectRoot, relativePath, contents) {
   writeFileSync(absoluteDriftPath, contents, "utf8");
 }
 
-function copyExample(label) {
+function copyExample(label, sourceRoot = exampleRoot) {
   const targetRoot = path.join(tempDirectory, safeSegment(label));
-  copyDirectory(exampleRoot, targetRoot);
+  copyDirectory(sourceRoot, targetRoot);
   return targetRoot;
 }
 

@@ -52,8 +52,9 @@
     "access": "public"
   },
   "scripts": {
-    "alpha:check": "npm run ci && npm run spec-first:smoke && npm run mcp:smoke && npm run mcp:agent-loop:smoke && npm run mcp:conformance:smoke && npm run github-actions:smoke && npm run release:candidate:smoke && npm run pack:dry-run",
+    "alpha:check": "npm run ci && npm run axiom:self:artifact && npm run spec-first:smoke && npm run mcp:smoke && npm run mcp:agent-loop:smoke && npm run mcp:conformance:smoke && npm run github-actions:smoke && npm run release:candidate:smoke && npm run pack:dry-run",
     "build": "tsc -p tsconfig.json",
+    "axiom:self:artifact": "npm run build && node scripts/axiom-self-artifact-smoke.mjs",
     "axiom:self": "npm run build && node dist/cli.js check --root . --strict",
     "check:fixture": "npm run build && node dist/cli.js check --root fixtures/basic-ts-valid",
     "ci": "npm test && npm run axiom:self",

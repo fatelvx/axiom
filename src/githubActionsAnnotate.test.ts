@@ -81,6 +81,38 @@ test("GitHub annotation helper emits a notice for passing checks", () => {
   assert.match(result.stdout, /^::notice::Axiom check passed: 3 modules, 3 files, 1 imports scanned\./u);
 });
 
+test("GitHub annotation helper labels passing-check warnings as advisory pressure", () => {
+  const payload = {
+    schemaVersion: "axiom.check.v4",
+    ok: true,
+    summary: {
+      modules: 3,
+      sourceFiles: 3,
+      importsScanned: 1,
+      violations: 0,
+      intentionalViolations: 0,
+      warnings: 2
+    },
+    violations: [],
+    warnings: [
+      {
+        code: "unused_suppression",
+        message: "Old accepted debt is no longer used."
+      },
+      {
+        code: "large_module_file",
+        message: "Review a large file."
+      }
+    ]
+  };
+
+  const result = runHelper(payload);
+
+  assert.equal(result.status, 0);
+  assert.match(result.stdout, /2 advisory warnings reported/u);
+  assert.match(result.stdout, /not error annotations or a cleanup checklist/u);
+});
+
 test("GitHub annotation helper accepts PowerShell UTF-16LE redirected JSON", () => {
   const payload = {
     schemaVersion: "axiom.check.v4",

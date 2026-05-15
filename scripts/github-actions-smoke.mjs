@@ -53,6 +53,7 @@ try {
   assertIncludes(stepSummary.stdout, "### Interpretation", "step summary interpretation");
   assertIncludes(stepSummary.stdout, "Hard violation `unexposed_import`", "step summary hard violation");
   assertIncludes(stepSummary.stdout, "use `axi check` for CI failures", "step summary gate note");
+  assertIncludes(stepSummary.stdout, "not a cleanup checklist", "step summary warning guardrail");
 
   console.log("GitHub Actions smoke passed.");
   console.log("- basic-app hard violations became GitHub error annotations");

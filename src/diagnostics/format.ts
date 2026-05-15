@@ -13,6 +13,7 @@ export function formatCheckResult(result: CheckResult): string {
       ...(result.suppressedViolations.length > 0
         ? ["", ...formatIntentionalViolations(result.root, result.suppressedViolations)]
         : []),
+      ...(result.warnings.length > 0 ? ["", ...formatWarningReviewNotes()] : []),
       ...(result.warnings.length > 0 ? ["", ...formatDiagnostics(result.root, result.warnings, "warning")] : [])
     ].join("\n").trimEnd();
   }
@@ -20,8 +21,9 @@ export function formatCheckResult(result: CheckResult): string {
   const lines = [
     "Axiom check failed.",
     `violations: ${result.violations.length}`,
-    ...(result.warnings.length > 0 ? [`warnings: ${result.warnings.length}`] : []),
+    ...(result.warnings.length > 0 ? [formatWarningCount(result)] : []),
     ...(result.suppressedViolations.length > 0 ? [`intentional violations: ${result.suppressedViolations.length}`] : []),
+    ...(result.warnings.length > 0 ? ["", ...formatWarningReviewNotes()] : []),
     "",
     ...formatDiagnostics(result.root, result.violations, "error")
   ];
@@ -41,14 +43,14 @@ export function formatCheckResult(result: CheckResult): string {
 
 function passedWithNonFailingDiagnosticsHeader(result: CheckResult): string {
   if (result.suppressedViolations.length > 0 && result.warnings.length > 0) {
-    return "Axiom check passed with intentional violations and warnings.";
+    return "Axiom check passed with intentional violations and advisory warnings.";
   }
 
   if (result.suppressedViolations.length > 0) {
     return "Axiom check passed with intentional violations.";
   }
 
-  return "Axiom check passed with warnings.";
+  return "Axiom check passed with advisory warnings.";
 }
 
 function formatPassedSummary(result: CheckResult, header: string): string {
@@ -59,8 +61,20 @@ function formatPassedSummary(result: CheckResult, header: string): string {
     `imports scanned: ${result.importCount}`,
     `observed dependencies: ${result.observedDependencies.length}`,
     ...(result.suppressedViolations.length > 0 ? [`intentional violations: ${result.suppressedViolations.length}`] : []),
-    ...(result.warnings.length > 0 ? [`warnings: ${result.warnings.length}`] : [])
+    ...(result.warnings.length > 0 ? [formatWarningCount(result)] : [])
   ].join("\n");
+}
+
+function formatWarningCount(result: CheckResult): string {
+  return `advisory warnings: ${result.warnings.length}`;
+}
+
+function formatWarningReviewNotes(): string[] {
+  return [
+    "advisory notes:",
+    "  advisory warnings are review pressure, not a cleanup checklist or failure state",
+    "  do not refactor solely to reach zero warnings; first name the architecture hypothesis and verification plan"
+  ];
 }
 
 function formatDiagnostics(root: string, diagnostics: Violation[], severity: "error" | "warning"): string[] {

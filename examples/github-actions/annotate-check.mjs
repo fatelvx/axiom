@@ -33,7 +33,16 @@ if (violations.length === 0) {
   const modules = Number(summary.modules ?? 0);
   const sourceFiles = Number(summary.sourceFiles ?? 0);
   const importsScanned = Number(summary.importsScanned ?? 0);
-  emit("notice", {}, `Axiom check passed: ${modules} modules, ${sourceFiles} files, ${importsScanned} imports scanned.`);
+  const warnings = Number(summary.warnings ?? 0);
+  const warningNote =
+    warnings > 0
+      ? ` ${warnings} advisory warning${warnings === 1 ? "" : "s"} reported; review them as pressure, not error annotations or a cleanup checklist.`
+      : "";
+  emit(
+    "notice",
+    {},
+    `Axiom check passed: ${modules} modules, ${sourceFiles} files, ${importsScanned} imports scanned.${warningNote}`
+  );
   process.exit(0);
 }
 

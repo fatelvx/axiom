@@ -76,6 +76,7 @@ Good agent instruction:
 Use architectureSummary.reviewStory to decide what to inspect first.
 Use violations[] for required repairs.
 Use warnings[] and drift as advisory review context.
+Do not refactor solely to reach zero warnings; state the architecture hypothesis and verification plan first.
 Do not treat reviewStory as a score or automatic PR decision.
 Do not add accepts rules unless the user explicitly approves visible debt.
 ```

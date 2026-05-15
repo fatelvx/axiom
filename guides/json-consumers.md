@@ -75,7 +75,7 @@ For `axiom.check.*`, the stable gate signal is:
 - `ok: false` means the contract failed.
 - `violations[]` contains the hard failures.
 - `intentionalViolations[]` contains accepted, non-failing contract debt.
-- `warnings[]` contains advisory or cleanup signals.
+- `warnings[]` contains advisory review signals. They are not a cleanup checklist, and consumers should not turn them into failures unless the team deliberately adds that policy.
 
 Do not hard-gate on `axi graph`, `axi observe`, or Markdown output unless your own workflow intentionally adds a separate policy. Those commands are observability surfaces and exit successfully even when they show violations.
 
@@ -175,3 +175,4 @@ Agents should prefer this loop:
 4. Run `axi observe --json` or `axi observe --markdown` to summarize visible debt, warnings, and drift.
 
 Axiom does not auto-accept debt. Accepted debt must be declared in `.axi` with an expiration date and reason. Expired or invalid intentional violations remain hard failures in `axi check`.
+Agents should not refactor solely to reduce `summary.warnings`; they should name the architecture hypothesis first, then verify the change with tests, audits, or Axiom evidence.

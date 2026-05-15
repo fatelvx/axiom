@@ -4,6 +4,7 @@ import path from "node:path";
 
 const repoRoot = process.cwd();
 const tempRoot = mkdtempSync(path.join(repoRoot, "node_modules", ".axiom-release-smoke-"));
+const expectedPackage = JSON.parse(readFileSync(path.join(repoRoot, "package.json"), "utf8"));
 
 try {
   const packDestination = path.relative(repoRoot, tempRoot);
@@ -24,7 +25,7 @@ try {
 
   const packageJson = JSON.parse(readFileSync(packageJsonPath, "utf8"));
   assertEqual(packageJson.name, "@fatelvx/axiom", "package name");
-  assertEqual(packageJson.version, "0.6.0-alpha.2", "package version");
+  assertEqual(packageJson.version, expectedPackage.version, "package version");
   assertDeepEqual(packageJson.bin, {
     axi: "dist/cli.js",
     "axi-mcp": "dist/mcp/server.js",

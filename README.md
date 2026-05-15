@@ -134,7 +134,7 @@ The hidden internal import becomes an explicit contract violation when `hides` s
 
 ## Static v0 Coverage
 
-Axiom v0.6.0-alpha.2 is focused on static TypeScript and JavaScript architecture evidence, including Vue single-file component script imports.
+Axiom v0.6.0-alpha.3 is focused on static TypeScript and JavaScript architecture evidence, including Vue single-file component script imports.
 
 | Area | Supported |
 | --- | --- |
@@ -425,7 +425,7 @@ Questions, contract-design discussions, and rough ideas are welcome. Use [GitHub
 
 Current milestone:
 
-- `v0.6.0-alpha.2`: Static Contract Loop. The static TS/JS validator, review surfaces, GitHub Actions examples, and read-only MCP evidence loop are packaged as the first public alpha milestone.
+- `v0.6.0-alpha.3`: Static Contract Loop. The static TS/JS validator, review surfaces, GitHub Actions examples, read-only MCP evidence loop, and spec-first artifact smoke are packaged as the current public alpha milestone.
 
 Next:
 

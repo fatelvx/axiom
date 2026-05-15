@@ -1,6 +1,6 @@
 # Alpha Notes
 
-Axiom `v0.6.0-alpha.2` is the first Static Contract Loop milestone.
+Axiom `v0.6.0-alpha.3` is the current Static Contract Loop alpha.
 
 It is an alpha because the core loop is real, but the public API and surrounding ecosystem are still intentionally small:
 
@@ -9,6 +9,8 @@ It is an alpha because the core loop is real, but the public API and surrounding
 -> declared graph vs observed graph
 -> hard violations, advisory review, baseline drift, visible intentional debt
 ```
+
+This alpha is a trust-loop hardening release over the first public package. It keeps the validator scope static and focused, while polishing dynamic dependency warnings, composition-root review labels, and the repeatable spec-first artifact smoke.
 
 ## What This Alpha Is For
 

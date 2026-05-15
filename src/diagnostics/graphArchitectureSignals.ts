@@ -119,7 +119,7 @@ export function formatArchitectureSummaryNextActions(input: {
   }
 
   if (input.warnings.length > 0) {
-    actions.push("Treat `warnings[]` as advisory architecture pressure before turning any signal into a hard rule.");
+    actions.push("Treat advisory `warnings[]` as architecture pressure before turning any signal into a hard rule.");
   }
 
   const driftCount = (input.drift?.newObservedEdges.length ?? 0) + (input.drift?.removedObservedEdges.length ?? 0);

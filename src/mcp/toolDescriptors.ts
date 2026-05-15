@@ -160,7 +160,7 @@ const COMMON_TOOL_PROPERTIES: Record<string, JsonSchema> = {
   warnings: {
     type: "object",
     additionalProperties: false,
-    description: "Opt-in advisory warning families. These never become MCP-only gates.",
+    description: "Opt-in advisory signal families. These never become MCP-only gates.",
     properties: {
       couplingConcentration: { type: "boolean" },
       deepInternalImports: { type: "boolean" },

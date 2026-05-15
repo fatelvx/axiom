@@ -182,9 +182,9 @@ axi observe --root . --baseline axiom-baseline.json
 axi observe --root . --baseline axiom-baseline.json --markdown
 ```
 
-Use `axi diff` when you want the shortest drift-only review: new and removed observed module edges since the baseline. Use `axi observe --baseline` when you also want hard violations, visible intentional debt, advisory warnings, and drift in one review artifact.
+Use `axi diff` when you want the shortest drift-only review: new and removed observed module edges since the baseline. Use `axi observe --baseline` when you also want hard violations, visible intentional debt, advisory signals, and drift in one review artifact.
 
-Use `--markdown` when the output should become a PR comment, review note, or agent repair-loop message. `axi diff --markdown` stays drift-focused; `axi observe --markdown` keeps hard violations, visible intentional debt, advisory warnings, and drift in separate sections.
+Use `--markdown` when the output should become a PR comment, review note, or agent repair-loop message. `axi diff --markdown` stays drift-focused; `axi observe --markdown` keeps hard violations, visible intentional debt, advisory signals, and drift in separate sections.
 
 Plain `axi observe` output also states its review model: declared `.axi` intent is compared with observed source imports, the command stays advisory and exits `0`, and clean observed edges may be omitted from the attention view. This is intentional; use `axi check` when you want a CI gate.
 
@@ -265,4 +265,4 @@ axi check --root . --json
 axi observe --root . --markdown
 ```
 
-Use [GitHub Actions And PR Summaries](github-actions.md) for a copyable workflow that turns hard violations into GitHub annotations while keeping advisory warnings, visible debt, and drift in the job summary.
+Use [GitHub Actions And PR Summaries](github-actions.md) for a copyable workflow that turns hard violations into GitHub annotations while keeping advisory signals, visible debt, and drift in the job summary.

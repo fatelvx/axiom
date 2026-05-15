@@ -219,7 +219,7 @@ async function verifyObserveAndDiffAreReviewEvidence(server, projectRoot, baseli
   );
   assertTextIncludes(
     observe.result?.structuredContent?.summary?.agentHint ?? "",
-    "do not refactor solely to reach zero warnings",
+    "do not refactor solely to reduce signal counts",
     "observe warning guardrail"
   );
 
@@ -235,7 +235,7 @@ async function verifyObserveAndDiffAreReviewEvidence(server, projectRoot, baseli
   assertTextIncludes(diff.result?.structuredContent?.summary?.agentHint ?? "", "advisory review evidence", "diff agent hint");
   assertTextIncludes(
     diff.result?.structuredContent?.summary?.agentHint ?? "",
-    "do not refactor solely to reach zero warnings",
+    "do not refactor solely to reduce signal counts",
     "diff warning guardrail"
   );
 }
@@ -289,7 +289,7 @@ async function verifyInferredObserveIsTemporaryReviewEvidence(server, projectRoo
   );
   assertTextIncludes(
     inferredObserve.result?.structuredContent?.summary?.agentHint ?? "",
-    "do not refactor solely to reach zero warnings",
+    "do not refactor solely to reduce signal counts",
     "inferred observe warning guardrail"
   );
   assertEqual(

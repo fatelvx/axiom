@@ -136,11 +136,11 @@ test("human diagnostics report expiring intentional violations as warnings", () 
   const result = runCheck({ root: fixtureRoot, today: "2098-12-15" });
   const output = formatCheckResult(result);
 
-  assert.match(output, /Axiom check passed with intentional violations and advisory warnings\./);
-  assert.match(output, /advisory warnings: 1/);
+  assert.match(output, /Axiom check passed with intentional violations and advisory signals\./);
+  assert.match(output, /advisory signals: 1/);
   assert.match(output, /advisory notes:/);
-  assert.match(output, /advisory warnings are review pressure, not a cleanup checklist or failure state/);
-  assert.match(output, /do not refactor solely to reach zero warnings/);
+  assert.match(output, /advisory signals are review pressure, not a cleanup checklist or failure state/);
+  assert.match(output, /do not refactor solely to reduce advisory signal counts/);
   assert.match(output, /warning expiring_suppression axiom\/main\.axi:7/);
   assert.match(output, /Simulation has an intentional violation to Rendering that expires in 17 days\./);
   assert.match(output, /rule: Simulation accepts forbidden_dependency to Rendering until 2099-01-01/);
@@ -152,7 +152,7 @@ test("human diagnostics report unused suppressions as warnings", () => {
   const result = runCheck({ root: fixtureRoot });
   const output = formatCheckResult(result);
 
-  assert.match(output, /Axiom check passed with advisory warnings\./);
+  assert.match(output, /Axiom check passed with advisory signals\./);
   assert.match(output, /warning unused_suppression axiom\/main\.axi:7/);
   assert.match(output, /Simulation has an unused intentional violation for Rendering\./);
   assert.match(output, /rule: Simulation accepts forbidden_dependency to Rendering until 2099-01-01/);

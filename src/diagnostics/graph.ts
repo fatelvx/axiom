@@ -189,7 +189,7 @@ export function formatGraphResult(result: CheckResult, options: GraphFormatOptio
     ...formatViolationSummaryLines(graph),
     `intentional violations: ${graph.summary.intentionalViolations}`,
     `warnings: ${graph.summary.warnings}`,
-    "warning scope: advisory warning counts include only checks enabled for this command or config"
+    "advisory signal scope: warning counts include only checks enabled for this command or config"
   ];
   if (graph.drift) {
     lines.push(
@@ -316,7 +316,7 @@ export function formatGraphMarkdown(result: CheckResult, options: GraphFormatOpt
     ...formatMarkdownObservedDependencySummary(graph),
     ...formatMarkdownViolationSummary(graph),
     `- Intentional violations: ${graph.summary.intentionalViolations}`,
-    `- Advisory warnings: ${graph.summary.warnings}`
+    `- Advisory signals: ${graph.summary.warnings}`
   ];
 
   if (graph.drift) {
@@ -362,7 +362,7 @@ function formatGraphDiffMarkdown(graph: GraphJsonResult): string {
     `- Full observed dependencies: ${graph.summary.observedDependencies}`,
     `- Hard violations in current graph: ${graph.summary.violations}`,
     `- Intentional violations in current graph: ${graph.summary.intentionalViolations}`,
-    `- Advisory warnings in current graph: ${graph.summary.warnings}`
+    `- Advisory signals in current graph: ${graph.summary.warnings}`
   ];
 
   if (graph.drift) {
@@ -382,7 +382,7 @@ function formatGraphDiffMarkdown(graph: GraphJsonResult): string {
   lines.push("- This is review output; use `axi check` when you want a CI gate.");
   lines.push("- Diff compares current observed module edges with an unfiltered `axi graph --json` baseline.");
   lines.push("- New and removed edges are advisory drift signals until your team promotes a policy explicitly.");
-  lines.push("- Run `axi observe --markdown` when you also want hard violations, visible debt, and advisory warnings.");
+  lines.push("- Run `axi observe --markdown` when you also want hard violations, visible debt, and advisory signals.");
   lines.push("");
 
   if (graph.drift) {
@@ -602,10 +602,10 @@ function formatMarkdownReviewNotes(graph: GraphJsonResult): string[] {
     "### Review Notes",
     "- This is review output; use `axi check` when you want a CI gate.",
     "- Hard violations are contract failures.",
-    "- Intentional violations, warnings, and drift are visible debt or advisory signals.",
-    "- Advisory warnings are review pressure, not a cleanup checklist or failure state; do not refactor solely to reach zero warnings.",
-    "- Before acting on advisory warnings, state the architecture hypothesis and verify the change with tests, audits, or Axiom evidence.",
-    "- Advisory warning counts include only warning checks enabled for this command or config.",
+    "- Intentional violations, warning diagnostics, and drift are visible debt or advisory signals.",
+    "- Advisory signals are review pressure, not a cleanup checklist or failure state; do not refactor solely to reduce signal counts.",
+    "- Before acting on advisory signals, state the architecture hypothesis and verify the change with tests, audits, or Axiom evidence.",
+    "- Advisory signal counts include only warning checks enabled for this command or config.",
     "- Axiom does not auto-accept debt; accepted debt must be declared in `.axi` with an expiration date and reason.",
     "- Expired or invalid intentional violations are hard contract failures in `axi check`."
   ];
@@ -709,16 +709,16 @@ function formatMarkdownIntentionalDebt(graph: GraphJsonResult): string[] {
 }
 
 function formatMarkdownWarnings(graph: GraphJsonResult): string[] {
-  const lines = ["### Advisory Warnings"];
+  const lines = ["### Advisory Signals"];
 
   if (graph.warnings.length === 0) {
     lines.push("- None");
-    lines.push("- Zero advisory warnings is not proof of architecture health; compare the graph with intended ownership and responsibilities.");
+    lines.push("- Zero advisory signals is not proof of architecture health; compare the graph with intended ownership and responsibilities.");
     return lines;
   }
 
   lines.push("- These are review-pressure signals, not a cleanup checklist.");
-  lines.push("- Do not refactor solely to reach zero warnings; first name the architecture hypothesis and verification plan.");
+  lines.push("- Do not refactor solely to reduce advisory signal counts; first name the architecture hypothesis and verification plan.");
   lines.push(...formatMarkdownWarningClusters(graph.warnings));
 
   for (const warning of graph.warnings) {
@@ -1084,13 +1084,13 @@ function formatWarnings(graph: GraphJsonResult): string[] {
 
   if (graph.warnings.length === 0) {
     lines.push("  none");
-    lines.push("  note: zero advisory warnings is not proof of architecture health");
-    lines.push("  note: advisory warning counts include only checks enabled for this command or config");
+    lines.push("  note: zero advisory signals is not proof of architecture health");
+    lines.push("  note: advisory signal counts include only checks enabled for this command or config");
     return lines;
   }
 
-  lines.push("  note: advisory warnings are review pressure, not a cleanup checklist or failure state");
-  lines.push("  note: do not refactor solely to reach zero warnings; first name the architecture hypothesis");
+  lines.push("  note: advisory signals are review pressure, not a cleanup checklist or failure state");
+  lines.push("  note: do not refactor solely to reduce advisory signal counts; first name the architecture hypothesis");
   lines.push(...formatWarningClusters(graph.warnings));
 
   for (const warning of graph.warnings) {

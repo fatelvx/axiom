@@ -39,7 +39,7 @@ Good alpha targets:
 - Runtime-only dependency paths are not observed: non-literal dynamic imports can be surfaced only as advisory graph-completeness warnings, while dependency injection containers, plugin registries, generated imports, and `eval` stay outside v0 static evidence.
 - A quiet graph does not prove healthy design inside a large file.
 - Inferred contracts mirror the current graph; they are not maintainer-declared intent.
-- Advisory warnings and baseline drift are not CI gates unless your workflow explicitly promotes them.
+- Advisory signals and baseline drift are not CI gates unless your workflow explicitly promotes them.
 - Axiom does not prove symbol-level API health. Broad barrels, facades, and shared types can still hide coupling even when import paths obey the contract.
 - Python support is intentionally not part of this alpha.
 

@@ -151,7 +151,7 @@ export function warningClusterToReviewPressure(cluster: WarningCluster): Warning
   return {
     kind: "advisory_warning_root",
     title: `${cluster.code} around ${cluster.subject}`,
-    description: `${cluster.count} advisory warning${pluralize(cluster.count)} share this root.`,
+    description: `${cluster.count} advisory signal${pluralize(cluster.count)} share this root.`,
     severity: "review",
     count: cluster.count,
     code: cluster.code,

@@ -124,7 +124,7 @@ export interface AxiomMcpResultSummary {
 
 const TOOL_BY_NAME = new Map(TOOL_DESCRIPTORS.map((tool) => [tool.name, tool]));
 const ADVISORY_REFACTOR_GUARDRAIL =
-  "Advisory warnings are review pressure, not a cleanup checklist; do not refactor solely to reach zero warnings. State a refactor hypothesis before changing code.";
+  "Advisory signals are review pressure, not a cleanup checklist; do not refactor solely to reduce signal counts. State a refactor hypothesis before changing code.";
 
 export function listAxiomMcpTools(): AxiomMcpToolDescriptor[] {
   return TOOL_DESCRIPTORS.map((tool) => cloneJson(tool));

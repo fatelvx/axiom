@@ -81,7 +81,7 @@ Read the result in layers:
 
 - Hard violations: contract facts that are already explicit.
 - Visible intentional debt: accepted violations with expiration dates and reasons.
-- Advisory warnings: useful pressure signals that should not block adoption yet.
+- Advisory signals: useful pressure signals that should not block adoption yet.
 - Observed dependency counts: whether the contract is seeing enough of the codebase to be meaningful.
 
 If a strict contract produces many violations on day one, that is not failure. It means the project is not ready to gate that boundary yet. Keep using `axi observe`, tighten the public surface gradually, and promote only low-noise facts into `axi check`.
@@ -136,7 +136,7 @@ axi observe --root ../target-app --spec contracts/target-app.axi \
   --baseline axiom-baseline.json --markdown
 ```
 
-Use `axi diff` for a short drift-only artifact. Use `axi observe --baseline` when you also want hard violations, visible intentional debt, and advisory warnings. Both keep drift advisory unless the team intentionally promotes a policy.
+Use `axi diff` for a short drift-only artifact. Use `axi observe --baseline` when you also want hard violations, visible intentional debt, and advisory signals. Both keep drift advisory unless the team intentionally promotes a policy.
 
 ## 6. Use Public-Surface Probes Carefully
 
@@ -162,7 +162,7 @@ The useful agent instruction is not "make Axiom pass at all costs." It is:
 ```text
 Use hard violations as required fixes.
 Treat visible debt as existing accepted tradeoff.
-Treat advisory warnings as review prompts.
+Treat advisory signals as review prompts.
 If the code intentionally changes architecture, explain whether the contract should change.
 ```
 
@@ -175,7 +175,7 @@ Move from external pilot to in-repo adoption when these are true:
 - The scan is fast enough for local or PR use.
 - The contract covers a boundary the team actually cares about.
 - Hard violations are low-noise and clearly repairable.
-- Advisory warnings are useful enough to discuss without blocking merges.
+- Advisory signals are useful enough to discuss without blocking merges.
 - The team understands that `axi observe` is review context and `axi check` is the gate.
 - Temporary exceptions are expressed as visible intentional violations, not hidden allowlists.
 - Someone owns contract maintenance and knows when to update module paths, public entry points, accepted debt, and graph baselines.

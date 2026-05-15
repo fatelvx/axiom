@@ -7,7 +7,7 @@ This guide shows the recommended split for GitHub Actions:
 - `axi observe --json` can feed a PR or job-summary review artifact through `architectureSummary`, including a short graph interpretation that tells reviewers what to inspect first.
 - `axi observe --markdown` remains useful when you want a full human-readable review body.
 - `axi graph --mermaid` can be attached or pasted when a visual observed dependency graph helps review.
-- Advisory warnings, visible debt, and drift should stay review context unless your team deliberately promotes a signal into policy.
+- Advisory signals, visible debt, and drift should stay review context unless your team deliberately promotes a signal into policy.
 
 That separation is the product point. Axiom can enforce explicit contracts without turning every observability signal into CI friction.
 
@@ -87,7 +87,7 @@ node examples/github-actions/summarize-observe.mjs axiom-observe.json >> "$GITHU
 
 - hard violations
 - visible intentional debt
-- advisory warnings
+- advisory signals
 - optional baseline drift
 
 Use `axi check` when the job should fail.
@@ -142,7 +142,7 @@ Axiom does not auto-accept debt. Expired or invalid intentional violations remai
 
 Avoid these patterns:
 
-- Failing CI on every advisory warning by default.
+- Failing CI on every advisory signal by default.
 - Treating baseline drift as a hard failure without a team policy.
 - Parsing exact JSON key sets instead of checking `schemaVersion` and reading the fields your integration needs.
 - Hiding accepted debt outside `.axi`.

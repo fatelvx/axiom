@@ -235,7 +235,7 @@ function formatArchitectureSummaryFocus(input: {
   }
 
   if (input.options.observe) {
-    return "Hard violations, visible intentional debt, advisory warnings, and optional baseline drift.";
+    return "Hard violations, visible intentional debt, advisory signals, and optional baseline drift.";
   }
 
   if (input.filters.violationsOnly) {
@@ -340,7 +340,7 @@ function buildArchitectureReviewStory(input: {
       kind: "graph_center",
       title: `Quiet graph center: ${centralModules[0].module}`,
       description:
-        "No hard failures, visible debt, advisory warnings, or drift were reported; compare this center with the architecture you expected before saving a baseline.",
+        "No hard failures, visible debt, advisory signals, or drift were reported; compare this center with the architecture you expected before saving a baseline.",
       severity: "info",
       modules: [centralModules[0].module]
     });
@@ -470,7 +470,7 @@ function formatArchitectureHeadline(
     return "No hard contract failures were reported, and this scoped import graph did not observe cross-module imports. Confirm the scan scope covers the architecture you care about; quiet imports do not prove intra-file responsibilities are healthy.";
   }
 
-  return `This scoped import graph is quiet: no hard failures, visible debt, advisory warnings, or baseline drift were reported${formatCentralHeadlineReviewPrompt(
+  return `This scoped import graph is quiet: no hard failures, visible debt, advisory signals, or baseline drift were reported${formatCentralHeadlineReviewPrompt(
     centralModules
   )}. Quiet imports do not prove intra-file responsibilities are healthy.`;
 }
@@ -505,7 +505,7 @@ function formatArchitectureQuickRead(
   if (input.intentionalDebt.length > 0 || input.warnings.length > 0) {
     lines.push(`Review pressure: ${formatReviewSignalCount(input.intentionalDebt.length, input.warnings.length)}.`);
   } else {
-    lines.push("Review pressure: no visible debt or advisory warnings.");
+    lines.push("Review pressure: no visible debt or advisory signals.");
   }
 
   const driftCount = readDriftCount(input.drift);
@@ -522,11 +522,11 @@ function formatArchitectureQuickRead(
 
 function formatArchitectureLookFirst(centralModules: GraphJsonArchitectureCentralModule[]): string[] {
   return [
-    "Hard signals: read `violations[]`, `intentionalDebt[]`, and `warnings[]` before judging the diagram.",
+    "Hard signals: read `violations[]`, `intentionalDebt[]`, and advisory `warnings[]` before judging the diagram.",
     centralModules.length > 0
       ? `Graph center: inspect ${centralModules[0]?.module}; it carries the strongest observed coupling in this scan.`
       : "Graph center: if no center appears, confirm the scan scope actually covers the architecture you care about.",
-    "Shape fit: compare central modules, deep imports, drift, and any intra-file pressure warnings with the architecture you expected for this repository."
+    "Shape fit: compare central modules, deep imports, drift, and any intra-file pressure signals with the architecture you expected for this repository."
   ];
 }
 
@@ -653,7 +653,7 @@ function formatCentralHeadlineReviewPrompt(centralModules: GraphJsonArchitecture
 function formatReviewSignalCount(intentionalDebt: number, warnings: number): string {
   const parts = [
     intentionalDebt > 0 ? `${intentionalDebt} visible debt item${pluralize(intentionalDebt)}` : undefined,
-    warnings > 0 ? `${warnings} advisory warning${pluralize(warnings)}` : undefined
+    warnings > 0 ? `${warnings} advisory signal${pluralize(warnings)}` : undefined
   ].filter((item): item is string => item !== undefined);
 
   return parts.join(" and ");

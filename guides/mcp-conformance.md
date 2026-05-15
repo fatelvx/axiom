@@ -102,7 +102,7 @@ Pass criteria:
 Fail criteria:
 
 - The agent reads internal memory during the drill.
-- The agent treats advisory warnings or drift as hard gate failures.
+- The agent treats advisory signals or drift as hard gate failures.
 - The agent treats inferred contracts as approved architecture.
 - The agent saves the temporary inferred contract from `axiom_observe_inferred_contract` as `.axi` without human review.
 - The agent tries to create `.axi`, update a baseline, accept debt, or rewrite imports without user approval.

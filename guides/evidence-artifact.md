@@ -101,7 +101,7 @@ axi check --json = hard gate
 axi observe --json = review story, warnings, visible debt, drift
 ```
 
-The PR should fail only on hard `violations[]` unless the team has explicitly added another policy. Advisory warnings, graph interpretation, and baseline drift should be review context first.
+The PR should fail only on hard `violations[]` unless the team has explicitly added another policy. Advisory signals, graph interpretation, and baseline drift should be review context first.
 
 Good PR summary shape:
 
@@ -110,7 +110,7 @@ Gate: pass or fail from axi check
 Story: architectureSummary.reviewStory.summary
 Hard violations: summary.violations
 Visible debt: summary.intentionalViolations
-Warnings: summary.warnings
+Advisory signals: summary.warnings
 Drift: drift.newObservedEdges + drift.removedObservedEdges
 Next step: architectureSummary.reviewStory.nextStep
 ```
@@ -150,7 +150,7 @@ Review baseline updates like architecture changes. A baseline generated from the
 Avoid these shortcuts:
 
 - Do not treat `axi infer` output as a contract without review.
-- Do not make advisory warnings or drift fail CI by default.
+- Do not make advisory signals or drift fail CI by default.
 - Do not hide accepted debt outside `.axi`.
 - Do not let an agent add `accepts` rules without approval.
 - Do not parse Markdown when JSON is available.

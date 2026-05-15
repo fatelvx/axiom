@@ -47,7 +47,7 @@ Observe first, negotiate accepted tradeoffs, enforce only high-confidence intent
 This is why `axi observe` exists beside `axi check`.
 
 - `axi check` is the gate for explicit contract violations.
-- `axi observe` is the attention surface for hard violations, visible debt, advisory warnings, and optional drift.
+- `axi observe` is the attention surface for hard violations, visible debt, advisory signals, and optional drift.
 - `axi graph` is the inspection view for declared and observed structure.
 - `axi infer` lowers adoption cost by reflecting the current graph, but it does not decide the desired architecture.
 
@@ -77,7 +77,7 @@ Axiom should not automatically turn first-run failures into accepted debt. A bla
 
 ## Warning Signals
 
-Advisory warnings are not proof that code is wrong.
+Advisory signals are not proof that code is wrong.
 
 They are early surfaces for architecture pressure:
 
@@ -137,7 +137,7 @@ Protect these invariants:
 - Observability stays separate from hard enforcement.
 - `.axi` stays small, line-oriented, and reviewable.
 - Accepted debt stays visible and time-bounded.
-- Advisory warnings stay opt-in until real evidence proves their signal-to-noise ratio.
+- Advisory signals stay opt-in until real evidence proves their signal-to-noise ratio.
 - Public claims stay narrower than the implementation.
 
 The long-term ambition can be a repository cognition layer. The near-term discipline is simpler: preserve coherent evolution by making architecture drift visible, reviewable, and enforceable only where the contract is clear.

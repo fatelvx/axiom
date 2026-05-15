@@ -14,7 +14,7 @@ differences -> violations, visible debt, warnings, and drift
 
 Start every graph review with these questions, in this order:
 
-1. Are there hard violations, visible accepted debt, advisory warnings, or baseline drift?
+1. Are there hard violations, visible accepted debt, advisory signals, or baseline drift?
 2. Which module is the graph center by observed import pressure?
 3. Does that shape match the architecture you expected for this repository?
 
@@ -70,7 +70,7 @@ How to respond:
 
 ## Scenario 2: Quiet Graph
 
-A quiet graph means the current scan did not report hard violations, visible debt, advisory warnings, or baseline drift under the current scope.
+A quiet graph means the current scan did not report hard violations, visible debt, advisory signals, or baseline drift under the current scope.
 
 That is useful, but it is not the same as "the architecture is healthy."
 
@@ -96,7 +96,7 @@ axi diff axiom-baseline.json --root .
 
 ## Scenario 3: Advisory Pressure
 
-Advisory warnings are review prompts, not proof of bad architecture.
+Advisory signals are review prompts, not proof of bad architecture.
 
 `coupling_concentration` means a module has high observed fan-in or fan-out. That module may be a stable public boundary, or it may be becoming a coordination hub.
 

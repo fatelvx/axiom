@@ -230,7 +230,7 @@ Do not copy a recipe straight into CI. A recipe is ready for `axi check` only wh
 - every `exposes` or `hides` rule describes a public/private boundary the team agrees with,
 - `axi observe --markdown` has been reviewed at least once,
 - any `accepts ... until ... because ...` entry names a specific migration tradeoff,
-- advisory warnings are still review context, not accidental blockers.
+- advisory signals are still review context, not accidental blockers.
 
 If the contract mostly exists to quiet the first run, keep it external with `--spec` and use `axi observe` until the intended boundary is clearer.
 
@@ -252,7 +252,7 @@ This keeps `.axi` from becoming another stale config file. The contract should p
 - Do not model every folder on day one.
 - Do not add `exposes` everywhere before the public surface is agreed.
 - Do not treat `axi infer` as recommended architecture.
-- Do not make advisory warnings into CI failures unless the team intentionally promotes that policy.
+- Do not make advisory signals into CI failures unless the team intentionally promotes that policy.
 
 The useful loop is:
 

@@ -21,7 +21,7 @@ It adds:
 - Hard failures for explicit, high-confidence rules such as forbidden dependencies, layer breaches, hidden imports, and unexposed imports.
 - `axi observe` for architecture attention without turning every signal into a gate.
 - Time-bounded intentional violations that stay visible as accepted debt.
-- Advisory warnings for known pressure points such as broad public barrels, unresolved internal-looking imports, deep internal imports, and coupling concentration.
+- Advisory signals for known pressure points such as broad public barrels, unresolved internal-looking imports, deep internal imports, and coupling concentration.
 - Baseline drift output that shows how observed module edges changed since a saved graph.
 - Markdown and JSON outputs designed for PR review, CI annotations, dashboards, and future agent repair loops.
 
@@ -48,7 +48,7 @@ Axiom should not claim that its scanner is categorically better than Dependency 
 
 - Does the architecture intent live in a compact contract that humans and agents can read?
 - Can temporary violations be accepted without disappearing into a hidden allowlist?
-- Can PRs show hard violations, visible debt, advisory warnings, and drift in one review artifact?
+- Can PRs show hard violations, visible debt, advisory signals, and drift in one review artifact?
 - Can a future repair agent understand whether it should fix code, ask to update `.axi`, or leave accepted debt alone until its deadline?
 - Can teams start with `axi infer` and then tighten only the boundaries that matter?
 
@@ -87,12 +87,12 @@ The comparison should move from positioning to evidence. Useful pilot measuremen
 - Source files, imports scanned, and observed module edges.
 - Number of hard violations with a clear repair path.
 - Number of intentional violations, their age, and whether any are expired or unused.
-- Number of advisory warnings reviewed versus ignored.
+- Number of advisory signals reviewed versus ignored.
 - Whether `axi infer` produced a draft that reduced first-contract writing time.
 - Whether `axi observe --markdown` made PR review clearer or noisier.
 - Whether baseline drift caught surprising architecture changes in agent-generated edits.
 - Whether JSON or Markdown output produced useful CI annotations, dashboards, or agent repair-loop context.
-- False-positive rate for hard violations and advisory warnings separately.
+- False-positive rate for hard violations and advisory signals separately.
 
 Hard violations should be held to a higher bar than warnings. A noisy warning can be tuned or left opt-in. A noisy hard gate teaches teams and agents to work around the tool.
 

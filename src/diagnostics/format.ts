@@ -43,14 +43,14 @@ export function formatCheckResult(result: CheckResult): string {
 
 function passedWithNonFailingDiagnosticsHeader(result: CheckResult): string {
   if (result.suppressedViolations.length > 0 && result.warnings.length > 0) {
-    return "Axiom check passed with intentional violations and advisory warnings.";
+    return "Axiom check passed with intentional violations and advisory signals.";
   }
 
   if (result.suppressedViolations.length > 0) {
     return "Axiom check passed with intentional violations.";
   }
 
-  return "Axiom check passed with advisory warnings.";
+  return "Axiom check passed with advisory signals.";
 }
 
 function formatPassedSummary(result: CheckResult, header: string): string {
@@ -66,14 +66,14 @@ function formatPassedSummary(result: CheckResult, header: string): string {
 }
 
 function formatWarningCount(result: CheckResult): string {
-  return `advisory warnings: ${result.warnings.length}`;
+  return `advisory signals: ${result.warnings.length}`;
 }
 
 function formatWarningReviewNotes(): string[] {
   return [
     "advisory notes:",
-    "  advisory warnings are review pressure, not a cleanup checklist or failure state",
-    "  do not refactor solely to reach zero warnings; first name the architecture hypothesis and verification plan"
+    "  advisory signals are review pressure, not a cleanup checklist or failure state",
+    "  do not refactor solely to reduce advisory signal counts; first name the architecture hypothesis and verification plan"
   ];
 }
 

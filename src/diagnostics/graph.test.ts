@@ -48,12 +48,12 @@ test("graph JSON exposes declared, forbidden, visibility, and observed edges", (
       quickRead: [
         "Contract: 2 hard violations.",
         "Graph center: Services (3 import sites, fan-in 1, fan-out 0), UI (3 import sites, fan-in 0, fan-out 1).",
-        "Review pressure: no visible debt or advisory warnings."
+        "Review pressure: no visible debt or advisory signals."
       ],
       lookFirst: [
-        "Hard signals: read `violations[]`, `intentionalDebt[]`, and `warnings[]` before judging the diagram.",
+        "Hard signals: read `violations[]`, `intentionalDebt[]`, and advisory `warnings[]` before judging the diagram.",
         "Graph center: inspect Services; it carries the strongest observed coupling in this scan.",
-        "Shape fit: compare central modules, deep imports, drift, and any intra-file pressure warnings with the architecture you expected for this repository."
+        "Shape fit: compare central modules, deep imports, drift, and any intra-file pressure signals with the architecture you expected for this repository."
       ],
       centralModules: [
         {
@@ -198,7 +198,7 @@ test("human graph output includes readable sections", () => {
   assert.match(output, /declared dependencies:\n  Simulation -> Physics \(axiom\/main\.axi:12\)/);
   assert.match(output, /forbidden dependencies:\n  Simulation -X-> Rendering \(axiom\/main\.axi:13\)/);
   assert.match(output, /observed dependencies:/);
-  assert.match(output, /warning scope: advisory warning counts include only checks enabled for this command or config/);
+  assert.match(output, /advisory signal scope: warning counts include only checks enabled for this command or config/);
   assert.match(output, /Simulation -> Physics via src\/simulation\/step\.ts:1 "\.\.\/physics\/math"/);
   assert.match(output, /Simulation -> Rendering via src\/simulation\/step\.ts:2 "\.\.\/rendering\/draw"/);
 });
@@ -385,9 +385,9 @@ test("markdown graph output summarizes reviewable architecture signals", () => {
   assert.match(output, /Review mode: observe \(advisory\)/);
   assert.match(output, /- Shown dependency edges: 1/);
   assert.match(output, /- Full observed dependencies: 2/);
-  assert.match(output, /Advisory warnings are review pressure, not a cleanup checklist or failure state/);
-  assert.match(output, /do not refactor solely to reach zero warnings/);
-  assert.match(output, /Before acting on advisory warnings, state the architecture hypothesis/);
+  assert.match(output, /Advisory signals are review pressure, not a cleanup checklist or failure state/);
+  assert.match(output, /do not refactor solely to reduce signal counts/);
+  assert.match(output, /Before acting on advisory signals, state the architecture hypothesis/);
   assert.match(output, /Axiom does not auto-accept debt/);
   assert.match(output, /Expired or invalid intentional violations are hard contract failures in `axi check`/);
   assert.match(output, /### Hard Violations/);
@@ -566,8 +566,8 @@ test("violations-only graph output includes warning guardrails", () => {
   assert.match(output, /violations: 0/);
   assert.match(output, /warnings: 1/);
   assert.match(output, /violating dependencies:\n  none/);
-  assert.match(output, /note: advisory warnings are review pressure, not a cleanup checklist or failure state/);
-  assert.match(output, /note: do not refactor solely to reach zero warnings; first name the architecture hypothesis/);
+  assert.match(output, /note: advisory signals are review pressure, not a cleanup checklist or failure state/);
+  assert.match(output, /note: do not refactor solely to reduce advisory signal counts; first name the architecture hypothesis/);
   assert.match(output, /unused_suppression axiom\/main\.axi:7: Simulation has an unused intentional violation for Rendering\./);
   assert.match(output, /rule: Simulation accepts forbidden_dependency to Rendering until 2099-01-01 \(axiom\/main\.axi:7\)/);
   assert.match(output, /expires: 2099-01-01/);

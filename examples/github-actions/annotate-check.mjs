@@ -36,7 +36,7 @@ if (violations.length === 0) {
   const warnings = Number(summary.warnings ?? 0);
   const warningNote =
     warnings > 0
-      ? ` ${warnings} advisory warning${warnings === 1 ? "" : "s"} reported; review them as pressure, not error annotations or a cleanup checklist.`
+      ? ` ${warnings} advisory signal${warnings === 1 ? "" : "s"} reported; review them as pressure, not error annotations or a cleanup checklist.`
       : "";
   emit(
     "notice",

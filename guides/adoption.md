@@ -180,7 +180,7 @@ Use `--warn-unresolved-imports` when you want Axiom to surface static relative i
 
 Use `--warn-dynamic-imports` when you want Axiom to surface non-literal `import()` or `require()` expressions that it can detect but cannot resolve into static observed edges. Literal dynamic imports still count as observed dependencies; non-literal expressions are graph-completeness evidence only. The warning includes a short expression preview so you can distinguish architectural runtime wiring from benign external plugin lookup.
 
-Also watch for "compliant but unhealthy" architecture. For example, a giant `index.ts` can make imports pass while concentrating too much coupling in one public surface. Axiom now catches direct `export ... from` leaks and local `import ... from "./internal"` followed by `export { ... }` leaks from hidden paths through exposed entry points. `--warn-public-api-surface` can flag exposed `export *` barrels and entry points that reach many internal files as advisory warnings, but it is an advanced probe, not a default adoption step. Axiom still cannot prove every symbol-level API decision is healthy. Prefer small exposed entry points, explicit `hides` rules for internals, and intentional violations with expiration dates when migration needs time.
+Also watch for "compliant but unhealthy" architecture. For example, a giant `index.ts` can make imports pass while concentrating too much coupling in one public surface. Axiom now catches direct `export ... from` leaks and local `import ... from "./internal"` followed by `export { ... }` leaks from hidden paths through exposed entry points. `--warn-public-api-surface` can flag exposed `export *` barrels and entry points that reach many internal files as advisory signals, but it is an advanced probe, not a default adoption step. Axiom still cannot prove every symbol-level API decision is healthy. Prefer small exposed entry points, explicit `hides` rules for internals, and intentional violations with expiration dates when migration needs time.
 
 Use `--warn-deep-internal-imports` when you want to find relative cross-module imports that bypass a likely `index.*` entry point. This is useful before you are ready to turn `exposes` into a hard rule: it can show where teams or agents are already relying on another module's internal file layout.
 
@@ -327,7 +327,7 @@ If you build on JSON output, read [JSON Consumers](json-consumers.md). Use `axi 
 
 `axi diff axiom-baseline.json --root .` is the shortest first-value view over the same baseline model. It shows only new and removed observed module edges, exits `0`, and stays advisory. Use it when you want architecture drift to be visible before the contract is mature enough to gate.
 
-`axi observe --root . --markdown` and `axi observe --root . --baseline axiom-baseline.json --markdown` keep hard violations, visible intentional debt, advisory warnings, and drift in separate sections. This makes the escape hatch conspicuous without making every advisory signal a blocker. The visible debt section is contract-led, not edge-only, so accepted surface leaks still appear in the review artifact.
+`axi observe --root . --markdown` and `axi observe --root . --baseline axiom-baseline.json --markdown` keep hard violations, visible intentional debt, advisory signals, and drift in separate sections. This makes the escape hatch conspicuous without making every advisory signal a blocker. The visible debt section is contract-led, not edge-only, so accepted surface leaks still appear in the review artifact.
 
 ## Contract Maintenance Rhythm
 
@@ -339,7 +339,7 @@ For a first real project, define:
 - which boundaries are important enough to gate,
 - when intentional violations expire,
 - when to refresh the graph baseline,
-- which advisory warnings are only discussion signals.
+- which warning diagnostics are only discussion signals.
 
 Do not keep rules that no one can explain. Axiom's value is preserving declared architecture intent over time; a stale contract becomes the same maintenance burden as any other ignored config file.
 

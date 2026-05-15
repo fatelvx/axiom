@@ -151,7 +151,7 @@ Axiom v0.6.0-alpha.3 is focused on static TypeScript and JavaScript architecture
 
 Start with three questions:
 
-1. Are there hard violations, visible accepted debt, or advisory warnings?
+1. Are there hard violations, visible accepted debt, or advisory signals?
 2. Which module is the graph center by observed import pressure?
 3. Does that shape match the architecture you expected?
 
@@ -264,7 +264,7 @@ node dist/cli.js check --root examples/monorepo-workspace
 node dist/cli.js graph --root examples/monorepo-workspace --violations-only
 ```
 
-Axiom reads `axiom.config.json` from the project root when present. Use it to scope source files, point at external spec locations, select a TypeScript config, and opt into advisory warning families:
+Axiom reads `axiom.config.json` from the project root when present. Use it to scope source files, point at external spec locations, select a TypeScript config, and opt into advisory signal families:
 
 ```json
 {
@@ -297,7 +297,7 @@ accepts forbidden_dependency to ServicesInternal until 2027-06-30 because "legac
 
 Expired debt fails the check, invalid debt cannot hide violations, entries expiring within 30 days become warnings, and unused entries are warnings so old architecture debt stays visible after cleanup. `axi observe --markdown` shows the debt ledger for review.
 
-## Advisory Warnings
+## Advisory Signals
 
 Warnings are opt-in review signals, not default CI gates:
 
@@ -348,7 +348,7 @@ For your own project, add a script:
 
 Then run that script in CI after installing dependencies.
 
-For a fuller PR workflow, use [GitHub Actions And PR Summaries](guides/github-actions.md). It shows how to keep `axi check --json` as the hard gate, convert hard violations into GitHub annotations, and append `axi observe --json` `architectureSummary` as review context without making advisory warnings or drift accidental blockers.
+For a fuller PR workflow, use [GitHub Actions And PR Summaries](guides/github-actions.md). It shows how to keep `axi check --json` as the hard gate, convert hard violations into GitHub annotations, and append `axi observe --json` `architectureSummary` as review context without making advisory signals or drift accidental blockers.
 
 ## Guides
 

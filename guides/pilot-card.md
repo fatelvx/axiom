@@ -67,7 +67,7 @@ If the graph is quiet, still ask whether the center and scope are right before s
 
 - `axi infer` collapses a large cycle. It is showing that the current source graph is tangled, not saying the code is broken.
 - The first inferred module names are awkward. Rename them into the team's vocabulary before treating the contract as intent.
-- Advisory warnings appear. They are review prompts and do not fail `axi observe`.
+- Advisory signals appear. They are review prompts and do not fail `axi observe`.
 - Focused output says it is showing `0` dependency edges while warnings are present. That means the attention view did not need to show any dependency edge; the full observed graph count still tells you how much import graph was scanned.
 - The graph center is a shared module. Shared modules can be healthy when they have a clear public surface.
 - `no_spec_files` appears. That means Axiom needs a contract path or `--spec`; it is not a codebase judgment.
@@ -99,7 +99,7 @@ When handing Axiom output to an AI coding agent, use wording like this:
 ```text
 Use hard Axiom violations as required fixes.
 Treat visible debt as an accepted tradeoff with a deadline.
-Treat advisory warnings as review prompts.
+Treat advisory signals as review prompts.
 Do not move code only to make the directory look compliant.
 If the architecture intentionally changed, explain whether the .axi contract or graph baseline should be updated.
 ```

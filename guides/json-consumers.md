@@ -92,7 +92,7 @@ Important fields:
 - `shownObservedDependencies[]`: the observed edges shown by the current view.
 - `observedDependencies[]`: compatibility alias for `shownObservedDependencies[]`. Edge entries include `violations[]` and `intentionalViolations[]`.
 - `intentionalDebt[]`: top-level accepted-debt ledger.
-- `warnings[]`: advisory warnings with normalized details.
+- `warnings[]`: advisory signals with normalized details.
 - `drift`: optional advisory baseline-drift result when `--baseline` is provided.
 
 `summary.observedDependencies` is always the full observed edge count. `summary.shownObservedDependencies` is the count for the current view. In attention or violations-only output those counts can differ, and `observedDependencies[]` remains the shown-view compatibility array. Use `allObservedDependencies[]` when a machine consumer needs the complete graph.

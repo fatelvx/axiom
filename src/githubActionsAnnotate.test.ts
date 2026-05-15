@@ -44,7 +44,7 @@ test("GitHub annotation helper annotates hard Axiom violations only", () => {
     warnings: [
       {
         code: "broad_public_surface",
-        message: "Advisory warnings should not become error annotations."
+        message: "Advisory signals should not become error annotations."
       }
     ]
   };
@@ -109,7 +109,7 @@ test("GitHub annotation helper labels passing-check warnings as advisory pressur
   const result = runHelper(payload);
 
   assert.equal(result.status, 0);
-  assert.match(result.stdout, /2 advisory warnings reported/u);
+  assert.match(result.stdout, /2 advisory signals reported/u);
   assert.match(result.stdout, /not error annotations or a cleanup checklist/u);
 });
 

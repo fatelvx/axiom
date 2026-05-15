@@ -740,7 +740,7 @@ function formatMarkdownReport(report) {
   lines.push("", "### Removed Observed Edges");
   appendEdgeList(lines, report.drift.removedObservedEdges, "previously via");
 
-  lines.push("", "## Advisory Warnings", "");
+  lines.push("", "## Advisory Signals", "");
   const warningCodes = Object.entries(report.warnings.byCode).map(([code, count]) => `${code}: ${count}`);
   lines.push(`- Warning counts: ${warningCodes.length ? warningCodes.join(", ") : "none"}`);
   for (const warning of report.warnings.details) {

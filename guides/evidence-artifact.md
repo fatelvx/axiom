@@ -76,7 +76,13 @@ Use `axi check` for facts that are explicit enough to gate:
 axi check --root .
 ```
 
-Before wiring that command into CI, run a spec-first rehearsal: the clean reviewed contract should pass, and one deliberately introduced boundary drift should fail with the expected code and location. Axiom's own repository keeps this as `npm run spec-first:smoke` over [examples/spec-first-pilot](../examples/spec-first-pilot).
+Before wiring that command into CI, run a spec-first rehearsal. Axiom's own repository keeps this as `npm run spec-first:smoke` over [examples/spec-first-pilot](../examples/spec-first-pilot). The smoke uses only temporary copies and checks the full artifact loop:
+
+- the reviewed contract passes `axi check`;
+- an unfiltered graph baseline can be saved and later compared without being rewritten during review;
+- `axi observe --baseline` produces an advisory review story rather than a gate;
+- path-scoped `accepts ... until ... because ...` debt stays visible in JSON review output;
+- deliberate hidden-internal and layer-boundary drift fail `axi check` with the expected code and location.
 
 Use `axi observe` for review context:
 

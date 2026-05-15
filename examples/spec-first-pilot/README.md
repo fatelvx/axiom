@@ -14,12 +14,15 @@ Run:
 ```bash
 node ../../dist/cli.js check --root .
 node ../../dist/cli.js observe --root . --markdown
+node ../../dist/cli.js graph --root . --json > .axi/baselines/current.graph.json
+node ../../dist/cli.js diff .axi/baselines/current.graph.json --root .
 ```
 
 Expected result:
 
 - `axi check` passes.
 - `axi observe` reports a passing contract.
+- `axi diff` is advisory and reports no observed-edge drift against the saved baseline.
 
 The repeatable smoke harness copies this example to a temporary directory, confirms the clean contract passes, then writes deliberate drift files and confirms `axi check` fails:
 
@@ -27,4 +30,10 @@ The repeatable smoke harness copies this example to a temporary directory, confi
 npm run spec-first:smoke
 ```
 
-That smoke is the validator trust loop in miniature: human-reviewed `.axi` intent first, observed imports second, hard gate only for explicit contract drift.
+That smoke is the validator trust loop in miniature:
+
+- human-reviewed `.axi` intent first;
+- observed imports second;
+- graph baseline and review story as advisory evidence;
+- path-scoped intentional debt as visible, expiring architecture debt;
+- hard gate only for explicit contract drift.

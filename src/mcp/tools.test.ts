@@ -63,6 +63,7 @@ test("mcp check invocation wraps axi check json and accepts hard gate exit codes
       specPaths: ["axiom/main.axi"],
       warnings: {
         deepInternalImports: true,
+        dynamicImports: true,
         unresolvedImports: true
       }
     },
@@ -87,6 +88,7 @@ test("mcp check invocation wraps axi check json and accepts hard gate exit codes
     "axiom/main.axi",
     "--strict",
     "--warn-unresolved-imports",
+    "--warn-dynamic-imports",
     "--warn-deep-internal-imports"
   ]);
 });
@@ -197,6 +199,7 @@ test("mcp infer-observe workflow is server-native and read-only", () => {
   assert.equal(descriptor.inputSchema.properties?.specPaths, undefined);
   assert.equal(descriptor.inputSchema.properties?.baselinePath, undefined);
   assert.equal(descriptor.inputSchema.properties?.warnings?.type, "object");
+  assert.equal(descriptor.inputSchema.properties?.warnings?.properties?.dynamicImports?.type, "boolean");
 });
 
 test("mcp tool result treats check violations as structured evidence, not tool errors", () => {

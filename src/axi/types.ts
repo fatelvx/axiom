@@ -10,6 +10,7 @@ export type ViolationCode =
   | "ambiguous_module_owner"
   | "unowned_source_file"
   | "unresolved_import"
+  | "dynamic_dependency_expression"
   | "large_module_file"
   | "broad_public_surface"
   | "public_entrypoint_coupling"
@@ -97,6 +98,13 @@ export interface ImportRecord {
   importedBindings?: ImportBinding[];
 }
 
+export interface DynamicDependencyExpressionRecord {
+  filePath: string;
+  line: number;
+  kind: "dynamic_import_expression" | "require_expression";
+  expressionKind: string;
+}
+
 export interface ImportBinding {
   localName: string;
   importedName?: string;
@@ -129,6 +137,7 @@ export interface SourceFileNameTokenCluster {
 
 export interface SourceFileScan {
   imports: ImportRecord[];
+  dynamicDependencyExpressions: DynamicDependencyExpressionRecord[];
   localExports: LocalExportRecord[];
   metrics: SourceFileMetric;
 }

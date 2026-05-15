@@ -2,6 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 import type {
   AxiomSpec,
+  DynamicDependencyExpressionRecord,
   ImportRecord,
   LocalExportRecord,
   ObservedDependency,
@@ -21,6 +22,7 @@ import {
   buildObservedDependencies,
   findCouplingConcentrationWarnings,
   findDeepInternalImportWarnings,
+  findDynamicDependencyExpressionWarnings,
   findExpiringSuppressions,
   findLargeModuleFileWarnings,
   findPublicApiSurfaceWarnings,
@@ -43,6 +45,7 @@ export interface CheckOptions {
   today?: string;
   intentionalViolationExpiryWarningDays?: number;
   warnUnresolvedImports?: boolean;
+  warnDynamicImports?: boolean;
   warnPublicApiSurface?: boolean;
   warnCouplingConcentration?: boolean;
   warnDeepInternalImports?: boolean;
@@ -72,6 +75,7 @@ export function runCheck(options: CheckOptions): CheckResult {
   const intentionalViolationExpiryWarningDays =
     options.intentionalViolationExpiryWarningDays ?? config.intentionalViolationExpiryWarningDays;
   const warnUnresolvedImports = options.warnUnresolvedImports ?? config.warnUnresolvedImports;
+  const warnDynamicImports = options.warnDynamicImports ?? config.warnDynamicImports;
   const warnPublicApiSurface = options.warnPublicApiSurface ?? config.warnPublicApiSurface;
   const warnCouplingConcentration = options.warnCouplingConcentration ?? config.warnCouplingConcentration;
   const warnDeepInternalImports = options.warnDeepInternalImports ?? config.warnDeepInternalImports;
@@ -96,6 +100,9 @@ export function runCheck(options: CheckOptions): CheckResult {
 
   const sourceScans = sourceFiles.map((sourceFile) => scanSourceFile(sourceFile, { resolver }));
   const imports: ImportRecord[] = sourceScans.flatMap((scan) => scan.imports);
+  const dynamicDependencyExpressions: DynamicDependencyExpressionRecord[] = sourceScans.flatMap(
+    (scan) => scan.dynamicDependencyExpressions
+  );
   const localExports: LocalExportRecord[] = sourceScans.flatMap((scan) => scan.localExports);
   const sourceFileMetrics = sourceScans.map((scan) => scan.metrics);
 
@@ -134,6 +141,9 @@ export function runCheck(options: CheckOptions): CheckResult {
   warnings.push(...findUnusedSuppressions(spec, suppressedViolations, { today: options.today }));
   if (warnUnresolvedImports) {
     warnings.push(...findUnresolvedImportWarnings(imports, ownership, root));
+  }
+  if (warnDynamicImports) {
+    warnings.push(...findDynamicDependencyExpressionWarnings(dynamicDependencyExpressions, ownership, root));
   }
   if (warnPublicApiSurface) {
     warnings.push(...findPublicApiSurfaceWarnings(spec, imports, ownership, root));

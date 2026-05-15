@@ -2,6 +2,7 @@ import path from "node:path";
 import type {
   AxiomModule,
   AxiomSpec,
+  DynamicDependencyExpressionRecord,
   ImportRecord,
   LocalExportRecord,
   ObservedDependency,
@@ -822,6 +823,49 @@ export function findUnresolvedImportWarnings(
             scope: "relative_or_package_imports",
             suggestion:
               "Axiom could not map this static import to a source file, so the observed graph may be incomplete. Add the missing file, configure tsconfig/package imports, or exclude generated/runtime paths intentionally."
+          }
+        }
+      ];
+    });
+}
+
+export function findDynamicDependencyExpressionWarnings(
+  dynamicDependencyExpressions: DynamicDependencyExpressionRecord[],
+  ownership: OwnershipIndex,
+  root: string
+): Violation[] {
+  return [...dynamicDependencyExpressions]
+    .sort((left, right) => {
+      const pathCompare = relativePath(root, left.filePath).localeCompare(relativePath(root, right.filePath));
+      return pathCompare !== 0 ? pathCompare : left.line - right.line;
+    })
+    .flatMap((record) => {
+      const fromModule = ownership.findModule(record.filePath);
+      if (!fromModule) {
+        return [];
+      }
+
+      const dependencyKind = record.kind === "dynamic_import_expression" ? "import()" : "require()";
+
+      return [
+        {
+          code: "dynamic_dependency_expression" as const,
+          message: `${fromModule.name} has a non-literal ${dependencyKind} expression that Axiom cannot resolve into the observed graph.`,
+          location: {
+            filePath: record.filePath,
+            line: record.line
+          },
+          details: {
+            module: fromModule.name,
+            dependencyKind,
+            expressionKind: record.expressionKind,
+            observed: `${fromModule.name} dynamic dependency expression`,
+            resolution: "not_statically_resolved",
+            scope: "dynamic_dependency_expression",
+            note:
+              "Literal dynamic imports are scanned as observed dependencies; non-literal dependency expressions are graph-incompleteness evidence.",
+            suggestion:
+              "Prefer literal imports or a visible registry when the dependency is architectural, or document it as runtime wiring outside Axiom's static graph."
           }
         }
       ];

@@ -34,7 +34,7 @@ Good alpha targets:
 
 ## Known Alpha Limits
 
-- Runtime-only dependency paths are not observed: non-literal dynamic imports, dependency injection containers, plugin registries, generated imports, and `eval` stay outside v0 static evidence.
+- Runtime-only dependency paths are not observed: non-literal dynamic imports can be surfaced only as advisory graph-completeness warnings, while dependency injection containers, plugin registries, generated imports, and `eval` stay outside v0 static evidence.
 - A quiet graph does not prove healthy design inside a large file.
 - Inferred contracts mirror the current graph; they are not maintainer-declared intent.
 - Advisory warnings and baseline drift are not CI gates unless your workflow explicitly promotes them.

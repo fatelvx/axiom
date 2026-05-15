@@ -2,6 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 import ts from "typescript";
 import type {
+  DynamicDependencyExpressionRecord,
   ImportBinding,
   ImportRecord,
   LocalExportRecord,
@@ -23,6 +24,7 @@ export function scanSourceFile(filePath: string, options: ScanImportsOptions = {
   const parseText = prepareTextForParsing(filePath, text);
   const sourceFile = ts.createSourceFile(filePath, parseText, ts.ScriptTarget.Latest, true, getScriptKind(filePath));
   const imports: ImportRecord[] = [];
+  const dynamicDependencyExpressions: DynamicDependencyExpressionRecord[] = [];
   const localExports: LocalExportRecord[] = [];
   const declarationNames: string[] = [];
   let functionLikeCount = 0;
@@ -68,6 +70,21 @@ export function scanSourceFile(filePath: string, options: ScanImportsOptions = {
       kind,
       exportedNames,
       ...options
+    });
+  }
+
+  function recordDynamicDependencyExpression(
+    node: ts.Node,
+    kind: DynamicDependencyExpressionRecord["kind"],
+    expression: ts.Expression
+  ): void {
+    const line = sourceFile.getLineAndCharacterOfPosition(node.getStart(sourceFile)).line + 1;
+
+    dynamicDependencyExpressions.push({
+      filePath,
+      line,
+      kind,
+      expressionKind: formatSyntaxKind(expression.kind)
     });
   }
 
@@ -136,6 +153,11 @@ export function scanSourceFile(filePath: string, options: ScanImportsOptions = {
       const callImport = readCallImport(node);
       if (callImport) {
         recordImport(node, callImport.kind, callImport.specifier);
+      } else {
+        const dynamicExpression = readDynamicDependencyExpression(node);
+        if (dynamicExpression) {
+          recordDynamicDependencyExpression(node, dynamicExpression.kind, dynamicExpression.expression);
+        }
       }
     } else if (ts.isImportTypeNode(node)) {
       const specifier = readImportTypeSpecifier(node);
@@ -151,6 +173,7 @@ export function scanSourceFile(filePath: string, options: ScanImportsOptions = {
 
   return {
     imports,
+    dynamicDependencyExpressions,
     localExports,
     metrics: {
       filePath,
@@ -466,6 +489,30 @@ function readCallImport(node: ts.CallExpression): { kind: ImportRecord["kind"]; 
   }
 
   return undefined;
+}
+
+function readDynamicDependencyExpression(
+  node: ts.CallExpression
+): { kind: DynamicDependencyExpressionRecord["kind"]; expression: ts.Expression } | undefined {
+  const firstArgument = node.arguments[0];
+  if (!firstArgument || readStringLiteral(firstArgument)) {
+    return undefined;
+  }
+
+  if (node.expression.kind === ts.SyntaxKind.ImportKeyword) {
+    return { kind: "dynamic_import_expression", expression: firstArgument };
+  }
+
+  if (ts.isIdentifier(node.expression) && node.expression.text === "require") {
+    return { kind: "require_expression", expression: firstArgument };
+  }
+
+  return undefined;
+}
+
+function formatSyntaxKind(kind: ts.SyntaxKind): string {
+  const name = ts.SyntaxKind[kind];
+  return typeof name === "string" ? name : String(kind);
 }
 
 function readImportTypeSpecifier(node: ts.ImportTypeNode): string | undefined {

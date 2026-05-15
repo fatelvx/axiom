@@ -14,6 +14,7 @@ test("loadConfig returns defaults when no config file exists", () => {
       exclude: [],
       specs: defaultSpecPatterns,
       warnUnresolvedImports: false,
+      warnDynamicImports: false,
       warnPublicApiSurface: false,
       warnCouplingConcentration: false,
       warnDeepInternalImports: false,
@@ -37,6 +38,7 @@ test("loadConfig reads axiom.config.json from the project root", () => {
         tsconfig: "tsconfig.app.json",
         intentionalViolationExpiryWarningDays: 14,
         warnUnresolvedImports: true,
+        warnDynamicImports: true,
         warnPublicApiSurface: true,
         warnCouplingConcentration: true,
         warnDeepInternalImports: true,
@@ -52,6 +54,7 @@ test("loadConfig reads axiom.config.json from the project root", () => {
     assert.equal(config.tsconfig, "tsconfig.app.json");
     assert.equal(config.intentionalViolationExpiryWarningDays, 14);
     assert.equal(config.warnUnresolvedImports, true);
+    assert.equal(config.warnDynamicImports, true);
     assert.equal(config.warnPublicApiSurface, true);
     assert.equal(config.warnCouplingConcentration, true);
     assert.equal(config.warnDeepInternalImports, true);
@@ -82,6 +85,7 @@ test("applyDiscoveryOverrides appends CLI source scope patterns", () => {
     exclude: ["src/generated/**"],
     specs: defaultSpecPatterns,
     warnUnresolvedImports: false,
+    warnDynamicImports: false,
     warnPublicApiSurface: false,
     warnCouplingConcentration: false,
     warnDeepInternalImports: false,
@@ -144,6 +148,18 @@ test("loadConfig rejects invalid unresolved import warning setting", () => {
     fs.writeFileSync(path.join(root, "axiom.config.json"), JSON.stringify({ warnUnresolvedImports: "yes" }));
 
     assert.throws(() => loadConfig(root), /warnUnresolvedImports/);
+  } finally {
+    fs.rmSync(root, { force: true, recursive: true });
+  }
+});
+
+test("loadConfig rejects invalid dynamic import warning setting", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "axi-config-invalid-dynamic-imports-"));
+
+  try {
+    fs.writeFileSync(path.join(root, "axiom.config.json"), JSON.stringify({ warnDynamicImports: "yes" }));
+
+    assert.throws(() => loadConfig(root), /warnDynamicImports/);
   } finally {
     fs.rmSync(root, { force: true, recursive: true });
   }

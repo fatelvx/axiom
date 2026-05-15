@@ -277,6 +277,7 @@ const COMMON_TOOL_PROPERTIES: Record<string, JsonSchema> = {
     properties: {
       couplingConcentration: { type: "boolean" },
       deepInternalImports: { type: "boolean" },
+      dynamicImports: { type: "boolean" },
       largeFiles: { type: "boolean" },
       publicApiSurface: { type: "boolean" },
       unresolvedImports: { type: "boolean" }
@@ -721,11 +722,12 @@ function appendWarningArgs(args: string[], input: Record<string, unknown>): void
 
   assertKnownKeys(
     warnings,
-    ["couplingConcentration", "deepInternalImports", "largeFiles", "publicApiSurface", "unresolvedImports"],
+    ["couplingConcentration", "deepInternalImports", "dynamicImports", "largeFiles", "publicApiSurface", "unresolvedImports"],
     "warnings"
   );
 
   appendBooleanFlag(args, warnings, "unresolvedImports", "--warn-unresolved-imports");
+  appendBooleanFlag(args, warnings, "dynamicImports", "--warn-dynamic-imports");
   appendBooleanFlag(args, warnings, "publicApiSurface", "--warn-public-api-surface");
   appendBooleanFlag(args, warnings, "couplingConcentration", "--warn-coupling-concentration");
   appendBooleanFlag(args, warnings, "deepInternalImports", "--warn-deep-internal-imports");

@@ -90,6 +90,7 @@ Use `axiom.config.json` to keep source discovery focused:
   "tsconfig": "tsconfig.json",
   "intentionalViolationExpiryWarningDays": 30,
   "warnUnresolvedImports": false,
+  "warnDynamicImports": false,
   "warnPublicApiSurface": false,
   "warnCouplingConcentration": false,
   "warnDeepInternalImports": false,
@@ -98,7 +99,7 @@ Use `axiom.config.json` to keep source discovery focused:
 ```
 
 `include` and `exclude` control source scanning. `specs` controls `.axi` discovery.
-`intentionalViolationExpiryWarningDays` controls how early active intentional violations become warnings before their expiration date. `warnUnresolvedImports`, `warnPublicApiSurface`, `warnCouplingConcentration`, `warnDeepInternalImports`, and `warnLargeFiles` enable advisory signals without turning them into gates.
+`intentionalViolationExpiryWarningDays` controls how early active intentional violations become warnings before their expiration date. `warnUnresolvedImports`, `warnDynamicImports`, `warnPublicApiSurface`, `warnCouplingConcentration`, `warnDeepInternalImports`, and `warnLargeFiles` enable advisory signals without turning them into gates.
 
 For a one-off pilot, you can pass source scope directly on the CLI before writing config:
 
@@ -176,6 +177,8 @@ Axiom is a static architecture validator, not a full runtime oracle.
 Expect blind spots around dependency injection strings, plugin registries, generated imports, `eval`, and other runtime-only paths. If those patterns matter in your project, model the stable source-level boundary first and keep the runtime convention visible in review or future custom checks.
 
 Use `--warn-unresolved-imports` when you want Axiom to surface static relative imports or package `#imports` that it can see but cannot resolve into the observed graph. This is advisory visibility into graph completeness, not proof that every runtime dependency path is known.
+
+Use `--warn-dynamic-imports` when you want Axiom to surface non-literal `import()` or `require()` expressions that it can detect but cannot resolve into static observed edges. Literal dynamic imports still count as observed dependencies; non-literal expressions are graph-completeness evidence only.
 
 Also watch for "compliant but unhealthy" architecture. For example, a giant `index.ts` can make imports pass while concentrating too much coupling in one public surface. Axiom now catches direct `export ... from` leaks and local `import ... from "./internal"` followed by `export { ... }` leaks from hidden paths through exposed entry points. `--warn-public-api-surface` can flag exposed `export *` barrels and entry points that reach many internal files as advisory warnings, but it is an advanced probe, not a default adoption step. Axiom still cannot prove every symbol-level API decision is healthy. Prefer small exposed entry points, explicit `hides` rules for internals, and intentional violations with expiration dates when migration needs time.
 
@@ -303,7 +306,7 @@ axi check --root . --json
 axi graph --root . --json > axiom-baseline.json
 axi observe --root . --baseline axiom-baseline.json
 axi observe --root . --baseline axiom-baseline.json --markdown
-axi observe --root . --warn-unresolved-imports --warn-coupling-concentration --warn-deep-internal-imports
+axi observe --root . --warn-unresolved-imports --warn-dynamic-imports --warn-coupling-concentration --warn-deep-internal-imports
 ```
 
 Use human output while developing. Use JSON output for CI annotations and custom reporting. Use Markdown output for PR comments, review artifacts, and agent repair-loop summaries. Use Mermaid output when a visual observed module graph makes the drift discussion easier.
@@ -352,7 +355,7 @@ Start loose:
 Then tighten:
 
 - Turn on `--warn-unowned`.
-- Turn on `--warn-unresolved-imports`, `--warn-coupling-concentration`, and `--warn-deep-internal-imports` during architecture review.
+- Turn on `--warn-unresolved-imports`, `--warn-dynamic-imports`, `--warn-coupling-concentration`, and `--warn-deep-internal-imports` during architecture review.
 - Add `--warn-public-api-surface` later only for advanced public-entrypoint review with active `exposes` rules.
 - Add missing module paths.
 - Move mature contracts to `--strict`.

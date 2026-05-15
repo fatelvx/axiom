@@ -66,6 +66,70 @@ test("scanner resolves relative dynamic imports and barrel index imports", () =>
   }
 });
 
+test("scanner records non-literal dynamic dependency expressions without inventing graph edges", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "axi-imports-dynamic-expr-"));
+
+  try {
+    writeFile(
+      root,
+      "src/app.ts",
+      [
+        "const lazyName = './lazy';",
+        "const lazy = () => import(lazyName);",
+        "const templated = () => import(`./pages/${lazyName}`);",
+        "const legacy = require(lazyName);",
+        "const literal = () => import('./literal');"
+      ].join("\n")
+    );
+    writeFile(root, "src/literal.ts", "export const literal = true;\n");
+
+    const scan = scanSourceFile(path.join(root, "src/app.ts"));
+
+    assert.deepEqual(
+      scan.imports.map((record) => ({
+        line: record.line,
+        kind: record.kind,
+        specifier: record.specifier,
+        resolvedPath: normalize(root, record.resolvedPath)
+      })),
+      [
+        {
+          line: 5,
+          kind: "dynamic_import",
+          specifier: "./literal",
+          resolvedPath: "src/literal.ts"
+        }
+      ]
+    );
+    assert.deepEqual(
+      scan.dynamicDependencyExpressions.map((record) => ({
+        line: record.line,
+        kind: record.kind,
+        expressionKind: record.expressionKind
+      })),
+      [
+        {
+          line: 2,
+          kind: "dynamic_import_expression",
+          expressionKind: "Identifier"
+        },
+        {
+          line: 3,
+          kind: "dynamic_import_expression",
+          expressionKind: "TemplateExpression"
+        },
+        {
+          line: 4,
+          kind: "require_expression",
+          expressionKind: "Identifier"
+        }
+      ]
+    );
+  } finally {
+    fs.rmSync(root, { force: true, recursive: true });
+  }
+});
+
 test("scanner reads imports from TypeScript syntax instead of line regexes", () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "axi-imports-ast-"));
 

@@ -577,6 +577,81 @@ test("unresolved import warnings are opt-in advisory diagnostics", () => {
   });
 });
 
+test("dynamic import warnings are opt-in graph-completeness diagnostics", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "axi-dynamic-imports-"));
+
+  try {
+    fs.mkdirSync(path.join(root, "axiom"), { recursive: true });
+    fs.mkdirSync(path.join(root, "src"), { recursive: true });
+    fs.writeFileSync(path.join(root, "axiom/main.axi"), ['module App', 'path "src/**"', ""].join("\n"));
+    fs.writeFileSync(
+      path.join(root, "src/app.ts"),
+      [
+        "const routeName = 'settings';",
+        "export const lazy = () => import(`./routes/${routeName}`);",
+        "export const legacy = () => require(routeName);",
+        "export const literal = () => import('./literal');"
+      ].join("\n")
+    );
+    fs.writeFileSync(path.join(root, "src/literal.ts"), "export const literal = true;\n");
+
+    const quietResult = runCheck({ root });
+
+    assert.deepEqual(quietResult.violations, []);
+    assert.deepEqual(quietResult.warnings, []);
+    assert.equal(quietResult.importCount, 1);
+
+    const result = runCheck({ root, warnDynamicImports: true });
+
+    assert.deepEqual(result.violations, []);
+    assert.equal(result.importCount, 1);
+    assert.deepEqual(result.warnings, [
+      {
+        code: "dynamic_dependency_expression",
+        message: "App has a non-literal import() expression that Axiom cannot resolve into the observed graph.",
+        location: {
+          filePath: path.join(root, "src/app.ts"),
+          line: 2
+        },
+        details: {
+          module: "App",
+          dependencyKind: "import()",
+          expressionKind: "TemplateExpression",
+          observed: "App dynamic dependency expression",
+          resolution: "not_statically_resolved",
+          scope: "dynamic_dependency_expression",
+          note:
+            "Literal dynamic imports are scanned as observed dependencies; non-literal dependency expressions are graph-incompleteness evidence.",
+          suggestion:
+            "Prefer literal imports or a visible registry when the dependency is architectural, or document it as runtime wiring outside Axiom's static graph."
+        }
+      },
+      {
+        code: "dynamic_dependency_expression",
+        message: "App has a non-literal require() expression that Axiom cannot resolve into the observed graph.",
+        location: {
+          filePath: path.join(root, "src/app.ts"),
+          line: 3
+        },
+        details: {
+          module: "App",
+          dependencyKind: "require()",
+          expressionKind: "Identifier",
+          observed: "App dynamic dependency expression",
+          resolution: "not_statically_resolved",
+          scope: "dynamic_dependency_expression",
+          note:
+            "Literal dynamic imports are scanned as observed dependencies; non-literal dependency expressions are graph-incompleteness evidence.",
+          suggestion:
+            "Prefer literal imports or a visible registry when the dependency is architectural, or document it as runtime wiring outside Axiom's static graph."
+        }
+      }
+    ]);
+  } finally {
+    fs.rmSync(root, { force: true, recursive: true });
+  }
+});
+
 test("check uses axiom.config.json discovery settings", () => {
   const result = runCheck({ root: path.join(repoRoot, "fixtures/config-filter") });
 

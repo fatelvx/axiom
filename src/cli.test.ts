@@ -190,6 +190,37 @@ test("cli observe --warn-unresolved-imports reports advisory unresolved import w
   assert.equal(payload.warnings[0].details.specifier, "./generated/runtime-token");
 });
 
+test("cli observe --warn-dynamic-imports reports advisory non-literal dependency expressions", () => {
+  const root = mkdtempSync(path.join(tmpdir(), "axi-cli-dynamic-imports-"));
+
+  try {
+    mkdirSync(path.join(root, "axiom"), { recursive: true });
+    mkdirSync(path.join(root, "src"), { recursive: true });
+    writeFileSync(path.join(root, "axiom/main.axi"), ['module App', 'path "src/**"', ""].join("\n"));
+    writeFileSync(
+      path.join(root, "src/main.ts"),
+      ["const route = 'settings';", "export const lazy = () => import(`./routes/${route}`);"].join("\n")
+    );
+
+    const result = spawnSync(process.execPath, [cliPath, "observe", "--root", root, "--warn-dynamic-imports", "--json"], {
+      cwd: repoRoot,
+      encoding: "utf8"
+    });
+
+    assert.equal(result.status, 0);
+
+    const payload = JSON.parse(result.stdout);
+    assert.equal(payload.schemaVersion, "axiom.graph.v12");
+    assert.equal(payload.summary.violations, 0);
+    assert.equal(payload.summary.warnings, 1);
+    assert.equal(payload.warnings[0].code, "dynamic_dependency_expression");
+    assert.equal(payload.warnings[0].details.dependencyKind, "import()");
+    assert.equal(payload.warnings[0].details.expressionKind, "TemplateExpression");
+  } finally {
+    rmSync(root, { force: true, recursive: true });
+  }
+});
+
 test("cli observe --warn-large-files reports advisory intra-file pressure warnings", () => {
   const root = mkdtempSync(path.join(tmpdir(), "axi-cli-large-file-"));
 

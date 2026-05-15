@@ -140,7 +140,7 @@ Axiom v0.6.0-alpha.2 is focused on static TypeScript and JavaScript architecture
 | --- | --- |
 | Contract model | `module`, `path`, `depends on`, `forbids module`, `layers`, `exposes`, `hides`, `purpose` |
 | Hard violations | dependency drift, layer breaches, hidden imports, hidden re-exports, ambiguous owners, broken specs |
-| Advisory review | deep internal imports, public API surface pressure, coupling concentration, unresolved imports, large files |
+| Advisory review | deep internal imports, public API surface pressure, coupling concentration, unresolved imports, dynamic dependency expressions, large files |
 | Scanner | TS/JS parser imports, Vue SFC `<script>` imports, `require`, literal dynamic imports, multiline imports, barrel `index.*` files |
 | Resolver | relative paths, `.vue` components, tsconfig `paths`, package `imports`, workspace `exports` / `main`, pnpm workspaces |
 | Adoption | loose mode, `--warn-unowned`, `--strict`, time-bounded intentional violations |
@@ -166,7 +166,8 @@ For concrete examples of failing contracts, quiet graphs, advisory pressure, and
 Axiom v0 is intentionally honest about its blind spots:
 
 - It does not fully observe runtime-only dependency paths such as string-based dependency injection, plugin registries, generated imports, or `eval`.
-- It can optionally warn about static relative or package `#imports` that the scanner sees but cannot resolve with `--warn-unresolved-imports`, but it still cannot see non-literal runtime wiring.
+- It can optionally warn about static relative or package `#imports` that the scanner sees but cannot resolve with `--warn-unresolved-imports`.
+- It can optionally warn about non-literal `import()` / `require()` expressions with `--warn-dynamic-imports`, but those remain graph-completeness evidence, not observed dependency edges.
 - It does not prove that a module is semantically well-designed. Axiom can catch direct hidden-path re-exports and local import-then-export leaks from hidden internals, `--warn-public-api-surface` can flag broad `export *` barrels and exposed entry points that reach many internal files, and `--warn-deep-internal-imports` can flag relative imports that bypass likely entry points, but code can still become too coupled through wrappers, facades, or overly large public entry points. This is the `symbol-level API health` gap.
 - It does not prove that concentrated fan-in or fan-out is wrong. `--warn-coupling-concentration` surfaces modules that may be turning into coordination hubs so humans and agents can review the pressure before it becomes hidden debt.
 - It does not prove that a quiet import graph means the code is internally well-factored. `--warn-large-files` only surfaces large-file pressure as an advisory review prompt; it is not a general complexity metric or a refactor mandate.
@@ -220,7 +221,7 @@ axi check --root examples/basic-app
 
 Common output flags: `--json`, `--markdown`, `--mermaid`, `--attention`.
 
-Common adoption flags: `--include`, `--exclude`, `--spec`, `--baseline`, `--strict`, `--warn-unowned`, `--warn-public-api-surface`, `--warn-unresolved-imports`, `--warn-coupling-concentration`, `--warn-deep-internal-imports`, `--warn-large-files`.
+Common adoption flags: `--include`, `--exclude`, `--spec`, `--baseline`, `--strict`, `--warn-unowned`, `--warn-public-api-surface`, `--warn-unresolved-imports`, `--warn-dynamic-imports`, `--warn-coupling-concentration`, `--warn-deep-internal-imports`, `--warn-large-files`.
 
 ## Integrations
 
@@ -273,6 +274,7 @@ Axiom reads `axiom.config.json` from the project root when present. Use it to sc
   "tsconfig": "tsconfig.json",
   "intentionalViolationExpiryWarningDays": 30,
   "warnUnresolvedImports": false,
+  "warnDynamicImports": false,
   "warnPublicApiSurface": false,
   "warnCouplingConcentration": false,
   "warnDeepInternalImports": false,
@@ -303,6 +305,7 @@ Warnings are opt-in review signals, not default CI gates:
 | --- | --- |
 | `--warn-public-api-surface` | Broad exposed barrels and exposed entry points reaching many internal files |
 | `--warn-unresolved-imports` | Static imports Axiom can see but cannot resolve into the source graph |
+| `--warn-dynamic-imports` | Non-literal `import()` / `require()` expressions that static graphing cannot resolve |
 | `--warn-coupling-concentration` | High module fan-in or fan-out pressure |
 | `--warn-deep-internal-imports` | Relative imports bypassing likely `index.*` entry points |
 | `--warn-large-files` | Large files that may hide intra-file responsibility pressure |

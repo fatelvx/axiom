@@ -32,6 +32,7 @@ interface CliOptions {
   baselinePath?: string;
   intentionalViolationExpiryWarningDays?: number;
   warnUnresolvedImports: boolean;
+  warnDynamicImports: boolean;
   warnPublicApiSurface: boolean;
   warnCouplingConcentration: boolean;
   warnDeepInternalImports: boolean;
@@ -89,6 +90,7 @@ try {
     adoptionMode: options.adoptionMode,
     intentionalViolationExpiryWarningDays: options.intentionalViolationExpiryWarningDays,
     warnUnresolvedImports: options.warnUnresolvedImports,
+    warnDynamicImports: options.warnDynamicImports,
     warnPublicApiSurface: options.warnPublicApiSurface,
     warnCouplingConcentration: options.warnCouplingConcentration,
     warnDeepInternalImports: options.warnDeepInternalImports,
@@ -169,6 +171,7 @@ function parseOptions(values: string[], command: CliCommand): CliOptions {
     graphViolationsOnly: command === "observe",
     graphAttention: command === "observe",
     warnUnresolvedImports: false,
+    warnDynamicImports: false,
     warnPublicApiSurface: false,
     warnCouplingConcentration: false,
     warnDeepInternalImports: false,
@@ -327,6 +330,16 @@ function parseOptions(values: string[], command: CliCommand): CliOptions {
       }
 
       options.warnUnresolvedImports = true;
+      continue;
+    }
+
+    if (value === "--warn-dynamic-imports") {
+      if (command === "infer") {
+        console.error("--warn-dynamic-imports is only supported by check, graph, observe, and diff.");
+        process.exit(1);
+      }
+
+      options.warnDynamicImports = true;
       continue;
     }
 
@@ -579,10 +592,10 @@ function printHelp(): void {
   console.log(`Axiom
 
 Usage:
-  axi check [--root <path>] [--config <path>] [--include <glob>] [--exclude <glob>] [--spec <path>] [--json] [--warn-unowned] [--strict] [--intentional-violation-warning-days <n>] [--warn-unresolved-imports] [--warn-public-api-surface] [--warn-coupling-concentration] [--warn-deep-internal-imports] [--warn-large-files]
-  axi graph [--root <path>] [--config <path>] [--include <glob>] [--exclude <glob>] [--spec <path>] [--json|--markdown|--mermaid] [--warn-unowned] [--strict] [--violations-only|--attention] [--baseline <graph-json>] [--intentional-violation-warning-days <n>] [--warn-unresolved-imports] [--warn-public-api-surface] [--warn-coupling-concentration] [--warn-deep-internal-imports] [--warn-large-files]
-  axi observe [--root <path>] [--config <path>] [--include <glob>] [--exclude <glob>] [--spec <path>] [--json|--markdown|--mermaid] [--warn-unowned] [--strict] [--baseline <graph-json>] [--intentional-violation-warning-days <n>] [--warn-unresolved-imports] [--warn-public-api-surface] [--warn-coupling-concentration] [--warn-deep-internal-imports] [--warn-large-files]
-  axi diff <baseline-json> [--root <path>] [--config <path>] [--include <glob>] [--exclude <glob>] [--spec <path>] [--json|--markdown|--mermaid] [--warn-unowned] [--strict] [--intentional-violation-warning-days <n>] [--warn-unresolved-imports] [--warn-public-api-surface] [--warn-coupling-concentration] [--warn-deep-internal-imports] [--warn-large-files]
+  axi check [--root <path>] [--config <path>] [--include <glob>] [--exclude <glob>] [--spec <path>] [--json] [--warn-unowned] [--strict] [--intentional-violation-warning-days <n>] [--warn-unresolved-imports] [--warn-dynamic-imports] [--warn-public-api-surface] [--warn-coupling-concentration] [--warn-deep-internal-imports] [--warn-large-files]
+  axi graph [--root <path>] [--config <path>] [--include <glob>] [--exclude <glob>] [--spec <path>] [--json|--markdown|--mermaid] [--warn-unowned] [--strict] [--violations-only|--attention] [--baseline <graph-json>] [--intentional-violation-warning-days <n>] [--warn-unresolved-imports] [--warn-dynamic-imports] [--warn-public-api-surface] [--warn-coupling-concentration] [--warn-deep-internal-imports] [--warn-large-files]
+  axi observe [--root <path>] [--config <path>] [--include <glob>] [--exclude <glob>] [--spec <path>] [--json|--markdown|--mermaid] [--warn-unowned] [--strict] [--baseline <graph-json>] [--intentional-violation-warning-days <n>] [--warn-unresolved-imports] [--warn-dynamic-imports] [--warn-public-api-surface] [--warn-coupling-concentration] [--warn-deep-internal-imports] [--warn-large-files]
+  axi diff <baseline-json> [--root <path>] [--config <path>] [--include <glob>] [--exclude <glob>] [--spec <path>] [--json|--markdown|--mermaid] [--warn-unowned] [--strict] [--intentional-violation-warning-days <n>] [--warn-unresolved-imports] [--warn-dynamic-imports] [--warn-public-api-surface] [--warn-coupling-concentration] [--warn-deep-internal-imports] [--warn-large-files]
   axi infer [--root <path>] [--config <path>] [--include <glob>] [--exclude <glob>] [--json] [--group-depth <n>] [--group-by folder|workspace]
 
 Commands:
@@ -616,6 +629,8 @@ Adoption:
                    Warn when an intentional violation expires within n days. Defaults to 30.
   --warn-unresolved-imports
                    Warn when an owned file has a static relative or # import that Axiom cannot resolve.
+  --warn-dynamic-imports
+                   Warn when an owned file has non-literal import()/require() expressions Axiom cannot resolve.
   --warn-public-api-surface
                    Warn about broad exposed barrels and entry points that mask internal coupling.
   --warn-coupling-concentration
@@ -635,7 +650,7 @@ function printCommandHelp(command: CliCommand): void {
 Validate source dependencies against .axi architecture specs. This is the CI gate: hard violations exit 1.
 
 Usage:
-  axi check [--root <path>] [--config <path>] [--include <glob>] [--exclude <glob>] [--spec <path>] [--json] [--warn-unowned] [--strict] [--intentional-violation-warning-days <n>] [--warn-unresolved-imports] [--warn-public-api-surface] [--warn-coupling-concentration] [--warn-deep-internal-imports] [--warn-large-files]
+  axi check [--root <path>] [--config <path>] [--include <glob>] [--exclude <glob>] [--spec <path>] [--json] [--warn-unowned] [--strict] [--intentional-violation-warning-days <n>] [--warn-unresolved-imports] [--warn-dynamic-imports] [--warn-public-api-surface] [--warn-coupling-concentration] [--warn-deep-internal-imports] [--warn-large-files]
 
 Options:
   --root <path>      Project root. Defaults to the current working directory.
@@ -650,6 +665,8 @@ Options:
                      Warn when accepted debt expires within n days.
   --warn-unresolved-imports
                      Warn when static relative or # imports cannot be resolved.
+  --warn-dynamic-imports
+                     Warn when non-literal import()/require() expressions cannot be resolved.
   --warn-public-api-surface
                      Warn about broad exposed barrels and entry point coupling.
   --warn-coupling-concentration
@@ -666,7 +683,7 @@ Options:
 Print declared and observed architecture graphs. This is a review surface and exits 0 even when violations exist.
 
 Usage:
-  axi graph [--root <path>] [--config <path>] [--include <glob>] [--exclude <glob>] [--spec <path>] [--json|--markdown|--mermaid] [--warn-unowned] [--strict] [--violations-only|--attention] [--baseline <graph-json>] [--intentional-violation-warning-days <n>] [--warn-unresolved-imports] [--warn-public-api-surface] [--warn-coupling-concentration] [--warn-deep-internal-imports] [--warn-large-files]
+  axi graph [--root <path>] [--config <path>] [--include <glob>] [--exclude <glob>] [--spec <path>] [--json|--markdown|--mermaid] [--warn-unowned] [--strict] [--violations-only|--attention] [--baseline <graph-json>] [--intentional-violation-warning-days <n>] [--warn-unresolved-imports] [--warn-dynamic-imports] [--warn-public-api-surface] [--warn-coupling-concentration] [--warn-deep-internal-imports] [--warn-large-files]
 
 Options:
   --json             Print axiom.graph JSON.
@@ -684,7 +701,7 @@ Options:
 Show the architecture attention surface: hard violations, visible accepted debt, warnings, review story, and optional drift. This is advisory and exits 0.
 
 Usage:
-  axi observe [--root <path>] [--config <path>] [--include <glob>] [--exclude <glob>] [--spec <path>] [--json|--markdown|--mermaid] [--warn-unowned] [--strict] [--baseline <graph-json>] [--intentional-violation-warning-days <n>] [--warn-unresolved-imports] [--warn-public-api-surface] [--warn-coupling-concentration] [--warn-deep-internal-imports] [--warn-large-files]
+  axi observe [--root <path>] [--config <path>] [--include <glob>] [--exclude <glob>] [--spec <path>] [--json|--markdown|--mermaid] [--warn-unowned] [--strict] [--baseline <graph-json>] [--intentional-violation-warning-days <n>] [--warn-unresolved-imports] [--warn-dynamic-imports] [--warn-public-api-surface] [--warn-coupling-concentration] [--warn-deep-internal-imports] [--warn-large-files]
 
 Options:
   --json             Print axiom.graph JSON with the attention filter enabled.
@@ -700,7 +717,7 @@ Options:
 Compare current observed module edges against an unfiltered axi graph --json baseline. This is advisory and exits 0.
 
 Usage:
-  axi diff <baseline-json> [--root <path>] [--config <path>] [--include <glob>] [--exclude <glob>] [--spec <path>] [--json|--markdown|--mermaid] [--warn-unowned] [--strict] [--intentional-violation-warning-days <n>] [--warn-unresolved-imports] [--warn-public-api-surface] [--warn-coupling-concentration] [--warn-deep-internal-imports] [--warn-large-files]
+  axi diff <baseline-json> [--root <path>] [--config <path>] [--include <glob>] [--exclude <glob>] [--spec <path>] [--json|--markdown|--mermaid] [--warn-unowned] [--strict] [--intentional-violation-warning-days <n>] [--warn-unresolved-imports] [--warn-dynamic-imports] [--warn-public-api-surface] [--warn-coupling-concentration] [--warn-deep-internal-imports] [--warn-large-files]
   axi diff --baseline <graph-json> [--root <path>] [--json|--markdown|--mermaid]
 
 Options:

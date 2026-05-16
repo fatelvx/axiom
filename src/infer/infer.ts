@@ -27,6 +27,7 @@ import {
   stripExtension,
   toIdentifier
 } from "./inferNaming.js";
+import { buildInferVisibilitySuggestions } from "./inferVisibility.js";
 
 export {
   inferStarterContractAuthoringChecklist,
@@ -487,7 +488,7 @@ function buildInferredModules(
         files.push(...(group?.files ?? []));
       }
 
-      const visibility = inferVisibilitySuggestions(root, files);
+      const visibility = buildInferVisibilitySuggestions(files.map((file) => relativePath(root, file)));
       return {
         name: component.name,
         paths: [...paths].sort(),
@@ -498,36 +499,6 @@ function buildInferredModules(
       };
     })
     .sort((left, right) => left.name.localeCompare(right.name));
-}
-
-function inferVisibilitySuggestions(root: string, files: string[]): Pick<InferredModule, "suggestedExposes" | "suggestedHides"> {
-  const suggestedExposes = new Set<string>();
-  const suggestedHides = new Set<string>();
-
-  for (const file of files) {
-    const relative = relativePath(root, file);
-    const segments = relative.split("/");
-    const directorySegments = segments.slice(0, -1);
-    const hiddenSegmentIndex = directorySegments.findIndex(isHiddenDirectoryName);
-
-    if (hiddenSegmentIndex >= 0) {
-      suggestedHides.add(`${directorySegments.slice(0, hiddenSegmentIndex + 1).join("/")}/**`);
-    }
-
-    if (stripExtension(segments.at(-1) ?? "") === "index" && hiddenSegmentIndex < 0) {
-      suggestedExposes.add(relative);
-    }
-  }
-
-  return {
-    suggestedExposes: [...suggestedExposes].sort(),
-    suggestedHides: [...suggestedHides].sort()
-  };
-}
-
-function isHiddenDirectoryName(segment: string): boolean {
-  const normalized = segment.toLowerCase();
-  return normalized === "internal" || normalized === "private";
 }
 
 function uniquifyComponentNames(components: Component[]): Component[] {

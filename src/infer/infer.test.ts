@@ -329,6 +329,34 @@ test("infer suggests visibility rules as comments", () => {
   assert.match(output, /# suggestion: hides "src\/services\/internal\/\*\*"/);
 });
 
+test("inferred visibility suggestions do not drive hard validation", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "axi-infer-visibility-suggestions-"));
+
+  try {
+    fs.mkdirSync(path.join(root, "src/services/internal"), { recursive: true });
+    fs.mkdirSync(path.join(root, "src/ui"), { recursive: true });
+    fs.writeFileSync(path.join(root, "src/services/index.ts"), "export const publicApi = true;\n");
+    fs.writeFileSync(path.join(root, "src/services/internal/secret.ts"), "export const secret = true;\n");
+    fs.writeFileSync(path.join(root, "src/ui/view.ts"), 'import { secret } from "../services/internal/secret";\nsecret;\n');
+
+    const inferred = runInfer({ root });
+    const services = inferred.modules.find((module) => module.name === "Services");
+    assert.deepEqual(services?.suggestedExposes, ["src/services/index.ts"]);
+    assert.deepEqual(services?.suggestedHides, ["src/services/internal/**"]);
+
+    const specPath = path.join(root, "draft.axi");
+    fs.writeFileSync(specPath, `${formatInferResult(inferred)}\n`);
+    const check = runCheck({ root, specPaths: [specPath] });
+
+    assert.deepEqual(check.violations, []);
+    assert.deepEqual(check.observedDependencies.map((dependency) => `${dependency.fromModule}->${dependency.toModule}`), [
+      "Ui->Services"
+    ]);
+  } finally {
+    fs.rmSync(root, { force: true, recursive: true });
+  }
+});
+
 test("infer supports deeper source grouping", () => {
   const shallow = runInfer({ root: path.join(repoRoot, "fixtures/infer-group-depth") });
   const deep = runInfer({ root: path.join(repoRoot, "fixtures/infer-group-depth"), groupDepth: 2 });

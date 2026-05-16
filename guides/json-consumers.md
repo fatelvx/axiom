@@ -85,7 +85,7 @@ Do not hard-gate on `axi graph`, `axi observe`, or Markdown output unless your o
 
 Important fields:
 
-- `architectureSummary`: agent-friendly status, review mode, interpretation, review story, top signals, and suggested next actions over the same graph result.
+- `architectureSummary`: agent-friendly status, review mode, interpretation, review story, top signals, optional advisory signal coverage, and suggested next actions over the same graph result.
 - `root`: checked project root. It is an absolute path by default; committed baselines created with `axi graph --json --portable` use `"."` and include `artifact.pathMode: "portable"`.
 - `summary`: counts for modules, observed dependencies, violations, intentional violations, and warnings.
 - `filters`: tells whether output is full graph, attention, or violations-only.
@@ -99,6 +99,8 @@ Important fields:
 `summary.observedDependencies` is always the full observed edge count. `summary.shownObservedDependencies` is the count for the current view. In attention or violations-only output those counts can differ, and `observedDependencies[]` remains the shown-view compatibility array. Use `allObservedDependencies[]` when a machine consumer needs the complete graph.
 
 Warning counts only include advisory checks enabled for that command or config. If a dashboard compares `observe`, `graph`, Markdown, and Mermaid output, run them with the same `--warn-*` flags or label the difference as warning-scope, not drift.
+
+When one or more `--warn-*` families are enabled, `architectureSummary.advisorySignalCoverage` may list each enabled family with `status`, `findings`, and `warningCodes[]`. `checked_no_findings` means that this static scan did not report that advisory family. It is not a health score, runtime dependency proof, or reason to assume unchecked responsibilities are clean. Ownership-based families can be `not_evaluated_needs_contract` when no `.axi` or temporary inferred contract provides module ownership.
 
 `deep_internal_import` warning details can include `entrypointConfidence`, `entrypointReason`, `deepImportGroup`, `sourceGroup`, `publicEntrypoints[]`, and `moduleEntrypoints[]`. `publicEntrypoints[]` is same-source-group advice. `moduleEntrypoints[]` lists other entry points in the broad module that were not used as direct advice. Agents should not rewrite imports to `moduleEntrypoints[]` when `entrypointConfidence` is `ambiguous_entrypoints`.
 

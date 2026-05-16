@@ -23,7 +23,7 @@
       "headline": "This scoped import graph is quiet: no hard failures, visible debt, advisory signals, or baseline drift were reported; graph center is CheckRunner, so compare that center with your intended architecture before saving a baseline. Quiet imports do not prove intra-file responsibilities are healthy.",
       "quickRead": [
         "Contract: no hard failures in this command output.",
-        "Graph center: CheckRunner (14 import sites, fan-in 2, fan-out 7), Infer (9 import sites, fan-in 2, fan-out 5).",
+        "Graph center: CheckRunner (15 import sites, fan-in 2, fan-out 7), CoreTypes (13 import sites, fan-in 6, fan-out 0).",
         "Review pressure: no visible debt or advisory signals."
       ],
       "lookFirst": [
@@ -37,9 +37,18 @@
           "role": "fan_out_hub",
           "incomingModules": 2,
           "outgoingModules": 7,
-          "incomingImportSites": 4,
+          "incomingImportSites": 5,
           "outgoingImportSites": 10,
-          "totalImportSites": 14
+          "totalImportSites": 15
+        },
+        {
+          "module": "CoreTypes",
+          "role": "fan_in_hub",
+          "incomingModules": 6,
+          "outgoingModules": 0,
+          "incomingImportSites": 13,
+          "outgoingImportSites": 0,
+          "totalImportSites": 13
         },
         {
           "module": "Infer",
@@ -49,22 +58,13 @@
           "incomingImportSites": 2,
           "outgoingImportSites": 7,
           "totalImportSites": 9
-        },
-        {
-          "module": "CoreTypes",
-          "role": "fan_in_hub",
-          "incomingModules": 6,
-          "outgoingModules": 0,
-          "incomingImportSites": 12,
-          "outgoingImportSites": 0,
-          "totalImportSites": 12
         }
       ],
       "caveat": "This is a graph interpretation over static imports, not proof of semantic architecture health. Compare it with the architecture you intended."
     },
     "reviewStory": {
       "summary": "This scoped import graph is quiet. Confirm the graph center matches intended architecture before saving or updating a baseline; quiet imports do not prove intra-file responsibilities are healthy.",
-      "setup": "Scanned 12 declared modules and 40 observed import edges. This report is advisory unless you run `axi check` as the gate.",
+      "setup": "Scanned 12 declared modules and 42 observed import edges. This report is advisory unless you run `axi check` as the gate.",
       "pressures": [
         {
           "kind": "graph_center",
@@ -90,8 +90,8 @@
     "forbiddenDependencies": 0,
     "exposedPaths": 0,
     "hiddenPaths": 0,
-    "observedDependencies": 40,
-    "shownObservedDependencies": 40,
+    "observedDependencies": 42,
+    "shownObservedDependencies": 42,
     "violations": 0,
     "intentionalViolations": 0,
     "warnings": 0
@@ -664,6 +664,30 @@
       "fromModule": "Diagnostics",
       "toModule": "CoreTypes",
       "import": {
+        "filePath": "src/diagnostics/advisorySignalCoverage.ts",
+        "line": 1,
+        "specifier": "../axi/types.js",
+        "resolvedPath": "src/axi/types.ts"
+      },
+      "violations": [],
+      "intentionalViolations": []
+    },
+    {
+      "fromModule": "Diagnostics",
+      "toModule": "CheckRunner",
+      "import": {
+        "filePath": "src/diagnostics/advisorySignalCoverage.ts",
+        "line": 2,
+        "specifier": "../validator/check.js",
+        "resolvedPath": "src/validator/check.ts"
+      },
+      "violations": [],
+      "intentionalViolations": []
+    },
+    {
+      "fromModule": "Diagnostics",
+      "toModule": "CoreTypes",
+      "import": {
         "filePath": "src/diagnostics/format.ts",
         "line": 2,
         "specifier": "../axi/types.js",
@@ -1146,6 +1170,30 @@
       "fromModule": "Diagnostics",
       "toModule": "CoreTypes",
       "import": {
+        "filePath": "src/diagnostics/advisorySignalCoverage.ts",
+        "line": 1,
+        "specifier": "../axi/types.js",
+        "resolvedPath": "src/axi/types.ts"
+      },
+      "violations": [],
+      "intentionalViolations": []
+    },
+    {
+      "fromModule": "Diagnostics",
+      "toModule": "CheckRunner",
+      "import": {
+        "filePath": "src/diagnostics/advisorySignalCoverage.ts",
+        "line": 2,
+        "specifier": "../validator/check.js",
+        "resolvedPath": "src/validator/check.ts"
+      },
+      "violations": [],
+      "intentionalViolations": []
+    },
+    {
+      "fromModule": "Diagnostics",
+      "toModule": "CoreTypes",
+      "import": {
         "filePath": "src/diagnostics/format.ts",
         "line": 2,
         "specifier": "../axi/types.js",
@@ -1620,6 +1668,30 @@
         "line": 3,
         "specifier": "../fs/text.js",
         "resolvedPath": "src/fs/text.ts"
+      },
+      "violations": [],
+      "intentionalViolations": []
+    },
+    {
+      "fromModule": "Diagnostics",
+      "toModule": "CoreTypes",
+      "import": {
+        "filePath": "src/diagnostics/advisorySignalCoverage.ts",
+        "line": 1,
+        "specifier": "../axi/types.js",
+        "resolvedPath": "src/axi/types.ts"
+      },
+      "violations": [],
+      "intentionalViolations": []
+    },
+    {
+      "fromModule": "Diagnostics",
+      "toModule": "CheckRunner",
+      "import": {
+        "filePath": "src/diagnostics/advisorySignalCoverage.ts",
+        "line": 2,
+        "specifier": "../validator/check.js",
+        "resolvedPath": "src/validator/check.ts"
       },
       "violations": [],
       "intentionalViolations": []

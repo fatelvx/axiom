@@ -90,6 +90,7 @@ Use the summary first:
 - `summary.kind`: choose the workflow: roots policy, hard check, advisory review, inference authoring, or tool error.
 - `summary.gate.currentCommandIsGate`: decide whether the result can block a change.
 - `summary.counts`: read hard violations, warnings, visible debt, drift, and scan size without walking the whole payload.
+- `summary.advisorySignalCoverage`: see compact checked-no-findings and not-evaluated advisory families before opening the full payload.
 - `summary.reviewStory`: show the first narrative summary and next step.
 - `summary.topSignals`: choose the first payload objects to inspect, such as hard violation groups, collapsed cycles, warning roots, large files, drift, or dependency pressure.
 - `summary.agentHint`: preserve the intended handling of the result.
@@ -99,6 +100,7 @@ Then use the payload for exact evidence:
 - `payload.allowedRoots[]` from `axiom_roots` before choosing another tool's `root`.
 - `payload.violations[]` for required repairs.
 - `payload.warnings[]` for advisory pressure.
+- `payload.architectureSummary.advisorySignalCoverage` to see which enabled advisory families reported findings, reported no findings, or were not evaluated because a contract was missing.
 - `payload.intentionalDebt[]` or `payload.intentionalViolations[]` for visible accepted debt.
 - `payload.drift` for observed-edge drift details.
 - `payload.axi`, `payload.modules[]`, and `payload.collapsedCycles[]` for inferred-contract review.

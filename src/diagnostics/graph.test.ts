@@ -216,6 +216,58 @@ test("quiet graph interpretation still gives a next review step", () => {
   assert.match(output, /look first:/);
 });
 
+test("observe output reports enabled advisory signal checks with no findings", () => {
+  const result = runCheck({
+    root: path.join(repoRoot, "fixtures/basic-ts-valid"),
+    warnUnresolvedImports: true,
+    warnDynamicImports: true
+  });
+  const payload = toGraphJson(result, { violationsOnly: true, attention: true, observe: true });
+  const output = formatGraphResult(result, { violationsOnly: true, attention: true, observe: true });
+  const markdown = formatGraphMarkdown(result, { violationsOnly: true, attention: true, observe: true });
+
+  assert.equal(payload.summary.warnings, 0);
+  assert.deepEqual(
+    payload.architectureSummary.advisorySignalCoverage?.enabledFamilies.map((entry) => ({
+      family: entry.family,
+      findings: entry.findings,
+      status: entry.status
+    })),
+    [
+      { family: "unresolvedImports", findings: 0, status: "checked_no_findings" },
+      { family: "dynamicImports", findings: 0, status: "checked_no_findings" }
+    ]
+  );
+  assert.match(output, /checked with no findings: unresolved static imports, non-literal dynamic dependency expressions/);
+  assert.match(markdown, /Checked with no findings: unresolved static imports, non-literal dynamic dependency expressions/);
+  assert.match(markdown, /not proof of semantic architecture health or runtime dependency completeness/);
+});
+
+test("advisory signal coverage does not claim ownership-based checks ran without a contract", () => {
+  const result = runCheck({
+    root: path.join(repoRoot, "fixtures/infer-cycle"),
+    warnUnresolvedImports: true,
+    warnDynamicImports: true
+  });
+  const payload = toGraphJson(result, { violationsOnly: true, attention: true, observe: true });
+  const output = formatGraphResult(result, { violationsOnly: true, attention: true, observe: true });
+
+  assert.equal(payload.architectureSummary.status, "needs_contract");
+  assert.deepEqual(
+    payload.architectureSummary.advisorySignalCoverage?.enabledFamilies.map((entry) => ({
+      family: entry.family,
+      findings: entry.findings,
+      status: entry.status
+    })),
+    [
+      { family: "unresolvedImports", findings: 0, status: "not_evaluated_needs_contract" },
+      { family: "dynamicImports", findings: 0, status: "not_evaluated_needs_contract" }
+    ]
+  );
+  assert.match(output, /not evaluated: unresolved static imports/);
+  assert.doesNotMatch(output, /checked with no findings: unresolved static imports/);
+});
+
 test("violations-only graph output focuses observed edges with diagnostics", () => {
   const result = runCheck({ root: path.join(repoRoot, "fixtures/visibility-rules") });
   const output = formatGraphResult(result, { violationsOnly: true });

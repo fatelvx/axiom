@@ -74,6 +74,8 @@ A quiet graph means the current scan did not report hard violations, visible deb
 
 That is useful, but it is not the same as "the architecture is healthy."
 
+If you enabled advisory families such as `--warn-dynamic-imports` or `--warn-unresolved-imports`, `observe` can also say they were checked with no findings. Read that as evidence about this static scan only. If there is no contract or temporary inferred contract, ownership-based advisory families may be listed as not evaluated instead of falsely appearing clean.
+
 Look for:
 
 - Whether the central module is the module you expected to carry the most coupling.

@@ -338,6 +338,32 @@ test("mcp tool result summarizes review and inference evidence for agents", () =
           nextStep: "Inspect hard violations first.",
           caveat: "This is review context.",
           pressures: [{ kind: "hard_violations", severity: "error", title: "Hard violations" }]
+        },
+        advisorySignalCoverage: {
+          enabledFamilies: [
+            {
+              family: "dynamicImports",
+              label: "non-literal dynamic dependency expressions",
+              warningCodes: ["dynamic_dependency_expression"],
+              findings: 0,
+              status: "checked_no_findings"
+            },
+            {
+              family: "unresolvedImports",
+              label: "unresolved static imports",
+              warningCodes: ["unresolved_import"],
+              findings: 2,
+              status: "findings_reported"
+            },
+            {
+              family: "publicApiSurface",
+              label: "public API surface probes",
+              warningCodes: ["broad_public_surface", "public_entrypoint_coupling"],
+              findings: 0,
+              status: "not_applicable_no_exposed_paths"
+            }
+          ],
+          caveat: "Coverage is static scan evidence, not health proof."
         }
       },
       summary: {
@@ -363,6 +389,12 @@ test("mcp tool result summarizes review and inference evidence for agents", () =
   assert.equal(graphResult.structuredContent.summary.counts?.newObservedEdges, 1);
   assert.equal(graphResult.structuredContent.summary.drift?.removedObservedEdges, 2);
   assert.equal(graphResult.structuredContent.summary.reviewStory?.firstPressure?.title, "Hard violations");
+  assert.deepEqual(graphResult.structuredContent.summary.advisorySignalCoverage, {
+    checkedNoFindings: ["non-literal dynamic dependency expressions"],
+    findingsReported: ["unresolved static imports (2)"],
+    notEvaluated: ["public API surface probes"],
+    caveat: "Coverage is static scan evidence, not health proof."
+  });
   assert.equal(graphResult.structuredContent.summary.topSignals?.[0]?.kind, "advisory_observed_edge_drift");
   assert.match(graphResult.structuredContent.summary.agentHint, /advisory review evidence/);
   assert.match(graphResult.structuredContent.summary.agentHint, /not a cleanup checklist/);
@@ -452,6 +484,18 @@ test("mcp inferred-observe summary exposes compact top signals without hiding pa
           summary: "Review visible architecture pressure.",
           nextStep: "Inspect the ambiguous public boundary first.",
           pressures: [{ kind: "warning_roots", severity: "warning", title: "Ambiguous public boundary" }]
+        },
+        advisorySignalCoverage: {
+          enabledFamilies: [
+            {
+              family: "dynamicImports",
+              label: "non-literal dynamic dependency expressions",
+              warningCodes: ["dynamic_dependency_expression"],
+              findings: 0,
+              status: "checked_no_findings"
+            }
+          ],
+          caveat: "Coverage is static scan evidence, not health proof."
         }
       },
       summary: {
@@ -524,6 +568,9 @@ test("mcp inferred-observe summary exposes compact top signals without hiding pa
   assert.equal(summary.topSignals?.[1]?.count, 2);
   assert.equal(summary.topSignals?.[2]?.kind, "composition_root_pressure");
   assert.equal(summary.topSignals?.[3]?.kind, "large_module_file");
+  assert.deepEqual(summary.advisorySignalCoverage?.checkedNoFindings, [
+    "non-literal dynamic dependency expressions"
+  ]);
   assert.match(summary.agentHint, /temporary inferred contract/);
   assert.match(summary.agentHint, /not a cleanup checklist/);
   assert.match(summary.agentHint, /do not refactor solely to reduce signal counts/);

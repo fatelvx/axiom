@@ -12,6 +12,7 @@ import {
   type GraphJsonArchitectureSignal
 } from "./graphArchitectureSignals.js";
 import { buildWarningClusters, warningClusterToReviewPressure } from "./graphWarnings.js";
+import type { GraphJsonAdvisorySignalCoverage } from "./advisorySignalCoverage.js";
 
 export interface GraphJsonArchitectureSummary {
   model: "declared_intent_vs_observed_imports";
@@ -26,6 +27,7 @@ export interface GraphJsonArchitectureSummary {
   interpretation: GraphJsonArchitectureInterpretation;
   reviewStory: GraphJsonArchitectureReviewStory;
   topSignals: GraphJsonArchitectureSignal[];
+  advisorySignalCoverage?: GraphJsonAdvisorySignalCoverage;
   suggestedNextActions: string[];
 }
 
@@ -73,6 +75,7 @@ export function buildArchitectureSummary(input: {
   intentionalDebt: GraphJsonIntentionalDebt[];
   warnings: GraphJsonViolation[];
   drift?: GraphJsonDrift;
+  advisorySignalCoverage?: GraphJsonAdvisorySignalCoverage;
   options: GraphFormatOptions;
 }): GraphJsonArchitectureSummary {
   return {
@@ -88,6 +91,7 @@ export function buildArchitectureSummary(input: {
     interpretation: buildArchitectureInterpretation(input),
     reviewStory: buildArchitectureReviewStory(input),
     topSignals: formatArchitectureSummarySignals(input),
+    ...(input.advisorySignalCoverage ? { advisorySignalCoverage: input.advisorySignalCoverage } : {}),
     suggestedNextActions: formatArchitectureSummaryNextActions(input)
   };
 }

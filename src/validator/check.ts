@@ -52,6 +52,15 @@ export interface CheckOptions {
   warnLargeFiles?: boolean;
 }
 
+export interface AdvisorySignalOptions {
+  unresolvedImports: boolean;
+  dynamicImports: boolean;
+  publicApiSurface: boolean;
+  couplingConcentration: boolean;
+  deepInternalImports: boolean;
+  largeFiles: boolean;
+}
+
 export interface CheckResult {
   root: string;
   specFiles: string[];
@@ -59,6 +68,7 @@ export interface CheckResult {
   sourceFileMetrics: SourceFileMetric[];
   importCount: number;
   observedDependencies: ObservedDependency[];
+  advisorySignalOptions: AdvisorySignalOptions;
   spec: AxiomSpec;
   violations: Violation[];
   warnings: Violation[];
@@ -165,6 +175,14 @@ export function runCheck(options: CheckOptions): CheckResult {
     sourceFileMetrics,
     importCount: imports.length,
     observedDependencies,
+    advisorySignalOptions: {
+      unresolvedImports: warnUnresolvedImports,
+      dynamicImports: warnDynamicImports,
+      publicApiSurface: warnPublicApiSurface,
+      couplingConcentration: warnCouplingConcentration,
+      deepInternalImports: warnDeepInternalImports,
+      largeFiles: warnLargeFiles
+    },
     spec,
     violations,
     warnings,

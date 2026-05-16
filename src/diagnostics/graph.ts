@@ -16,6 +16,12 @@ import {
   formatWarningClusters,
   warningDisplayCode
 } from "./graphWarnings.js";
+import {
+  buildAdvisorySignalCoverage,
+  formatAdvisorySignalCoverageDetails,
+  formatAdvisorySignalCoverageMarkdown,
+  formatAdvisorySignalCoverageSummary
+} from "./advisorySignalCoverage.js";
 
 export const graphJsonSchemaVersion = "axiom.graph.v12";
 
@@ -194,7 +200,8 @@ export function formatGraphResult(result: CheckResult, options: GraphFormatOptio
     ...formatViolationSummaryLines(graph),
     `intentional violations: ${graph.summary.intentionalViolations}`,
     `warnings: ${graph.summary.warnings}`,
-    "advisory signal scope: warning counts include only checks enabled for this command or config"
+    "advisory signal scope: warning counts include only checks enabled for this command or config",
+    ...(options.violationsOnly ? [] : formatAdvisorySignalCoverageSummary(graph.architectureSummary.advisorySignalCoverage))
   ];
   if (graph.drift) {
     lines.push(
@@ -448,6 +455,12 @@ export function toGraphJson(result: CheckResult, options: GraphFormatOptions = {
   };
   const violations = result.violations.map((violation) => toJsonViolation(result.root, violation));
   const warnings = result.warnings.map((warning) => toJsonViolation(result.root, warning));
+  const advisorySignalCoverage = buildAdvisorySignalCoverage({
+    options: result.advisorySignalOptions,
+    warningCodes: result.warnings.map((warning) => warning.code),
+    declaredModuleCount: result.spec.modules.length,
+    exposedPathCount: exposedPaths.length
+  });
 
   return {
     schemaVersion: graphJsonSchemaVersion,
@@ -469,6 +482,7 @@ export function toGraphJson(result: CheckResult, options: GraphFormatOptions = {
       intentionalDebt,
       warnings,
       drift,
+      advisorySignalCoverage,
       options
     }),
     summary,
@@ -727,11 +741,13 @@ function formatMarkdownWarnings(graph: GraphJsonResult): string[] {
   if (graph.warnings.length === 0) {
     lines.push("- None");
     lines.push("- Zero advisory signals is not proof of architecture health; compare the graph with intended ownership and responsibilities.");
+    lines.push(...formatAdvisorySignalCoverageMarkdown(graph.architectureSummary.advisorySignalCoverage));
     return lines;
   }
 
   lines.push("- These are review-pressure signals, not a cleanup checklist.");
   lines.push("- Do not refactor solely to reduce advisory signal counts; first name the architecture hypothesis and verification plan.");
+  lines.push(...formatAdvisorySignalCoverageMarkdown(graph.architectureSummary.advisorySignalCoverage));
   lines.push(...formatMarkdownWarningClusters(graph.warnings));
 
   for (const warning of graph.warnings) {
@@ -1099,11 +1115,13 @@ function formatWarnings(graph: GraphJsonResult): string[] {
     lines.push("  none");
     lines.push("  note: zero advisory signals is not proof of architecture health");
     lines.push("  note: advisory signal counts include only checks enabled for this command or config");
+    lines.push(...formatAdvisorySignalCoverageDetails(graph.architectureSummary.advisorySignalCoverage));
     return lines;
   }
 
   lines.push("  note: advisory signals are review pressure, not a cleanup checklist or failure state");
   lines.push("  note: do not refactor solely to reduce advisory signal counts; first name the architecture hypothesis");
+  lines.push(...formatAdvisorySignalCoverageDetails(graph.architectureSummary.advisorySignalCoverage));
   lines.push(...formatWarningClusters(graph.warnings));
 
   for (const warning of graph.warnings) {

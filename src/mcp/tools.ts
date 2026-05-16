@@ -101,6 +101,12 @@ export interface AxiomMcpResultSummary {
     newObservedEdges: number;
     removedObservedEdges: number;
   };
+  advisorySignalCoverage?: {
+    checkedNoFindings: string[];
+    findingsReported: string[];
+    notEvaluated: string[];
+    caveat?: string;
+  };
   gate?: {
     command: string;
     currentCommandIsGate: boolean;
@@ -303,12 +309,14 @@ function createResultSummary(invocation: AxiomMcpCliInvocation, payload: unknown
   );
   const drift = buildDriftSummary(readRecordProperty(payloadRecord, "drift"));
   const gate = buildGateSummary(invocation, architectureSummary);
+  const advisorySignalCoverage = buildAdvisorySignalCoverageSummary(architectureSummary);
   const topSignals = buildPayloadTopSignals(payloadRecord);
 
   return {
     agentHint: buildAgentHint(invocation, ok),
     ...(Object.keys(counts).length > 0 ? { counts } : {}),
     ...(drift ? { drift } : {}),
+    ...(advisorySignalCoverage ? { advisorySignalCoverage } : {}),
     ...(gate ? { gate } : {}),
     kind: resultSummaryKind(invocation.command),
     ...(ok !== undefined ? { ok } : {}),
@@ -333,6 +341,7 @@ function createInferObserveSummary(inferencePayload: unknown, observePayload: un
   const reviewStory = buildReviewStorySummary(readRecordProperty(architectureSummary, "reviewStory")) ??
     buildReviewStorySummary(readRecordProperty(inferenceRecord, "reviewStory"));
   const topSignals = buildInferObserveTopSignals(inferenceRecord, observeRecord);
+  const advisorySignalCoverage = buildAdvisorySignalCoverageSummary(architectureSummary);
   const gate = buildGateSummary(
     {
       acceptedExitCodes: [0],
@@ -353,6 +362,7 @@ function createInferObserveSummary(inferencePayload: unknown, observePayload: un
   return {
     agentHint: `Use this as advisory review evidence produced from a temporary inferred contract. The inferred contract mirrors the current graph and is not declared architecture intent; do not save it, update baselines, accept debt, or use it as a hard gate without human review. ${ADVISORY_REFACTOR_GUARDRAIL}`,
     ...(Object.keys(counts).length > 0 ? { counts } : {}),
+    ...(advisorySignalCoverage ? { advisorySignalCoverage } : {}),
     gate,
     kind: "review",
     ...(reviewStory ? { reviewStory } : {}),
@@ -465,6 +475,45 @@ function buildDriftSummary(drift: Record<string, unknown> | undefined): AxiomMcp
   };
 }
 
+function buildAdvisorySignalCoverageSummary(
+  architectureSummary: Record<string, unknown> | undefined
+): AxiomMcpResultSummary["advisorySignalCoverage"] | undefined {
+  const coverage = readRecordProperty(architectureSummary, "advisorySignalCoverage");
+  const enabledFamilies = readRecordArrayProperty(coverage, "enabledFamilies");
+  if (enabledFamilies.length === 0) {
+    return undefined;
+  }
+
+  const checkedNoFindings = enabledFamilies
+    .filter((entry) => readStringProperty(entry, "status") === "checked_no_findings")
+    .map(formatAdvisorySignalCoverageLabel);
+  const findingsReported = enabledFamilies
+    .filter((entry) => readStringProperty(entry, "status") === "findings_reported")
+    .map(formatAdvisorySignalCoverageLabel);
+  const notEvaluated = enabledFamilies
+    .filter((entry) => {
+      const status = readStringProperty(entry, "status");
+      return status === "not_evaluated_needs_contract" || status === "not_applicable_no_exposed_paths";
+    })
+    .map(formatAdvisorySignalCoverageLabel);
+  const summary = {
+    checkedNoFindings,
+    findingsReported,
+    notEvaluated,
+    ...(readStringProperty(coverage, "caveat") ? { caveat: readStringProperty(coverage, "caveat") } : {})
+  };
+
+  return checkedNoFindings.length > 0 || findingsReported.length > 0 || notEvaluated.length > 0 ? summary : undefined;
+}
+
+function formatAdvisorySignalCoverageLabel(entry: Record<string, unknown>): string {
+  const family = readStringProperty(entry, "family");
+  const label = readStringProperty(entry, "label") ?? family ?? "unknown";
+  const findings = readNumberProperty(entry, "findings");
+  const suffix = findings !== undefined && findings > 0 ? ` (${findings})` : "";
+  return `${label}${suffix}`;
+}
+
 function buildReviewStorySummary(
   reviewStory: Record<string, unknown> | undefined
 ): AxiomMcpResultSummary["reviewStory"] | undefined {
@@ -535,6 +584,11 @@ function readNumberProperty(record: Record<string, unknown> | undefined, key: st
 function readRecordProperty(record: Record<string, unknown> | undefined, key: string): Record<string, unknown> | undefined {
   const value = record?.[key];
   return isRecord(value) ? value : undefined;
+}
+
+function readRecordArrayProperty(record: Record<string, unknown> | undefined, key: string): Array<Record<string, unknown>> {
+  const value = record?.[key];
+  return Array.isArray(value) ? value.filter((item): item is Record<string, unknown> => isRecord(item)) : [];
 }
 
 function readStringProperty(record: Record<string, unknown> | undefined, key: string): string | undefined {

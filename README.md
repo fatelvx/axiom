@@ -311,7 +311,7 @@ Warnings are opt-in review signals, not default CI gates:
 | `--warn-deep-internal-imports` | Relative imports bypassing likely `index.*` entry points |
 | `--warn-large-files` | Large files that may hide intra-file responsibility pressure |
 
-Use these in `observe` first. Promote only high-confidence intent into `.axi` hard rules.
+Use these in `observe` first. When an enabled family reports no findings, graph / observe output can say it was checked with no findings; that is static evidence scope, not proof that the architecture is healthy. Promote only high-confidence intent into `.axi` hard rules.
 
 ## JSON And Markdown Output
 

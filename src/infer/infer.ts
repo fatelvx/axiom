@@ -6,6 +6,7 @@ import { createImportResolver, loadPackageResolver, type PackageMetadata } from 
 import { scanSourceFile } from "../scanner/importScanner.js";
 import { normalizePathForMatch } from "../validator/glob.js";
 import { summarizeLargeFilePressure } from "../validator/largeFilePressure.js";
+import { buildCollapsedCycleEvidence } from "./inferCycleEvidence.js";
 import {
   buildInferReviewStory,
   buildStarterContract,
@@ -130,7 +131,6 @@ interface Component {
   name: string;
 }
 
-const cycleBreakingCandidateLimit = 5;
 const sampleLimit = 5;
 
 export function runInfer(options: InferOptions): InferResult {
@@ -164,7 +164,7 @@ export function runInfer(options: InferOptions): InferResult {
   const observedDependencies = buildObservedDependencies(root, candidateEdges, keyToComponent, components);
   const collapsedCycles = components
     .filter((component) => component.keys.length > 1)
-    .map((component) => buildCollapsedCycle(candidateGroups, candidateEdges, component));
+    .map((component) => buildCollapsedCycleEvidence({ candidateGroups, candidateEdges, component }));
   const architecturePressureNotes = findArchitecturePressureNotes(root, sourceFileMetrics);
 
   return {
@@ -688,131 +688,6 @@ function findDominantLeadingToken(names: string[]): string | undefined {
 
 function splitIdentifierWords(name: string): string[] {
   return name.match(/[A-Z]+(?=[A-Z][a-z]|\d|$)|[A-Z]?[a-z]+|\d+/g) ?? [name];
-}
-
-function buildCollapsedCycle(
-  candidateGroups: CandidateGroup[],
-  candidateEdges: CandidateEdge[],
-  component: Component
-): CollapsedCycle {
-  const componentKeys = new Set(component.keys);
-  const cyclePathSamples = buildCyclePathSamples(candidateGroups, candidateEdges, component);
-  const internalDependencies = candidateEdges
-    .filter((edge) => componentKeys.has(edge.from) && componentKeys.has(edge.to) && edge.from !== edge.to)
-    .map((edge) => ({
-      fromGroup: candidateName(candidateGroups, edge.from),
-      toGroup: candidateName(candidateGroups, edge.to),
-      count: edge.count,
-      samples: edge.samples
-    }))
-    .sort((left, right) =>
-      `${left.fromGroup}\0${left.toGroup}`.localeCompare(`${right.fromGroup}\0${right.toGroup}`)
-    );
-  const cycleBreakingCandidates = buildCycleBreakingCandidates(internalDependencies);
-
-  return {
-    module: component.name,
-    sourceGroups: component.keys.map((key) => candidateName(candidateGroups, key)).sort(),
-    cyclePathSamples,
-    internalDependencies,
-    cycleBreakingCandidates
-  };
-}
-
-function buildCycleBreakingCandidates(
-  internalDependencies: CollapsedCycleDependency[]
-): CollapsedCycleBreakingCandidate[] {
-  return internalDependencies
-    .map((dependency) => ({
-      fromGroup: dependency.fromGroup,
-      toGroup: dependency.toGroup,
-      count: dependency.count,
-      samples: dependency.samples,
-      rationale:
-        `${dependency.fromGroup} -> ${dependency.toGroup} participates in the collapsed cycle with ${formatImportSiteCount(
-          dependency.count
-        )}; inspect whether this edge should become an explicit boundary, interface, event, or accepted merged responsibility.`
-    }))
-    .sort((left, right) => {
-      if (right.count !== left.count) {
-        return right.count - left.count;
-      }
-
-      return `${left.fromGroup}\0${left.toGroup}`.localeCompare(`${right.fromGroup}\0${right.toGroup}`);
-    })
-    .slice(0, cycleBreakingCandidateLimit);
-}
-
-function formatImportSiteCount(count: number): string {
-  return count === 1 ? "1 import site" : `${count} import sites`;
-}
-
-function buildCyclePathSamples(
-  candidateGroups: CandidateGroup[],
-  candidateEdges: CandidateEdge[],
-  component: Component
-): CollapsedCyclePathSample[] {
-  const componentKeys = new Set(component.keys);
-  const outgoing = new Map<string, string[]>();
-
-  for (const key of component.keys) {
-    outgoing.set(key, []);
-  }
-
-  for (const edge of candidateEdges) {
-    if (!componentKeys.has(edge.from) || !componentKeys.has(edge.to) || edge.from === edge.to) {
-      continue;
-    }
-    outgoing.get(edge.from)?.push(edge.to);
-  }
-
-  for (const targets of outgoing.values()) {
-    targets.sort((left, right) => candidateName(candidateGroups, left).localeCompare(candidateName(candidateGroups, right)));
-  }
-
-  const starts = [...component.keys].sort((left, right) =>
-    candidateName(candidateGroups, left).localeCompare(candidateName(candidateGroups, right))
-  );
-
-  for (const start of starts) {
-    const cyclePath = findCyclePath(start, start, outgoing, new Set([start]), [start]);
-    if (cyclePath) {
-      return [
-        {
-          groups: cyclePath.map((key) => candidateName(candidateGroups, key))
-        }
-      ];
-    }
-  }
-
-  return [];
-}
-
-function findCyclePath(
-  start: string,
-  current: string,
-  outgoing: Map<string, string[]>,
-  visited: Set<string>,
-  cyclePath: string[]
-): string[] | undefined {
-  for (const target of outgoing.get(current) ?? []) {
-    if (target === start && cyclePath.length > 1) {
-      return [...cyclePath, start];
-    }
-
-    if (visited.has(target)) {
-      continue;
-    }
-
-    visited.add(target);
-    const found = findCyclePath(start, target, outgoing, visited, [...cyclePath, target]);
-    if (found) {
-      return found;
-    }
-    visited.delete(target);
-  }
-
-  return undefined;
 }
 
 function uniquifyComponentNames(components: Component[]): Component[] {

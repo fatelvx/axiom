@@ -18,17 +18,15 @@ import { createImportResolver } from "../scanner/importResolver.js";
 import { scanSourceFile } from "../scanner/importScanner.js";
 import { findCouplingConcentrationWarnings } from "./couplingWarnings.js";
 import { findDeepInternalImportWarnings } from "./deepInternalImportWarnings.js";
+import { applySuppressions, findExpiringSuppressions, findUnusedSuppressions } from "./intentionalDebt.js";
 import { findLargeModuleFileWarnings, summarizeTopLargestFiles } from "./largeFilePressure.js";
 import { createOwnershipIndex, validateOwnership } from "./ownership.js";
 import { findPublicApiSurfaceWarnings } from "./publicApiSurfaceWarnings.js";
 import {
-  applySuppressions,
   buildObservedDependencies,
   findDynamicDependencyExpressionWarnings,
-  findExpiringSuppressions,
   findUnresolvedImportWarnings,
   validateModuleSurfaceConsistency,
-  findUnusedSuppressions,
   validateObservedDependencies,
   validateSpec
 } from "./validate.js";

@@ -209,7 +209,7 @@ This keeps the debt visible without pretending Axiom can prove full symbol-level
 Install the scoped package:
 
 ```bash
-npm install -D @fatelvx/axiom@alpha --save-exact
+npm install --ignore-scripts -D @fatelvx/axiom@0.6.0-alpha.3 --save-exact
 ```
 
 Then add a script:

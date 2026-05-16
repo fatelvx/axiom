@@ -26,10 +26,10 @@ If you copy it into another repository, copy the helpers too or adjust the `node
 It expects Axiom to be installed as a dev dependency:
 
 ```bash
-npm install -D @fatelvx/axiom
+npm install --ignore-scripts -D @fatelvx/axiom@0.6.0-alpha.3 --save-exact
 ```
 
-Until the first public npm publish, use a local checkout or package installation strategy that fits your repository.
+Use the exact version your repository has reviewed. In CI, run the local bin with `npx --no-install axi` so a missing dev dependency fails clearly instead of fetching another package.
 
 The workflow does three things:
 
@@ -59,7 +59,7 @@ Example:
 
 ```bash
 set +e
-npx axi check --root . --json > axiom-check.json
+npx --no-install axi check --root . --json > axiom-check.json
 status=$?
 node examples/github-actions/annotate-check.mjs axiom-check.json
 exit "$status"
@@ -76,7 +76,7 @@ This keeps the gate source clear:
 Use `axi observe --json` when a CI job, dashboard, or agent should consume the structured `architectureSummary`:
 
 ```bash
-npx axi observe --root . --json \
+npx --no-install axi observe --root . --json \
   --warn-unresolved-imports \
   --warn-coupling-concentration \
   --warn-deep-internal-imports > axiom-observe.json
@@ -97,7 +97,7 @@ Add `--warn-public-api-surface` only when the repository has active `exposes` ru
 Use Markdown output when you want the full review body instead of the compact JSON-derived summary:
 
 ```bash
-npx axi observe --root . --markdown \
+npx --no-install axi observe --root . --markdown \
   --warn-unresolved-imports \
   --warn-coupling-concentration \
   --warn-deep-internal-imports >> "$GITHUB_STEP_SUMMARY"

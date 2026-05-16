@@ -19,23 +19,25 @@ Axiom's npm package target is `@fatelvx/axiom`. The unscoped `axiom` package nam
 In a project:
 
 ```bash
-npm install -D @fatelvx/axiom@alpha --save-exact
-npx axi --help
+npm install --ignore-scripts -D @fatelvx/axiom@0.6.0-alpha.3 --save-exact
+npx --no-install axi --help
 ```
+
+`--no-install` makes npm use the exact local Axiom package you installed instead of downloading a different command from the registry.
 
 For a first read-only architecture pass:
 
 ```bash
-npx axi infer --root . --include "src/**"
-npx axi observe --root . --include "src/**" --warn-large-files
+npx --no-install axi infer --root . --include "src/**"
+npx --no-install axi observe --root . --include "src/**" --warn-large-files
 ```
 
 From this repository checkout:
 
 ```bash
-npm install
+npm install --ignore-scripts
 npm run build
-npm install -g .
+npm install --ignore-scripts -g .
 ```
 
 Then run:

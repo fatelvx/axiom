@@ -23,7 +23,7 @@ jobs:
         shell: bash
         run: |
           set +e
-          npx axi check --root . --json > axiom-check.json
+          npx --no-install axi check --root . --json > axiom-check.json
           status=$?
           node examples/github-actions/annotate-check.mjs axiom-check.json
           exit "$status"
@@ -32,7 +32,7 @@ jobs:
         if: always()
         shell: bash
         run: |
-          npx axi observe --root . --json \
+          npx --no-install axi observe --root . --json \
             --warn-unresolved-imports \
             --warn-coupling-concentration \
             --warn-deep-internal-imports > axiom-observe.json

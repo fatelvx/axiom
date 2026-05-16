@@ -57,16 +57,18 @@ It is not a prompt wrapper and not a style linter. It is an architecture observa
 Install the public alpha:
 
 ```bash
-npm install -D @fatelvx/axiom@alpha --save-exact
-npx axi infer --root . --include "src/**"
+npm install --ignore-scripts -D @fatelvx/axiom@0.6.0-alpha.3 --save-exact
+npx --no-install axi infer --root . --include "src/**"
 ```
+
+`--no-install` makes npm use the exact local package you just installed instead of fetching a different command from the registry.
 
 `axi infer` is read-only starter evidence. It mirrors the graph Axiom can currently see; review it before turning it into a contract.
 
 To try the hard gate, add a small `axiom/main.axi` contract like the one below, then run:
 
 ```bash
-npx axi check --root . --include "src/**"
+npx --no-install axi check --root . --include "src/**"
 ```
 
 When the code violates the reviewed contract, `axi check` exits `1` and reports file-level errors such as:
@@ -82,8 +84,8 @@ error hidden_import src/ui/view.ts:3
 Try the review surface:
 
 ```bash
-npx axi observe --root . --include "src/**" --warn-large-files
-npx axi graph --root . --include "src/**" --attention
+npx --no-install axi observe --root . --include "src/**" --warn-large-files
+npx --no-install axi graph --root . --include "src/**" --attention
 ```
 
 Want a controlled example first?
@@ -91,7 +93,7 @@ Want a controlled example first?
 ```bash
 git clone https://github.com/fatelvx/axiom.git
 cd axiom
-npm install
+npm install --ignore-scripts
 npm run build
 node dist/cli.js check --root examples/spec-first-pilot
 node dist/cli.js check --root examples/spec-first-services-pilot
@@ -191,22 +193,24 @@ Axiom's npm package target is `@fatelvx/axiom`. The unscoped `axiom` package nam
 Project install:
 
 ```bash
-npm install -D @fatelvx/axiom@alpha --save-exact
-npx axi check --root .
-npx @fatelvx/axiom check --root .
+npm install --ignore-scripts -D @fatelvx/axiom@0.6.0-alpha.3 --save-exact
+npx --no-install axi check --root .
+npx --no-install axiom check --root .
 ```
+
+Pin the alpha version your repository has reviewed, then upgrade intentionally when you are ready to test a newer alpha.
 
 Local checkout for contributors:
 
 ```bash
-npm install
+npm install --ignore-scripts
 npm run build
 ```
 
 Optional global install from this checkout:
 
 ```bash
-npm install -g .
+npm install --ignore-scripts -g .
 axi check --root examples/basic-app
 ```
 

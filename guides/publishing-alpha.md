@@ -36,9 +36,9 @@ npm pack
 Then install it in a temporary project and verify both bins:
 
 ```bash
-npm install -D ./fatelvx-axiom-<version>.tgz
-npx axi --help
-npx axiom --help
+npm install --ignore-scripts -D ./fatelvx-axiom-<version>.tgz
+npx --no-install axi --help
+npx --no-install axiom --help
 ```
 
 ## Publish
@@ -53,9 +53,9 @@ npm publish --access public --tag alpha
 After publishing, users should be able to run:
 
 ```bash
-npm install -D @fatelvx/axiom@alpha --save-exact
-npx axi check --root .
-npx @fatelvx/axiom check --root .
+npm install --ignore-scripts -D @fatelvx/axiom@0.6.0-alpha.3 --save-exact
+npx --no-install axi check --root .
+npx --no-install axiom check --root .
 ```
 
 ## Post-Publish

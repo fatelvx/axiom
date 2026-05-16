@@ -23,7 +23,7 @@
       "headline": "This scoped import graph is quiet: no hard failures, visible debt, advisory signals, or baseline drift were reported; graph center is CheckRunner, so compare that center with your intended architecture before saving a baseline. Quiet imports do not prove intra-file responsibilities are healthy.",
       "quickRead": [
         "Contract: no hard failures in this command output.",
-        "Graph center: CheckRunner (15 import sites, fan-in 2, fan-out 7), CoreTypes (14 import sites, fan-in 6, fan-out 0).",
+        "Graph center: CheckRunner (16 import sites, fan-in 2, fan-out 7), CoreTypes (14 import sites, fan-in 6, fan-out 0).",
         "Review pressure: no visible debt or advisory signals."
       ],
       "lookFirst": [
@@ -38,8 +38,8 @@
           "incomingModules": 2,
           "outgoingModules": 7,
           "incomingImportSites": 5,
-          "outgoingImportSites": 10,
-          "totalImportSites": 15
+          "outgoingImportSites": 11,
+          "totalImportSites": 16
         },
         {
           "module": "CoreTypes",
@@ -64,7 +64,7 @@
     },
     "reviewStory": {
       "summary": "This scoped import graph is quiet. Confirm the graph center matches intended architecture before saving or updating a baseline; quiet imports do not prove intra-file responsibilities are healthy.",
-      "setup": "Scanned 12 declared modules and 43 observed import edges. This report is advisory unless you run `axi check` as the gate.",
+      "setup": "Scanned 12 declared modules and 45 observed import edges. This report is advisory unless you run `axi check` as the gate.",
       "pressures": [
         {
           "kind": "graph_center",
@@ -90,8 +90,8 @@
     "forbiddenDependencies": 0,
     "exposedPaths": 0,
     "hiddenPaths": 0,
-    "observedDependencies": 43,
-    "shownObservedDependencies": 43,
+    "observedDependencies": 45,
+    "shownObservedDependencies": 45,
     "violations": 0,
     "intentionalViolations": 0,
     "warnings": 0
@@ -171,6 +171,7 @@
       "paths": [
         "src/validator/glob.ts",
         "src/validator/couplingWarnings.ts",
+        "src/validator/largeFilePressure.ts",
         "src/validator/ownership.ts",
         "src/validator/validate.ts"
       ],
@@ -204,7 +205,7 @@
       "hides": [],
       "location": {
         "filePath": "axiom/main.axi",
-        "line": 35
+        "line": 36
       }
     },
     {
@@ -222,7 +223,7 @@
       "hides": [],
       "location": {
         "filePath": "axiom/main.axi",
-        "line": 43
+        "line": 44
       }
     },
     {
@@ -246,7 +247,7 @@
       "hides": [],
       "location": {
         "filePath": "axiom/main.axi",
-        "line": 49
+        "line": 50
       }
     },
     {
@@ -268,7 +269,7 @@
       "hides": [],
       "location": {
         "filePath": "axiom/main.axi",
-        "line": 61
+        "line": 62
       }
     },
     {
@@ -288,7 +289,7 @@
       "hides": [],
       "location": {
         "filePath": "axiom/main.axi",
-        "line": 71
+        "line": 72
       }
     },
     {
@@ -304,7 +305,7 @@
       "hides": [],
       "location": {
         "filePath": "axiom/main.axi",
-        "line": 79
+        "line": 80
       }
     },
     {
@@ -326,7 +327,7 @@
       "hides": [],
       "location": {
         "filePath": "axiom/main.axi",
-        "line": 84
+        "line": 85
       }
     }
   ],
@@ -352,20 +353,12 @@
       "toModule": "CoreTypes",
       "ruleLocation": {
         "filePath": "axiom/main.axi",
-        "line": 32
+        "line": 33
       }
     },
     {
       "fromModule": "Discovery",
       "toModule": "Config",
-      "ruleLocation": {
-        "filePath": "axiom/main.axi",
-        "line": 38
-      }
-    },
-    {
-      "fromModule": "Discovery",
-      "toModule": "TextIO",
       "ruleLocation": {
         "filePath": "axiom/main.axi",
         "line": 39
@@ -373,10 +366,18 @@
     },
     {
       "fromModule": "Discovery",
-      "toModule": "ValidatorCore",
+      "toModule": "TextIO",
       "ruleLocation": {
         "filePath": "axiom/main.axi",
         "line": 40
+      }
+    },
+    {
+      "fromModule": "Discovery",
+      "toModule": "ValidatorCore",
+      "ruleLocation": {
+        "filePath": "axiom/main.axi",
+        "line": 41
       }
     },
     {
@@ -384,20 +385,12 @@
       "toModule": "CoreTypes",
       "ruleLocation": {
         "filePath": "axiom/main.axi",
-        "line": 46
+        "line": 47
       }
     },
     {
       "fromModule": "CheckRunner",
       "toModule": "CoreTypes",
-      "ruleLocation": {
-        "filePath": "axiom/main.axi",
-        "line": 52
-      }
-    },
-    {
-      "fromModule": "CheckRunner",
-      "toModule": "Language",
       "ruleLocation": {
         "filePath": "axiom/main.axi",
         "line": 53
@@ -405,7 +398,7 @@
     },
     {
       "fromModule": "CheckRunner",
-      "toModule": "Config",
+      "toModule": "Language",
       "ruleLocation": {
         "filePath": "axiom/main.axi",
         "line": 54
@@ -413,7 +406,7 @@
     },
     {
       "fromModule": "CheckRunner",
-      "toModule": "Discovery",
+      "toModule": "Config",
       "ruleLocation": {
         "filePath": "axiom/main.axi",
         "line": 55
@@ -421,7 +414,7 @@
     },
     {
       "fromModule": "CheckRunner",
-      "toModule": "Scanner",
+      "toModule": "Discovery",
       "ruleLocation": {
         "filePath": "axiom/main.axi",
         "line": 56
@@ -429,7 +422,7 @@
     },
     {
       "fromModule": "CheckRunner",
-      "toModule": "TextIO",
+      "toModule": "Scanner",
       "ruleLocation": {
         "filePath": "axiom/main.axi",
         "line": 57
@@ -437,23 +430,23 @@
     },
     {
       "fromModule": "CheckRunner",
-      "toModule": "ValidatorCore",
+      "toModule": "TextIO",
       "ruleLocation": {
         "filePath": "axiom/main.axi",
         "line": 58
       }
     },
     {
-      "fromModule": "Infer",
-      "toModule": "CoreTypes",
+      "fromModule": "CheckRunner",
+      "toModule": "ValidatorCore",
       "ruleLocation": {
         "filePath": "axiom/main.axi",
-        "line": 64
+        "line": 59
       }
     },
     {
       "fromModule": "Infer",
-      "toModule": "Config",
+      "toModule": "CoreTypes",
       "ruleLocation": {
         "filePath": "axiom/main.axi",
         "line": 65
@@ -461,7 +454,7 @@
     },
     {
       "fromModule": "Infer",
-      "toModule": "Discovery",
+      "toModule": "Config",
       "ruleLocation": {
         "filePath": "axiom/main.axi",
         "line": 66
@@ -469,7 +462,7 @@
     },
     {
       "fromModule": "Infer",
-      "toModule": "Scanner",
+      "toModule": "Discovery",
       "ruleLocation": {
         "filePath": "axiom/main.axi",
         "line": 67
@@ -477,10 +470,18 @@
     },
     {
       "fromModule": "Infer",
-      "toModule": "ValidatorCore",
+      "toModule": "Scanner",
       "ruleLocation": {
         "filePath": "axiom/main.axi",
         "line": 68
+      }
+    },
+    {
+      "fromModule": "Infer",
+      "toModule": "ValidatorCore",
+      "ruleLocation": {
+        "filePath": "axiom/main.axi",
+        "line": 69
       }
     },
     {
@@ -488,7 +489,7 @@
       "toModule": "CoreTypes",
       "ruleLocation": {
         "filePath": "axiom/main.axi",
-        "line": 74
+        "line": 75
       }
     },
     {
@@ -496,7 +497,7 @@
       "toModule": "CheckRunner",
       "ruleLocation": {
         "filePath": "axiom/main.axi",
-        "line": 75
+        "line": 76
       }
     },
     {
@@ -504,7 +505,7 @@
       "toModule": "Infer",
       "ruleLocation": {
         "filePath": "axiom/main.axi",
-        "line": 76
+        "line": 77
       }
     },
     {
@@ -512,7 +513,7 @@
       "toModule": "Diagnostics",
       "ruleLocation": {
         "filePath": "axiom/main.axi",
-        "line": 87
+        "line": 88
       }
     },
     {
@@ -520,7 +521,7 @@
       "toModule": "Discovery",
       "ruleLocation": {
         "filePath": "axiom/main.axi",
-        "line": 88
+        "line": 89
       }
     },
     {
@@ -528,7 +529,7 @@
       "toModule": "CheckRunner",
       "ruleLocation": {
         "filePath": "axiom/main.axi",
-        "line": 89
+        "line": 90
       }
     },
     {
@@ -536,7 +537,7 @@
       "toModule": "Infer",
       "ruleLocation": {
         "filePath": "axiom/main.axi",
-        "line": 90
+        "line": 91
       }
     },
     {
@@ -544,7 +545,7 @@
       "toModule": "TextIO",
       "ruleLocation": {
         "filePath": "axiom/main.axi",
-        "line": 91
+        "line": 92
       }
     }
   ],
@@ -810,18 +811,6 @@
       "import": {
         "filePath": "src/infer/infer.ts",
         "line": 2,
-        "specifier": "../axi/constants.js",
-        "resolvedPath": "src/axi/constants.ts"
-      },
-      "violations": [],
-      "intentionalViolations": []
-    },
-    {
-      "fromModule": "Infer",
-      "toModule": "CoreTypes",
-      "import": {
-        "filePath": "src/infer/infer.ts",
-        "line": 3,
         "specifier": "../axi/types.js",
         "resolvedPath": "src/axi/types.ts"
       },
@@ -833,7 +822,7 @@
       "toModule": "Config",
       "import": {
         "filePath": "src/infer/infer.ts",
-        "line": 4,
+        "line": 3,
         "specifier": "../config/config.js",
         "resolvedPath": "src/config/config.ts"
       },
@@ -845,7 +834,7 @@
       "toModule": "Discovery",
       "import": {
         "filePath": "src/infer/infer.ts",
-        "line": 5,
+        "line": 4,
         "specifier": "../fs/discover.js",
         "resolvedPath": "src/fs/discover.ts"
       },
@@ -857,7 +846,7 @@
       "toModule": "Scanner",
       "import": {
         "filePath": "src/infer/infer.ts",
-        "line": 6,
+        "line": 5,
         "specifier": "../scanner/importResolver.js",
         "resolvedPath": "src/scanner/importResolver.ts"
       },
@@ -869,7 +858,7 @@
       "toModule": "Scanner",
       "import": {
         "filePath": "src/infer/infer.ts",
-        "line": 7,
+        "line": 6,
         "specifier": "../scanner/importScanner.js",
         "resolvedPath": "src/scanner/importScanner.ts"
       },
@@ -881,9 +870,21 @@
       "toModule": "ValidatorCore",
       "import": {
         "filePath": "src/infer/infer.ts",
-        "line": 8,
+        "line": 7,
         "specifier": "../validator/glob.js",
         "resolvedPath": "src/validator/glob.ts"
+      },
+      "violations": [],
+      "intentionalViolations": []
+    },
+    {
+      "fromModule": "Infer",
+      "toModule": "ValidatorCore",
+      "import": {
+        "filePath": "src/infer/infer.ts",
+        "line": 8,
+        "specifier": "../validator/largeFilePressure.js",
+        "resolvedPath": "src/validator/largeFilePressure.ts"
       },
       "violations": [],
       "intentionalViolations": []
@@ -1002,6 +1003,18 @@
       "import": {
         "filePath": "src/validator/check.ts",
         "line": 20,
+        "specifier": "./largeFilePressure.js",
+        "resolvedPath": "src/validator/largeFilePressure.ts"
+      },
+      "violations": [],
+      "intentionalViolations": []
+    },
+    {
+      "fromModule": "CheckRunner",
+      "toModule": "ValidatorCore",
+      "import": {
+        "filePath": "src/validator/check.ts",
+        "line": 21,
         "specifier": "./ownership.js",
         "resolvedPath": "src/validator/ownership.ts"
       },
@@ -1013,7 +1026,7 @@
       "toModule": "ValidatorCore",
       "import": {
         "filePath": "src/validator/check.ts",
-        "line": 21,
+        "line": 22,
         "specifier": "./validate.js",
         "resolvedPath": "src/validator/validate.ts"
       },
@@ -1026,6 +1039,30 @@
       "import": {
         "filePath": "src/validator/couplingWarnings.ts",
         "line": 2,
+        "specifier": "../axi/types.js",
+        "resolvedPath": "src/axi/types.ts"
+      },
+      "violations": [],
+      "intentionalViolations": []
+    },
+    {
+      "fromModule": "ValidatorCore",
+      "toModule": "CoreTypes",
+      "import": {
+        "filePath": "src/validator/largeFilePressure.ts",
+        "line": 2,
+        "specifier": "../axi/constants.js",
+        "resolvedPath": "src/axi/constants.ts"
+      },
+      "violations": [],
+      "intentionalViolations": []
+    },
+    {
+      "fromModule": "ValidatorCore",
+      "toModule": "CoreTypes",
+      "import": {
+        "filePath": "src/validator/largeFilePressure.ts",
+        "line": 3,
         "specifier": "../axi/types.js",
         "resolvedPath": "src/axi/types.ts"
       },
@@ -1052,18 +1089,6 @@
         "line": 2,
         "specifier": "../axi/types.js",
         "resolvedPath": "src/axi/types.ts"
-      },
-      "violations": [],
-      "intentionalViolations": []
-    },
-    {
-      "fromModule": "ValidatorCore",
-      "toModule": "CoreTypes",
-      "import": {
-        "filePath": "src/validator/validate.ts",
-        "line": 17,
-        "specifier": "../axi/constants.js",
-        "resolvedPath": "src/axi/constants.ts"
       },
       "violations": [],
       "intentionalViolations": []
@@ -1328,18 +1353,6 @@
       "import": {
         "filePath": "src/infer/infer.ts",
         "line": 2,
-        "specifier": "../axi/constants.js",
-        "resolvedPath": "src/axi/constants.ts"
-      },
-      "violations": [],
-      "intentionalViolations": []
-    },
-    {
-      "fromModule": "Infer",
-      "toModule": "CoreTypes",
-      "import": {
-        "filePath": "src/infer/infer.ts",
-        "line": 3,
         "specifier": "../axi/types.js",
         "resolvedPath": "src/axi/types.ts"
       },
@@ -1351,7 +1364,7 @@
       "toModule": "Config",
       "import": {
         "filePath": "src/infer/infer.ts",
-        "line": 4,
+        "line": 3,
         "specifier": "../config/config.js",
         "resolvedPath": "src/config/config.ts"
       },
@@ -1363,7 +1376,7 @@
       "toModule": "Discovery",
       "import": {
         "filePath": "src/infer/infer.ts",
-        "line": 5,
+        "line": 4,
         "specifier": "../fs/discover.js",
         "resolvedPath": "src/fs/discover.ts"
       },
@@ -1375,7 +1388,7 @@
       "toModule": "Scanner",
       "import": {
         "filePath": "src/infer/infer.ts",
-        "line": 6,
+        "line": 5,
         "specifier": "../scanner/importResolver.js",
         "resolvedPath": "src/scanner/importResolver.ts"
       },
@@ -1387,7 +1400,7 @@
       "toModule": "Scanner",
       "import": {
         "filePath": "src/infer/infer.ts",
-        "line": 7,
+        "line": 6,
         "specifier": "../scanner/importScanner.js",
         "resolvedPath": "src/scanner/importScanner.ts"
       },
@@ -1399,9 +1412,21 @@
       "toModule": "ValidatorCore",
       "import": {
         "filePath": "src/infer/infer.ts",
-        "line": 8,
+        "line": 7,
         "specifier": "../validator/glob.js",
         "resolvedPath": "src/validator/glob.ts"
+      },
+      "violations": [],
+      "intentionalViolations": []
+    },
+    {
+      "fromModule": "Infer",
+      "toModule": "ValidatorCore",
+      "import": {
+        "filePath": "src/infer/infer.ts",
+        "line": 8,
+        "specifier": "../validator/largeFilePressure.js",
+        "resolvedPath": "src/validator/largeFilePressure.ts"
       },
       "violations": [],
       "intentionalViolations": []
@@ -1520,6 +1545,18 @@
       "import": {
         "filePath": "src/validator/check.ts",
         "line": 20,
+        "specifier": "./largeFilePressure.js",
+        "resolvedPath": "src/validator/largeFilePressure.ts"
+      },
+      "violations": [],
+      "intentionalViolations": []
+    },
+    {
+      "fromModule": "CheckRunner",
+      "toModule": "ValidatorCore",
+      "import": {
+        "filePath": "src/validator/check.ts",
+        "line": 21,
         "specifier": "./ownership.js",
         "resolvedPath": "src/validator/ownership.ts"
       },
@@ -1531,7 +1568,7 @@
       "toModule": "ValidatorCore",
       "import": {
         "filePath": "src/validator/check.ts",
-        "line": 21,
+        "line": 22,
         "specifier": "./validate.js",
         "resolvedPath": "src/validator/validate.ts"
       },
@@ -1544,6 +1581,30 @@
       "import": {
         "filePath": "src/validator/couplingWarnings.ts",
         "line": 2,
+        "specifier": "../axi/types.js",
+        "resolvedPath": "src/axi/types.ts"
+      },
+      "violations": [],
+      "intentionalViolations": []
+    },
+    {
+      "fromModule": "ValidatorCore",
+      "toModule": "CoreTypes",
+      "import": {
+        "filePath": "src/validator/largeFilePressure.ts",
+        "line": 2,
+        "specifier": "../axi/constants.js",
+        "resolvedPath": "src/axi/constants.ts"
+      },
+      "violations": [],
+      "intentionalViolations": []
+    },
+    {
+      "fromModule": "ValidatorCore",
+      "toModule": "CoreTypes",
+      "import": {
+        "filePath": "src/validator/largeFilePressure.ts",
+        "line": 3,
         "specifier": "../axi/types.js",
         "resolvedPath": "src/axi/types.ts"
       },
@@ -1570,18 +1631,6 @@
         "line": 2,
         "specifier": "../axi/types.js",
         "resolvedPath": "src/axi/types.ts"
-      },
-      "violations": [],
-      "intentionalViolations": []
-    },
-    {
-      "fromModule": "ValidatorCore",
-      "toModule": "CoreTypes",
-      "import": {
-        "filePath": "src/validator/validate.ts",
-        "line": 17,
-        "specifier": "../axi/constants.js",
-        "resolvedPath": "src/axi/constants.ts"
       },
       "violations": [],
       "intentionalViolations": []
@@ -1846,18 +1895,6 @@
       "import": {
         "filePath": "src/infer/infer.ts",
         "line": 2,
-        "specifier": "../axi/constants.js",
-        "resolvedPath": "src/axi/constants.ts"
-      },
-      "violations": [],
-      "intentionalViolations": []
-    },
-    {
-      "fromModule": "Infer",
-      "toModule": "CoreTypes",
-      "import": {
-        "filePath": "src/infer/infer.ts",
-        "line": 3,
         "specifier": "../axi/types.js",
         "resolvedPath": "src/axi/types.ts"
       },
@@ -1869,7 +1906,7 @@
       "toModule": "Config",
       "import": {
         "filePath": "src/infer/infer.ts",
-        "line": 4,
+        "line": 3,
         "specifier": "../config/config.js",
         "resolvedPath": "src/config/config.ts"
       },
@@ -1881,7 +1918,7 @@
       "toModule": "Discovery",
       "import": {
         "filePath": "src/infer/infer.ts",
-        "line": 5,
+        "line": 4,
         "specifier": "../fs/discover.js",
         "resolvedPath": "src/fs/discover.ts"
       },
@@ -1893,7 +1930,7 @@
       "toModule": "Scanner",
       "import": {
         "filePath": "src/infer/infer.ts",
-        "line": 6,
+        "line": 5,
         "specifier": "../scanner/importResolver.js",
         "resolvedPath": "src/scanner/importResolver.ts"
       },
@@ -1905,7 +1942,7 @@
       "toModule": "Scanner",
       "import": {
         "filePath": "src/infer/infer.ts",
-        "line": 7,
+        "line": 6,
         "specifier": "../scanner/importScanner.js",
         "resolvedPath": "src/scanner/importScanner.ts"
       },
@@ -1917,9 +1954,21 @@
       "toModule": "ValidatorCore",
       "import": {
         "filePath": "src/infer/infer.ts",
-        "line": 8,
+        "line": 7,
         "specifier": "../validator/glob.js",
         "resolvedPath": "src/validator/glob.ts"
+      },
+      "violations": [],
+      "intentionalViolations": []
+    },
+    {
+      "fromModule": "Infer",
+      "toModule": "ValidatorCore",
+      "import": {
+        "filePath": "src/infer/infer.ts",
+        "line": 8,
+        "specifier": "../validator/largeFilePressure.js",
+        "resolvedPath": "src/validator/largeFilePressure.ts"
       },
       "violations": [],
       "intentionalViolations": []
@@ -2038,6 +2087,18 @@
       "import": {
         "filePath": "src/validator/check.ts",
         "line": 20,
+        "specifier": "./largeFilePressure.js",
+        "resolvedPath": "src/validator/largeFilePressure.ts"
+      },
+      "violations": [],
+      "intentionalViolations": []
+    },
+    {
+      "fromModule": "CheckRunner",
+      "toModule": "ValidatorCore",
+      "import": {
+        "filePath": "src/validator/check.ts",
+        "line": 21,
         "specifier": "./ownership.js",
         "resolvedPath": "src/validator/ownership.ts"
       },
@@ -2049,7 +2110,7 @@
       "toModule": "ValidatorCore",
       "import": {
         "filePath": "src/validator/check.ts",
-        "line": 21,
+        "line": 22,
         "specifier": "./validate.js",
         "resolvedPath": "src/validator/validate.ts"
       },
@@ -2062,6 +2123,30 @@
       "import": {
         "filePath": "src/validator/couplingWarnings.ts",
         "line": 2,
+        "specifier": "../axi/types.js",
+        "resolvedPath": "src/axi/types.ts"
+      },
+      "violations": [],
+      "intentionalViolations": []
+    },
+    {
+      "fromModule": "ValidatorCore",
+      "toModule": "CoreTypes",
+      "import": {
+        "filePath": "src/validator/largeFilePressure.ts",
+        "line": 2,
+        "specifier": "../axi/constants.js",
+        "resolvedPath": "src/axi/constants.ts"
+      },
+      "violations": [],
+      "intentionalViolations": []
+    },
+    {
+      "fromModule": "ValidatorCore",
+      "toModule": "CoreTypes",
+      "import": {
+        "filePath": "src/validator/largeFilePressure.ts",
+        "line": 3,
         "specifier": "../axi/types.js",
         "resolvedPath": "src/axi/types.ts"
       },
@@ -2088,18 +2173,6 @@
         "line": 2,
         "specifier": "../axi/types.js",
         "resolvedPath": "src/axi/types.ts"
-      },
-      "violations": [],
-      "intentionalViolations": []
-    },
-    {
-      "fromModule": "ValidatorCore",
-      "toModule": "CoreTypes",
-      "import": {
-        "filePath": "src/validator/validate.ts",
-        "line": 17,
-        "specifier": "../axi/constants.js",
-        "resolvedPath": "src/axi/constants.ts"
       },
       "violations": [],
       "intentionalViolations": []

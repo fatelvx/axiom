@@ -1,11 +1,11 @@
 import path from "node:path";
-import { largeModuleFileLineThreshold } from "../axi/constants.js";
 import type { ImportRecord, SourceFileMetric } from "../axi/types.js";
 import { applyDiscoveryOverrides, loadConfig } from "../config/config.js";
 import { findSourceFiles } from "../fs/discover.js";
 import { createImportResolver, loadPackageResolver, type PackageMetadata } from "../scanner/importResolver.js";
 import { scanSourceFile } from "../scanner/importScanner.js";
 import { normalizePathForMatch } from "../validator/glob.js";
+import { summarizeLargeFilePressure } from "../validator/largeFilePressure.js";
 
 export type InferGroupBy = "folder" | "workspace";
 
@@ -360,31 +360,18 @@ function findArchitecturePressureNotes(
   root: string,
   sourceFileMetrics: SourceFileMetric[]
 ): InferArchitecturePressureNote[] {
-  return sourceFileMetrics
-    .filter((metric) => metric.lineCount >= largeModuleFileLineThreshold)
-    .sort((left, right) => {
-      if (right.lineCount !== left.lineCount) {
-        return right.lineCount - left.lineCount;
-      }
-
-      return relativePath(root, left.filePath).localeCompare(relativePath(root, right.filePath));
-    })
-    .slice(0, 8)
-    .map((metric) => {
-      const filePath = relativePath(root, metric.filePath);
-      return {
-        kind: "large_source_file",
-        filePath,
-        lineCount: metric.lineCount,
-        threshold: largeModuleFileLineThreshold,
-        importsScanned: metric.importCount,
-        exportsScanned: metric.exportCount,
-        functionLikeCount: metric.functionLikeCount,
-        classCount: metric.classCount,
-        message:
-          `${filePath} has ${metric.lineCount} lines; inferred module boundaries may miss responsibilities concentrated inside this file.`
-      };
-    });
+  return summarizeLargeFilePressure(root, sourceFileMetrics, { limit: 8 }).map((summary) => ({
+    kind: "large_source_file",
+    filePath: summary.filePath,
+    lineCount: summary.lineCount,
+    threshold: summary.threshold,
+    importsScanned: summary.importsScanned,
+    exportsScanned: summary.exportsScanned,
+    functionLikeCount: summary.functionLikeCount,
+    classCount: summary.classCount,
+    message:
+      `${summary.filePath} has ${summary.lineCount} lines; inferred module boundaries may miss responsibilities concentrated inside this file.`
+  }));
 }
 
 function chooseInferenceFiles(root: string, sourceFiles: string[], groupBy: InferGroupBy): string[] {

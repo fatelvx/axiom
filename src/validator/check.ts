@@ -17,6 +17,7 @@ import { readTextFile } from "../fs/text.js";
 import { createImportResolver } from "../scanner/importResolver.js";
 import { scanSourceFile } from "../scanner/importScanner.js";
 import { findCouplingConcentrationWarnings } from "./couplingWarnings.js";
+import { findLargeModuleFileWarnings, summarizeTopLargestFiles } from "./largeFilePressure.js";
 import { createOwnershipIndex, validateOwnership } from "./ownership.js";
 import {
   applySuppressions,
@@ -24,7 +25,6 @@ import {
   findDeepInternalImportWarnings,
   findDynamicDependencyExpressionWarnings,
   findExpiringSuppressions,
-  findLargeModuleFileWarnings,
   findPublicApiSurfaceWarnings,
   findUnresolvedImportWarnings,
   validateModuleSurfaceConsistency,
@@ -204,7 +204,7 @@ function buildNoSpecFilesViolation(
     details: {
       sourceFiles: sourceFiles.length,
       importsScanned: importCount,
-      topLargestFiles: topLargestFiles(root, sourceFileMetrics),
+      topLargestFiles: summarizeTopLargestFiles(root, sourceFileMetrics),
       inferredModuleCandidates: inferModuleCandidates(root, sourceFiles),
       ...(scopeHints.length > 0 ? { scopeHints } : {}),
       note:
@@ -213,26 +213,6 @@ function buildNoSpecFilesViolation(
         "Run `axi infer --root . > axiom/main.axi` from the project root to create a starter contract, or pass an external pilot contract with `--spec <path-to-contract.axi>`."
     }
   };
-}
-
-function topLargestFiles(root: string, sourceFileMetrics: SourceFileMetric[]): Array<Record<string, number | string>> {
-  return [...sourceFileMetrics]
-    .sort((left, right) => {
-      if (right.lineCount !== left.lineCount) {
-        return right.lineCount - left.lineCount;
-      }
-
-      return relativePath(root, left.filePath).localeCompare(relativePath(root, right.filePath));
-    })
-    .slice(0, 5)
-    .map((metric) => ({
-      filePath: relativePath(root, metric.filePath),
-      lineCount: metric.lineCount,
-      imports: metric.importCount,
-      exports: metric.exportCount,
-      functions: metric.functionLikeCount,
-      classes: metric.classCount
-    }));
 }
 
 function detectFirstRunScopeHints(root: string, sourceFiles: string[]): Array<Record<string, unknown>> {

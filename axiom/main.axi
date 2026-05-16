@@ -26,6 +26,7 @@ purpose "read generated text artifacts across common shell encodings"
 module ValidatorCore
 path "src/validator/glob.ts"
 path "src/validator/couplingWarnings.ts"
+path "src/validator/largeFilePressure.ts"
 path "src/validator/ownership.ts"
 path "src/validator/validate.ts"
 layer Engine

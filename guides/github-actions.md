@@ -26,7 +26,7 @@ If you copy it into another repository, copy the helpers too or adjust the `node
 It expects Axiom to be installed as a dev dependency:
 
 ```bash
-npm install --ignore-scripts -D @fatelvx/axiom@0.6.0-alpha.3 --save-exact
+npm install --ignore-scripts -D @fatelvx/axiom@0.6.0-alpha.4 --save-exact
 ```
 
 Use the exact version your repository has reviewed. In CI, run the local bin with `npx --no-install axi` so a missing dev dependency fails clearly instead of fetching another package.

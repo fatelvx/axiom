@@ -57,7 +57,7 @@ It is not a prompt wrapper and not a style linter. It is an architecture observa
 Install the public alpha:
 
 ```bash
-npm install --ignore-scripts -D @fatelvx/axiom@0.6.0-alpha.3 --save-exact
+npm install --ignore-scripts -D @fatelvx/axiom@0.6.0-alpha.4 --save-exact
 npx --no-install axi infer --root . --include "src/**"
 ```
 
@@ -137,7 +137,7 @@ The hidden internal import becomes an explicit contract violation when `hides` s
 
 ## Static v0 Coverage
 
-Axiom v0.6.0-alpha.3 is focused on static TypeScript and JavaScript architecture evidence, including Vue single-file component script imports.
+Axiom v0.6.0-alpha.4 is focused on static TypeScript and JavaScript architecture evidence, including Vue single-file component script imports.
 
 | Area | Supported |
 | --- | --- |
@@ -193,7 +193,7 @@ Axiom's npm package target is `@fatelvx/axiom`. The unscoped `axiom` package nam
 Project install:
 
 ```bash
-npm install --ignore-scripts -D @fatelvx/axiom@0.6.0-alpha.3 --save-exact
+npm install --ignore-scripts -D @fatelvx/axiom@0.6.0-alpha.4 --save-exact
 npx --no-install axi check --root .
 npx --no-install axiom check --root .
 ```
@@ -432,7 +432,7 @@ Questions, contract-design discussions, and rough ideas are welcome. Use [GitHub
 
 Current milestone:
 
-- `v0.6.0-alpha.3`: Static Contract Loop. The static TS/JS validator, review surfaces, GitHub Actions examples, read-only MCP evidence loop, and spec-first artifact smoke are packaged as the current public alpha milestone.
+- `v0.6.0-alpha.4`: Static Contract Loop. The static TS/JS validator, review surfaces, GitHub Actions examples, read-only MCP evidence loop, spec-first artifact smoke, and hardened safe-install docs are packaged as the current public alpha milestone.
 
 Next:
 

@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+## 0.6.0-alpha.4 - Install Safety Docs
+
+- Updated public install and CI examples to use the exact reviewed package version, `npm install --ignore-scripts`, and `npx --no-install` local-bin execution.
+- Clarified that `--no-install` keeps `axi` / `axiom` commands bound to the installed scoped package instead of fetching a different command from the registry.
+- No validator, scanner, MCP, or contract behavior changed in this release.
+
 ## 0.6.0-alpha.3 - Trust Loop Hardening
 
 - Added opt-in `--warn-dynamic-imports` / `warnDynamicImports` advisory warnings for non-literal `import()` and `require()` expressions that static graphing cannot resolve into observed dependency edges.

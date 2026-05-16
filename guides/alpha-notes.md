@@ -1,6 +1,6 @@
 # Alpha Notes
 
-Axiom `v0.6.0-alpha.3` is the current Static Contract Loop alpha.
+Axiom `v0.6.0-alpha.4` is the current Static Contract Loop alpha.
 
 It is an alpha because the core loop is real, but the public API and surrounding ecosystem are still intentionally small:
 

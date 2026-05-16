@@ -5,6 +5,7 @@ import type {
   CollapsedCyclePathSample,
   InferredImportSample
 } from "./infer.js";
+import { candidateName } from "./inferNaming.js";
 
 interface CycleEvidenceGroup {
   key: string;
@@ -152,22 +153,4 @@ function findCyclePath(
 
 function formatImportSiteCount(count: number): string {
   return count === 1 ? "1 import site" : `${count} import sites`;
-}
-
-function candidateName(candidateGroups: CycleEvidenceGroup[], key: string): string {
-  return candidateGroups.find((group) => group.key === key)?.name ?? toIdentifier(key);
-}
-
-function toIdentifier(value: string): string {
-  const words = value
-    .replace(/\.[^.]+$/, "")
-    .split(/[^A-Za-z0-9]+/)
-    .filter((word) => word.length > 0);
-
-  const identifier = words.map((word) => `${word.charAt(0).toUpperCase()}${word.slice(1)}`).join("");
-  if (!identifier) {
-    return "Module";
-  }
-
-  return /^[A-Za-z]/.test(identifier) ? identifier : `Module${identifier}`;
 }

@@ -11,6 +11,7 @@ import { formatDrift, formatDriftOnly } from "./graphDrift.js";
 import { formatWarningClusters, warningDisplayCode } from "./graphWarnings.js";
 import {
   formatExpirationDistance,
+  formatImportSiteHuman,
   formatNameTokenClusters,
   readLocation,
   readNumber,
@@ -107,7 +108,9 @@ export function formatGraphResultFromGraph(graph: GraphJsonResult, options: Grap
             ].join(", ")}]`
           : "";
       lines.push(
-        `  ${dependency.fromModule} -> ${dependency.toModule} via ${dependency.import.filePath}:${dependency.import.line} "${dependency.import.specifier}"${violationSuffix}`
+        `  ${dependency.fromModule} -> ${dependency.toModule} via ${formatImportSiteHuman(
+          dependency.import
+        )}${violationSuffix}`
       );
     }
   }
@@ -176,7 +179,7 @@ function formatViolatingDependencies(graph: GraphJsonResult): string[] {
 
   for (const dependency of dependencies) {
     lines.push(
-      `  ${dependency.fromModule} -> ${dependency.toModule} via ${dependency.import.filePath}:${dependency.import.line} "${dependency.import.specifier}"`
+      `  ${dependency.fromModule} -> ${dependency.toModule} via ${formatImportSiteHuman(dependency.import)}`
     );
 
     for (const violation of dependency.violations) {

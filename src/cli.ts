@@ -557,6 +557,7 @@ function parseBaselineDependency(value: unknown, index: number): GraphBaseline["
   const importSite = readRecord(dependency.import);
   const filePath = importSite?.filePath;
   const line = importSite?.line;
+  const kind = readImportKind(importSite?.kind);
   const specifier = importSite?.specifier;
   const resolvedPath = importSite?.resolvedPath;
 
@@ -574,10 +575,21 @@ function parseBaselineDependency(value: unknown, index: number): GraphBaseline["
     import: {
       filePath,
       line,
+      ...(kind ? { kind } : {}),
       specifier,
       ...(typeof resolvedPath === "string" ? { resolvedPath } : {})
     }
   };
+}
+
+function readImportKind(value: unknown): GraphBaseline["observedDependencies"][number]["import"]["kind"] | undefined {
+  return value === "dynamic_import" ||
+    value === "export" ||
+    value === "import" ||
+    value === "import_type" ||
+    value === "require"
+    ? value
+    : undefined;
 }
 
 function readRecord(value: unknown): Record<string, unknown> | undefined {

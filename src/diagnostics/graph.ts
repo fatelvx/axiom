@@ -1,5 +1,5 @@
 import path from "node:path";
-import type { ModuleRef, PathRef, Violation, ViolationCode } from "../axi/types.js";
+import type { ImportRecord, ModuleRef, PathRef, Violation, ViolationCode } from "../axi/types.js";
 import type { CheckResult } from "../validator/check.js";
 import { computeDrift } from "./graphDrift.js";
 import { formatGraphResultFromGraph } from "./graphHuman.js";
@@ -53,6 +53,7 @@ interface GraphJsonVisibilityRule {
 export interface GraphJsonImportSite {
   filePath: string;
   line: number;
+  kind?: ImportRecord["kind"];
   specifier: string;
   resolvedPath?: string;
 }
@@ -368,6 +369,7 @@ function toObservedDependency(
     import: {
       filePath: relativePath(root, dependency.importRecord.filePath),
       line: dependency.importRecord.line,
+      kind: dependency.importRecord.kind,
       specifier: dependency.importRecord.specifier,
       ...(dependency.importRecord.resolvedPath
         ? { resolvedPath: relativePath(root, dependency.importRecord.resolvedPath) }

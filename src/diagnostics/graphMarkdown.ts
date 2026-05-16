@@ -7,6 +7,7 @@ import {
 } from "./graphWarnings.js";
 import {
   formatExpirationDistance,
+  formatImportSiteMarkdown,
   formatNameTokenClusters,
   readLocation,
   readNumber,
@@ -588,7 +589,7 @@ function formatLocation(location: GraphJsonLocation | GraphJsonImportSite): stri
 }
 
 function formatMarkdownImport(importSite: GraphJsonImportSite): string {
-  return `${markdownCode(formatLocation(importSite))} importing ${markdownCode(importSite.specifier)}`;
+  return formatImportSiteMarkdown(importSite, markdownCode);
 }
 
 function markdownCode(value: string | number): string {

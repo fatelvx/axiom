@@ -889,3 +889,31 @@ Detailed result:
 ```text
 experiments/axiom-forecast/results/mirofish-mcp-roots-agent-loop-target-2026-05-14.md
 ```
+
+## 2026-05-17 - Import-Kind Evidence Before Python
+
+Change under review:
+
+- observed `import.kind` evidence added to check and graph JSON import sites;
+- human, Markdown, and drift output render literal dynamic imports, `require`, re-exports, and type imports explicitly;
+- literal dynamic imports remain observed graph edges, while non-literal `import()` / `require()` expressions remain opt-in graph-completeness warnings;
+- no `.axi` grammar, hard gate, resolver, or accepted-debt semantics changed;
+- JSON remains the canonical agent/CI evidence surface, Markdown remains the PR/human review surface, and YAML stays a future export candidate rather than current scope.
+
+Method:
+
+Used the existing local MiroFish `.env` with the same OpenAI-compatible model endpoint through a compact direct prompt. This was not a full OASIS simulation and is not real user research.
+
+Primary result:
+
+- verdict: `KEEP`, high confidence;
+- import-kind evidence strengthens the dynamic-before-Python path by making observed syntax visible in the canonical evidence model;
+- biggest risk is agents treating `import.kind` as normative contract intent instead of descriptive observed evidence;
+- recommended patch is documentation/output wording that import kinds are observed source syntax, not architecture rules;
+- YAML should not be added now; revisit after Python or after a concrete human-export workflow proves JSON plus Markdown is not enough.
+
+Detailed result:
+
+```text
+experiments/axiom-forecast/results/mirofish-import-kind-dynamic-target-2026-05-17.md
+```

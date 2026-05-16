@@ -62,6 +62,7 @@ test("check JSON uses the stable v4 top-level shape", () => {
     import: {
       filePath: "src/simulation/step.ts",
       line: 1,
+      kind: "import",
       specifier: "../physics/math",
       resolvedPath: "src/physics/math.ts"
     }

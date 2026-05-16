@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Added observed import-kind evidence to check and graph JSON import sites, plus human, Markdown, and drift rendering for literal dynamic imports, `require`, re-exports, and type imports.
+
 ## 0.6.0-alpha.4 - Install Safety Docs
 
 - Updated public install and CI examples to use the exact reviewed package version, `npm install --ignore-scripts`, and `npx --no-install` local-bin execution.

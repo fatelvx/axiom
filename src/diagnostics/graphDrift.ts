@@ -1,4 +1,5 @@
 import type { GraphBaseline, GraphBaselineObservedDependency, GraphJsonObservedDependency, GraphJsonResult } from "./graph.js";
+import { formatImportSiteHuman, formatImportSiteMarkdown } from "./graphValues.js";
 
 type GraphJsonDrift = NonNullable<GraphJsonResult["drift"]>;
 type GraphJsonDriftEdge = GraphJsonDrift["newObservedEdges"][number];
@@ -13,6 +14,7 @@ export function formatMarkdownDrift(drift: GraphJsonDrift): string[] {
     "### Architecture Drift (Advisory)",
     `- Kind: ${markdownCode(drift.kind)}`,
     `- Baseline: ${markdownCode(baselineLabel)} (${drift.baseline.observedDependencies} observed dependencies${schemaSuffix})`,
+    "- Note: Import kinds describe observed source syntax; they are not contract rules.",
     "- New observed edges:"
   ];
 
@@ -55,6 +57,7 @@ export function formatDrift(drift: GraphJsonDrift): string[] {
   const lines = [
     "architecture drift (advisory):",
     `  baseline: ${baselineLabel} (${drift.baseline.observedDependencies} observed dependencies${schemaSuffix})`,
+    "  note: import kinds describe observed source syntax; they are not contract rules",
     "  new observed edges:"
   ];
 
@@ -140,7 +143,7 @@ function formatDriftEdge(edge: GraphJsonDriftEdge, importPrefix: "via" | "previo
   const lines = [`    ${edge.fromModule} -> ${edge.toModule}${suffix}`];
 
   for (const importSite of edge.imports) {
-    lines.push(`      ${importPrefix} ${importSite.filePath}:${importSite.line} "${importSite.specifier}"`);
+    lines.push(`      ${importPrefix} ${formatImportSiteHuman(importSite)}`);
   }
 
   for (const violation of edge.violations) {
@@ -229,11 +232,7 @@ function compareDriftEdges(left: GraphJsonDriftEdge, right: GraphJsonDriftEdge):
 }
 
 function formatMarkdownImport(importSite: GraphJsonImportSite): string {
-  return `${markdownCode(formatLocation(importSite))} importing ${markdownCode(importSite.specifier)}`;
-}
-
-function formatLocation(location: GraphJsonImportSite): string {
-  return `${location.filePath}:${location.line}`;
+  return formatImportSiteMarkdown(importSite, markdownCode);
 }
 
 function markdownCode(value: string | number): string {

@@ -9,6 +9,13 @@ export interface GraphLocationValue {
   column?: number;
 }
 
+export interface GraphImportSiteValue {
+  filePath: string;
+  line: number;
+  kind?: string;
+  specifier: string;
+}
+
 export function readString(value: unknown): string | undefined {
   return typeof value === "string" && value.length > 0 ? value : undefined;
 }
@@ -79,6 +86,20 @@ export function formatExpirationDistance(daysUntilExpiration: number): string {
   return `in ${daysUntilExpiration} days`;
 }
 
+export function formatImportSiteHuman(importSite: GraphImportSiteValue): string {
+  const kindPrefix = formatHumanImportKindPrefix(importSite.kind);
+  return `${kindPrefix}${importSite.filePath}:${importSite.line} "${importSite.specifier}"`;
+}
+
+export function formatImportSiteMarkdown(
+  importSite: GraphImportSiteValue,
+  formatValue: (value: string | number) => string
+): string {
+  return `${formatValue(`${importSite.filePath}:${importSite.line}`)} ${formatMarkdownImportKindVerb(
+    importSite.kind
+  )} ${formatValue(importSite.specifier)}`;
+}
+
 export function normalizeDetails(root: string, value: Record<string, unknown>): Record<string, unknown> {
   return normalizeValue(root, value) as Record<string, unknown>;
 }
@@ -127,6 +148,36 @@ function normalizeValue(root: string, value: unknown): unknown {
 function isSourceLocation(value: object): value is SourceLocation {
   const maybeLocation = value as Partial<SourceLocation>;
   return typeof maybeLocation.filePath === "string" && typeof maybeLocation.line === "number";
+}
+
+function formatHumanImportKindPrefix(kind: string | undefined): string {
+  switch (kind) {
+    case "dynamic_import":
+      return "dynamic import ";
+    case "export":
+      return "re-export ";
+    case "import_type":
+      return "type import ";
+    case "require":
+      return "require ";
+    default:
+      return "";
+  }
+}
+
+function formatMarkdownImportKindVerb(kind: string | undefined): string {
+  switch (kind) {
+    case "dynamic_import":
+      return "dynamic importing";
+    case "export":
+      return "re-exporting";
+    case "import_type":
+      return "type importing";
+    case "require":
+      return "requiring";
+    default:
+      return "importing";
+  }
 }
 
 export function normalizePath(filePath: string): string {

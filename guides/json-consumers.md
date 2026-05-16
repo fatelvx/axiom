@@ -76,6 +76,7 @@ For `axiom.check.*`, the stable gate signal is:
 - `violations[]` contains the hard failures.
 - `intentionalViolations[]` contains accepted, non-failing contract debt.
 - `warnings[]` contains advisory review signals. They are not a cleanup checklist, and consumers should not turn them into failures unless the team deliberately adds that policy.
+- `observedDependencies[].import.kind`, when present, describes the source syntax Axiom observed. It is evidence, not contract intent.
 
 Do not hard-gate on `axi graph`, `axi observe`, or Markdown output unless your own workflow intentionally adds a separate policy. Those commands are observability surfaces and exit successfully even when they show violations.
 
@@ -97,6 +98,8 @@ Important fields:
 - `drift`: optional advisory baseline-drift result when `--baseline` is provided.
 
 `summary.observedDependencies` is always the full observed edge count. `summary.shownObservedDependencies` is the count for the current view. In attention or violations-only output those counts can differ, and `observedDependencies[]` remains the shown-view compatibility array. Use `allObservedDependencies[]` when a machine consumer needs the complete graph.
+
+Observed dependency import sites include an optional `import.kind` field. Current payloads set it to one of `import`, `export`, `dynamic_import`, `require`, or `import_type`. Treat it as descriptive evidence about how Axiom observed the edge, not as a contract rule or architecture intent. It is especially useful when separating literal dynamic imports from non-literal dynamic dependency warnings. Older committed baselines may not have this field, so consumers should default missing `import.kind` to an unknown or ordinary static import presentation rather than rejecting the artifact.
 
 Warning counts only include advisory checks enabled for that command or config. If a dashboard compares `observe`, `graph`, Markdown, and Mermaid output, run them with the same `--warn-*` flags or label the difference as warning-scope, not drift.
 

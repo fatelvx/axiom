@@ -47,6 +47,7 @@ Files:
 - `results/mirofish-evidence-artifact-target-2026-05-14.md`: targeted backtest after adding the Evidence Artifact Loop guide; says the artifact reduces disconnected-surface risk but still needs real-project calibration before MCP shipping.
 - `results/mirofish-framework-tooling-calibration-target-2026-05-14.md`: targeted backtest after the Express / Fastify / ESLint / SvelteKit / UUID calibration batch; recommends a human-reviewed spec-first pilot before broad MCP or VS Code work.
 - `results/mirofish-mcp-roots-agent-loop-target-2026-05-14.md`: targeted backtest after adding `axiom_roots` and the temp-only MCP agent-loop smoke; recommends MCP tool-consumption conformance scenarios before Python or dynamic expansion.
+- `results/mirofish-import-kind-dynamic-target-2026-05-17.md`: targeted backtest after adding observed import-kind evidence; says keep the change, clarify that `import.kind` is descriptive evidence, and do not add YAML before dynamic/Python needs prove it.
 - `tools/write-mirofish-env.ps1`: local helper for writing MiroFish credentials to `.env` without pasting secrets into chat.
 
 Live run input snapshot:
@@ -132,6 +133,12 @@ Latest MCP roots / agent-loop target snapshot:
 
 ```text
 current master after adding axiom_roots, root-policy docs, Lumina MCP allowed-root registration guidance, and npm run mcp:agent-loop:smoke
+```
+
+Latest import-kind / dynamic target snapshot:
+
+```text
+current working tree after adding observed import-kind evidence to JSON, human, Markdown, drift output, and the portable self baseline
 ```
 
 Use this experiment as forecast input, not as a replacement for real users. A useful forecast should produce falsifiable adoption risks, concrete messaging changes, and roadmap tradeoffs.

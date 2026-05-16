@@ -1,5 +1,12 @@
 import path from "node:path";
-import type { AxiomModule, SourceLocation, SuppressedViolation, Violation, ViolationCode } from "../axi/types.js";
+import type {
+  AxiomModule,
+  ImportRecord,
+  SourceLocation,
+  SuppressedViolation,
+  Violation,
+  ViolationCode
+} from "../axi/types.js";
 import type { CheckResult } from "../validator/check.js";
 
 export const checkJsonSchemaVersion = "axiom.check.v4";
@@ -38,6 +45,7 @@ export interface CheckJsonObservedDependency {
   import: {
     filePath: string;
     line: number;
+    kind?: ImportRecord["kind"];
     specifier: string;
     resolvedPath?: string;
   };
@@ -110,6 +118,7 @@ export function toCheckJson(result: CheckResult): CheckJsonResult {
       import: {
         filePath: relativePath(result.root, dependency.importRecord.filePath),
         line: dependency.importRecord.line,
+        kind: dependency.importRecord.kind,
         specifier: dependency.importRecord.specifier,
         ...(dependency.importRecord.resolvedPath
           ? { resolvedPath: relativePath(result.root, dependency.importRecord.resolvedPath) }

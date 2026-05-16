@@ -203,6 +203,61 @@ test("human graph output includes readable sections", () => {
   assert.match(output, /Simulation -> Rendering via src\/simulation\/step\.ts:2 "\.\.\/rendering\/draw"/);
 });
 
+test("graph output preserves observed import kind evidence", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "axiom-graph-import-kind-"));
+
+  try {
+    fs.mkdirSync(path.join(root, "axiom"), { recursive: true });
+    fs.mkdirSync(path.join(root, "src/routes"), { recursive: true });
+    fs.writeFileSync(
+      path.join(root, "axiom/main.axi"),
+      [
+        "module App",
+        'path "src/app.ts"',
+        "",
+        "module Routes",
+        'path "src/routes/**"',
+        ""
+      ].join("\n")
+    );
+    fs.writeFileSync(
+      path.join(root, "src/app.ts"),
+      [
+        'export const lazySettings = () => import("./routes/settings");',
+        'export const legacyRoute = () => require("./routes/legacy");'
+      ].join("\n")
+    );
+    fs.writeFileSync(path.join(root, "src/routes/settings.ts"), "export const settings = true;\n");
+    fs.writeFileSync(path.join(root, "src/routes/legacy.ts"), "export const legacy = true;\n");
+
+    const result = runCheck({ root });
+    const payload = toGraphJson(result);
+    const human = formatGraphResult(result);
+    const markdown = formatGraphMarkdown(result, {
+      violationsOnly: true,
+      attention: true,
+      observe: true
+    });
+
+    assert.deepEqual(
+      payload.observedDependencies.map((dependency) => ({
+        kind: dependency.import.kind,
+        specifier: dependency.import.specifier
+      })),
+      [
+        { kind: "dynamic_import", specifier: "./routes/settings" },
+        { kind: "require", specifier: "./routes/legacy" }
+      ]
+    );
+    assert.match(human, /App -> Routes via dynamic import src\/app\.ts:1 "\.\/routes\/settings"/);
+    assert.match(human, /App -> Routes via require src\/app\.ts:2 "\.\/routes\/legacy"/);
+    assert.match(markdown, /`src\/app\.ts:1` dynamic importing `\.\/routes\/settings`/);
+    assert.match(markdown, /`src\/app\.ts:2` requiring `\.\/routes\/legacy`/);
+  } finally {
+    fs.rmSync(root, { force: true, recursive: true });
+  }
+});
+
 test("quiet graph interpretation still gives a next review step", () => {
   const result = runCheck({ root: path.join(repoRoot, "fixtures/basic-ts-valid") });
   const payload = toGraphJson(result);
@@ -367,6 +422,7 @@ test("graph JSON exposes baseline-aware observed edge drift", () => {
   assert.deepEqual(payload.drift?.newObservedEdges[0]?.imports[0], {
     filePath: "src/simulation/step.ts",
     line: 2,
+    kind: "import",
     specifier: "../rendering/draw",
     resolvedPath: "src/rendering/draw.ts"
   });

@@ -275,6 +275,8 @@ async function verifyInferredObserveIsTemporaryReviewEvidence(server, projectRoo
     root: projectRoot,
     warnings: {
       deepInternalImports: true,
+      dynamicImports: true,
+      unresolvedImports: true,
       largeFiles: true
     }
   });
@@ -300,6 +302,33 @@ async function verifyInferredObserveIsTemporaryReviewEvidence(server, projectRoo
     inferredObserve.result?.structuredContent?.summary?.agentHint ?? "",
     "do not refactor solely to reduce signal counts",
     "inferred observe warning guardrail"
+  );
+  assertArrayIncludes(
+    inferredObserve.result?.structuredContent?.summary?.advisorySignalCoverage?.checkedNoFindings ?? [],
+    "non-literal dynamic dependency expressions",
+    "inferred observe dynamic coverage summary"
+  );
+  assertArrayIncludes(
+    inferredObserve.result?.structuredContent?.summary?.advisorySignalCoverage?.checkedNoFindings ?? [],
+    "unresolved static imports",
+    "inferred observe unresolved coverage summary"
+  );
+  assertTextIncludes(
+    inferredObserve.result?.structuredContent?.summary?.advisorySignalCoverage?.caveat ?? "",
+    "not proof of semantic architecture health",
+    "inferred observe coverage caveat"
+  );
+  assertCoverageEntryStatus(
+    inferredObserve,
+    "dynamicImports",
+    "checked_no_findings",
+    "inferred observe dynamic coverage payload"
+  );
+  assertCoverageEntryStatus(
+    inferredObserve,
+    "unresolvedImports",
+    "checked_no_findings",
+    "inferred observe unresolved coverage payload"
   );
   assertEqual(
     inferredObserve.result?.structuredContent?.payload?.inference?.starterContract?.kind,
@@ -476,6 +505,24 @@ function assertSetIncludes(values, expected, label) {
   if (!values.has(expected)) {
     throw new Error(`Expected ${label} to include ${JSON.stringify(expected)}.`);
   }
+}
+
+function assertArrayIncludes(values, expected, label) {
+  if (!Array.isArray(values) || !values.includes(expected)) {
+    throw new Error(`Expected ${label} to include ${JSON.stringify(expected)}.\nActual values:\n${JSON.stringify(values)}`);
+  }
+}
+
+function assertCoverageEntryStatus(response, family, expectedStatus, label) {
+  const entries =
+    response.result?.structuredContent?.payload?.observe?.architectureSummary?.advisorySignalCoverage?.enabledFamilies ?? [];
+  const entry = Array.isArray(entries) ? entries.find((candidate) => candidate?.family === family) : undefined;
+
+  if (!entry) {
+    throw new Error(`Expected ${label} to include advisory coverage family ${JSON.stringify(family)}.`);
+  }
+
+  assertEqual(entry.status, expectedStatus, label);
 }
 
 function assertTextIncludes(text, expected, label) {

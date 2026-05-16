@@ -23,7 +23,7 @@
       "headline": "This scoped import graph is quiet: no hard failures, visible debt, advisory signals, or baseline drift were reported; graph center is CheckRunner, so compare that center with your intended architecture before saving a baseline. Quiet imports do not prove intra-file responsibilities are healthy.",
       "quickRead": [
         "Contract: no hard failures in this command output.",
-        "Graph center: CheckRunner (15 import sites, fan-in 2, fan-out 7), CoreTypes (13 import sites, fan-in 6, fan-out 0).",
+        "Graph center: CheckRunner (15 import sites, fan-in 2, fan-out 7), CoreTypes (14 import sites, fan-in 6, fan-out 0).",
         "Review pressure: no visible debt or advisory signals."
       ],
       "lookFirst": [
@@ -46,9 +46,9 @@
           "role": "fan_in_hub",
           "incomingModules": 6,
           "outgoingModules": 0,
-          "incomingImportSites": 13,
+          "incomingImportSites": 14,
           "outgoingImportSites": 0,
-          "totalImportSites": 13
+          "totalImportSites": 14
         },
         {
           "module": "Infer",
@@ -64,7 +64,7 @@
     },
     "reviewStory": {
       "summary": "This scoped import graph is quiet. Confirm the graph center matches intended architecture before saving or updating a baseline; quiet imports do not prove intra-file responsibilities are healthy.",
-      "setup": "Scanned 12 declared modules and 42 observed import edges. This report is advisory unless you run `axi check` as the gate.",
+      "setup": "Scanned 12 declared modules and 43 observed import edges. This report is advisory unless you run `axi check` as the gate.",
       "pressures": [
         {
           "kind": "graph_center",
@@ -90,8 +90,8 @@
     "forbiddenDependencies": 0,
     "exposedPaths": 0,
     "hiddenPaths": 0,
-    "observedDependencies": 42,
-    "shownObservedDependencies": 42,
+    "observedDependencies": 43,
+    "shownObservedDependencies": 43,
     "violations": 0,
     "intentionalViolations": 0,
     "warnings": 0
@@ -734,6 +734,18 @@
     },
     {
       "fromModule": "Diagnostics",
+      "toModule": "CoreTypes",
+      "import": {
+        "filePath": "src/diagnostics/graphValues.ts",
+        "line": 2,
+        "specifier": "../axi/types.js",
+        "resolvedPath": "src/axi/types.ts"
+      },
+      "violations": [],
+      "intentionalViolations": []
+    },
+    {
+      "fromModule": "Diagnostics",
       "toModule": "Infer",
       "import": {
         "filePath": "src/diagnostics/infer.ts",
@@ -1240,6 +1252,18 @@
     },
     {
       "fromModule": "Diagnostics",
+      "toModule": "CoreTypes",
+      "import": {
+        "filePath": "src/diagnostics/graphValues.ts",
+        "line": 2,
+        "specifier": "../axi/types.js",
+        "resolvedPath": "src/axi/types.ts"
+      },
+      "violations": [],
+      "intentionalViolations": []
+    },
+    {
+      "fromModule": "Diagnostics",
       "toModule": "Infer",
       "import": {
         "filePath": "src/diagnostics/infer.ts",
@@ -1740,6 +1764,18 @@
         "line": 3,
         "specifier": "../validator/check.js",
         "resolvedPath": "src/validator/check.ts"
+      },
+      "violations": [],
+      "intentionalViolations": []
+    },
+    {
+      "fromModule": "Diagnostics",
+      "toModule": "CoreTypes",
+      "import": {
+        "filePath": "src/diagnostics/graphValues.ts",
+        "line": 2,
+        "specifier": "../axi/types.js",
+        "resolvedPath": "src/axi/types.ts"
       },
       "violations": [],
       "intentionalViolations": []

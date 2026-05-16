@@ -19,13 +19,13 @@ import { scanSourceFile } from "../scanner/importScanner.js";
 import { findCouplingConcentrationWarnings } from "./couplingWarnings.js";
 import { findLargeModuleFileWarnings, summarizeTopLargestFiles } from "./largeFilePressure.js";
 import { createOwnershipIndex, validateOwnership } from "./ownership.js";
+import { findPublicApiSurfaceWarnings } from "./publicApiSurfaceWarnings.js";
 import {
   applySuppressions,
   buildObservedDependencies,
   findDeepInternalImportWarnings,
   findDynamicDependencyExpressionWarnings,
   findExpiringSuppressions,
-  findPublicApiSurfaceWarnings,
   findUnresolvedImportWarnings,
   validateModuleSurfaceConsistency,
   findUnusedSuppressions,

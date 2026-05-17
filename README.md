@@ -98,6 +98,7 @@ npm run build
 node dist/cli.js check --root examples/spec-first-pilot
 node dist/cli.js check --root examples/spec-first-services-pilot
 node dist/cli.js check --root examples/spec-first-python-pilot
+node dist/cli.js check --root examples/spec-first-python-package-pilot
 ```
 
 ## Example Contract

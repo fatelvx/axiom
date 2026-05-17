@@ -45,6 +45,7 @@ try {
     "guides/mcp-client-setup.md",
     "examples/basic-app/axiom/main.axi",
     "examples/spec-first-pilot/axiom/main.axi",
+    "examples/spec-first-python-package-pilot/axiom/main.axi",
     "examples/spec-first-services-pilot/axiom/main.axi"
   ]) {
     assertFile(path.join(packageRoot, filePath), filePath);
@@ -53,6 +54,7 @@ try {
   const cliPath = path.join(packageRoot, "dist", "cli.js");
   const mcpPath = path.join(packageRoot, "dist", "mcp", "server.js");
   const specFirstRoot = path.join(packageRoot, "examples", "spec-first-pilot");
+  const pythonPackageRoot = path.join(packageRoot, "examples", "spec-first-python-package-pilot");
   const basicRoot = path.join(packageRoot, "examples", "basic-app");
   const monorepoRoot = path.join(packageRoot, "examples", "monorepo-workspace");
   const vueRoot = createVueSfcFixture(tempRoot);
@@ -61,6 +63,13 @@ try {
   const passingPayload = JSON.parse(passingCheck.stdout);
   assertEqual(passingPayload.ok, true, "packaged spec-first check ok");
   assertEqual(passingPayload.summary?.violations, 0, "packaged spec-first violation count");
+
+  const pythonPackageCheck = run(process.execPath, [cliPath, "check", "--root", pythonPackageRoot, "--json"], {
+    cwd: packageRoot
+  });
+  const pythonPackagePayload = JSON.parse(pythonPackageCheck.stdout);
+  assertEqual(pythonPackagePayload.ok, true, "packaged Python package-layout check ok");
+  assertEqual(pythonPackagePayload.summary?.violations, 0, "packaged Python package-layout violation count");
 
   const failingCheck = run(process.execPath, [cliPath, "check", "--root", basicRoot, "--json"], {
     acceptedExitCodes: [1],
@@ -113,6 +122,7 @@ try {
   console.log("- packed the local package without publishing");
   console.log("- verified package contents and bin aliases");
   console.log("- ran packaged CLI against spec-first and failing examples");
+  console.log("- verified packaged Python package-layout example");
   console.log("- ran packaged infer JSON from the extracted tarball");
   console.log("- verified packaged Vue SFC and monorepo path coverage");
   console.log("- verified packaged MCP server entry point");

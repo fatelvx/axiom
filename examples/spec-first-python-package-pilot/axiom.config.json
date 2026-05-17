@@ -1,0 +1,13 @@
+{
+  "include": [
+    "app/**/*.py"
+  ],
+  "exclude": [
+    ".venv/**",
+    "tests/**",
+    "**/__pycache__/**"
+  ],
+  "pythonImportRoots": [
+    "."
+  ]
+}

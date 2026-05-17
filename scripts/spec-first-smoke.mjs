@@ -16,6 +16,7 @@ const repoRoot = process.cwd();
 const cliPath = path.join(repoRoot, "dist/cli.js");
 const exampleRoot = path.join(repoRoot, "examples/spec-first-pilot");
 const servicesExampleRoot = path.join(repoRoot, "examples/spec-first-services-pilot");
+const pythonPackageExampleRoot = path.join(repoRoot, "examples/spec-first-python-package-pilot");
 const pythonExampleRoot = path.join(repoRoot, "examples/spec-first-python-pilot");
 
 if (!existsSync(cliPath)) {
@@ -86,6 +87,7 @@ try {
 
   runServicesBoundaryPilot();
   runPythonBoundaryPilot();
+  runPythonPackageBoundaryPilot();
 
   console.log("Spec-first validator smoke passed.");
   console.log("- reviewed example contract passed axi check");
@@ -95,6 +97,7 @@ try {
   console.log("- outward domain-to-UI import failed as a hard layer violation");
   console.log("- services-boundary pilot caught new deep service bypass and Services <-> Store drift");
   console.log("- Python spec-first pilot verified dynamic import evidence and caught UI-to-market boundary drift");
+  console.log("- Python package-layout pilot verified relative package imports and caught UI-to-services drift");
 } finally {
   rmSync(tempDirectory, { recursive: true, force: true });
 }
@@ -309,6 +312,76 @@ function runPythonBoundaryPilot() {
     ],
     expectedCodes: ["undeclared_dependency"],
     expectedLocations: ["src/ui/trade_modals.py"],
+    expectedMinimumDrift: 1
+  });
+}
+
+function runPythonPackageBoundaryPilot() {
+  const cleanRoot = copyExample("python-package-boundary-clean", pythonPackageExampleRoot);
+  const cleanCheck = runAxi(["check", "--root", cleanRoot, "--json"], 0);
+  const checkPayload = parseJson(cleanCheck.stdout, "Python package boundary check output");
+  assertEqual(checkPayload.summary?.modules, 4, "Python package boundary module count");
+  assertEqual(checkPayload.summary?.violations, 0, "Python package boundary hard violation count");
+
+  const observedEdges = new Set(
+    (checkPayload.observedDependencies ?? []).map(
+      (dependency) =>
+        `${dependency.fromModule}->${dependency.toModule}:${dependency.import?.specifier}:${dependency.import?.filePath}`
+    )
+  );
+  assertIncludes(
+    observedEdges,
+    "AppEntry->Services:.services.pricing:app/main.py",
+    "Python package entry-to-services relative import"
+  );
+  assertIncludes(
+    observedEdges,
+    "AppEntry->Ui:.ui.presenter:app/main.py",
+    "Python package entry-to-ui relative import"
+  );
+  assertIncludes(
+    observedEdges,
+    "Services->Domain:..domain:app/services/pricing.py",
+    "Python package services-to-domain relative import"
+  );
+  assertIncludes(
+    observedEdges,
+    "Ui->Domain:..domain:app/ui/presenter.py",
+    "Python package ui-to-domain relative import"
+  );
+
+  const baseline = createBaseline(cleanRoot);
+  assertEqual(baseline.payload.summary?.violations, 0, "Python package boundary baseline hard violation count");
+
+  const observe = runAxi(["observe", "--root", cleanRoot, "--baseline", baseline.path, "--json"], 0);
+  const observePayload = parseJson(observe.stdout, "Python package boundary observe output");
+  assertEqual(
+    observePayload.architectureSummary?.gate?.currentCommandIsGate,
+    false,
+    "Python package boundary observe is not a gate"
+  );
+  assertEqual(readDriftCount(observePayload), 0, "Python package boundary clean drift count");
+
+  runMultiFileDriftScenario({
+    name: "python-package-ui-services-boundary",
+    sourceRoot: pythonPackageExampleRoot,
+    files: [
+      {
+        filePath: "app/ui/presenter.py",
+        contents: [
+          "from ..domain import Order",
+          "from ..services.pricing import quote_order",
+          "",
+          "",
+          "def render_order(order: Order) -> str:",
+          "    preview = quote_order(order.symbol)",
+          "    return f\"{preview.symbol}: {preview.price}\"",
+          ""
+        ].join("\n")
+      }
+    ],
+    expectedCodes: ["undeclared_dependency"],
+    expectedLocations: ["app/ui/presenter.py"],
     expectedMinimumDrift: 1
   });
 }

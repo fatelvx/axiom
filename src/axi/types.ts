@@ -101,7 +101,7 @@ export interface ImportRecord {
 export interface DynamicDependencyExpressionRecord {
   filePath: string;
   line: number;
-  kind: "dynamic_import_expression" | "require_expression";
+  kind: "dynamic_import_expression" | "require_expression" | "python_import_expression";
   expressionKind: string;
   expressionPreview: string;
 }

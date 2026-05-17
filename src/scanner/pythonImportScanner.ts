@@ -1,4 +1,5 @@
 import type {
+  DynamicDependencyExpressionRecord,
   ImportBinding,
   ImportRecord,
   SourceFileNameTokenCluster,
@@ -18,6 +19,7 @@ interface PythonImportAlias {
 
 export function scanPythonSourceFile(filePath: string, text: string, resolver: ImportResolver): SourceFileScan {
   const imports: ImportRecord[] = [];
+  const dynamicDependencyExpressions: DynamicDependencyExpressionRecord[] = [];
   const declarationNames: string[] = [];
   let functionLikeCount = 0;
   let classCount = 0;
@@ -26,14 +28,33 @@ export function scanPythonSourceFile(filePath: string, text: string, resolver: I
     return resolver.resolve(filePath, specifier, { language: "python" });
   }
 
-  function recordImport(line: number, specifier: string, importedBindings: ImportBinding[] = []): void {
+  function recordImport(
+    line: number,
+    specifier: string,
+    importedBindings: ImportBinding[] = [],
+    kind: ImportRecord["kind"] = "import"
+  ): void {
     imports.push({
       filePath,
       line,
-      kind: "import",
+      kind,
       specifier,
       resolvedPath: resolve(specifier),
       importedBindings
+    });
+  }
+
+  function recordDynamicDependencyExpression(
+    line: number,
+    expressionKind: string,
+    expressionPreview: string
+  ): void {
+    dynamicDependencyExpressions.push({
+      filePath,
+      line,
+      kind: "python_import_expression",
+      expressionKind,
+      expressionPreview: formatExpressionPreview(expressionPreview)
     });
   }
 
@@ -76,11 +97,19 @@ export function scanPythonSourceFile(filePath: string, text: string, resolver: I
         recordImport(logicalLine.line, fromImport.module, unresolvedBindings);
       }
     }
+
+    for (const dynamicImport of readPythonDynamicImportCalls(logicalLine.text)) {
+      if (dynamicImport.literalSpecifier) {
+        recordImport(logicalLine.line, dynamicImport.literalSpecifier, [], "dynamic_import");
+      } else {
+        recordDynamicDependencyExpression(logicalLine.line, dynamicImport.callee, dynamicImport.argument);
+      }
+    }
   }
 
   return {
     imports,
-    dynamicDependencyExpressions: [],
+    dynamicDependencyExpressions,
     localExports: [],
     metrics: {
       filePath,
@@ -279,6 +308,108 @@ function readPythonFromImportStatement(
     : undefined;
 }
 
+function readPythonDynamicImportCalls(
+  text: string
+): Array<{ callee: "importlib.import_module" | "__import__"; argument: string; literalSpecifier?: string }> {
+  const calls: Array<{ callee: "importlib.import_module" | "__import__"; argument: string; literalSpecifier?: string }> = [];
+  const pattern = /(?:^|[^A-Za-z0-9_])((?:importlib\.import_module)|__import__)\s*\(/g;
+
+  for (const match of text.matchAll(pattern)) {
+    const callee = match[1] as "importlib.import_module" | "__import__" | undefined;
+    const matchedText = match[0] ?? "";
+    if (!callee) {
+      continue;
+    }
+
+    const prefix = matchedText.startsWith(callee) ? "" : matchedText[0];
+    if (prefix === ".") {
+      continue;
+    }
+
+    const openParenIndex = (match.index ?? 0) + matchedText.lastIndexOf("(");
+    const argument = readFirstPythonCallArgument(text, openParenIndex);
+    if (!argument) {
+      continue;
+    }
+
+    calls.push({
+      callee,
+      argument,
+      literalSpecifier: readPythonStringLiteral(argument)
+    });
+  }
+
+  return calls;
+}
+
+function readFirstPythonCallArgument(text: string, openParenIndex: number): string | undefined {
+  let quote: "\"" | "'" | undefined;
+  let escaped = false;
+  let depth = 0;
+  const start = openParenIndex + 1;
+
+  for (let index = start; index < text.length; index += 1) {
+    const char = text[index];
+
+    if (escaped) {
+      escaped = false;
+      continue;
+    }
+
+    if (char === "\\") {
+      escaped = true;
+      continue;
+    }
+
+    if ((char === "\"" || char === "'") && !quote) {
+      quote = char;
+      continue;
+    }
+
+    if (char === quote) {
+      quote = undefined;
+      continue;
+    }
+
+    if (quote) {
+      continue;
+    }
+
+    if (char === "(" || char === "[" || char === "{") {
+      depth += 1;
+      continue;
+    }
+
+    if (char === ")" || char === "]" || char === "}") {
+      if (depth === 0) {
+        return text.slice(start, index).trim();
+      }
+      depth -= 1;
+      continue;
+    }
+
+    if (char === "," && depth === 0) {
+      return text.slice(start, index).trim();
+    }
+  }
+
+  return undefined;
+}
+
+function readPythonStringLiteral(value: string): string | undefined {
+  const match = value.trim().match(/^([rRuUbB]*)?(['"])([\s\S]*)\2$/);
+  if (!match) {
+    return undefined;
+  }
+
+  const prefix = match[1] ?? "";
+  if (/[fF]/.test(prefix)) {
+    return undefined;
+  }
+
+  return match[3] ?? "";
+}
+
 function splitPythonAliasList(value: string): PythonImportAlias[] {
   return value
     .split(",")
@@ -341,6 +472,11 @@ function readPythonClassName(text: string): string | undefined {
 
 function countLines(text: string): number {
   return text.length === 0 ? 0 : text.split(/\r\n|\r|\n/).length;
+}
+
+function formatExpressionPreview(value: string): string {
+  const text = value.replace(/\s+/g, " ").trim();
+  return text.length <= 120 ? text : `${text.slice(0, 117)}...`;
 }
 
 function buildNameTokenClusters(names: string[]): SourceFileNameTokenCluster[] {

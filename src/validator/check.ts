@@ -154,7 +154,9 @@ export function runCheck(options: CheckOptions): CheckResult {
   );
   warnings.push(...findUnusedSuppressions(spec, suppressedViolations, { today: options.today }));
   if (warnUnresolvedImports) {
-    warnings.push(...findUnresolvedImportWarnings(imports, ownership, root));
+    warnings.push(...findUnresolvedImportWarnings(imports, ownership, root, {
+      pythonImportRoots: config.pythonImportRoots
+    }));
   }
   if (warnDynamicImports) {
     warnings.push(...findDynamicDependencyExpressionWarnings(dynamicDependencyExpressions, ownership, root));

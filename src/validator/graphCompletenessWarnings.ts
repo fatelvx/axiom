@@ -3,6 +3,10 @@ import type { DynamicDependencyExpressionRecord, ImportRecord, Violation } from 
 import { normalizePathForMatch } from "./glob.js";
 import type { OwnershipIndex } from "./ownership.js";
 
+export interface GraphCompletenessWarningOptions {
+  pythonImportRoots?: string[];
+}
+
 /**
  * Advisory evidence for places where Axiom can see a dependency expression but
  * cannot add a precise edge to the observed graph. This module does not define
@@ -11,10 +15,14 @@ import type { OwnershipIndex } from "./ownership.js";
 export function findUnresolvedImportWarnings(
   imports: ImportRecord[],
   ownership: OwnershipIndex,
-  root: string
+  root: string,
+  options: GraphCompletenessWarningOptions = {}
 ): Violation[] {
   return imports
-    .filter((importRecord) => !importRecord.resolvedPath && isInternalLikeUnresolvedSpecifier(importRecord.specifier))
+    .filter(
+      (importRecord) =>
+        !importRecord.resolvedPath && isInternalLikeUnresolvedSpecifier(importRecord, options)
+    )
     .flatMap((importRecord) => {
       const fromModule = ownership.findModule(importRecord.filePath);
       if (!fromModule) {
@@ -60,7 +68,7 @@ export function findDynamicDependencyExpressionWarnings(
         return [];
       }
 
-      const dependencyKind = record.kind === "dynamic_import_expression" ? "import()" : "require()";
+      const dependencyKind = readDependencyKind(record);
 
       return [
         {
@@ -88,8 +96,52 @@ export function findDynamicDependencyExpressionWarnings(
     });
 }
 
-function isInternalLikeUnresolvedSpecifier(specifier: string): boolean {
-  return specifier.startsWith(".") || specifier.startsWith("#");
+function readDependencyKind(record: DynamicDependencyExpressionRecord): string {
+  if (record.kind === "require_expression") {
+    return "require()";
+  }
+
+  if (record.kind === "python_import_expression") {
+    return record.expressionKind === "__import__" ? "__import__()" : "importlib.import_module()";
+  }
+
+  return "import()";
+}
+
+function isInternalLikeUnresolvedSpecifier(
+  importRecord: ImportRecord,
+  options: GraphCompletenessWarningOptions
+): boolean {
+  if (importRecord.specifier.startsWith(".") || importRecord.specifier.startsWith("#")) {
+    return true;
+  }
+
+  return isPythonFile(importRecord.filePath) && isKnownPythonInternalPrefix(importRecord.specifier, options.pythonImportRoots);
+}
+
+function isKnownPythonInternalPrefix(specifier: string, pythonImportRoots: string[] | undefined): boolean {
+  const prefixes = new Set(
+    (pythonImportRoots ?? [])
+      .map((importRoot) => pythonImportRootPrefix(importRoot))
+      .filter((prefix): prefix is string => Boolean(prefix))
+  );
+  const firstSegment = specifier.split(".")[0] ?? "";
+
+  return prefixes.has(firstSegment);
+}
+
+function pythonImportRootPrefix(importRoot: string): string | undefined {
+  const normalized = normalizePathForMatch(importRoot).replace(/\/+$/, "");
+  if (!normalized || normalized === ".") {
+    return undefined;
+  }
+
+  const segment = normalized.split("/").filter(Boolean).at(-1);
+  return segment && segment !== "src" ? segment : undefined;
+}
+
+function isPythonFile(filePath: string): boolean {
+  return path.extname(filePath).toLowerCase() === ".py";
 }
 
 function relativePath(root: string, filePath: string): string {

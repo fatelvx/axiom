@@ -151,7 +151,7 @@ Axiom v0.6.0-alpha.4 is focused on static TypeScript and JavaScript architecture
 | Outputs | human, JSON, Markdown, Mermaid, review stories, `topSignals`, baseline drift |
 | Agent surfaces | GitHub Actions examples, JSON consumer guide, read-only MCP server |
 
-Unreleased on `main`: conservative Python `.py` import scanning for repo-local static imports, plus ordered `pythonImportRoots` config for projects whose Python source roots are not obvious from folder shape alone.
+Unreleased on `main`: conservative Python `.py` import scanning for repo-local static imports, ordered `pythonImportRoots` config for ambiguous source-root layouts, literal Python dynamic import call evidence, and opt-in advisory warnings for non-literal Python dynamic import expressions.
 
 ## How To Read A Graph
 

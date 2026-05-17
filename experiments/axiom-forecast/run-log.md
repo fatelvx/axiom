@@ -1081,3 +1081,30 @@ Detailed result:
 ```text
 experiments/axiom-forecast/results/mirofish-python-spec-first-pilot-2026-05-17.md
 ```
+
+## 2026-05-17 - Python Dynamic Advisory Backtest
+
+Change under review:
+
+- Add Python graph-completeness evidence without runtime import modelling.
+- Treat literal `importlib.import_module("...")` and `__import__("...")` as observed `dynamic_import` edges when they resolve inside the repo.
+- Treat non-literal `importlib.import_module(expr)` and `__import__(expr)` as opt-in `dynamic_dependency_expression` warnings.
+- Keep unresolved bare Python import warnings limited to conservative internal-root prefixes and relative imports.
+- Do not add `.axi` syntax, new gates, dependency installs, target execution, virtualenv/site-packages inspection, framework plugin loaders, or runtime `sys.path` modelling.
+
+Method:
+
+Used the existing local MiroFish `.env` with the same OpenAI-compatible model endpoint through a compact direct prompt. This was not a full OASIS simulation and is not real user research.
+
+Primary result:
+
+- verdict: `KEEP`, confidence `0.85`;
+- dynamic Python advisory evidence is the right next evidence-quality step after the spec-first pilot;
+- keep warning families opt-in and non-gating;
+- include bare unresolved Python imports only under a conservative configured-root prefix heuristic.
+
+Detailed result:
+
+```text
+experiments/axiom-forecast/results/mirofish-python-dynamic-advisory-2026-05-17.md
+```

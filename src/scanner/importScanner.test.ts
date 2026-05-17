@@ -289,6 +289,85 @@ test("scanner reads Python static imports and repo-local resolution", () => {
   }
 });
 
+test("scanner records Python literal and non-literal dynamic import evidence", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "axi-imports-python-dynamic-"));
+
+  try {
+    writeFile(
+      root,
+      "bot/main.py",
+      [
+        "import importlib",
+        "module_name = 'market.runtime'",
+        "literal = importlib.import_module('market.order_engine')",
+        "runtime = importlib.import_module(module_name)",
+        "direct = __import__('common.utils')",
+        "templated = __import__(f'plugins.{module_name}')",
+        "ignored = loader.__import__(module_name)"
+      ].join("\n")
+    );
+    writeFile(root, "src/common/utils.py", "def load(): pass\n");
+    writeFile(root, "src/market/order_engine.py", "def open_order(): pass\n");
+
+    const scan = scanSourceFile(path.join(root, "bot/main.py"), {
+      resolver: createImportResolver({ root, pythonImportRoots: ["src"] })
+    });
+
+    assert.deepEqual(
+      scan.imports.map((record) => ({
+        line: record.line,
+        kind: record.kind,
+        specifier: record.specifier,
+        resolvedPath: normalize(root, record.resolvedPath)
+      })),
+      [
+        {
+          line: 1,
+          kind: "import",
+          specifier: "importlib",
+          resolvedPath: undefined
+        },
+        {
+          line: 3,
+          kind: "dynamic_import",
+          specifier: "market.order_engine",
+          resolvedPath: "src/market/order_engine.py"
+        },
+        {
+          line: 5,
+          kind: "dynamic_import",
+          specifier: "common.utils",
+          resolvedPath: "src/common/utils.py"
+        }
+      ]
+    );
+    assert.deepEqual(
+      scan.dynamicDependencyExpressions.map((record) => ({
+        line: record.line,
+        kind: record.kind,
+        expressionKind: record.expressionKind,
+        expressionPreview: record.expressionPreview
+      })),
+      [
+        {
+          line: 4,
+          kind: "python_import_expression",
+          expressionKind: "importlib.import_module",
+          expressionPreview: "module_name"
+        },
+        {
+          line: 6,
+          kind: "python_import_expression",
+          expressionKind: "__import__",
+          expressionPreview: "f'plugins.{module_name}'"
+        }
+      ]
+    );
+  } finally {
+    fs.rmSync(root, { force: true, recursive: true });
+  }
+});
+
 test("scanner reads multiline Python from imports and skips triple-quoted examples", () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "axi-imports-python-multiline-"));
 

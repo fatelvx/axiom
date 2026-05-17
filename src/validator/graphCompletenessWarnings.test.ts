@@ -61,6 +61,81 @@ test("unresolved import warnings report only owned internal-like static imports"
   ]);
 });
 
+test("unresolved Python import warnings stay limited to relative or configured-root prefixes", () => {
+  const root = path.join("repo");
+  const ownership = createOwnershipIndex(root, [moduleRef(root, "Bot", ["bot/**"], 1)]);
+  const imports: ImportRecord[] = [
+    {
+      filePath: path.join(root, "bot/main.py"),
+      line: 1,
+      kind: "import",
+      specifier: ".local"
+    },
+    {
+      filePath: path.join(root, "bot/main.py"),
+      line: 2,
+      kind: "import",
+      specifier: "common.missing"
+    },
+    {
+      filePath: path.join(root, "bot/main.py"),
+      line: 3,
+      kind: "import",
+      specifier: "utils"
+    },
+    {
+      filePath: path.join(root, "bot/main.py"),
+      line: 4,
+      kind: "import",
+      specifier: "discord.ext"
+    }
+  ];
+
+  assert.deepEqual(
+    findUnresolvedImportWarnings(imports, ownership, root, {
+      pythonImportRoots: ["src/common", "src/ui", "."]
+    }),
+    [
+      {
+        code: "unresolved_import",
+        message: "Bot has an import that Axiom could not resolve into the observed graph.",
+        location: {
+          filePath: path.join(root, "bot/main.py"),
+          line: 1
+        },
+        details: {
+          module: "Bot",
+          specifier: ".local",
+          importKind: "import",
+          observed: "Bot unresolved import",
+          resolution: "unresolved",
+          scope: "relative_or_package_imports",
+          suggestion:
+            "Axiom could not map this static import to a source file, so the observed graph may be incomplete. Add the missing file, configure tsconfig/package imports, or exclude generated/runtime paths intentionally."
+        }
+      },
+      {
+        code: "unresolved_import",
+        message: "Bot has an import that Axiom could not resolve into the observed graph.",
+        location: {
+          filePath: path.join(root, "bot/main.py"),
+          line: 2
+        },
+        details: {
+          module: "Bot",
+          specifier: "common.missing",
+          importKind: "import",
+          observed: "Bot unresolved import",
+          resolution: "unresolved",
+          scope: "relative_or_package_imports",
+          suggestion:
+            "Axiom could not map this static import to a source file, so the observed graph may be incomplete. Add the missing file, configure tsconfig/package imports, or exclude generated/runtime paths intentionally."
+        }
+      }
+    ]
+  );
+});
+
 test("dynamic dependency warnings are sorted and skip unowned files", () => {
   const root = path.join("repo");
   const ownership = createOwnershipIndex(root, [moduleRef(root, "App", ["src/app/**"], 1)]);
@@ -85,6 +160,13 @@ test("dynamic dependency warnings are sorted and skip unowned files", () => {
       kind: "dynamic_import_expression",
       expressionKind: "TemplateExpression",
       expressionPreview: "`./routes/${routeName}`"
+    },
+    {
+      filePath: path.join(root, "src/app/p.py"),
+      line: 3,
+      kind: "python_import_expression",
+      expressionKind: "importlib.import_module",
+      expressionPreview: "module_name"
     }
   ];
 
@@ -101,6 +183,28 @@ test("dynamic dependency warnings are sorted and skip unowned files", () => {
         dependencyKind: "import()",
         expressionKind: "TemplateExpression",
         expressionPreview: "`./routes/${routeName}`",
+        observed: "App dynamic dependency expression",
+        resolution: "not_statically_resolved",
+        scope: "dynamic_dependency_expression",
+        note:
+          "Literal dynamic imports are scanned as observed dependencies; non-literal dependency expressions are graph-incompleteness evidence.",
+        suggestion:
+          "Prefer literal imports or a visible registry when the dependency is architectural, or document it as runtime wiring outside Axiom's static graph."
+      }
+    },
+    {
+      code: "dynamic_dependency_expression",
+      message:
+        "App has a non-literal importlib.import_module() expression that Axiom cannot resolve into the observed graph.",
+      location: {
+        filePath: path.join(root, "src/app/p.py"),
+        line: 3
+      },
+      details: {
+        module: "App",
+        dependencyKind: "importlib.import_module()",
+        expressionKind: "importlib.import_module",
+        expressionPreview: "module_name",
         observed: "App dynamic dependency expression",
         resolution: "not_statically_resolved",
         scope: "dynamic_dependency_expression",

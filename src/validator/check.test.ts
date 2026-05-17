@@ -788,6 +788,112 @@ test("module.require participates in observed graph and dynamic warning evidence
   }
 });
 
+test("Python dynamic imports participate in observed graph and advisory evidence", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "axi-python-dynamic-imports-"));
+
+  try {
+    fs.mkdirSync(path.join(root, "axiom"), { recursive: true });
+    fs.mkdirSync(path.join(root, "bot"), { recursive: true });
+    fs.mkdirSync(path.join(root, "plugins"), { recursive: true });
+    fs.writeFileSync(
+      path.join(root, "axiom/main.axi"),
+      [
+        "module Bot",
+        'path "bot/**"',
+        "depends Plugins",
+        "",
+        "module Plugins",
+        'path "plugins/**"',
+        ""
+      ].join("\n")
+    );
+    fs.writeFileSync(
+      path.join(root, "bot/main.py"),
+      [
+        "import importlib",
+        "plugin_name = 'plugins.runtime'",
+        "literal = importlib.import_module('plugins.safe')",
+        "runtime = importlib.import_module(plugin_name)",
+        "fallback = __import__(plugin_name)"
+      ].join("\n")
+    );
+    fs.writeFileSync(path.join(root, "plugins/__init__.py"), "");
+    fs.writeFileSync(path.join(root, "plugins/safe.py"), "enabled = True\n");
+
+    const quietResult = runCheck({ root });
+
+    assert.deepEqual(quietResult.violations, []);
+    assert.deepEqual(quietResult.warnings, []);
+    assert.deepEqual(
+      quietResult.observedDependencies.map((dependency) => ({
+        fromModule: dependency.fromModule,
+        toModule: dependency.toModule,
+        kind: dependency.importRecord.kind,
+        specifier: dependency.importRecord.specifier
+      })),
+      [
+        {
+          fromModule: "Bot",
+          toModule: "Plugins",
+          kind: "dynamic_import",
+          specifier: "plugins.safe"
+        }
+      ]
+    );
+
+    const result = runCheck({ root, warnDynamicImports: true });
+
+    assert.deepEqual(result.violations, []);
+    assert.deepEqual(result.warnings, [
+      {
+        code: "dynamic_dependency_expression",
+        message:
+          "Bot has a non-literal importlib.import_module() expression that Axiom cannot resolve into the observed graph.",
+        location: {
+          filePath: path.join(root, "bot/main.py"),
+          line: 4
+        },
+        details: {
+          module: "Bot",
+          dependencyKind: "importlib.import_module()",
+          expressionKind: "importlib.import_module",
+          expressionPreview: "plugin_name",
+          observed: "Bot dynamic dependency expression",
+          resolution: "not_statically_resolved",
+          scope: "dynamic_dependency_expression",
+          note:
+            "Literal dynamic imports are scanned as observed dependencies; non-literal dependency expressions are graph-incompleteness evidence.",
+          suggestion:
+            "Prefer literal imports or a visible registry when the dependency is architectural, or document it as runtime wiring outside Axiom's static graph."
+        }
+      },
+      {
+        code: "dynamic_dependency_expression",
+        message: "Bot has a non-literal __import__() expression that Axiom cannot resolve into the observed graph.",
+        location: {
+          filePath: path.join(root, "bot/main.py"),
+          line: 5
+        },
+        details: {
+          module: "Bot",
+          dependencyKind: "__import__()",
+          expressionKind: "__import__",
+          expressionPreview: "plugin_name",
+          observed: "Bot dynamic dependency expression",
+          resolution: "not_statically_resolved",
+          scope: "dynamic_dependency_expression",
+          note:
+            "Literal dynamic imports are scanned as observed dependencies; non-literal dependency expressions are graph-incompleteness evidence.",
+          suggestion:
+            "Prefer literal imports or a visible registry when the dependency is architectural, or document it as runtime wiring outside Axiom's static graph."
+        }
+      }
+    ]);
+  } finally {
+    fs.rmSync(root, { force: true, recursive: true });
+  }
+});
+
 test("python imports participate in observed dependency validation", () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "axi-python-check-"));
 

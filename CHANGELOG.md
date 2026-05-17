@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Added Python dynamic import evidence: literal `importlib.import_module("...")` / `__import__("...")` calls become observed dynamic-import edges, while non-literal calls flow through the opt-in dynamic dependency warning path.
 - Added a sanitized Python spec-first pilot example and smoke coverage for Python boundary drift.
 - Added observed import-kind evidence to check and graph JSON import sites, plus human, Markdown, and drift rendering for literal dynamic imports, `require`, re-exports, and type imports.
 - Extended MCP conformance smoke and public conformance docs so fresh agents treat `import.kind` as descriptive observed evidence, not a warning, hard rule, or new `.axi` syntax.

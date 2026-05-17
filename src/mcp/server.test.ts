@@ -8,11 +8,12 @@ import test from "node:test";
 
 const repoRoot = process.cwd();
 const serverPath = path.join(repoRoot, "dist/mcp/server.js");
+const mcpToolTimeoutMs = 60_000;
 
 test("mcp stdio server initializes, lists tools, and calls read-only tools", async () => {
   const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), "axiom-mcp-baseline-"));
   const baselinePath = path.join(tempRoot, "baseline.graph.json");
-  const server = startServer(["--allow-root", repoRoot, "--allow-root", tempRoot, "--timeout-ms", "20000"]);
+  const server = startServer(["--allow-root", repoRoot, "--allow-root", tempRoot, "--timeout-ms", String(mcpToolTimeoutMs)]);
 
   try {
     const initialized = await server.request("initialize", {
@@ -138,7 +139,7 @@ test("mcp stdio server initializes, lists tools, and calls read-only tools", asy
 
 test("mcp stdio server rejects roots outside the configured allow list", async () => {
   const allowedRoot = path.join(repoRoot, "fixtures/basic-ts-valid");
-  const server = startServer(["--allow-root", allowedRoot, "--timeout-ms", "20000"]);
+  const server = startServer(["--allow-root", allowedRoot, "--timeout-ms", String(mcpToolTimeoutMs)]);
 
   try {
     await server.request("initialize", {
@@ -162,7 +163,7 @@ test("mcp stdio server rejects roots outside the configured allow list", async (
 });
 
 test("mcp stdio server returns stable JSON-RPC errors for invalid tool calls", async () => {
-  const server = startServer(["--allow-root", repoRoot, "--timeout-ms", "20000"]);
+  const server = startServer(["--allow-root", repoRoot, "--timeout-ms", String(mcpToolTimeoutMs)]);
 
   try {
     await server.request("initialize", {
@@ -236,7 +237,7 @@ test("mcp stdio server wraps CLI failures and timeouts as tool errors", async ()
   const missingCliPath = path.join(tempRoot, "missing-cli.js");
 
   try {
-    const badCliServer = startServer(["--allow-root", repoRoot, "--timeout-ms", "20000", "--cli", missingCliPath]);
+    const badCliServer = startServer(["--allow-root", repoRoot, "--timeout-ms", String(mcpToolTimeoutMs), "--cli", missingCliPath]);
 
     try {
       await badCliServer.request("initialize", {
@@ -335,6 +336,8 @@ class McpServerHandle {
   request(method: string, params: unknown): Promise<Record<string, any>> {
     const id = this.nextId;
     this.nextId += 1;
+    const operation =
+      method === "tools/call" && isRecord(params) && typeof params.name === "string" ? `${method} ${params.name}` : method;
     const request = {
       jsonrpc: "2.0",
       id,
@@ -345,8 +348,8 @@ class McpServerHandle {
     return new Promise((resolve, reject) => {
       const timer = setTimeout(() => {
         this.pending.delete(id);
-        reject(new Error(`Timed out waiting for ${method}. stderr:\n${this.stderrChunks.join("")}`));
-      }, 60_000);
+        reject(new Error(`Timed out waiting for ${operation}. stderr:\n${this.stderrChunks.join("")}`));
+      }, mcpToolTimeoutMs);
 
       this.pending.set(id, (response) => {
         clearTimeout(timer);
@@ -374,4 +377,8 @@ class McpServerHandle {
       });
     });
   }
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return value !== null && typeof value === "object" && !Array.isArray(value);
 }

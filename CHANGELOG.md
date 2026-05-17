@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Extended MCP conformance smoke and public conformance docs so fresh agents preserve the `axi infer` distinction between inferred module edges and the import-site evidence behind them, with wider local MCP test/smoke tool timeouts for composed workflows on slower Windows runs.
 - Added explicit `axi infer --json` summary counts for inferred module edges and the import-site evidence behind them.
 - Fixed `axi infer` source-scope handling so explicit `include` config/CLI scopes are honored instead of being narrowed back to `src/**`.
 - Expanded the spec-first Python pilot and user/agent docs so Python dynamic import evidence is visible in the repeatable artifact loop.

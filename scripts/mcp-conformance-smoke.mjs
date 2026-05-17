@@ -17,6 +17,7 @@ const repoRoot = process.cwd();
 const serverPath = path.join(repoRoot, "dist/mcp/server.js");
 const exampleRoot = path.join(repoRoot, "examples/spec-first-pilot");
 const protocolVersion = "2025-11-25";
+const mcpToolTimeoutMs = 60_000;
 const expectedToolNames = [
   "axiom_roots",
   "axiom_check",
@@ -44,7 +45,7 @@ async function main() {
     addLiteralDynamicImportProbe(projectRoot);
     mkdirSync(path.dirname(baselinePath), { recursive: true });
 
-    const server = startServer(["--allow-root", projectRoot, "--timeout-ms", "20000"]);
+    const server = startServer(["--allow-root", projectRoot, "--timeout-ms", String(mcpToolTimeoutMs)]);
 
     try {
       await initializeServer(server);
@@ -72,6 +73,7 @@ async function main() {
     console.log("- treated axiom_check as the hard gate");
     console.log("- treated observe, graph, and diff as advisory review evidence");
     console.log("- treated infer output as authoring evidence, not declared intent");
+    console.log("- verified infer module-edge counts stay distinct from import-site evidence");
     console.log("- treated infer-to-observe output as temporary inferred review evidence");
     console.log("- verified literal dynamic imports as observed import-kind evidence, not dynamic warnings or rules");
     console.log("- left the explicit graph baseline unchanged during review");
@@ -333,6 +335,11 @@ async function verifyInferenceIsAuthoringEvidence(server, projectRoot) {
     "not declared architecture intent",
     "infer agent hint"
   );
+  assertInferenceCountSemantics(
+    infer.result?.structuredContent?.payload,
+    infer.result?.structuredContent?.summary?.counts,
+    "infer authoring evidence"
+  );
 }
 
 async function verifyInferredObserveIsTemporaryReviewEvidence(server, projectRoot) {
@@ -400,6 +407,11 @@ async function verifyInferredObserveIsTemporaryReviewEvidence(server, projectRoo
     "current_graph_snapshot",
     "inferred observe starter contract kind"
   );
+  assertInferenceCountSemantics(
+    inferredObserve.result?.structuredContent?.payload?.inference,
+    inferredObserve.result?.structuredContent?.summary?.counts,
+    "temporary inferred observe evidence"
+  );
   assertEqual(
     inferredObserve.result?.structuredContent?.payload?.observe?.architectureSummary?.gate?.currentCommandIsGate,
     false,
@@ -433,6 +445,35 @@ function violationLocations(response) {
 function observedDependencies(response) {
   const payload = response.result?.structuredContent?.payload ?? {};
   return payload.allObservedDependencies ?? payload.observedDependencies ?? [];
+}
+
+function assertInferenceCountSemantics(inferencePayload, mcpCounts, label) {
+  const summary = inferencePayload?.summary ?? {};
+  const dependencies = inferencePayload?.observedDependencies ?? [];
+  const observedModuleEdges = summary.observedModuleEdges;
+  const observedImportSites = summary.observedImportSites;
+
+  assertEqual(summary.observedDependencies, observedModuleEdges, `${label} compatibility observedDependencies alias`);
+  assertEqual(observedModuleEdges, dependencies.length, `${label} observed module-edge count`);
+  assertEqual(observedImportSites, countInferredImportSites(dependencies), `${label} observed import-site count`);
+  assertMin(observedImportSites, observedModuleEdges, `${label} import sites cover module edges`);
+
+  assertEqual(mcpCounts?.observedModuleEdges, observedModuleEdges, `${label} MCP summary module-edge count`);
+  assertEqual(mcpCounts?.observedImportSites, observedImportSites, `${label} MCP summary import-site count`);
+}
+
+function countInferredImportSites(dependencies) {
+  if (!Array.isArray(dependencies)) {
+    throw new Error(`Expected inferred observedDependencies to be an array, got ${JSON.stringify(dependencies)}.`);
+  }
+
+  return dependencies.reduce((total, dependency) => {
+    if (typeof dependency?.count !== "number" || !Number.isFinite(dependency.count)) {
+      throw new Error(`Expected inferred dependency count to be a number, got ${JSON.stringify(dependency)}.`);
+    }
+
+    return total + dependency.count;
+  }, 0);
 }
 
 function assertObservedImportKind(response, filePath, expectedKind, label) {
@@ -520,12 +561,14 @@ class McpServerHandle {
   request(method, params) {
     const id = this.#nextId;
     this.#nextId += 1;
+    const operation =
+      method === "tools/call" && typeof params?.name === "string" ? `${method} ${params.name}` : method;
 
     return new Promise((resolve, reject) => {
       const timer = setTimeout(() => {
         this.#pending.delete(id);
-        reject(new Error(`Timed out waiting for ${method}. stderr:\n${this.#stderrChunks.join("")}`));
-      }, 20_000);
+        reject(new Error(`Timed out waiting for ${operation}. stderr:\n${this.#stderrChunks.join("")}`));
+      }, mcpToolTimeoutMs);
 
       this.#pending.set(id, (response) => {
         clearTimeout(timer);

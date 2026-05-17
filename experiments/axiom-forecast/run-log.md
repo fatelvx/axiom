@@ -1056,3 +1056,28 @@ Detailed result:
 ```text
 experiments/axiom-forecast/results/mirofish-python-import-roots-config-2026-05-17.md
 ```
+
+## 2026-05-17 - Python Spec-First Pilot Backtest
+
+Change under review:
+
+- Run a read-only spec-first pilot against a private all-Python project using temporary external config and `.axi` files only.
+- Use the already-implemented static Python scanner and `pythonImportRoots`.
+- Do not write to the target repo, save `.axi`, update baselines, accept debt, install dependencies, run target scripts, inspect virtualenv/site-packages, or add runtime import modelling.
+
+Method:
+
+Used the existing local MiroFish `.env` with the same OpenAI-compatible model endpoint through a compact direct prompt. This was not a full OASIS simulation and is not real user research.
+
+Primary result:
+
+- verdict: `KEEP`, confidence `0.85`;
+- a temp-only pilot is the right next move before adding more Python scanner features;
+- the pilot should produce one clear non-trivial architectural constraint if the static graph is useful enough;
+- if the graph is too sparse, improve evidence quality rather than adding enforcement.
+
+Detailed result:
+
+```text
+experiments/axiom-forecast/results/mirofish-python-spec-first-pilot-2026-05-17.md
+```

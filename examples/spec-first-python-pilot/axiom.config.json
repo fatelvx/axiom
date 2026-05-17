@@ -1,0 +1,20 @@
+{
+  "include": [
+    "main.py",
+    "cogs/**/*.py",
+    "src/**/*.py"
+  ],
+  "exclude": [
+    ".venv/**",
+    "tests/**",
+    "tools/**",
+    "**/__pycache__/**"
+  ],
+  "pythonImportRoots": [
+    "src/common",
+    "src/ui",
+    "src/market",
+    "src/gacha",
+    "."
+  ]
+}

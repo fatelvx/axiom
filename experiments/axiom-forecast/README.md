@@ -53,6 +53,7 @@ Files:
 - `results/mirofish-python-scanner-v0-plan-2026-05-17.md`: targeted plan backtest for the first Python scanner pass; says keep the narrow static-only `.py` discovery, import extraction, and repo-local resolution scope.
 - `results/mirofish-python-scanner-v0-implementation-2026-05-17.md`: targeted implementation backtest after verification and private Python-project smoke; says keep the patch, while deferring virtualenv/site-packages inspection.
 - `results/mirofish-python-import-roots-config-2026-05-17.md`: targeted backtest for ordered `pythonImportRoots` config; says keep the config-only patch and avoid runtime Python resolution.
+- `results/mirofish-python-spec-first-pilot-2026-05-17.md`: targeted backtest before the private Python spec-first pilot; says run the temp-only pilot before adding more Python scanner features.
 - `tools/write-mirofish-env.ps1`: local helper for writing MiroFish credentials to `.env` without pasting secrets into chat.
 
 Live run input snapshot:

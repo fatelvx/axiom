@@ -97,6 +97,7 @@ npm install --ignore-scripts
 npm run build
 node dist/cli.js check --root examples/spec-first-pilot
 node dist/cli.js check --root examples/spec-first-services-pilot
+node dist/cli.js check --root examples/spec-first-python-pilot
 ```
 
 ## Example Contract

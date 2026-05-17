@@ -93,7 +93,7 @@ Before promoting a boundary into CI, rehearse the hard gate deliberately:
 3. Confirm `axi check --json` exits non-zero with the exact expected violation code and file.
 4. Remove the temporary drift and only then wire the real gate.
 
-This repository dogfoods that loop with [examples/spec-first-pilot](../examples/spec-first-pilot) and `npm run spec-first:smoke`: the example passes at rest, the harness saves a temp graph baseline, verifies observe/diff stay advisory, checks visible path-scoped intentional debt, then writes deliberate visibility and layer drift into temp copies and verifies hard failures.
+This repository dogfoods that loop with [examples/spec-first-pilot](../examples/spec-first-pilot), [examples/spec-first-services-pilot](../examples/spec-first-services-pilot), [examples/spec-first-python-pilot](../examples/spec-first-python-pilot), and `npm run spec-first:smoke`: the examples pass at rest, the harness saves temp graph baselines, verifies observe/diff stay advisory, checks visible path-scoped intentional debt, then writes deliberate visibility, layer, service-boundary, and Python UI-to-market drift into temp copies and verifies hard failures.
 
 ## 4. Separate Health Audits From Boundary Drift
 

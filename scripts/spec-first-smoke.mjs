@@ -16,6 +16,7 @@ const repoRoot = process.cwd();
 const cliPath = path.join(repoRoot, "dist/cli.js");
 const exampleRoot = path.join(repoRoot, "examples/spec-first-pilot");
 const servicesExampleRoot = path.join(repoRoot, "examples/spec-first-services-pilot");
+const pythonExampleRoot = path.join(repoRoot, "examples/spec-first-python-pilot");
 
 if (!existsSync(cliPath)) {
   console.error("dist/cli.js was not found. Run npm run build before spec-first smoke.");
@@ -84,6 +85,7 @@ try {
   });
 
   runServicesBoundaryPilot();
+  runPythonBoundaryPilot();
 
   console.log("Spec-first validator smoke passed.");
   console.log("- reviewed example contract passed axi check");
@@ -92,6 +94,7 @@ try {
   console.log("- hidden internal bypass failed as a hard visibility violation");
   console.log("- outward domain-to-UI import failed as a hard layer violation");
   console.log("- services-boundary pilot caught new deep service bypass and Services <-> Store drift");
+  console.log("- Python spec-first pilot caught UI-to-market boundary drift");
 } finally {
   rmSync(tempDirectory, { recursive: true, force: true });
 }
@@ -240,6 +243,49 @@ function runServicesBoundaryPilot() {
     expectedLocations: ["src/services/internal/agentLoop.ts", "src/store/internal/chatState.ts"],
     expectedIntentionalViolations: 1,
     expectedMinimumDrift: 2
+  });
+}
+
+function runPythonBoundaryPilot() {
+  const cleanRoot = copyExample("python-boundary-clean", pythonExampleRoot);
+  const cleanCheck = runAxi(["check", "--root", cleanRoot, "--json"], 0);
+  const checkPayload = parseJson(cleanCheck.stdout, "Python boundary check output");
+  assertEqual(checkPayload.summary?.modules, 6, "Python boundary module count");
+  assertEqual(checkPayload.summary?.violations, 0, "Python boundary hard violation count");
+  assertEqual(checkPayload.summary?.observedDependencies, 9, "Python boundary observed import-site count");
+
+  const baseline = createBaseline(cleanRoot);
+  assertEqual(baseline.payload.summary?.violations, 0, "Python boundary baseline hard violation count");
+
+  const observe = runAxi(["observe", "--root", cleanRoot, "--baseline", baseline.path, "--json"], 0);
+  const observePayload = parseJson(observe.stdout, "Python boundary observe output");
+  assertEqual(observePayload.architectureSummary?.gate?.currentCommandIsGate, false, "Python boundary observe is not a gate");
+  assertEqual(readDriftCount(observePayload), 0, "Python boundary clean drift count");
+
+  runMultiFileDriftScenario({
+    name: "python-ui-market-boundary",
+    sourceRoot: pythonExampleRoot,
+    files: [
+      {
+        filePath: "src/ui/trade_modals.py",
+        contents: [
+          "from fmt import format_amount",
+          "from order_engine import open_order",
+          "",
+          "",
+          "class TradeModal:",
+          "    def __init__(self, symbol: str) -> None:",
+          "        self.symbol = symbol",
+          "",
+          "    def label(self) -> str:",
+          "        return format_amount(open_order(self.symbol))",
+          ""
+        ].join("\n")
+      }
+    ],
+    expectedCodes: ["undeclared_dependency"],
+    expectedLocations: ["src/ui/trade_modals.py"],
+    expectedMinimumDrift: 1
   });
 }
 

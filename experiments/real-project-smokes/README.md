@@ -146,3 +146,4 @@ npm run real-project:diff-smoke -- \
 - [ESLint lib diff smoke, 2026-05-14](results/eslint-lib-diff-smoke-2026-05-14.md)
 - [SvelteKit source diff smoke, 2026-05-14](results/sveltekit-src-diff-smoke-2026-05-14.md)
 - [UUID source diff smoke, 2026-05-14](results/uuid-src-diff-smoke-2026-05-14.md)
+- [Private Python bot infer-scope calibration, 2026-05-17](results/2026-05-17-private-python-bot-infer-scope.md)

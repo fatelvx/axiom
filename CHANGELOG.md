@@ -6,6 +6,7 @@
 - Extended MCP conformance smoke and public conformance docs so fresh agents treat `import.kind` as descriptive observed evidence, not a warning, hard rule, or new `.axi` syntax.
 - Scanned literal `module.require()` calls as CommonJS observed dependency evidence and reported non-literal `module.require()` calls through the existing dynamic dependency warning path.
 - Added conservative Python `.py` source discovery and static import scanning for `import ...`, `from ... import ...`, explicit relative imports, and repo-local module/package resolution without executing Python or inspecting virtual environments.
+- Added `pythonImportRoots` config for ordered, repo-local Python static import roots when the default root / `src` / `src/*` heuristic is ambiguous.
 
 ## 0.6.0-alpha.4 - Install Safety Docs
 

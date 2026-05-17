@@ -52,6 +52,7 @@ Files:
 - `results/mirofish-module-require-dynamic-target-2026-05-17.md`: targeted backtest after adding `module.require()` scanner evidence; says keep the narrow patch and freeze broader dynamic-require expansion until Python planning.
 - `results/mirofish-python-scanner-v0-plan-2026-05-17.md`: targeted plan backtest for the first Python scanner pass; says keep the narrow static-only `.py` discovery, import extraction, and repo-local resolution scope.
 - `results/mirofish-python-scanner-v0-implementation-2026-05-17.md`: targeted implementation backtest after verification and private Python-project smoke; says keep the patch, while deferring virtualenv/site-packages inspection.
+- `results/mirofish-python-import-roots-config-2026-05-17.md`: targeted backtest for ordered `pythonImportRoots` config; says keep the config-only patch and avoid runtime Python resolution.
 - `tools/write-mirofish-env.ps1`: local helper for writing MiroFish credentials to `.env` without pasting secrets into chat.
 
 Live run input snapshot:

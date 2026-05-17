@@ -472,6 +472,48 @@ test("infer supports workspace package grouping", () => {
   );
 });
 
+test("infer uses configured Python import roots", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "axi-infer-python-roots-"));
+
+  try {
+    fs.mkdirSync(path.join(root, "src/cogs"), { recursive: true });
+    fs.mkdirSync(path.join(root, "src/common"), { recursive: true });
+    fs.mkdirSync(path.join(root, "src/ui"), { recursive: true });
+    fs.writeFileSync(
+      path.join(root, "axiom.config.json"),
+      JSON.stringify({
+        pythonImportRoots: ["src/common", "src/ui"]
+      })
+    );
+    fs.writeFileSync(path.join(root, "src/cogs/main.py"), "from utils import load\n");
+    fs.writeFileSync(path.join(root, "src/common/utils.py"), "def load(): pass\n");
+    fs.writeFileSync(path.join(root, "src/ui/utils.py"), "def draw(): pass\n");
+
+    const result = runInfer({ root });
+
+    assert.deepEqual(
+      result.observedDependencies.map((dependency) => ({
+        fromModule: dependency.fromModule,
+        toModule: dependency.toModule,
+        count: dependency.count,
+        specifier: dependency.samples[0]?.specifier,
+        resolvedPath: dependency.samples[0]?.resolvedPath
+      })),
+      [
+        {
+          fromModule: "Cogs",
+          toModule: "Common",
+          count: 1,
+          specifier: "utils",
+          resolvedPath: "src/common/utils.py"
+        }
+      ]
+    );
+  } finally {
+    fs.rmSync(root, { force: true, recursive: true });
+  }
+});
+
 test("workspace inference keeps package root files from overlapping src modules", () => {
   const result = runInfer({ root: path.join(repoRoot, "fixtures/workspace-infer-root-files"), groupBy: "workspace" });
 

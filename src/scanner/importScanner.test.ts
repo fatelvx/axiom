@@ -373,6 +373,38 @@ test("scanner avoids ambiguous Python source-root fallback matches", () => {
   }
 });
 
+test("scanner uses configured Python import roots in declared order", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "axi-imports-python-config-roots-"));
+
+  try {
+    writeFile(root, "cogs/main.py", "from utils import load\n");
+    writeFile(root, "src/common/utils.py", "def load(): pass\n");
+    writeFile(root, "src/ui/utils.py", "def draw(): pass\n");
+
+    const scan = scanSourceFile(path.join(root, "cogs/main.py"), {
+      resolver: createImportResolver({
+        root,
+        pythonImportRoots: ["src/common", "src/ui"]
+      })
+    });
+
+    assert.deepEqual(
+      scan.imports.map((record) => ({
+        specifier: record.specifier,
+        resolvedPath: normalize(root, record.resolvedPath)
+      })),
+      [
+        {
+          specifier: "utils",
+          resolvedPath: "src/common/utils.py"
+        }
+      ]
+    );
+  } finally {
+    fs.rmSync(root, { force: true, recursive: true });
+  }
+});
+
 test("scanner reads imports from TypeScript syntax instead of line regexes", () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "axi-imports-ast-"));
 

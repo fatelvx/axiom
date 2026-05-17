@@ -835,6 +835,62 @@ test("python imports participate in observed dependency validation", () => {
   }
 });
 
+test("check uses configured Python import roots", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "axi-python-config-roots-"));
+
+  try {
+    fs.mkdirSync(path.join(root, "axiom"), { recursive: true });
+    fs.mkdirSync(path.join(root, "cogs"), { recursive: true });
+    fs.mkdirSync(path.join(root, "src/common"), { recursive: true });
+    fs.mkdirSync(path.join(root, "src/ui"), { recursive: true });
+    fs.writeFileSync(
+      path.join(root, "axiom.config.json"),
+      JSON.stringify({
+        pythonImportRoots: ["src/common", "src/ui"]
+      })
+    );
+    fs.writeFileSync(
+      path.join(root, "axiom/main.axi"),
+      [
+        "module Cogs",
+        'path "cogs/**"',
+        "",
+        "module Common",
+        'path "src/common/**"',
+        "",
+        "module Ui",
+        'path "src/ui/**"',
+        ""
+      ].join("\n")
+    );
+    fs.writeFileSync(path.join(root, "cogs/main.py"), "from utils import load\n");
+    fs.writeFileSync(path.join(root, "src/common/utils.py"), "def load(): pass\n");
+    fs.writeFileSync(path.join(root, "src/ui/utils.py"), "def draw(): pass\n");
+
+    const result = runCheck({ root });
+
+    assert.deepEqual(
+      result.observedDependencies.map((dependency) => ({
+        fromModule: dependency.fromModule,
+        toModule: dependency.toModule,
+        specifier: dependency.importRecord.specifier,
+        resolvedPath: normalize(root, dependency.importRecord.resolvedPath)
+      })),
+      [
+        {
+          fromModule: "Cogs",
+          toModule: "Common",
+          specifier: "utils",
+          resolvedPath: "src/common/utils.py"
+        }
+      ]
+    );
+    assert.equal(result.violations[0]?.code, "undeclared_dependency");
+  } finally {
+    fs.rmSync(root, { force: true, recursive: true });
+  }
+});
+
 test("check uses axiom.config.json discovery settings", () => {
   const result = runCheck({ root: path.join(repoRoot, "fixtures/config-filter") });
 
@@ -1096,3 +1152,7 @@ test("unused intentional violations are reported as warnings", () => {
   assert.equal(result.warnings[0]?.code, "unused_suppression");
   assert.equal(result.warnings[0]?.message, "Simulation has an unused intentional violation for Rendering.");
 });
+
+function normalize(root: string, filePath: string | undefined): string | undefined {
+  return filePath ? path.relative(root, filePath).replace(/\\/g, "/") : undefined;
+}

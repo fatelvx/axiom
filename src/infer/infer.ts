@@ -145,7 +145,11 @@ export function runInfer(options: InferOptions): InferResult {
   const packages = groupBy === "workspace" ? loadPackageResolver(root).packagesByDirectory : [];
   const allSourceFiles = findSourceFiles(root, config);
   const sourceFiles = chooseInferenceFiles(root, allSourceFiles, groupBy);
-  const resolver = createImportResolver({ root, tsconfigPath: config.tsconfig });
+  const resolver = createImportResolver({
+    root,
+    tsconfigPath: config.tsconfig,
+    pythonImportRoots: config.pythonImportRoots
+  });
   const workspaceSourceRoots = groupBy === "workspace" ? findWorkspaceSourceRoots(sourceFiles, packages) : new Set<string>();
   const candidateGroups = buildCandidateGroups(
     root,

@@ -137,7 +137,7 @@ The hidden internal import becomes an explicit contract violation when `hides` s
 
 ## Static v0 Coverage
 
-Axiom v0.6.0-alpha.4 is focused on static TypeScript and JavaScript architecture evidence, including Vue single-file component script imports.
+Axiom v0.6.0-alpha.4 is focused on static TypeScript and JavaScript architecture evidence, including Vue single-file component script imports. Current `main` also includes unreleased static Python import scanning.
 
 | Area | Supported |
 | --- | --- |
@@ -149,6 +149,8 @@ Axiom v0.6.0-alpha.4 is focused on static TypeScript and JavaScript architecture
 | Adoption | loose mode, `--warn-unowned`, `--strict`, time-bounded intentional violations |
 | Outputs | human, JSON, Markdown, Mermaid, review stories, `topSignals`, baseline drift |
 | Agent surfaces | GitHub Actions examples, JSON consumer guide, read-only MCP server |
+
+Unreleased on `main`: conservative Python `.py` import scanning for repo-local static imports, plus ordered `pythonImportRoots` config for projects whose Python source roots are not obvious from folder shape alone.
 
 ## How To Read A Graph
 
@@ -436,7 +438,7 @@ Current milestone:
 
 Next:
 
-- Dynamic TS/JS evidence taxonomy: literal dynamic imports, detectable non-literal dynamic imports, runtime composition blind spots.
+- Python source-root calibration and spec-first pilots over the same static evidence loop.
 - More release-candidate testing from packaged tarballs and clean temp projects.
 - More spec-first pilots on real repositories before stronger CI claims.
 - VS Code authoring and drift navigation over the same CLI/JSON evidence.
@@ -444,7 +446,6 @@ Next:
 
 Later:
 
-- Python scanner support after dynamic TS/JS evidence is classified.
 - Capability rules such as wall clock, network, filesystem, and random.
 - AI context compiler and repair loops as derived outputs, not replacements for validation.
 

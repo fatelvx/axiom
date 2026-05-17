@@ -7,6 +7,7 @@ export interface AxiomConfig {
   exclude?: string[];
   specs?: string[];
   tsconfig?: string;
+  pythonImportRoots?: string[];
   intentionalViolationExpiryWarningDays?: number;
   warnUnresolvedImports?: boolean;
   warnDynamicImports?: boolean;
@@ -22,6 +23,7 @@ export interface LoadedAxiomConfig {
   exclude: string[];
   specs: string[];
   tsconfig?: string;
+  pythonImportRoots: string[];
   intentionalViolationExpiryWarningDays?: number;
   warnUnresolvedImports: boolean;
   warnDynamicImports: boolean;
@@ -64,6 +66,7 @@ export function loadConfig(root: string, configPath?: string): LoadedAxiomConfig
     include: config.include ?? [],
     exclude: config.exclude ?? [],
     specs: config.specs ?? [...defaultSpecPatterns],
+    pythonImportRoots: config.pythonImportRoots ?? [],
     warnUnresolvedImports: config.warnUnresolvedImports ?? false,
     warnDynamicImports: config.warnDynamicImports ?? false,
     warnPublicApiSurface: config.warnPublicApiSurface ?? false,
@@ -93,6 +96,7 @@ function defaultConfig(): LoadedAxiomConfig {
     include: [],
     exclude: [],
     specs: [...defaultSpecPatterns],
+    pythonImportRoots: [],
     warnUnresolvedImports: false,
     warnDynamicImports: false,
     warnPublicApiSurface: false,
@@ -127,6 +131,7 @@ function parseConfigFile(filePath: string): AxiomConfig {
     exclude: readOptionalStringArray(filePath, rawConfig, "exclude"),
     specs: readOptionalStringArray(filePath, rawConfig, "specs"),
     tsconfig: readOptionalString(filePath, rawConfig, "tsconfig"),
+    pythonImportRoots: readOptionalStringArray(filePath, rawConfig, "pythonImportRoots"),
     intentionalViolationExpiryWarningDays: readOptionalNonNegativeInteger(
       filePath,
       rawConfig,

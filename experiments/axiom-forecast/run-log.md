@@ -1030,3 +1030,29 @@ Detailed result:
 ```text
 experiments/axiom-forecast/results/mirofish-python-scanner-v0-implementation-2026-05-17.md
 ```
+
+## 2026-05-17 - Python Import Roots Config Backtest
+
+Change under review:
+
+- Add optional `pythonImportRoots` to `axiom.config.json` as an ordered list of repository-local Python static import roots.
+- Preserve current Python defaults when omitted.
+- When the list is non-empty, use it as the explicit ordered Python search roots instead of the default root / `src` / `src/*` heuristic.
+- Do not add CLI flags, runtime Python execution, virtualenv/site-packages inspection, runtime `sys.path`, `importlib`, framework/plugin loading, `.axi` syntax, gate semantics, MCP changes, or baseline schema changes.
+
+Method:
+
+Used the existing local MiroFish `.env` with the same OpenAI-compatible model endpoint through a compact direct prompt. This was not a full OASIS simulation and is not real user research.
+
+Primary result:
+
+- verdict: `KEEP`, confidence `0.92`;
+- explicit config is the right next step after the static Python scanner because it resolves source-root ambiguity without crossing into runtime behavior;
+- no CLI flag is needed yet;
+- add tests that prove configured roots override the default ambiguity.
+
+Detailed result:
+
+```text
+experiments/axiom-forecast/results/mirofish-python-import-roots-config-2026-05-17.md
+```

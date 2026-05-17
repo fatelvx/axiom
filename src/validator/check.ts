@@ -92,7 +92,11 @@ export function runCheck(options: CheckOptions): CheckResult {
   const warnLargeFiles = options.warnLargeFiles ?? config.warnLargeFiles;
   const specFiles = options.specPaths?.length ? resolveExplicitSpecFiles(root, options.specPaths) : findAxiomFiles(root, config);
   const sourceFiles = findSourceFiles(root, config);
-  const resolver = createImportResolver({ root, tsconfigPath: config.tsconfig });
+  const resolver = createImportResolver({
+    root,
+    tsconfigPath: config.tsconfig,
+    pythonImportRoots: config.pythonImportRoots
+  });
   const violations: Violation[] = [];
   const warnings: Violation[] = [];
   const suppressedViolations: SuppressedViolation[] = [];

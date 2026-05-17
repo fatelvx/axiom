@@ -9,6 +9,7 @@ export interface ImportResolver {
 export interface ImportResolverOptions {
   root: string;
   tsconfigPath?: string;
+  pythonImportRoots?: string[];
 }
 
 export interface ImportResolveOptions {
@@ -62,12 +63,14 @@ export function createImportResolver(options: ImportResolverOptions): ImportReso
   const root = path.resolve(options.root);
   const tsconfig = loadTsconfigResolver(root, options.tsconfigPath);
   const packageResolver = loadPackageResolver(root);
-  const pythonImportRoots = findPythonImportRoots(root);
+  const pythonImportRoots = findPythonImportRoots(root, options.pythonImportRoots);
 
   return {
     resolve(fromFile: string, specifier: string, resolveOptions: ImportResolveOptions = {}): string | undefined {
       if (resolveOptions.language === "python") {
-        return resolvePythonImport(root, pythonImportRoots, fromFile, specifier);
+        return resolvePythonImport(root, pythonImportRoots, fromFile, specifier, {
+          orderedFallback: (options.pythonImportRoots?.length ?? 0) > 0
+        });
       }
 
       return resolveRelativeImport(fromFile, specifier, resolveOptions)

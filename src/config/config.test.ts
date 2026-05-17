@@ -13,6 +13,7 @@ test("loadConfig returns defaults when no config file exists", () => {
       include: [],
       exclude: [],
       specs: defaultSpecPatterns,
+      pythonImportRoots: [],
       warnUnresolvedImports: false,
       warnDynamicImports: false,
       warnPublicApiSurface: false,
@@ -36,6 +37,7 @@ test("loadConfig reads axiom.config.json from the project root", () => {
         exclude: ["src/generated/**"],
         specs: ["architecture/**/*.axi"],
         tsconfig: "tsconfig.app.json",
+        pythonImportRoots: ["src/common", "src/ui"],
         intentionalViolationExpiryWarningDays: 14,
         warnUnresolvedImports: true,
         warnDynamicImports: true,
@@ -52,6 +54,7 @@ test("loadConfig reads axiom.config.json from the project root", () => {
     assert.deepEqual(config.exclude, ["src/generated/**"]);
     assert.deepEqual(config.specs, ["architecture/**/*.axi"]);
     assert.equal(config.tsconfig, "tsconfig.app.json");
+    assert.deepEqual(config.pythonImportRoots, ["src/common", "src/ui"]);
     assert.equal(config.intentionalViolationExpiryWarningDays, 14);
     assert.equal(config.warnUnresolvedImports, true);
     assert.equal(config.warnDynamicImports, true);
@@ -84,6 +87,7 @@ test("applyDiscoveryOverrides appends CLI source scope patterns", () => {
     include: ["src/**"],
     exclude: ["src/generated/**"],
     specs: defaultSpecPatterns,
+    pythonImportRoots: [],
     warnUnresolvedImports: false,
     warnDynamicImports: false,
     warnPublicApiSurface: false,
@@ -124,6 +128,18 @@ test("loadConfig rejects invalid intentional violation warning windows", () => {
     fs.writeFileSync(path.join(root, "axiom.config.json"), JSON.stringify({ intentionalViolationExpiryWarningDays: -1 }));
 
     assert.throws(() => loadConfig(root), /intentionalViolationExpiryWarningDays/);
+  } finally {
+    fs.rmSync(root, { force: true, recursive: true });
+  }
+});
+
+test("loadConfig rejects invalid Python import roots", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "axi-config-invalid-python-roots-"));
+
+  try {
+    fs.writeFileSync(path.join(root, "axiom.config.json"), JSON.stringify({ pythonImportRoots: ["src", 42] }));
+
+    assert.throws(() => loadConfig(root), /pythonImportRoots/);
   } finally {
     fs.rmSync(root, { force: true, recursive: true });
   }

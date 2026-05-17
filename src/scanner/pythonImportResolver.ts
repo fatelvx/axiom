@@ -19,7 +19,8 @@ export function resolvePythonImport(
   root: string,
   pythonImportRoots: string[],
   fromFile: string,
-  specifier: string
+  specifier: string,
+  options: { orderedFallback?: boolean } = {}
 ): string | undefined {
   if (!specifier || path.isAbsolute(specifier)) {
     return undefined;
@@ -39,10 +40,14 @@ export function resolvePythonImport(
     return resolvePythonModuleCandidate(candidateBase, root);
   }
 
-  return resolvePythonAbsoluteImport(root, pythonImportRoots, fromFile, moduleSegments);
+  return resolvePythonAbsoluteImport(root, pythonImportRoots, fromFile, moduleSegments, options);
 }
 
-export function findPythonImportRoots(root: string): string[] {
+export function findPythonImportRoots(root: string, configuredRoots: string[] = []): string[] {
+  if (configuredRoots.length > 0) {
+    return uniqueResolvedPythonRoots(root, configuredRoots);
+  }
+
   const roots = new Set<string>([root]);
   const srcRoot = path.join(root, "src");
 
@@ -59,11 +64,31 @@ export function findPythonImportRoots(root: string): string[] {
   return [...roots].sort((left, right) => left.length - right.length || left.localeCompare(right));
 }
 
+function uniqueResolvedPythonRoots(root: string, configuredRoots: string[]): string[] {
+  const roots: string[] = [];
+  const seen = new Set<string>();
+
+  for (const configuredRoot of configuredRoots) {
+    const resolved = path.isAbsolute(configuredRoot)
+      ? path.resolve(configuredRoot)
+      : path.resolve(root, configuredRoot);
+    if (!isInsideDirectory(resolved, root) || seen.has(resolved)) {
+      continue;
+    }
+
+    roots.push(resolved);
+    seen.add(resolved);
+  }
+
+  return roots;
+}
+
 function resolvePythonAbsoluteImport(
   root: string,
   pythonImportRoots: string[],
   fromFile: string,
-  moduleSegments: string[]
+  moduleSegments: string[],
+  options: { orderedFallback?: boolean }
 ): string | undefined {
   const fromDirectory = path.dirname(path.resolve(fromFile));
   const nearestRoots = pythonImportRoots
@@ -86,6 +111,10 @@ function resolvePythonAbsoluteImport(
     }
 
     const resolved = resolvePythonImportFromRoot(root, importRoot, moduleSegments);
+    if (resolved && options.orderedFallback) {
+      return resolved;
+    }
+
     if (resolved && !fallbackMatches.includes(resolved)) {
       fallbackMatches.push(resolved);
     }

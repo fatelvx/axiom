@@ -49,6 +49,7 @@ Files:
 - `results/mirofish-mcp-roots-agent-loop-target-2026-05-14.md`: targeted backtest after adding `axiom_roots` and the temp-only MCP agent-loop smoke; recommends MCP tool-consumption conformance scenarios before Python or dynamic expansion.
 - `results/mirofish-import-kind-dynamic-target-2026-05-17.md`: targeted backtest after adding observed import-kind evidence; says keep the change, clarify that `import.kind` is descriptive evidence, and do not add YAML before dynamic/Python needs prove it.
 - `results/mirofish-mcp-import-kind-conformance-2026-05-17.md`: targeted backtest after adding MCP conformance coverage for import-kind evidence; says keep the patch and continue treating `import.kind` as descriptive evidence, not contract language.
+- `results/mirofish-module-require-dynamic-target-2026-05-17.md`: targeted backtest after adding `module.require()` scanner evidence; says keep the narrow patch and freeze broader dynamic-require expansion until Python planning.
 - `tools/write-mirofish-env.ps1`: local helper for writing MiroFish credentials to `.env` without pasting secrets into chat.
 
 Live run input snapshot:

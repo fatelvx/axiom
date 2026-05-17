@@ -943,3 +943,27 @@ Detailed result:
 ```text
 experiments/axiom-forecast/results/mirofish-mcp-import-kind-conformance-2026-05-17.md
 ```
+
+## 2026-05-17 - Module Require Dynamic Evidence Target Backtest
+
+Change under review:
+
+- The TypeScript/JavaScript scanner now recognizes literal `module.require("./target")` as CommonJS observed dependency evidence using the existing `require` import kind.
+- Non-literal `module.require(expr)` now flows through the existing opt-in `dynamic_dependency_expression` warning path.
+- No `.axi` grammar, hard-gate, accepted-debt, MCP, warning-family, or baseline semantics changed.
+
+Method:
+
+Used the existing local MiroFish `.env` with the same OpenAI-compatible model endpoint through a compact direct prompt. The endpoint returned normal final content for this run.
+
+Primary result:
+
+- verdict: `KEEP`, high confidence;
+- the patch is narrow and preserves the existing literal-edge versus non-literal-warning split;
+- broader dynamic-require expansion such as partial evaluation, aliasing, `require.resolve`, or inter-procedural reasoning should wait until after Python scanner planning or separate calibration evidence.
+
+Detailed result:
+
+```text
+experiments/axiom-forecast/results/mirofish-module-require-dynamic-target-2026-05-17.md
+```

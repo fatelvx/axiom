@@ -134,6 +134,60 @@ test("scanner records non-literal dynamic dependency expressions without inventi
   }
 });
 
+test("scanner treats module.require as CommonJS dependency evidence", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "axi-imports-module-require-"));
+
+  try {
+    writeFile(
+      root,
+      "src/app.ts",
+      [
+        'const direct = module.require("./direct");',
+        "const lazyName = './lazy';",
+        "const lazy = module.require(lazyName);"
+      ].join("\n")
+    );
+    writeFile(root, "src/direct.js", "exports.direct = true;\n");
+
+    const scan = scanSourceFile(path.join(root, "src/app.ts"));
+
+    assert.deepEqual(
+      scan.imports.map((record) => ({
+        line: record.line,
+        kind: record.kind,
+        specifier: record.specifier,
+        resolvedPath: normalize(root, record.resolvedPath)
+      })),
+      [
+        {
+          line: 1,
+          kind: "require",
+          specifier: "./direct",
+          resolvedPath: "src/direct.js"
+        }
+      ]
+    );
+    assert.deepEqual(
+      scan.dynamicDependencyExpressions.map((record) => ({
+        line: record.line,
+        kind: record.kind,
+        expressionKind: record.expressionKind,
+        expressionPreview: record.expressionPreview
+      })),
+      [
+        {
+          line: 3,
+          kind: "require_expression",
+          expressionKind: "Identifier",
+          expressionPreview: "lazyName"
+        }
+      ]
+    );
+  } finally {
+    fs.rmSync(root, { force: true, recursive: true });
+  }
+});
+
 test("scanner reads imports from TypeScript syntax instead of line regexes", () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "axi-imports-ast-"));
 

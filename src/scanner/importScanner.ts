@@ -484,7 +484,7 @@ function readCallImport(node: ts.CallExpression): { kind: ImportRecord["kind"]; 
     return specifier ? { kind: "dynamic_import", specifier } : undefined;
   }
 
-  if (ts.isIdentifier(node.expression) && node.expression.text === "require") {
+  if (isRequireCallee(node.expression)) {
     const specifier = readStringLiteral(firstArgument);
     return specifier ? { kind: "require", specifier } : undefined;
   }
@@ -504,11 +504,24 @@ function readDynamicDependencyExpression(
     return { kind: "dynamic_import_expression", expression: firstArgument };
   }
 
-  if (ts.isIdentifier(node.expression) && node.expression.text === "require") {
+  if (isRequireCallee(node.expression)) {
     return { kind: "require_expression", expression: firstArgument };
   }
 
   return undefined;
+}
+
+function isRequireCallee(expression: ts.Expression): boolean {
+  if (ts.isIdentifier(expression)) {
+    return expression.text === "require";
+  }
+
+  return (
+    ts.isPropertyAccessExpression(expression) &&
+    expression.name.text === "require" &&
+    ts.isIdentifier(expression.expression) &&
+    expression.expression.text === "module"
+  );
 }
 
 function formatSyntaxKind(kind: ts.SyntaxKind): string {

@@ -12,7 +12,7 @@
   "architectureSummary": {
     "model": "declared_intent_vs_observed_imports",
     "mode": "graph",
-    "status": "clear",
+    "status": "needs_review",
     "gate": {
       "command": "axi check",
       "currentCommandIsGate": false,
@@ -20,11 +20,11 @@
     },
     "reviewFocus": "Full declared and observed module graph.",
     "interpretation": {
-      "headline": "This scoped import graph is quiet: no hard failures, visible debt, advisory signals, or baseline drift were reported; graph center is CheckRunner, so compare that center with your intended architecture before saving a baseline. Quiet imports do not prove intra-file responsibilities are healthy.",
+      "headline": "No hard contract failures, but 4 advisory signals need review; graph center is CheckRunner.",
       "quickRead": [
         "Contract: no hard failures in this command output.",
-        "Graph center: CheckRunner (20 import sites, fan-in 2, fan-out 7), CoreTypes (19 import sites, fan-in 6, fan-out 0).",
-        "Review pressure: no visible debt or advisory signals."
+        "Graph center: CheckRunner (20 import sites, fan-in 2, fan-out 7), CoreTypes (20 import sites, fan-in 6, fan-out 0).",
+        "Review pressure: 4 advisory signals."
       ],
       "lookFirst": [
         "Hard signals: read `violations[]`, `intentionalDebt[]`, and advisory `warnings[]` before judging the diagram.",
@@ -46,9 +46,9 @@
           "role": "fan_in_hub",
           "incomingModules": 6,
           "outgoingModules": 0,
-          "incomingImportSites": 19,
+          "incomingImportSites": 20,
           "outgoingImportSites": 0,
-          "totalImportSites": 19
+          "totalImportSites": 20
         },
         {
           "module": "Infer",
@@ -63,25 +63,93 @@
       "caveat": "This is a graph interpretation over static imports, not proof of semantic architecture health. Compare it with the architecture you intended."
     },
     "reviewStory": {
-      "summary": "This scoped import graph is quiet. Confirm the graph center matches intended architecture before saving or updating a baseline; quiet imports do not prove intra-file responsibilities are healthy.",
-      "setup": "Scanned 12 declared modules and 55 observed import edges. This report is advisory unless you run `axi check` as the gate.",
+      "summary": "No hard gate failures. Start review with Coupling concentration around CheckRunner: 1 concentration warning suggest this module may be becoming a coordination hub.",
+      "setup": "Scanned 12 declared modules and 56 observed import edges. This report is advisory unless you run `axi check` as the gate.",
       "pressures": [
         {
-          "kind": "graph_center",
-          "title": "Quiet graph center: CheckRunner",
-          "description": "No hard failures, visible debt, advisory signals, or drift were reported; compare this center with the architecture you expected before saving a baseline.",
-          "severity": "info",
+          "kind": "advisory_warning_root",
+          "title": "Coupling concentration around CheckRunner",
+          "description": "1 concentration warning suggest this module may be becoming a coordination hub.",
+          "severity": "review",
+          "count": 1,
+          "code": "coupling_concentration",
           "modules": [
             "CheckRunner"
           ]
+        },
+        {
+          "kind": "advisory_warning_root",
+          "title": "Coupling concentration around CLI",
+          "description": "1 concentration warning suggest this module may be becoming a coordination hub.",
+          "severity": "review",
+          "count": 1,
+          "code": "coupling_concentration",
+          "modules": [
+            "CLI"
+          ]
+        },
+        {
+          "kind": "advisory_warning_root",
+          "title": "Coupling concentration around CoreTypes",
+          "description": "1 concentration warning suggest this module may be becoming a coordination hub.",
+          "severity": "review",
+          "count": 1,
+          "code": "coupling_concentration",
+          "modules": [
+            "CoreTypes"
+          ]
         }
       ],
-      "nextStep": "Confirm scan scope and intended graph shape, then save a portable baseline with `axi graph --json --portable` if this is the shape to watch.",
+      "nextStep": "Inspect Coupling concentration around CheckRunner; decide whether to change code, clarify .axi visibility rules, or keep the signal advisory.",
       "caveat": "This story is a review aid over static imports. It points to likely pressure, not proof that the architecture is good or bad; a quiet import graph can still hide intra-file responsibility concentration."
     },
-    "topSignals": [],
+    "topSignals": [
+      {
+        "kind": "advisory_warning",
+        "code": "coupling_concentration",
+        "message": "CheckRunner has concentrated fan-out to 7 modules."
+      },
+      {
+        "kind": "advisory_warning",
+        "code": "coupling_concentration",
+        "message": "CLI has concentrated fan-out to 4 modules."
+      },
+      {
+        "kind": "advisory_warning",
+        "code": "coupling_concentration",
+        "message": "CoreTypes has concentrated fan-in from 6 modules."
+      },
+      {
+        "kind": "advisory_warning",
+        "code": "coupling_concentration",
+        "message": "Infer has concentrated fan-out to 5 modules."
+      }
+    ],
+    "advisorySignalCoverage": {
+      "enabledFamilies": [
+        {
+          "family": "couplingConcentration",
+          "label": "module coupling concentration",
+          "warningCodes": [
+            "coupling_concentration"
+          ],
+          "findings": 4,
+          "status": "findings_reported"
+        },
+        {
+          "family": "largeFiles",
+          "label": "large source files",
+          "warningCodes": [
+            "large_module_file"
+          ],
+          "findings": 0,
+          "status": "checked_no_findings"
+        }
+      ],
+      "caveat": "Checked with no findings means this static scan did not report that advisory signal family. It is not proof of semantic architecture health or runtime dependency completeness."
+    },
     "suggestedNextActions": [
-      "Save an unfiltered portable `axi graph --json --portable` baseline if you want future PRs to show architecture drift."
+      "Treat advisory `warnings[]` as architecture pressure before turning any signal into a hard rule."
     ]
   },
   "summary": {
@@ -90,11 +158,11 @@
     "forbiddenDependencies": 0,
     "exposedPaths": 0,
     "hiddenPaths": 0,
-    "observedDependencies": 55,
-    "shownObservedDependencies": 55,
+    "observedDependencies": 56,
+    "shownObservedDependencies": 56,
     "violations": 0,
     "intentionalViolations": 0,
-    "warnings": 0
+    "warnings": 4
   },
   "modules": [
     {
@@ -218,7 +286,7 @@
         "src/scanner/**"
       ],
       "layer": "Engine",
-      "purpose": "discover and resolve TypeScript and JavaScript imports",
+      "purpose": "discover and resolve TypeScript, JavaScript, and Python imports",
       "depends": [
         "CoreTypes"
       ],
@@ -961,6 +1029,19 @@
       "intentionalViolations": []
     },
     {
+      "fromModule": "Scanner",
+      "toModule": "CoreTypes",
+      "import": {
+        "filePath": "src/scanner/pythonImportScanner.ts",
+        "line": 1,
+        "kind": "import",
+        "specifier": "../axi/types.js",
+        "resolvedPath": "src/axi/types.ts"
+      },
+      "violations": [],
+      "intentionalViolations": []
+    },
+    {
       "fromModule": "CheckRunner",
       "toModule": "CoreTypes",
       "import": {
@@ -1670,6 +1751,19 @@
       "import": {
         "filePath": "src/scanner/importScanner.ts",
         "line": 4,
+        "kind": "import",
+        "specifier": "../axi/types.js",
+        "resolvedPath": "src/axi/types.ts"
+      },
+      "violations": [],
+      "intentionalViolations": []
+    },
+    {
+      "fromModule": "Scanner",
+      "toModule": "CoreTypes",
+      "import": {
+        "filePath": "src/scanner/pythonImportScanner.ts",
+        "line": 1,
         "kind": "import",
         "specifier": "../axi/types.js",
         "resolvedPath": "src/axi/types.ts"
@@ -2395,6 +2489,19 @@
       "intentionalViolations": []
     },
     {
+      "fromModule": "Scanner",
+      "toModule": "CoreTypes",
+      "import": {
+        "filePath": "src/scanner/pythonImportScanner.ts",
+        "line": 1,
+        "kind": "import",
+        "specifier": "../axi/types.js",
+        "resolvedPath": "src/axi/types.ts"
+      },
+      "violations": [],
+      "intentionalViolations": []
+    },
+    {
       "fromModule": "CheckRunner",
       "toModule": "CoreTypes",
       "import": {
@@ -2709,5 +2816,122 @@
   ],
   "violations": [],
   "intentionalDebt": [],
-  "warnings": []
+  "warnings": [
+    {
+      "code": "coupling_concentration",
+      "message": "CheckRunner has concentrated fan-out to 7 modules.",
+      "suggestion": "Review whether this module is becoming a coordination hub; split responsibilities, narrow public surfaces, or make the boundary explicit before considering enforcement.",
+      "details": {
+        "module": "CheckRunner",
+        "direction": "fan_out",
+        "fanInModules": 2,
+        "fanOutModules": 7,
+        "incomingModules": [
+          "CLI",
+          "Diagnostics"
+        ],
+        "outgoingModules": [
+          "Config",
+          "CoreTypes",
+          "Discovery",
+          "Language",
+          "Scanner",
+          "TextIO",
+          "ValidatorCore"
+        ],
+        "incomingImportSites": 5,
+        "outgoingImportSites": 15,
+        "threshold": {
+          "fanInModules": 4,
+          "fanOutModules": 4
+        },
+        "observed": "CheckRunner fan-out to 7 modules",
+        "suggestion": "Review whether this module is becoming a coordination hub; split responsibilities, narrow public surfaces, or make the boundary explicit before considering enforcement."
+      }
+    },
+    {
+      "code": "coupling_concentration",
+      "message": "CLI has concentrated fan-out to 4 modules.",
+      "suggestion": "Review whether this module is becoming a coordination hub; split responsibilities, narrow public surfaces, or make the boundary explicit before considering enforcement.",
+      "details": {
+        "module": "CLI",
+        "direction": "fan_out",
+        "fanInModules": 0,
+        "fanOutModules": 4,
+        "incomingModules": [],
+        "outgoingModules": [
+          "CheckRunner",
+          "Diagnostics",
+          "Infer",
+          "TextIO"
+        ],
+        "incomingImportSites": 0,
+        "outgoingImportSites": 7,
+        "threshold": {
+          "fanInModules": 4,
+          "fanOutModules": 4
+        },
+        "observed": "CLI fan-out to 4 modules",
+        "suggestion": "Review whether this module is becoming a coordination hub; split responsibilities, narrow public surfaces, or make the boundary explicit before considering enforcement."
+      }
+    },
+    {
+      "code": "coupling_concentration",
+      "message": "CoreTypes has concentrated fan-in from 6 modules.",
+      "suggestion": "Review whether this module is becoming a coordination hub; split responsibilities, narrow public surfaces, or make the boundary explicit before considering enforcement.",
+      "details": {
+        "module": "CoreTypes",
+        "direction": "fan_in",
+        "fanInModules": 6,
+        "fanOutModules": 0,
+        "incomingModules": [
+          "CheckRunner",
+          "Diagnostics",
+          "Infer",
+          "Language",
+          "Scanner",
+          "ValidatorCore"
+        ],
+        "outgoingModules": [],
+        "incomingImportSites": 20,
+        "outgoingImportSites": 0,
+        "threshold": {
+          "fanInModules": 4,
+          "fanOutModules": 4
+        },
+        "observed": "CoreTypes fan-in from 6 modules",
+        "suggestion": "Review whether this module is becoming a coordination hub; split responsibilities, narrow public surfaces, or make the boundary explicit before considering enforcement."
+      }
+    },
+    {
+      "code": "coupling_concentration",
+      "message": "Infer has concentrated fan-out to 5 modules.",
+      "suggestion": "Review whether this module is becoming a coordination hub; split responsibilities, narrow public surfaces, or make the boundary explicit before considering enforcement.",
+      "details": {
+        "module": "Infer",
+        "direction": "fan_out",
+        "fanInModules": 2,
+        "fanOutModules": 5,
+        "incomingModules": [
+          "CLI",
+          "Diagnostics"
+        ],
+        "outgoingModules": [
+          "Config",
+          "CoreTypes",
+          "Discovery",
+          "Scanner",
+          "ValidatorCore"
+        ],
+        "incomingImportSites": 2,
+        "outgoingImportSites": 9,
+        "threshold": {
+          "fanInModules": 4,
+          "fanOutModules": 4
+        },
+        "observed": "Infer fan-out to 5 modules",
+        "suggestion": "Review whether this module is becoming a coordination hub; split responsibilities, narrow public surfaces, or make the boundary explicit before considering enforcement."
+      }
+    }
+  ]
 }

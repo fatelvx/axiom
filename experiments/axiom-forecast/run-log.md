@@ -967,3 +967,66 @@ Detailed result:
 ```text
 experiments/axiom-forecast/results/mirofish-module-require-dynamic-target-2026-05-17.md
 ```
+
+## 2026-05-17 - Python Scanner v0 Plan Backtest
+
+Change under review:
+
+- Add `.py` source discovery.
+- Scan conservative static Python imports: `import ...`, `from ... import ...`, and explicit relative imports.
+- Resolve only repository-local Python modules and packages, including common `src` / `src/*` source-root layouts.
+- Avoid Python execution, dependency installs, `importlib` recovery, runtime `sys.path` modelling, virtual environments, site-packages, framework/plugin loaders, new `.axi` syntax, new gates, MCP changes, or baseline schema changes.
+- Use a private all-Python project as a read-only calibration smoke after implementation.
+
+Method:
+
+Used the existing local MiroFish `.env` with the same OpenAI-compatible model endpoint through a compact direct prompt. This was not a full OASIS simulation and is not real user research.
+
+Primary result:
+
+- verdict: `KEEP`, high confidence;
+- the plan is narrow enough to follow the validator-first roadmap after the TS/JS dynamic baseline;
+- proceed with synthetic fixtures plus a read-only private Python-project smoke before merging;
+- keep third-party imports and runtime loader behavior as explicit v0 limitations.
+
+Detailed result:
+
+```text
+experiments/axiom-forecast/results/mirofish-python-scanner-v0-plan-2026-05-17.md
+```
+
+## 2026-05-17 - Python Scanner v0 Implementation Backtest
+
+Change under review:
+
+- `.py` source discovery and conservative static Python import scanning are implemented.
+- Python imports participate in existing observed graph validation and can trigger existing `.axi` hard violations when both sides are owned.
+- Python resolver is repo-local only, with root / `src` / immediate `src/*` source roots, `.py` modules, package `__init__.py`, nearest-root priority, and unique-only sibling fallback.
+- Python resolver logic was extracted into its own scanner boundary after self-dogfood showed `importResolver.ts` crossing large-file pressure.
+- The implementation keeps out runtime Python execution, dependency installs, virtualenv/site-packages inspection, runtime `sys.path` modelling, `importlib`, framework/plugin loading, new `.axi` syntax, new gates, MCP changes, and baseline schema changes.
+
+Evidence:
+
+- `npm test`: 279 tests passed.
+- `npm run axiom:self`: passed.
+- `npm run axiom:self:artifact`: passed with committed portable baseline verification and zero drift.
+- `npm run spec-first:smoke`: passed.
+- `npm run mcp:conformance:smoke`: passed.
+- Read-only private Python-project smoke: 27 source files, 169 imports, 4 inferred modules, 4 observed module edges, no target-repo writes.
+
+Method:
+
+Used the existing local MiroFish `.env` with the same OpenAI-compatible model endpoint through a compact direct prompt. This was not a full OASIS simulation and is not real user research.
+
+Primary result:
+
+- verdict: `KEEP`, high confidence;
+- no required patch before commit;
+- the main risk remains false negatives around external dependencies, virtual environments, runtime import path mutation, and framework/plugin loading;
+- the model suggested virtualenv/site-packages inspection next, but the adopted interpretation rejects that as too aggressive for the current no-execution repo-local boundary.
+
+Detailed result:
+
+```text
+experiments/axiom-forecast/results/mirofish-python-scanner-v0-implementation-2026-05-17.md
+```

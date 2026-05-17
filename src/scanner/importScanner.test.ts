@@ -188,6 +188,191 @@ test("scanner treats module.require as CommonJS dependency evidence", () => {
   }
 });
 
+test("scanner reads Python static imports and repo-local resolution", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "axi-imports-python-"));
+
+  try {
+    writeFile(
+      root,
+      "app/main.py",
+      [
+        "import app.services.worker as worker",
+        "from app.services import registry",
+        "from .services.worker import run",
+        "from . import settings",
+        "from ..shared import helpers",
+        "from utils import load_db",
+        "from discord.ext import commands",
+        "def handle_message():",
+        "    pass",
+        "class BotClient:",
+        "    pass"
+      ].join("\n")
+    );
+    writeFile(root, "app/__init__.py", "");
+    writeFile(root, "app/settings.py", "TOKEN = 'x'\n");
+    writeFile(root, "app/services/__init__.py", "");
+    writeFile(root, "app/services/worker.py", "def run(): pass\n");
+    writeFile(root, "app/services/registry.py", "registry = {}\n");
+    writeFile(root, "shared/__init__.py", "");
+    writeFile(root, "shared/helpers.py", "def help(): pass\n");
+    writeFile(root, "src/common/utils.py", "def load_db(): pass\n");
+
+    const scan = scanSourceFile(path.join(root, "app/main.py"), {
+      resolver: createImportResolver({ root })
+    });
+
+    assert.deepEqual(
+      scan.imports.map((record) => ({
+        line: record.line,
+        kind: record.kind,
+        specifier: record.specifier,
+        resolvedPath: normalize(root, record.resolvedPath),
+        importedBindings: record.importedBindings
+      })),
+      [
+        {
+          line: 1,
+          kind: "import",
+          specifier: "app.services.worker",
+          resolvedPath: "app/services/worker.py",
+          importedBindings: [{ localName: "worker", importedName: "app.services.worker" }]
+        },
+        {
+          line: 2,
+          kind: "import",
+          specifier: "app.services.registry",
+          resolvedPath: "app/services/registry.py",
+          importedBindings: [{ localName: "registry", importedName: "registry" }]
+        },
+        {
+          line: 3,
+          kind: "import",
+          specifier: ".services.worker",
+          resolvedPath: "app/services/worker.py",
+          importedBindings: [{ localName: "run", importedName: "run" }]
+        },
+        {
+          line: 4,
+          kind: "import",
+          specifier: ".settings",
+          resolvedPath: "app/settings.py",
+          importedBindings: [{ localName: "settings", importedName: "settings" }]
+        },
+        {
+          line: 5,
+          kind: "import",
+          specifier: "..shared.helpers",
+          resolvedPath: "shared/helpers.py",
+          importedBindings: [{ localName: "helpers", importedName: "helpers" }]
+        },
+        {
+          line: 6,
+          kind: "import",
+          specifier: "utils",
+          resolvedPath: "src/common/utils.py",
+          importedBindings: [{ localName: "load_db", importedName: "load_db" }]
+        },
+        {
+          line: 7,
+          kind: "import",
+          specifier: "discord.ext",
+          resolvedPath: undefined,
+          importedBindings: [{ localName: "commands", importedName: "commands" }]
+        }
+      ]
+    );
+    assert.equal(scan.metrics.functionLikeCount, 1);
+    assert.equal(scan.metrics.classCount, 1);
+  } finally {
+    fs.rmSync(root, { force: true, recursive: true });
+  }
+});
+
+test("scanner reads multiline Python from imports and skips triple-quoted examples", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "axi-imports-python-multiline-"));
+
+  try {
+    writeFile(
+      root,
+      "pkg/main.py",
+      [
+        '"""',
+        "from pkg.fake import nope",
+        '"""',
+        "from pkg import (",
+        "    alpha,",
+        "    beta as renamed_beta,",
+        ")"
+      ].join("\n")
+    );
+    writeFile(root, "pkg/__init__.py", "");
+    writeFile(root, "pkg/alpha.py", "A = 1\n");
+    writeFile(root, "pkg/beta.py", "B = 1\n");
+
+    const scan = scanSourceFile(path.join(root, "pkg/main.py"), {
+      resolver: createImportResolver({ root })
+    });
+
+    assert.deepEqual(
+      scan.imports.map((record) => ({
+        line: record.line,
+        specifier: record.specifier,
+        resolvedPath: normalize(root, record.resolvedPath),
+        importedBindings: record.importedBindings
+      })),
+      [
+        {
+          line: 4,
+          specifier: "pkg.alpha",
+          resolvedPath: "pkg/alpha.py",
+          importedBindings: [{ localName: "alpha", importedName: "alpha" }]
+        },
+        {
+          line: 4,
+          specifier: "pkg.beta",
+          resolvedPath: "pkg/beta.py",
+          importedBindings: [{ localName: "renamed_beta", importedName: "beta" }]
+        }
+      ]
+    );
+  } finally {
+    fs.rmSync(root, { force: true, recursive: true });
+  }
+});
+
+test("scanner avoids ambiguous Python source-root fallback matches", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "axi-imports-python-ambiguous-"));
+
+  try {
+    writeFile(root, "cogs/main.py", "from utils import load\n");
+    writeFile(root, "src/common/utils.py", "def load(): pass\n");
+    writeFile(root, "src/ui/panel.py", "from utils import draw\n");
+    writeFile(root, "src/ui/utils.py", "def draw(): pass\n");
+
+    const resolver = createImportResolver({ root });
+    const externalScan = scanSourceFile(path.join(root, "cogs/main.py"), { resolver });
+    const uiScan = scanSourceFile(path.join(root, "src/ui/panel.py"), { resolver });
+
+    assert.equal(externalScan.imports[0]?.specifier, "utils");
+    assert.equal(externalScan.imports[0]?.resolvedPath, undefined);
+    assert.deepEqual(
+      uiScan.imports.map((record) => ({
+        specifier: record.specifier,
+        resolvedPath: normalize(root, record.resolvedPath)
+      })),
+      [
+        {
+          specifier: "utils",
+          resolvedPath: "src/ui/utils.py"
+        }
+      ]
+    );
+  } finally {
+    fs.rmSync(root, { force: true, recursive: true });
+  }
+});
+
 test("scanner reads imports from TypeScript syntax instead of line regexes", () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "axi-imports-ast-"));
 

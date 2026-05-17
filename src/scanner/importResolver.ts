@@ -1,5 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
+import { findPythonImportRoots, resolvePythonImport } from "./pythonImportResolver.js";
 
 export interface ImportResolver {
   resolve(fromFile: string, specifier: string, options?: ImportResolveOptions): string | undefined;
@@ -12,6 +13,7 @@ export interface ImportResolverOptions {
 
 export interface ImportResolveOptions {
   allowDeclarationFiles?: boolean;
+  language?: "python";
 }
 
 interface TsconfigResolver {
@@ -60,9 +62,14 @@ export function createImportResolver(options: ImportResolverOptions): ImportReso
   const root = path.resolve(options.root);
   const tsconfig = loadTsconfigResolver(root, options.tsconfigPath);
   const packageResolver = loadPackageResolver(root);
+  const pythonImportRoots = findPythonImportRoots(root);
 
   return {
     resolve(fromFile: string, specifier: string, resolveOptions: ImportResolveOptions = {}): string | undefined {
+      if (resolveOptions.language === "python") {
+        return resolvePythonImport(root, pythonImportRoots, fromFile, specifier);
+      }
+
       return resolveRelativeImport(fromFile, specifier, resolveOptions)
         ?? resolveTsconfigPath(tsconfig, specifier, resolveOptions)
         ?? resolvePackageSpecifier(packageResolver, fromFile, specifier, resolveOptions);

@@ -49,7 +49,7 @@ module Scanner
 path "src/scanner/**"
 layer Engine
 depends on CoreTypes
-purpose "discover and resolve TypeScript and JavaScript imports"
+purpose "discover and resolve TypeScript, JavaScript, and Python imports"
 
 module CheckRunner
 path "src/validator/check.ts"

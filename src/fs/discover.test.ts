@@ -16,11 +16,16 @@ test("source discovery skips dependency, build, and cache directories by default
       ".cache",
       ".benchmark_tmp",
       ".git",
+      ".mypy_cache",
       ".next",
       ".nuxt",
+      ".pytest_cache",
+      ".ruff_cache",
       ".svelte-kit",
       ".turbo",
       ".vite",
+      ".venv",
+      "__pycache__",
       "build",
       "coverage",
       "dist",
@@ -28,9 +33,11 @@ test("source discovery skips dependency, build, and cache directories by default
       "out",
       "target",
       "temp",
-      "tmp"
+      "tmp",
+      "venv"
     ]) {
       writeFile(root, `${directory}/ignored.ts`, "export const ignored = true;\n");
+      writeFile(root, `${directory}/ignored.py`, "ignored = True\n");
       writeFile(root, `${directory}/ignored.axi`, "module Ignored\npath \"ignored/**\"\n");
     }
 
@@ -71,6 +78,23 @@ test("source discovery includes Vue single-file components", () => {
     assert.deepEqual(findSourceFiles(root).map((filePath) => normalize(root, filePath)), [
       "src/App.vue",
       "src/feature.js"
+    ]);
+  } finally {
+    fs.rmSync(root, { force: true, recursive: true });
+  }
+});
+
+test("source discovery includes Python modules but not type stubs", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "axi-discover-python-"));
+
+  try {
+    writeFile(root, "src/app.py", "from .feature import run\n");
+    writeFile(root, "src/feature.py", "def run(): pass\n");
+    writeFile(root, "src/types.pyi", "class Types: ...\n");
+
+    assert.deepEqual(findSourceFiles(root).map((filePath) => normalize(root, filePath)), [
+      "src/app.py",
+      "src/feature.py"
     ]);
   } finally {
     fs.rmSync(root, { force: true, recursive: true });

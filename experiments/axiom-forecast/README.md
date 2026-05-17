@@ -50,6 +50,8 @@ Files:
 - `results/mirofish-import-kind-dynamic-target-2026-05-17.md`: targeted backtest after adding observed import-kind evidence; says keep the change, clarify that `import.kind` is descriptive evidence, and do not add YAML before dynamic/Python needs prove it.
 - `results/mirofish-mcp-import-kind-conformance-2026-05-17.md`: targeted backtest after adding MCP conformance coverage for import-kind evidence; says keep the patch and continue treating `import.kind` as descriptive evidence, not contract language.
 - `results/mirofish-module-require-dynamic-target-2026-05-17.md`: targeted backtest after adding `module.require()` scanner evidence; says keep the narrow patch and freeze broader dynamic-require expansion until Python planning.
+- `results/mirofish-python-scanner-v0-plan-2026-05-17.md`: targeted plan backtest for the first Python scanner pass; says keep the narrow static-only `.py` discovery, import extraction, and repo-local resolution scope.
+- `results/mirofish-python-scanner-v0-implementation-2026-05-17.md`: targeted implementation backtest after verification and private Python-project smoke; says keep the patch, while deferring virtualenv/site-packages inspection.
 - `tools/write-mirofish-env.ps1`: local helper for writing MiroFish credentials to `.env` without pasting secrets into chat.
 
 Live run input snapshot:

@@ -18,11 +18,16 @@ const ignoredDirectories = new Set([
   ".cache",
   ".benchmark_tmp",
   ".git",
+  ".mypy_cache",
   ".next",
   ".nuxt",
+  ".pytest_cache",
+  ".ruff_cache",
   ".svelte-kit",
   ".turbo",
   ".vite",
+  ".venv",
+  "__pycache__",
   "build",
   "coverage",
   "dist",
@@ -30,9 +35,10 @@ const ignoredDirectories = new Set([
   "out",
   "target",
   "temp",
-  "tmp"
+  "tmp",
+  "venv"
 ]);
-const sourceExtensions = new Set([".ts", ".tsx", ".js", ".jsx", ".mts", ".cts", ".vue"]);
+const sourceExtensions = new Set([".ts", ".tsx", ".js", ".jsx", ".mts", ".cts", ".vue", ".py"]);
 
 export function findAxiomFiles(root: string, options: DiscoveryOptions = {}): string[] {
   const specPatterns = compilePatterns(options.specs ?? defaultSpecPatterns);

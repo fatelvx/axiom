@@ -10,6 +10,7 @@ import type {
   SourceFileScan
 } from "../axi/types.js";
 import { resolveRelativeImport, type ImportResolver, type ImportResolveOptions } from "./importResolver.js";
+import { scanPythonSourceFile } from "./pythonImportScanner.js";
 
 export interface ScanImportsOptions {
   resolver?: ImportResolver;
@@ -21,6 +22,12 @@ export function scanImports(filePath: string, options: ScanImportsOptions = {}):
 
 export function scanSourceFile(filePath: string, options: ScanImportsOptions = {}): SourceFileScan {
   const text = fs.readFileSync(filePath, "utf8");
+  const resolver = options.resolver ?? { resolve: resolveRelativeImport };
+
+  if (path.extname(filePath).toLowerCase() === ".py") {
+    return scanPythonSourceFile(filePath, text, resolver);
+  }
+
   const parseText = prepareTextForParsing(filePath, text);
   const sourceFile = ts.createSourceFile(filePath, parseText, ts.ScriptTarget.Latest, true, getScriptKind(filePath));
   const imports: ImportRecord[] = [];
@@ -29,7 +36,6 @@ export function scanSourceFile(filePath: string, options: ScanImportsOptions = {
   const declarationNames: string[] = [];
   let functionLikeCount = 0;
   let classCount = 0;
-  const resolver = options.resolver ?? { resolve: resolveRelativeImport };
 
   function recordImport(
     node: ts.Node,

@@ -788,6 +788,53 @@ test("module.require participates in observed graph and dynamic warning evidence
   }
 });
 
+test("python imports participate in observed dependency validation", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "axi-python-check-"));
+
+  try {
+    fs.mkdirSync(path.join(root, "axiom"), { recursive: true });
+    fs.mkdirSync(path.join(root, "bot"), { recursive: true });
+    fs.mkdirSync(path.join(root, "services"), { recursive: true });
+    fs.writeFileSync(
+      path.join(root, "axiom/main.axi"),
+      [
+        "module Bot",
+        'path "bot/**"',
+        "",
+        "module Services",
+        'path "services/**"',
+        ""
+      ].join("\n")
+    );
+    fs.writeFileSync(path.join(root, "bot/main.py"), "from services.runner import run\nrun()\n");
+    fs.writeFileSync(path.join(root, "services/__init__.py"), "");
+    fs.writeFileSync(path.join(root, "services/runner.py"), "def run(): pass\n");
+
+    const result = runCheck({ root });
+
+    assert.deepEqual(
+      result.observedDependencies.map((dependency) => ({
+        fromModule: dependency.fromModule,
+        toModule: dependency.toModule,
+        kind: dependency.importRecord.kind,
+        specifier: dependency.importRecord.specifier
+      })),
+      [
+        {
+          fromModule: "Bot",
+          toModule: "Services",
+          kind: "import",
+          specifier: "services.runner"
+        }
+      ]
+    );
+    assert.equal(result.violations[0]?.code, "undeclared_dependency");
+    assert.equal(result.importCount, 1);
+  } finally {
+    fs.rmSync(root, { force: true, recursive: true });
+  }
+});
+
 test("check uses axiom.config.json discovery settings", () => {
   const result = runCheck({ root: path.join(repoRoot, "fixtures/config-filter") });
 

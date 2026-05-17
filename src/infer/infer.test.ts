@@ -514,6 +514,59 @@ test("infer uses configured Python import roots", () => {
   }
 });
 
+test("infer honors explicit include scopes instead of narrowing to src", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "axi-infer-explicit-scope-"));
+
+  try {
+    fs.mkdirSync(path.join(root, "cogs"), { recursive: true });
+    fs.mkdirSync(path.join(root, "src/common"), { recursive: true });
+    fs.writeFileSync(
+      path.join(root, "axiom.config.json"),
+      JSON.stringify({
+        include: ["main.py", "cogs/**/*.py", "src/**/*.py"],
+        pythonImportRoots: ["src/common", "."]
+      })
+    );
+    fs.writeFileSync(path.join(root, "main.py"), "import cogs.trading\nfrom utils import load\n");
+    fs.writeFileSync(path.join(root, "cogs/__init__.py"), "");
+    fs.writeFileSync(path.join(root, "cogs/trading.py"), "from utils import load\n");
+    fs.writeFileSync(path.join(root, "src/common/utils.py"), "def load(): pass\n");
+
+    const result = runInfer({ root });
+
+    assert.deepEqual(
+      result.sourceFiles.map((filePath) => normalize(root, filePath)),
+      ["cogs/__init__.py", "cogs/trading.py", "main.py", "src/common/utils.py"]
+    );
+    assert.deepEqual(
+      result.modules.map((module) => ({
+        name: module.name,
+        paths: module.paths,
+        depends: module.depends
+      })),
+      [
+        {
+          name: "AppEntry",
+          paths: ["main.py"],
+          depends: ["Cogs", "Common"]
+        },
+        {
+          name: "Cogs",
+          paths: ["cogs/**"],
+          depends: ["Common"]
+        },
+        {
+          name: "Common",
+          paths: ["src/common/**"],
+          depends: []
+        }
+      ]
+    );
+  } finally {
+    fs.rmSync(root, { force: true, recursive: true });
+  }
+});
+
 test("workspace inference keeps package root files from overlapping src modules", () => {
   const result = runInfer({ root: path.join(repoRoot, "fixtures/workspace-infer-root-files"), groupBy: "workspace" });
 
@@ -535,3 +588,7 @@ test("workspace inference keeps package root files from overlapping src modules"
     ]
   );
 });
+
+function normalize(root: string, filePath: string): string {
+  return path.relative(root, filePath).replace(/\\/g, "/");
+}

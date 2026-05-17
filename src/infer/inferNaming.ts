@@ -48,7 +48,7 @@ export function preferCandidateGroupName(existingName: string, candidateName: st
 }
 
 export function sourceRootEntryModuleName(fileName: string | undefined): string | undefined {
-  if (!fileName || !/\.[cm]?[jt]sx?$/.test(fileName)) {
+  if (!fileName || !/(?:\.[cm]?[jt]sx?|\.py)$/.test(fileName)) {
     return undefined;
   }
 

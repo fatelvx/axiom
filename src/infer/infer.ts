@@ -144,7 +144,10 @@ export function runInfer(options: InferOptions): InferResult {
   const groupBy = options.groupBy ?? "folder";
   const packages = groupBy === "workspace" ? loadPackageResolver(root).packagesByDirectory : [];
   const allSourceFiles = findSourceFiles(root, config);
-  const sourceFiles = chooseInferenceFiles(root, allSourceFiles, groupBy);
+  const sourceFiles = chooseInferenceFiles(root, allSourceFiles, {
+    groupBy,
+    hasExplicitIncludeScope: config.include.length > 0
+  });
   const resolver = createImportResolver({
     root,
     tsconfigPath: config.tsconfig,
@@ -213,8 +216,15 @@ function findArchitecturePressureNotes(
   }));
 }
 
-function chooseInferenceFiles(root: string, sourceFiles: string[], groupBy: InferGroupBy): string[] {
-  if (groupBy === "workspace") {
+function chooseInferenceFiles(
+  root: string,
+  sourceFiles: string[],
+  options: {
+    groupBy: InferGroupBy;
+    hasExplicitIncludeScope: boolean;
+  }
+): string[] {
+  if (options.groupBy === "workspace" || options.hasExplicitIncludeScope) {
     return sourceFiles;
   }
 
@@ -363,7 +373,7 @@ function classifySourceFile(relativePath: string, groupDepth: number): { key: st
 
   return {
     key: relativePath,
-    name: toIdentifier(stripExtension(relativePath)),
+    name: sourceRootEntryModuleName(segments.at(-1)) ?? toIdentifier(stripExtension(relativePath)),
     pathPattern: relativePath
   };
 }

@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Fixed `axi infer` source-scope handling so explicit `include` config/CLI scopes are honored instead of being narrowed back to `src/**`.
 - Expanded the spec-first Python pilot and user/agent docs so Python dynamic import evidence is visible in the repeatable artifact loop.
 - Added Python dynamic import evidence: literal `importlib.import_module("...")` / `__import__("...")` calls become observed dynamic-import edges, while non-literal calls flow through the opt-in dynamic dependency warning path.
 - Added a sanitized Python spec-first pilot example and smoke coverage for Python boundary drift.

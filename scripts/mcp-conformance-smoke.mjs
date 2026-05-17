@@ -41,6 +41,7 @@ async function main() {
 
   try {
     copyDirectory(exampleRoot, projectRoot);
+    addLiteralDynamicImportProbe(projectRoot);
     mkdirSync(path.dirname(baselinePath), { recursive: true });
 
     const server = startServer(["--allow-root", projectRoot, "--timeout-ms", "20000"]);
@@ -50,6 +51,7 @@ async function main() {
       await verifyToolSurface(server);
       await verifyRootsFirstPolicy(server, projectRoot, outsideRoot);
       await verifyCleanCheckGate(server, projectRoot);
+      await verifyObservedImportKindEvidence(server, projectRoot);
 
       await writeBaseline(server, projectRoot, baselinePath);
       const baselineHashBefore = hashFile(baselinePath);
@@ -71,10 +73,25 @@ async function main() {
     console.log("- treated observe, graph, and diff as advisory review evidence");
     console.log("- treated infer output as authoring evidence, not declared intent");
     console.log("- treated infer-to-observe output as temporary inferred review evidence");
+    console.log("- verified literal dynamic imports as observed import-kind evidence, not dynamic warnings or rules");
     console.log("- left the explicit graph baseline unchanged during review");
   } finally {
     rmSync(tempRoot, { force: true, recursive: true });
   }
+}
+
+function addLiteralDynamicImportProbe(projectRoot) {
+  writeFileSync(
+    path.join(projectRoot, "src", "ui", "lazyApplication.ts"),
+    [
+      "export async function loadDashboardUserName(): Promise<string> {",
+      '  const application = await import("../application");',
+      "  return application.getDashboardUser().name;",
+      "}",
+      ""
+    ].join("\n"),
+    "utf8"
+  );
 }
 
 async function initializeServer(server) {
@@ -140,6 +157,54 @@ async function verifyCleanCheckGate(server, projectRoot) {
   assertEqual(cleanCheck.result?.structuredContent?.summary?.ok, true, "clean check summary ok");
   assertEqual(cleanCheck.result?.structuredContent?.payload?.ok, true, "clean check payload ok");
   assertEqual(cleanCheck.result?.structuredContent?.payload?.summary?.violations, 0, "clean hard violations");
+  assertObservedImportKind(
+    cleanCheck,
+    "src/ui/lazyApplication.ts",
+    "dynamic_import",
+    "clean check literal dynamic import evidence"
+  );
+}
+
+async function verifyObservedImportKindEvidence(server, projectRoot) {
+  const graph = await callTool(server, "axiom_graph", {
+    root: projectRoot
+  });
+  assertNoJsonRpcError(graph, "import-kind graph");
+  assertEqual(graph.result?.isError, undefined, "import-kind graph tool error");
+  assertEqual(graph.result?.structuredContent?.summary?.kind, "review", "import-kind graph summary kind");
+  assertEqual(
+    graph.result?.structuredContent?.summary?.gate?.currentCommandIsGate,
+    false,
+    "import-kind graph is not gate"
+  );
+  assertObservedImportKind(
+    graph,
+    "src/ui/lazyApplication.ts",
+    "dynamic_import",
+    "graph literal dynamic import evidence"
+  );
+
+  const observe = await callTool(server, "axiom_observe", {
+    root: projectRoot,
+    warnings: {
+      dynamicImports: true
+    }
+  });
+  assertNoJsonRpcError(observe, "import-kind observe");
+  assertEqual(observe.result?.isError, undefined, "import-kind observe tool error");
+  assertEqual(observe.result?.structuredContent?.summary?.kind, "review", "import-kind observe summary kind");
+  assertObservedImportKind(
+    observe,
+    "src/ui/lazyApplication.ts",
+    "dynamic_import",
+    "observe literal dynamic import evidence"
+  );
+  assertArrayIncludes(
+    observe.result?.structuredContent?.summary?.advisorySignalCoverage?.checkedNoFindings ?? [],
+    "non-literal dynamic dependency expressions",
+    "observe dynamic warning coverage remains about non-literal expressions"
+  );
+  assertCoverageEntryStatus(observe, "dynamicImports", "checked_no_findings", "observe dynamic warning coverage payload");
 }
 
 async function writeBaseline(server, projectRoot, baselinePath) {
@@ -365,6 +430,27 @@ function violationLocations(response) {
   );
 }
 
+function observedDependencies(response) {
+  const payload = response.result?.structuredContent?.payload ?? {};
+  return payload.allObservedDependencies ?? payload.observedDependencies ?? [];
+}
+
+function assertObservedImportKind(response, filePath, expectedKind, label) {
+  const dependency = observedDependencies(response).find(
+    (candidate) => candidate?.import?.filePath === filePath && candidate?.import?.kind === expectedKind
+  );
+
+  if (!dependency) {
+    throw new Error(
+      `Expected ${label} to include ${JSON.stringify(filePath)} with import.kind ${JSON.stringify(
+        expectedKind
+      )}.\nActual dependencies:\n${JSON.stringify(observedDependencies(response), null, 2)}`
+    );
+  }
+
+  assertEqual(dependency.import.specifier, "../application", `${label} specifier`);
+}
+
 function copyDirectory(source, target) {
   mkdirSync(target, { recursive: true });
 
@@ -514,8 +600,11 @@ function assertArrayIncludes(values, expected, label) {
 }
 
 function assertCoverageEntryStatus(response, family, expectedStatus, label) {
-  const entries =
-    response.result?.structuredContent?.payload?.observe?.architectureSummary?.advisorySignalCoverage?.enabledFamilies ?? [];
+  const payload = response.result?.structuredContent?.payload ?? {};
+  const coverage =
+    payload.observe?.architectureSummary?.advisorySignalCoverage ??
+    payload.architectureSummary?.advisorySignalCoverage;
+  const entries = coverage?.enabledFamilies ?? [];
   const entry = Array.isArray(entries) ? entries.find((candidate) => candidate?.family === family) : undefined;
 
   if (!entry) {

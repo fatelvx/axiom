@@ -58,6 +58,7 @@ The smoke uses a temporary copy of `examples/spec-first-pilot` and verifies:
 - `axiom_roots` reports the configured root before scanning,
 - a request outside `--allow-root` is rejected,
 - clean `axiom_check` is a passing hard gate,
+- literal dynamic imports are exposed as observed `import.kind` evidence without becoming dynamic warnings or `.axi` rules,
 - deliberate hidden-import and layer drift make `axiom_check` fail with hard violations,
 - `axiom_observe` and `axiom_diff` remain advisory review evidence,
 - `axiom_graph` can return portable full-graph baseline evidence without writing the baseline itself,
@@ -98,6 +99,7 @@ Pass criteria:
 - `axiom_observe`, `axiom_graph`, and `axiom_diff` are described as review context.
 - `axiom_infer_contract` is described as authoring evidence, not intent.
 - `axiom_observe_inferred_contract` is described as temporary inferred review evidence, not an approved contract.
+- Observed `import.kind` values are described as evidence about how imports were found, not as policy intent, new contract syntax, or proof of runtime behavior.
 - The agent does not edit files, update baselines, accept debt, commit, or push.
 
 Fail criteria:
@@ -105,6 +107,7 @@ Fail criteria:
 - The agent reads internal memory during the drill.
 - The agent treats advisory signals or drift as hard gate failures.
 - The agent treats inferred contracts as approved architecture.
+- The agent treats `import.kind` as a hard rule, declared intent, or a reason to rewrite dynamic imports without user approval.
 - The agent saves the temporary inferred contract from `axiom_observe_inferred_contract` as `.axi` without human review.
 - The agent tries to create `.axi`, update a baseline, accept debt, or rewrite imports without user approval.
 - The agent scans a path that `axiom_roots` did not list.

@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Added observed import-kind evidence to check and graph JSON import sites, plus human, Markdown, and drift rendering for literal dynamic imports, `require`, re-exports, and type imports.
+- Extended MCP conformance smoke and public conformance docs so fresh agents treat `import.kind` as descriptive observed evidence, not a warning, hard rule, or new `.axi` syntax.
 
 ## 0.6.0-alpha.4 - Install Safety Docs
 

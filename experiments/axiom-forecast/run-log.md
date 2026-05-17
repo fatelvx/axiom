@@ -917,3 +917,29 @@ Detailed result:
 ```text
 experiments/axiom-forecast/results/mirofish-import-kind-dynamic-target-2026-05-17.md
 ```
+
+## 2026-05-17 - MCP Import-Kind Conformance Target Backtest
+
+Change under review:
+
+- MCP conformance smoke now creates a temporary literal dynamic import probe inside the copied spec-first pilot fixture.
+- `axiom_check`, `axiom_graph`, and `axiom_observe` must expose that import as observed `import.kind: dynamic_import` evidence.
+- The same observe pass verifies that the `dynamicImports` advisory warning family reports `checked_no_findings`, keeping literal dynamic imports separate from non-literal dynamic dependency expressions.
+- Public MCP conformance docs now tell blank agents that `import.kind` is descriptive source evidence, not policy intent, `.axi` syntax, runtime proof, or rewrite permission.
+
+Method:
+
+Used the existing local MiroFish `.env` with the same OpenAI-compatible model endpoint through a compact direct prompt. The endpoint returned an empty assistant content field with useful reasoning metadata, so the retained artifact records only the sanitized forecast summary rather than raw model internals.
+
+Primary result:
+
+- verdict: `KEEP`, high confidence;
+- the conformance patch closes the agent-consumption risk that motivated the previous import-kind forecast;
+- no additional blocking patch is required before the next dynamic polish pass;
+- the main remaining guardrail is to keep `import.kind` descriptive evidence and avoid turning it into contract language.
+
+Detailed result:
+
+```text
+experiments/axiom-forecast/results/mirofish-mcp-import-kind-conformance-2026-05-17.md
+```

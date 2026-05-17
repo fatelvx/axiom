@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Extended the release-candidate smoke so the packed MCP server also verifies the Python package-layout hard gate from the extracted tarball.
 - Extended MCP conformance smoke so the read-only server also verifies Python package-layout hard-gate evidence, including deliberate `Ui -> Services` drift through `axiom_check`.
 - Added a spec-first Python package-layout pilot that verifies package `__init__.py` files, explicit relative imports, and deliberate UI-to-services boundary drift without runtime Python modelling.
 - Extended MCP conformance smoke and public conformance docs so fresh agents preserve the `axi infer` distinction between inferred module edges and the import-site evidence behind them, with wider local MCP test/smoke tool timeouts for composed workflows on slower Windows runs.

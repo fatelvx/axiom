@@ -1,14 +1,89 @@
-import { spawnSync } from "node:child_process";
+import { spawn, spawnSync } from "node:child_process";
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import path from "node:path";
+import readline from "node:readline";
 
 const repoRoot = process.cwd();
-const tempRoot = mkdtempSync(path.join(repoRoot, "node_modules", ".axiom-release-smoke-"));
+const tempRoot = mkdtempSync(path.join(repoRoot, ".axiom-release-smoke-"));
 const expectedPackage = JSON.parse(readFileSync(path.join(repoRoot, "package.json"), "utf8"));
 
+class JsonRpcServerHandle {
+  #nextId = 1;
+  #pending = new Map();
+  #stderrChunks = [];
+  #stdout;
+
+  constructor(child) {
+    this.child = child;
+    child.stderr.setEncoding("utf8");
+    child.stderr.on("data", (chunk) => {
+      this.#stderrChunks.push(chunk);
+    });
+
+    this.#stdout = readline.createInterface({
+      crlfDelay: Infinity,
+      input: child.stdout
+    });
+    this.#stdout.on("line", (line) => {
+      const payload = JSON.parse(line);
+      const id = payload.id;
+      if (typeof id === "number") {
+        const resolve = this.#pending.get(id);
+        this.#pending.delete(id);
+        resolve?.(payload);
+      }
+    });
+  }
+
+  request(method, params) {
+    const id = this.#nextId;
+    this.#nextId += 1;
+    const operation =
+      method === "tools/call" && typeof params?.name === "string" ? `${method} ${params.name}` : method;
+
+    return new Promise((resolve, reject) => {
+      const timer = setTimeout(() => {
+        this.#pending.delete(id);
+        reject(new Error(`Timed out waiting for ${operation}. stderr:\n${this.#stderrChunks.join("")}`));
+      }, 60_000);
+
+      this.#pending.set(id, (response) => {
+        clearTimeout(timer);
+        resolve(response);
+      });
+
+      this.child.stdin.write(`${JSON.stringify({ jsonrpc: "2.0", id, method, params })}\n`);
+    });
+  }
+
+  notify(method, params) {
+    this.child.stdin.write(`${JSON.stringify({ jsonrpc: "2.0", method, params })}\n`);
+  }
+
+  async close() {
+    this.child.stdin.end();
+    await new Promise((resolve) => {
+      const timer = setTimeout(() => {
+        this.child.kill();
+        const killTimer = setTimeout(resolve, 5_000);
+        this.child.once("exit", () => {
+          clearTimeout(killTimer);
+          resolve();
+        });
+      }, 5_000);
+      this.child.once("exit", () => {
+        clearTimeout(timer);
+        resolve();
+      });
+    });
+    this.#stdout.close();
+    this.child.stdout.destroy();
+    this.child.stderr.destroy();
+  }
+}
+
 try {
-  const packDestination = path.relative(repoRoot, tempRoot);
-  const pack = run("npm", ["pack", "--json", "--pack-destination", packDestination], { cwd: repoRoot });
+  const pack = run("npm", ["pack", "--json", "--pack-destination", tempRoot], { cwd: repoRoot });
   const packEntries = JSON.parse(pack.stdout);
   const filename = packEntries[0]?.filename;
   if (typeof filename !== "string" || filename.length === 0) {
@@ -59,13 +134,13 @@ try {
   const monorepoRoot = path.join(packageRoot, "examples", "monorepo-workspace");
   const vueRoot = createVueSfcFixture(tempRoot);
 
-  const passingCheck = run(process.execPath, [cliPath, "check", "--root", specFirstRoot, "--json"], { cwd: packageRoot });
+  const passingCheck = run(process.execPath, [cliPath, "check", "--root", specFirstRoot, "--json"], { cwd: repoRoot });
   const passingPayload = JSON.parse(passingCheck.stdout);
   assertEqual(passingPayload.ok, true, "packaged spec-first check ok");
   assertEqual(passingPayload.summary?.violations, 0, "packaged spec-first violation count");
 
   const pythonPackageCheck = run(process.execPath, [cliPath, "check", "--root", pythonPackageRoot, "--json"], {
-    cwd: packageRoot
+    cwd: repoRoot
   });
   const pythonPackagePayload = JSON.parse(pythonPackageCheck.stdout);
   assertEqual(pythonPackagePayload.ok, true, "packaged Python package-layout check ok");
@@ -73,7 +148,7 @@ try {
 
   const failingCheck = run(process.execPath, [cliPath, "check", "--root", basicRoot, "--json"], {
     acceptedExitCodes: [1],
-    cwd: packageRoot
+    cwd: repoRoot
   });
   const failingPayload = JSON.parse(failingCheck.stdout);
   assertEqual(failingPayload.ok, false, "packaged basic-app check fails");
@@ -83,14 +158,14 @@ try {
     "packaged basic-app hidden import"
   );
 
-  const infer = run(process.execPath, [cliPath, "infer", "--root", specFirstRoot, "--json"], { cwd: packageRoot });
+  const infer = run(process.execPath, [cliPath, "infer", "--root", specFirstRoot, "--json"], { cwd: repoRoot });
   const inferPayload = JSON.parse(infer.stdout);
   assertEqual(inferPayload.schemaVersion, "axiom.infer.v8", "packaged infer schema");
   assertTextIncludes(inferPayload.axi ?? "", "module", "packaged infer contract text");
 
   const vueCheck = run(process.execPath, [cliPath, "check", "--root", vueRoot, "--json"], {
     acceptedExitCodes: [1],
-    cwd: packageRoot
+    cwd: repoRoot
   });
   const vuePayload = JSON.parse(vueCheck.stdout);
   assertEqual(vuePayload.summary?.sourceFiles, 4, "packaged Vue SFC source file count");
@@ -104,7 +179,7 @@ try {
 
   const monorepoCheck = run(process.execPath, [cliPath, "check", "--root", monorepoRoot, "--json"], {
     acceptedExitCodes: [1],
-    cwd: packageRoot
+    cwd: repoRoot
   });
   const monorepoPayload = JSON.parse(monorepoCheck.stdout);
   assertEqual(monorepoPayload.summary?.specFiles, 2, "packaged monorepo spec count");
@@ -115,8 +190,9 @@ try {
     "packaged monorepo hidden import"
   );
 
-  const mcpHelp = run(process.execPath, [mcpPath, "--help"], { cwd: packageRoot });
+  const mcpHelp = run(process.execPath, [mcpPath, "--help"], { cwd: repoRoot });
   assertTextIncludes(`${mcpHelp.stdout}\n${mcpHelp.stderr}`, "Axiom MCP stdio server", "packaged MCP help");
+  await verifyPackagedMcpPythonGate(mcpPath, pythonPackageRoot, repoRoot);
 
   console.log("Release candidate smoke passed.");
   console.log("- packed the local package without publishing");
@@ -125,9 +201,75 @@ try {
   console.log("- verified packaged Python package-layout example");
   console.log("- ran packaged infer JSON from the extracted tarball");
   console.log("- verified packaged Vue SFC and monorepo path coverage");
-  console.log("- verified packaged MCP server entry point");
+  console.log("- verified packaged MCP server entry point and Python package hard gate");
 } finally {
-  rmSync(tempRoot, { force: true, recursive: true });
+  await sleep(2_000);
+  rmSync(tempRoot, { force: true, maxRetries: 20, recursive: true, retryDelay: 500 });
+}
+
+async function verifyPackagedMcpPythonGate(mcpPath, pythonPackageRoot, packageRoot) {
+  const server = startMcpServer(mcpPath, ["--allow-root", pythonPackageRoot, "--timeout-ms", "60000"], packageRoot);
+
+  try {
+    const initialized = await server.request("initialize", {
+      protocolVersion: "2025-11-25",
+      capabilities: {},
+      clientInfo: { name: "axiom-release-candidate-smoke", version: "0" }
+    });
+    assertNoJsonRpcError(initialized, "packaged MCP initialize");
+    server.notify("notifications/initialized", {});
+
+    const roots = await callMcpTool(server, "axiom_roots", {});
+    assertNoJsonRpcError(roots, "packaged MCP roots");
+    assertArrayIncludes(
+      normalizePaths(roots.result?.structuredContent?.payload?.allowedRoots ?? []),
+      path.normalize(pythonPackageRoot),
+      "packaged MCP allowed roots"
+    );
+
+    const cleanCheck = await callMcpTool(server, "axiom_check", {
+      root: pythonPackageRoot
+    });
+    assertNoJsonRpcError(cleanCheck, "packaged MCP clean Python check");
+    assertEqual(cleanCheck.result?.structuredContent?.exitCode, 0, "packaged MCP clean Python check exit code");
+    assertEqual(
+      cleanCheck.result?.structuredContent?.summary?.gate?.currentCommandIsGate,
+      true,
+      "packaged MCP clean Python check gate"
+    );
+    assertEqual(
+      cleanCheck.result?.structuredContent?.payload?.summary?.violations,
+      0,
+      "packaged MCP clean Python check violations"
+    );
+
+    writeFile(
+      pythonPackageRoot,
+      "app/ui/presenter.py",
+      [
+        "from ..domain import Order",
+        "from ..services.pricing import quote_order",
+        "",
+        "",
+        "def render_order(order: Order) -> str:",
+        "    preview = quote_order(order.symbol)",
+        "    return f\"{preview.symbol}: {preview.price}\""
+      ].join("\n")
+    );
+
+    const failedCheck = await callMcpTool(server, "axiom_check", {
+      root: pythonPackageRoot
+    });
+    assertNoJsonRpcError(failedCheck, "packaged MCP failing Python check");
+    assertEqual(failedCheck.result?.structuredContent?.exitCode, 1, "packaged MCP failing Python check exit code");
+    assertArrayIncludes(
+      failedCheck.result?.structuredContent?.payload?.violations?.map((violation) => violation.code),
+      "undeclared_dependency",
+      "packaged MCP Python drift violation"
+    );
+  } finally {
+    await server.close();
+  }
 }
 
 function createVueSfcFixture(tempRoot) {
@@ -201,6 +343,22 @@ function run(command, args, options = {}) {
   return result;
 }
 
+function startMcpServer(serverPath, args, cwd) {
+  const child = spawn(process.execPath, [serverPath, ...args], {
+    cwd,
+    windowsHide: true
+  });
+
+  return new JsonRpcServerHandle(child);
+}
+
+function callMcpTool(server, name, args) {
+  return server.request("tools/call", {
+    name,
+    arguments: args
+  });
+}
+
 function normalizeInvocation(command, args) {
   if (process.platform === "win32" && command === "npm") {
     return {
@@ -210,6 +368,10 @@ function normalizeInvocation(command, args) {
   }
 
   return { command, args };
+}
+
+function sleep(milliseconds) {
+  return new Promise((resolve) => setTimeout(resolve, milliseconds));
 }
 
 function assertFile(filePath, label) {
@@ -242,4 +404,14 @@ function assertTextIncludes(text, expected, label) {
   if (!text.includes(expected)) {
     throw new Error(`Expected ${label} to include ${JSON.stringify(expected)}.\nActual text:\n${text}`);
   }
+}
+
+function assertNoJsonRpcError(response, label) {
+  if (response.error) {
+    throw new Error(`Expected ${label} to succeed, got JSON-RPC error: ${JSON.stringify(response.error)}.`);
+  }
+}
+
+function normalizePaths(values) {
+  return values.map((value) => path.normalize(value));
 }

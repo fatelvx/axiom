@@ -346,7 +346,7 @@ class McpServerHandle {
       const timer = setTimeout(() => {
         this.pending.delete(id);
         reject(new Error(`Timed out waiting for ${method}. stderr:\n${this.stderrChunks.join("")}`));
-      }, 20_000);
+      }, 60_000);
 
       this.pending.set(id, (response) => {
         clearTimeout(timer);

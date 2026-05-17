@@ -90,6 +90,8 @@ export interface AxiomMcpResultSummary {
     modules?: number;
     newObservedEdges?: number;
     observedDependencies?: number;
+    observedImportSites?: number;
+    observedModuleEdges?: number;
     removedObservedEdges?: number;
     shownObservedDependencies?: number;
     sourceFiles?: number;
@@ -336,6 +338,8 @@ function createInferObserveSummary(inferencePayload: unknown, observePayload: un
   addCount(counts, "architecturePressureNotes", readNumberProperty(inferenceSummary, "architecturePressureNotes"));
   addCount(counts, "collapsedCycles", readNumberProperty(inferenceSummary, "collapsedCycles"));
   addCount(counts, "importsScanned", readNumberProperty(inferenceSummary, "importsScanned"));
+  addCount(counts, "observedImportSites", readNumberProperty(inferenceSummary, "observedImportSites"));
+  addCount(counts, "observedModuleEdges", readNumberProperty(inferenceSummary, "observedModuleEdges"));
   addCount(counts, "sourceFiles", readNumberProperty(inferenceSummary, "sourceFiles"));
 
   const reviewStory = buildReviewStorySummary(readRecordProperty(architectureSummary, "reviewStory")) ??
@@ -446,6 +450,8 @@ function buildCounts(
   addCount(counts, "intentionalDebt", readNumberProperty(payloadSummary, "intentionalViolations"));
   addCount(counts, "modules", readNumberProperty(payloadSummary, "modules"));
   addCount(counts, "observedDependencies", readNumberProperty(payloadSummary, "observedDependencies"));
+  addCount(counts, "observedImportSites", readNumberProperty(payloadSummary, "observedImportSites"));
+  addCount(counts, "observedModuleEdges", readNumberProperty(payloadSummary, "observedModuleEdges"));
   addCount(counts, "shownObservedDependencies", readNumberProperty(payloadSummary, "shownObservedDependencies"));
   addCount(counts, "sourceFiles", readNumberProperty(payloadSummary, "sourceFiles"));
   addCount(counts, "violations", readNumberProperty(payloadSummary, "violations"));

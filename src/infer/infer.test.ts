@@ -228,6 +228,10 @@ test("infer JSON includes the generated .axi draft", () => {
     ]
   });
   assert.equal(payload.summary.sourceFiles, 3);
+  assert.equal(payload.summary.importsScanned, 1);
+  assert.equal(payload.summary.observedDependencies, 1);
+  assert.equal(payload.summary.observedModuleEdges, 1);
+  assert.equal(payload.summary.observedImportSites, 1);
   assert.deepEqual(payload.reviewStory, {
     summary: "Starter contract inferred 3 modules and 1 observed module edge from 3 source files.",
     setup:
@@ -267,6 +271,28 @@ test("infer JSON includes the generated .axi draft", () => {
   assert.deepEqual(payload.modules.find((module) => module.name === "Physics")?.dependencyEvidence, []);
   assert.match(payload.axi, /not a recommended architecture/);
   assert.match(payload.axi, /module Physics/);
+});
+
+test("infer JSON distinguishes module edges from import-site evidence", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "axi-infer-summary-counts-"));
+
+  try {
+    fs.mkdirSync(path.join(root, "src/a"), { recursive: true });
+    fs.mkdirSync(path.join(root, "src/b"), { recursive: true });
+    fs.writeFileSync(path.join(root, "src/a/one.ts"), 'import { api } from "../b/api";\napi;\n');
+    fs.writeFileSync(path.join(root, "src/a/two.ts"), 'import { api } from "../b/api";\napi;\n');
+    fs.writeFileSync(path.join(root, "src/b/api.ts"), "export const api = true;\n");
+
+    const payload = toInferJson(runInfer({ root }));
+
+    assert.equal(payload.summary.importsScanned, 2);
+    assert.equal(payload.summary.observedDependencies, 1);
+    assert.equal(payload.summary.observedModuleEdges, 1);
+    assert.equal(payload.summary.observedImportSites, 2);
+    assert.equal(payload.observedDependencies[0]?.count, 2);
+  } finally {
+    fs.rmSync(root, { force: true, recursive: true });
+  }
 });
 
 test("infer includes architecture pressure notes for large source files", () => {

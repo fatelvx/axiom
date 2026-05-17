@@ -776,6 +776,9 @@ test("cli infer --json returns parseable inferred output", () => {
   assert.match(payload.starterContract.notice.join("\n"), /not a recommended architecture/);
   assert.match(payload.starterContract.authoringChecklist.join("\n"), /do not blanket-accept first-run problems/);
   assert.equal(payload.summary.modules, 3);
+  assert.equal(payload.summary.observedDependencies, 1);
+  assert.equal(payload.summary.observedModuleEdges, 1);
+  assert.equal(payload.summary.observedImportSites, 1);
   assert.equal(payload.summary.architecturePressureNotes, 0);
   assert.deepEqual(
     payload.modules.find((module: { name: string }) => module.name === "Simulation")?.dependencyEvidence?.map(

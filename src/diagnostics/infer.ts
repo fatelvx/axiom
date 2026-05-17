@@ -23,6 +23,8 @@ export interface InferJsonResult {
     candidateModules: number;
     modules: number;
     observedDependencies: number;
+    observedModuleEdges: number;
+    observedImportSites: number;
     collapsedCycles: number;
     architecturePressureNotes: number;
   };
@@ -161,6 +163,8 @@ export function formatInferResult(result: InferResult): string {
 }
 
 export function toInferJson(result: InferResult): InferJsonResult {
+  const observedModuleEdges = result.observedDependencies.length;
+
   return {
     schemaVersion: inferJsonSchemaVersion,
     root: normalizePath(result.root),
@@ -171,7 +175,9 @@ export function toInferJson(result: InferResult): InferJsonResult {
       importsScanned: result.importCount,
       candidateModules: result.candidateModules,
       modules: result.modules.length,
-      observedDependencies: result.observedDependencies.length,
+      observedDependencies: observedModuleEdges,
+      observedModuleEdges,
+      observedImportSites: countObservedImportSites(result.observedDependencies),
       collapsedCycles: result.collapsedCycles.length,
       architecturePressureNotes: result.architecturePressureNotes.length
     },
@@ -208,6 +214,10 @@ function buildInferJsonModules(result: InferResult): InferJsonModule[] {
       samples: dependency.samples
     }))
   }));
+}
+
+function countObservedImportSites(dependencies: InferredDependency[]): number {
+  return dependencies.reduce((total, dependency) => total + dependency.count, 0);
 }
 
 function dependencyKey(fromModule: string, toModule: string): string {

@@ -162,6 +162,7 @@ Treat `drift.newObservedEdges[]` and `drift.removedObservedEdges[]` as review co
 - `reviewStory` with the inferred setup, top authoring pressures, next step, and caveat.
 - `modules[].dependencyEvidence[]` with the target module, observed import-site count, and sample import sites for each inferred dependency.
 - `observedDependencies[]` with counts and sample import sites behind inferred edges.
+- `summary.observedModuleEdges` for the inferred module-edge count and `summary.observedImportSites` for the total import-site evidence behind those edges. `summary.observedDependencies` remains a compatibility alias for `observedModuleEdges`.
 - `collapsedCycles[].cyclePathSamples[]` with a compact source-group path such as `Services -> Tools -> Services` explaining why inference merged a cycle.
 - `collapsedCycles[].cycleBreakingCandidates[]` with evidence-backed edges to inspect first when deciding whether a collapsed cycle should stay merged or be split.
 - `architecturePressureNotes[]` with advisory context such as large source files that may hide responsibilities outside the import graph.

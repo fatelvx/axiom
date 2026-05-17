@@ -418,6 +418,8 @@ test("mcp tool result summarizes review and inference evidence for agents", () =
         importsScanned: 4,
         modules: 3,
         observedDependencies: 2,
+        observedImportSites: 4,
+        observedModuleEdges: 2,
         sourceFiles: 5
       },
       architecturePressureNotes: [
@@ -434,6 +436,8 @@ test("mcp tool result summarizes review and inference evidence for agents", () =
   assert.equal(inferResult.structuredContent.summary.kind, "inference");
   assert.equal(inferResult.structuredContent.summary.counts?.sourceFiles, 5);
   assert.equal(inferResult.structuredContent.summary.counts?.architecturePressureNotes, 1);
+  assert.equal(inferResult.structuredContent.summary.counts?.observedModuleEdges, 2);
+  assert.equal(inferResult.structuredContent.summary.counts?.observedImportSites, 4);
   assert.equal(inferResult.structuredContent.summary.reviewStory?.summary, "Starter contract inferred 3 modules.");
   assert.equal(inferResult.structuredContent.summary.topSignals?.[0]?.kind, "large_source_file");
   assert.match(inferResult.structuredContent.summary.agentHint, /not declared architecture intent/);
@@ -449,6 +453,8 @@ test("mcp inferred-observe summary exposes compact top signals without hiding pa
         importsScanned: 690,
         modules: 8,
         observedDependencies: 18,
+        observedImportSites: 278,
+        observedModuleEdges: 18,
         sourceFiles: 199
       },
       collapsedCycles: [
@@ -562,6 +568,8 @@ test("mcp inferred-observe summary exposes compact top signals without hiding pa
 
   assert.equal(summary.kind, "review");
   assert.equal(summary.counts?.warnings, 4);
+  assert.equal(summary.counts?.observedModuleEdges, 18);
+  assert.equal(summary.counts?.observedImportSites, 278);
   assert.equal(summary.topSignals?.[0]?.kind, "collapsed_cycle");
   assert.equal(summary.topSignals?.[0]?.module, "ServicesStore");
   assert.equal(summary.topSignals?.[1]?.kind, "deep_internal_import");

@@ -42,6 +42,8 @@ const SUMMARY_SCHEMA: JsonSchema = {
         modules: { type: "integer" },
         newObservedEdges: { type: "integer" },
         observedDependencies: { type: "integer" },
+        observedImportSites: { type: "integer" },
+        observedModuleEdges: { type: "integer" },
         removedObservedEdges: { type: "integer" },
         shownObservedDependencies: { type: "integer" },
         sourceFiles: { type: "integer" },

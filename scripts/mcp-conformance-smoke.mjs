@@ -16,6 +16,7 @@ import readline from "node:readline";
 const repoRoot = process.cwd();
 const serverPath = path.join(repoRoot, "dist/mcp/server.js");
 const exampleRoot = path.join(repoRoot, "examples/spec-first-pilot");
+const pythonPackageExampleRoot = path.join(repoRoot, "examples/spec-first-python-package-pilot");
 const protocolVersion = "2025-11-25";
 const mcpToolTimeoutMs = 60_000;
 const expectedToolNames = [
@@ -37,22 +38,32 @@ if (!existsSync(serverPath)) {
 async function main() {
   const tempRoot = mkdtempSync(path.join(tmpdir(), "axiom-mcp-conformance-"));
   const projectRoot = path.join(tempRoot, "project");
+  const pythonPackageRoot = path.join(tempRoot, "python-package-project");
   const outsideRoot = path.join(tempRoot, "outside-target");
   const baselinePath = path.join(projectRoot, ".axi", "baselines", "current.graph.json");
 
   try {
     copyDirectory(exampleRoot, projectRoot);
+    copyDirectory(pythonPackageExampleRoot, pythonPackageRoot);
     addLiteralDynamicImportProbe(projectRoot);
     mkdirSync(path.dirname(baselinePath), { recursive: true });
 
-    const server = startServer(["--allow-root", projectRoot, "--timeout-ms", String(mcpToolTimeoutMs)]);
+    const server = startServer([
+      "--allow-root",
+      projectRoot,
+      "--allow-root",
+      pythonPackageRoot,
+      "--timeout-ms",
+      String(mcpToolTimeoutMs)
+    ]);
 
     try {
       await initializeServer(server);
       await verifyToolSurface(server);
-      await verifyRootsFirstPolicy(server, projectRoot, outsideRoot);
+      await verifyRootsFirstPolicy(server, [projectRoot, pythonPackageRoot], outsideRoot);
       await verifyCleanCheckGate(server, projectRoot);
       await verifyObservedImportKindEvidence(server, projectRoot);
+      await verifyPythonPackageCheckGate(server, pythonPackageRoot);
 
       await writeBaseline(server, projectRoot, baselinePath);
       const baselineHashBefore = hashFile(baselinePath);
@@ -76,6 +87,7 @@ async function main() {
     console.log("- verified infer module-edge counts stay distinct from import-site evidence");
     console.log("- treated infer-to-observe output as temporary inferred review evidence");
     console.log("- verified literal dynamic imports as observed import-kind evidence, not dynamic warnings or rules");
+    console.log("- verified Python package-layout evidence flows through the MCP hard gate");
     console.log("- left the explicit graph baseline unchanged during review");
   } finally {
     rmSync(tempRoot, { force: true, recursive: true });
@@ -124,15 +136,19 @@ async function verifyToolSurface(server) {
   }
 }
 
-async function verifyRootsFirstPolicy(server, projectRoot, outsideRoot) {
+async function verifyRootsFirstPolicy(server, allowedProjectRoots, outsideRoot) {
   const roots = await callTool(server, "axiom_roots", {});
   assertNoJsonRpcError(roots, "axiom_roots");
   assertEqual(roots.result?.isError, undefined, "roots tool error");
   assertEqual(roots.result?.structuredContent?.summary?.kind, "roots", "roots summary kind");
-  assertEqual(roots.result?.structuredContent?.summary?.counts?.allowedRoots, 1, "allowed roots count");
+  assertEqual(
+    roots.result?.structuredContent?.summary?.counts?.allowedRoots,
+    allowedProjectRoots.length,
+    "allowed roots count"
+  );
   assertDeepEqual(
     normalizePaths(roots.result?.structuredContent?.payload?.allowedRoots ?? []),
-    [normalizePath(projectRoot)],
+    normalizePaths(allowedProjectRoots),
     "allowed roots payload"
   );
 
@@ -144,6 +160,76 @@ async function verifyRootsFirstPolicy(server, projectRoot, outsideRoot) {
   });
   assertEqual(rejected.error?.code, -32602, "outside-root rejection code");
   assertTextIncludes(rejected.error?.message ?? "", "outside allowed MCP roots", "outside-root rejection message");
+}
+
+async function verifyPythonPackageCheckGate(server, pythonPackageRoot) {
+  const cleanCheck = await callTool(server, "axiom_check", {
+    root: pythonPackageRoot
+  });
+  assertNoJsonRpcError(cleanCheck, "clean Python package axiom_check");
+  assertEqual(cleanCheck.result?.isError, undefined, "clean Python package check tool error");
+  assertEqual(cleanCheck.result?.structuredContent?.exitCode, 0, "clean Python package check exit code");
+  assertEqual(cleanCheck.result?.structuredContent?.summary?.kind, "check", "clean Python package summary kind");
+  assertEqual(
+    cleanCheck.result?.structuredContent?.summary?.gate?.currentCommandIsGate,
+    true,
+    "clean Python package check is gate"
+  );
+  assertEqual(cleanCheck.result?.structuredContent?.payload?.summary?.modules, 4, "Python package module count");
+  assertEqual(
+    cleanCheck.result?.structuredContent?.payload?.summary?.violations,
+    0,
+    "clean Python package hard violations"
+  );
+  assertObservedDependency(
+    cleanCheck,
+    {
+      filePath: "app/main.py",
+      fromModule: "AppEntry",
+      toModule: "Services",
+      specifier: ".services.pricing"
+    },
+    "MCP Python package entry-to-services evidence"
+  );
+  assertObservedDependency(
+    cleanCheck,
+    {
+      filePath: "app/ui/presenter.py",
+      fromModule: "Ui",
+      toModule: "Domain",
+      specifier: "..domain"
+    },
+    "MCP Python package ui-to-domain evidence"
+  );
+
+  writeFileSync(
+    path.join(pythonPackageRoot, "app", "ui", "presenter.py"),
+    [
+      "from ..domain import Order",
+      "from ..services.pricing import quote_order",
+      "",
+      "",
+      "def render_order(order: Order) -> str:",
+      "    preview = quote_order(order.symbol)",
+      "    return f\"{preview.symbol}: {preview.price}\"",
+      ""
+    ].join("\n"),
+    "utf8"
+  );
+
+  const failedCheck = await callTool(server, "axiom_check", {
+    root: pythonPackageRoot
+  });
+  assertNoJsonRpcError(failedCheck, "failing Python package axiom_check");
+  assertEqual(failedCheck.result?.isError, undefined, "failing Python package check tool error");
+  assertEqual(failedCheck.result?.structuredContent?.exitCode, 1, "failing Python package check exit code");
+  assertEqual(
+    failedCheck.result?.structuredContent?.summary?.gate?.currentCommandIsGate,
+    true,
+    "failing Python package check is gate"
+  );
+  assertSetIncludes(violationCodes(failedCheck), "undeclared_dependency", "Python package boundary hard violation");
+  assertSetIncludes(violationLocations(failedCheck), "app/ui/presenter.py", "Python package boundary violation location");
 }
 
 async function verifyCleanCheckGate(server, projectRoot) {
@@ -490,6 +576,26 @@ function assertObservedImportKind(response, filePath, expectedKind, label) {
   }
 
   assertEqual(dependency.import.specifier, "../application", `${label} specifier`);
+}
+
+function assertObservedDependency(response, expected, label) {
+  const dependency = observedDependencies(response).find(
+    (candidate) =>
+      candidate?.fromModule === expected.fromModule &&
+      candidate?.toModule === expected.toModule &&
+      candidate?.import?.filePath === expected.filePath &&
+      candidate?.import?.specifier === expected.specifier
+  );
+
+  if (!dependency) {
+    throw new Error(
+      `Expected ${label} to include ${JSON.stringify(expected)}.\nActual dependencies:\n${JSON.stringify(
+        observedDependencies(response),
+        null,
+        2
+      )}`
+    );
+  }
 }
 
 function copyDirectory(source, target) {

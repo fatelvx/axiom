@@ -52,13 +52,14 @@ Run this from the Axiom repository after `npm run build` or through the package 
 npm run mcp:conformance:smoke
 ```
 
-The smoke uses a temporary copy of `examples/spec-first-pilot` and verifies:
+The smoke uses temporary copies of `examples/spec-first-pilot` and `examples/spec-first-python-package-pilot`, then verifies:
 
 - the server exposes the expected seven read-only tools,
 - `axiom_roots` reports the configured root before scanning,
 - a request outside `--allow-root` is rejected,
 - clean `axiom_check` is a passing hard gate,
 - literal dynamic imports are exposed as observed `import.kind` evidence without becoming dynamic warnings or `.axi` rules,
+- Python package-layout imports flow through `axiom_check` as hard-gate evidence, including a deliberate `Ui -> Services` drift failure,
 - deliberate hidden-import and layer drift make `axiom_check` fail with hard violations,
 - `axiom_observe` and `axiom_diff` remain advisory review evidence,
 - `axiom_graph` can return portable full-graph baseline evidence without writing the baseline itself,

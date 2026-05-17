@@ -86,7 +86,7 @@ They are early surfaces for architecture pressure:
 - `deep_internal_import`: a module bypasses another module's likely `index.*` entry point.
 - `coupling_concentration`: a module has high observed fan-in or fan-out.
 - `unresolved_import`: Axiom can see a static internal-looking import but cannot resolve it into the observed graph.
-- `dynamic_dependency_expression`: Axiom can see a non-literal `import()` or `require()` expression but cannot turn it into an observed graph edge.
+- `dynamic_dependency_expression`: Axiom can see a non-literal `import()` / `require()` or Python `importlib.import_module()` / `__import__()` expression but cannot turn it into an observed graph edge.
 - `large_module_file`: a source file is large enough that responsibilities may be concentrated inside one file, outside the import graph.
 
 These signals belong in review, PR comments, dashboards, and future agent repair loops. They should not become default CI failures unless a team deliberately converts a repeated pattern into an explicit contract.
@@ -100,7 +100,7 @@ It does not fully observe:
 - string-based dependency injection
 - runtime plugin registries
 - generated import paths
-- non-literal dynamic imports
+- non-literal dynamic imports and runtime Python import expressions
 - `eval`
 - framework conventions that do not appear as static source imports
 

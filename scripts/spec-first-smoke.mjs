@@ -94,7 +94,7 @@ try {
   console.log("- hidden internal bypass failed as a hard visibility violation");
   console.log("- outward domain-to-UI import failed as a hard layer violation");
   console.log("- services-boundary pilot caught new deep service bypass and Services <-> Store drift");
-  console.log("- Python spec-first pilot caught UI-to-market boundary drift");
+  console.log("- Python spec-first pilot verified dynamic import evidence and caught UI-to-market boundary drift");
 } finally {
   rmSync(tempDirectory, { recursive: true, force: true });
 }
@@ -252,7 +252,31 @@ function runPythonBoundaryPilot() {
   const checkPayload = parseJson(cleanCheck.stdout, "Python boundary check output");
   assertEqual(checkPayload.summary?.modules, 6, "Python boundary module count");
   assertEqual(checkPayload.summary?.violations, 0, "Python boundary hard violation count");
-  assertEqual(checkPayload.summary?.observedDependencies, 9, "Python boundary observed import-site count");
+  assertEqual(checkPayload.summary?.observedDependencies, 10, "Python boundary observed import-site count");
+  assertIncludes(
+    new Set(
+      (checkPayload.observedDependencies ?? []).map(
+        (dependency) =>
+          `${dependency.fromModule}->${dependency.toModule}:${dependency.import?.kind}:${dependency.import?.specifier}`
+      )
+    ),
+    "AppEntry->Cogs:dynamic_import:cogs.trading",
+    "Python boundary literal dynamic import evidence"
+  );
+
+  const dynamicWarningCheck = runAxi(["check", "--root", cleanRoot, "--warn-dynamic-imports", "--json"], 0);
+  const dynamicWarningPayload = parseJson(dynamicWarningCheck.stdout, "Python dynamic warning check output");
+  assertEqual(dynamicWarningPayload.summary?.warnings, 1, "Python dynamic warning count");
+  assertEqual(
+    dynamicWarningPayload.warnings?.[0]?.code,
+    "dynamic_dependency_expression",
+    "Python dynamic warning code"
+  );
+  assertEqual(
+    dynamicWarningPayload.warnings?.[0]?.details?.dependencyKind,
+    "importlib.import_module()",
+    "Python dynamic warning dependency kind"
+  );
 
   const baseline = createBaseline(cleanRoot);
   assertEqual(baseline.payload.summary?.violations, 0, "Python boundary baseline hard violation count");

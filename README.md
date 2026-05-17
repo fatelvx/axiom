@@ -15,7 +15,7 @@ Use it to:
 - keep intentional debt visible,
 - give agents the same evidence humans and CI see.
 
-`Static Contract Loop` milestone: usable today for static TS/JS import graphs. Dynamic evidence, Python, VS Code, and contract sharing are post-static work.
+`Static Contract Loop` milestone: the npm alpha is usable today for static TS/JS import graphs; current `main` also carries unreleased repo-local Python evidence. VS Code and contract sharing are still later surfaces over the same loop.
 
 [Quick Start](#quick-start) | [Example Contract](#example-contract) | [Commands](#commands) | [Integrations](#integrations) | [Limits](#limits) | [Guides](#guides)
 
@@ -24,7 +24,7 @@ Use it to:
 | Input | Axiom Builds | Output |
 | --- | --- | --- |
 | `.axi` contract | Declared graph | What the architecture says should be allowed |
-| TS/JS imports | Observed graph | What the code actually imports |
+| TS/JS/Python imports | Observed graph | What the code actually imports |
 | Baseline + debt | Review context | Drift, advisory pressure, and accepted violations |
 
 A hard gate is only one part of the loop:
@@ -173,7 +173,7 @@ Axiom v0 is intentionally honest about its blind spots:
 
 - It does not fully observe runtime-only dependency paths such as string-based dependency injection, plugin registries, generated imports, or `eval`.
 - It can optionally warn about static relative or package `#imports` that the scanner sees but cannot resolve with `--warn-unresolved-imports`.
-- It can optionally warn about non-literal `import()` / `require()` expressions with `--warn-dynamic-imports`, but those remain graph-completeness evidence, not observed dependency edges.
+- It can optionally warn about non-literal `import()` / `require()` / Python `importlib.import_module()` / `__import__()` expressions with `--warn-dynamic-imports`, but those remain graph-completeness evidence, not observed dependency edges.
 - It does not prove that a module is semantically well-designed. Axiom can catch direct hidden-path re-exports and local import-then-export leaks from hidden internals, `--warn-public-api-surface` can flag broad `export *` barrels and exposed entry points that reach many internal files, and `--warn-deep-internal-imports` can flag relative imports that bypass likely entry points, but code can still become too coupled through wrappers, facades, or overly large public entry points. This is the `symbol-level API health` gap.
 - It does not prove that concentrated fan-in or fan-out is wrong. `--warn-coupling-concentration` surfaces modules that may be turning into coordination hubs so humans and agents can review the pressure before it becomes hidden debt.
 - It does not prove that a quiet import graph means the code is internally well-factored. `--warn-large-files` only surfaces large-file pressure as an advisory review prompt; it is not a general complexity metric or a refactor mandate.

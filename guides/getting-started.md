@@ -151,14 +151,14 @@ axi observe --root . --warn-unresolved-imports
 axi check --root . --warn-unresolved-imports
 ```
 
-Use this when you want advisory visibility into non-literal `import()` or `require()` expressions Axiom can detect but cannot turn into observed dependency edges:
+Use this when you want advisory visibility into non-literal `import()` / `require()` or Python `importlib.import_module()` / `__import__()` expressions Axiom can detect but cannot turn into observed dependency edges:
 
 ```bash
 axi observe --root . --warn-dynamic-imports
 axi check --root . --warn-dynamic-imports
 ```
 
-Warnings include the dependency kind, syntax kind, and a short expression preview. Treat them as graph-completeness prompts, not violations to suppress.
+Warnings include the dependency kind, syntax kind, and a short expression preview. Literal dynamic imports that resolve to source can still appear as observed dependency evidence; non-literal expressions stay graph-completeness prompts, not violations to suppress.
 
 Use this when you want advisory review prompts for modules that may be turning into coupling hubs:
 

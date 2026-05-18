@@ -248,6 +248,10 @@ function warningFlags(warnings) {
     flags.push("--warn-public-api-surface");
   }
 
+  if (enabled.has("dynamic")) {
+    flags.push("--warn-dynamic-imports");
+  }
+
   if (enabled.has("unresolved")) {
     flags.push("--warn-unresolved-imports");
   }
@@ -325,6 +329,7 @@ function summarizeWarnings(warnings) {
   const byCode = {};
   const coupling = [];
   const deepInternalImports = [];
+  const dynamicExpressions = [];
   const publicApiSurface = [];
 
   for (const warning of warnings) {
@@ -356,6 +361,16 @@ function summarizeWarnings(warnings) {
       });
     }
 
+    if (warning.code === "dynamic_dependency_expression") {
+      dynamicExpressions.push({
+        location: warning.location,
+        language: warning.details?.language,
+        expressionKind: warning.details?.expressionKind,
+        expressionPreview: warning.details?.expressionPreview,
+        message: warning.message
+      });
+    }
+
     if (warning.code === "broad_public_surface" || warning.code === "public_entrypoint_coupling") {
       publicApiSurface.push({
         code: warning.code,
@@ -376,6 +391,7 @@ function summarizeWarnings(warnings) {
     byCode,
     coupling,
     deepInternalImports,
+    dynamicExpressions,
     publicApiSurface
   };
 }
@@ -424,8 +440,8 @@ function formatMarkdownReport(report) {
     "",
     "## Summary",
     "",
-    "| Ref | Commit | Package | Source files | Imports | Unique edges | Warnings | Coupling | Deep imports | Public API | Infer ms | Check ms | Graph ms |",
-    "| --- | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |"
+    "| Ref | Commit | Package | Source files | Imports | Unique edges | Warnings | Coupling | Deep imports | Dynamic | Public API | Infer ms | Check ms | Graph ms |",
+    "| --- | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |"
   ];
 
   for (const result of report.results) {
@@ -440,6 +456,7 @@ function formatMarkdownReport(report) {
         result.summary.advisoryWarnings,
         result.warnings.byCode.coupling_concentration ?? 0,
         result.warnings.byCode.deep_internal_import ?? 0,
+        result.warnings.byCode.dynamic_dependency_expression ?? 0,
         (result.warnings.byCode.broad_public_surface ?? 0) + (result.warnings.byCode.public_entrypoint_coupling ?? 0),
         result.timingsMs.infer,
         result.timingsMs.check,
@@ -471,9 +488,10 @@ function formatMarkdownReport(report) {
     if (
       result.warnings.coupling.length === 0 &&
       result.warnings.deepInternalImports.length === 0 &&
+      result.warnings.dynamicExpressions.length === 0 &&
       result.warnings.publicApiSurface.length === 0
     ) {
-      lines.push("- No coupling, deep internal import, or public API surface warnings.");
+      lines.push("- No coupling, deep internal import, dynamic dependency, or public API surface warnings.");
       lines.push("");
       continue;
     }
@@ -491,6 +509,12 @@ function formatMarkdownReport(report) {
       lines.push(
         `- \`deep_internal_import\` at \`${location}\`: \`${warning.fromModule} -> ${warning.toModule}\` via \`${warning.specifier}\` -> \`${warning.importedPath}\`.`
       );
+    }
+
+    for (const warning of result.warnings.dynamicExpressions) {
+      const location = warning.location ? `${warning.location.filePath}:${warning.location.line}` : "unknown";
+      const expression = warning.expressionPreview ? ` Expression: \`${warning.expressionPreview}\`.` : "";
+      lines.push(`- \`dynamic_dependency_expression\` at \`${location}\`: ${warning.message}${expression}`);
     }
 
     for (const warning of result.warnings.publicApiSurface) {
@@ -594,7 +618,7 @@ Options:
   --name <name>            Short project name used in paths and reports.
   --refs <a,b,c>           Git tags or branches to clone and compare.
   --group-by <mode>        infer grouping mode: folder or workspace.
-  --warnings <list>        Comma list: coupling,deep,public-api,unresolved.
+  --warnings <list>        Comma list: coupling,deep,dynamic,public-api,unresolved, or none.
   --json                   Print JSON instead of Markdown.
   --json-out <path>        Write machine-readable report JSON.
   --markdown-out <path>    Write Markdown report.

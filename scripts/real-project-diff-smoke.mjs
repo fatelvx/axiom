@@ -451,6 +451,10 @@ function warningFlags(warnings) {
     flags.push("--warn-public-api-surface");
   }
 
+  if (enabled.has("dynamic")) {
+    flags.push("--warn-dynamic-imports");
+  }
+
   if (enabled.has("unresolved")) {
     flags.push("--warn-unresolved-imports");
   }
@@ -594,6 +598,7 @@ function summarizeWarnings(warnings) {
       toModule: warning.details?.toModule,
       specifier: warning.details?.specifier,
       importedPath: warning.details?.importedPath,
+      expressionPreview: warning.details?.expressionPreview,
       incomingModules: warning.details?.incomingModules ?? [],
       outgoingModules: warning.details?.outgoingModules ?? []
     });
@@ -747,13 +752,14 @@ function formatMarkdownReport(report) {
     const location = warning.location ? `${warning.location.filePath}:${warning.location.line}` : "no location";
     const message = warning.message.endsWith(".") ? warning.message : `${warning.message}.`;
     const observed = warning.observed ? ` Observed: ${warning.observed}.` : "";
+    const expressionPreview = warning.expressionPreview ? ` Expression: \`${warning.expressionPreview}\`.` : "";
     const modules =
       warning.incomingModules.length > 0
         ? ` Incoming: ${warning.incomingModules.join(", ")}.`
         : warning.fromModule && warning.toModule
           ? ` Edge: ${warning.fromModule} -> ${warning.toModule}.`
           : "";
-    lines.push(`- \`${warning.code}\` at \`${location}\`: ${message}${observed}${modules}`);
+    lines.push(`- \`${warning.code}\` at \`${location}\`: ${message}${observed}${expressionPreview}${modules}`);
   }
 
   lines.push("", "## Timings", "");
@@ -945,7 +951,7 @@ Options:
   --group-depth <n>             Optional infer folder depth for finer source grouping.
   --include <patterns>          Comma list of source include globs for both refs.
   --exclude <patterns>          Comma list of source exclude globs for both refs.
-  --warnings <list>             Comma list: coupling,deep,public-api,unresolved, or none.
+  --warnings <list>             Comma list: coupling,deep,dynamic,public-api,unresolved, or none.
   --repo-shape <text>           Calibration classification: repository shape.
   --safety-posture <text>       Calibration classification: safety posture.
   --scope-question <text>       Calibration classification: scoped question.

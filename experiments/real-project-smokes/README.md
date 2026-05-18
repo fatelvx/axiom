@@ -75,6 +75,8 @@ Treat this as drift calibration, not an architecture verdict. The inferred contr
 
 Public API surface warnings require active `exposes` rules. Raw inferred contracts usually leave `exposes` suggestions as comments, so public API pressure should be calibrated with a declared or probe contract when that is the question being tested.
 
+The `--warnings` selector accepts `coupling`, `deep`, `dynamic`, `public-api`, `unresolved`, or `none`. Use `dynamic` only when the calibration question includes non-literal `import()` / `require()` / Python importlib-style graph-completeness evidence; it remains advisory and does not change hard gate semantics.
+
 ## Diff Smoke Harness
 
 Use the diff smoke harness when the question is whether one baseline contract can make version-to-version architecture drift reviewable:

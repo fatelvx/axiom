@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Added `dynamic` to the real-project version and diff smoke warning selector so calibration runs can exercise opt-in dynamic dependency evidence without changing validator behavior.
 - Added a no-install npm/cli workspace calibration artifact for npm workspaces coverage without changing resolver, scanner, or dynamic behavior.
 - Added a no-install node-glob source-scoped calibration artifact for mixed CJS/ESM package-surface coverage without changing resolver behavior.
 - Added spec-first smoke step timings so slow artifact-loop, drift, services, or Python pilot checks can be diagnosed without changing validator or release semantics.

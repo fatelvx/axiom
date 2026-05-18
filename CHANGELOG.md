@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Extended release-candidate smoke so the packed MCP server verifies the temporary inferred-contract review workflow in addition to the Python package hard gate.
 - Extracted the MCP stdio JSON-RPC smoke client so MCP smoke, conformance, agent-loop, and release-candidate checks share the same timeout and cleanup behavior.
 - Extended the release-candidate smoke so the packed MCP server also verifies the Python package-layout hard gate from the extracted tarball.
 - Extended MCP conformance smoke so the read-only server also verifies Python package-layout hard-gate evidence, including deliberate `Ui -> Services` drift through `axiom_check`.

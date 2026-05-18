@@ -118,7 +118,7 @@ try {
 
   const mcpHelp = run(process.execPath, [mcpPath, "--help"], { cwd: repoRoot });
   assertTextIncludes(`${mcpHelp.stdout}\n${mcpHelp.stderr}`, "Axiom MCP stdio server", "packaged MCP help");
-  await verifyPackagedMcpPythonGate(mcpPath, pythonPackageRoot, repoRoot);
+  await verifyPackagedMcpWorkflow(mcpPath, { pythonPackageRoot, specFirstRoot }, repoRoot);
 
   console.log("Release candidate smoke passed.");
   console.log("- packed the local package without publishing");
@@ -127,15 +127,22 @@ try {
   console.log("- verified packaged Python package-layout example");
   console.log("- ran packaged infer JSON from the extracted tarball");
   console.log("- verified packaged Vue SFC and monorepo path coverage");
-  console.log("- verified packaged MCP server entry point and Python package hard gate");
+  console.log("- verified packaged MCP server entry point, temporary inferred review, and Python package hard gate");
 } finally {
   await sleep(2_000);
   rmSync(tempRoot, { force: true, maxRetries: 20, recursive: true, retryDelay: 500 });
 }
 
-async function verifyPackagedMcpPythonGate(mcpPath, pythonPackageRoot, packageRoot) {
+async function verifyPackagedMcpWorkflow(mcpPath, allowedRoots, packageRoot) {
   const server = startMcpStdioServer({
-    args: ["--allow-root", pythonPackageRoot, "--timeout-ms", String(mcpToolTimeoutMs)],
+    args: [
+      "--allow-root",
+      allowedRoots.specFirstRoot,
+      "--allow-root",
+      allowedRoots.pythonPackageRoot,
+      "--timeout-ms",
+      String(mcpToolTimeoutMs)
+    ],
     cwd: packageRoot,
     serverPath: mcpPath,
     timeoutMs: mcpToolTimeoutMs
@@ -150,16 +157,21 @@ async function verifyPackagedMcpPythonGate(mcpPath, pythonPackageRoot, packageRo
     assertNoJsonRpcError(initialized, "packaged MCP initialize");
     server.notify("notifications/initialized", {});
 
-    const roots = await callMcpTool(server, "axiom_roots", {});
-    assertNoJsonRpcError(roots, "packaged MCP roots");
+    const rootResult = await callMcpTool(server, "axiom_roots", {});
+    assertNoJsonRpcError(rootResult, "packaged MCP roots");
     assertArrayIncludes(
-      normalizePaths(roots.result?.structuredContent?.payload?.allowedRoots ?? []),
-      path.normalize(pythonPackageRoot),
-      "packaged MCP allowed roots"
+      normalizePaths(rootResult.result?.structuredContent?.payload?.allowedRoots ?? []),
+      path.normalize(allowedRoots.pythonPackageRoot),
+      "packaged MCP Python allowed root"
+    );
+    assertArrayIncludes(
+      normalizePaths(rootResult.result?.structuredContent?.payload?.allowedRoots ?? []),
+      path.normalize(allowedRoots.specFirstRoot),
+      "packaged MCP spec-first allowed root"
     );
 
     const cleanCheck = await callMcpTool(server, "axiom_check", {
-      root: pythonPackageRoot
+      root: allowedRoots.pythonPackageRoot
     });
     assertNoJsonRpcError(cleanCheck, "packaged MCP clean Python check");
     assertEqual(cleanCheck.result?.structuredContent?.exitCode, 0, "packaged MCP clean Python check exit code");
@@ -174,8 +186,53 @@ async function verifyPackagedMcpPythonGate(mcpPath, pythonPackageRoot, packageRo
       "packaged MCP clean Python check violations"
     );
 
+    const inferredObserve = await callMcpTool(server, "axiom_observe_inferred_contract", {
+      root: allowedRoots.specFirstRoot,
+      warnings: {
+        dynamicImports: true,
+        unresolvedImports: true
+      }
+    });
+    assertNoJsonRpcError(inferredObserve, "packaged MCP inferred observe");
+    assertEqual(inferredObserve.result?.structuredContent?.exitCode, 0, "packaged MCP inferred observe exit code");
+    assertEqual(
+      inferredObserve.result?.structuredContent?.summary?.kind,
+      "review",
+      "packaged MCP inferred observe summary kind"
+    );
+    assertEqual(
+      inferredObserve.result?.structuredContent?.summary?.gate?.currentCommandIsGate,
+      false,
+      "packaged MCP inferred observe is not gate"
+    );
+    assertEqual(
+      inferredObserve.result?.structuredContent?.payload?.contractSource?.kind,
+      "temporary_inferred_contract",
+      "packaged MCP inferred observe contract source"
+    );
+    assertEqual(
+      inferredObserve.result?.structuredContent?.payload?.contractSource?.persisted,
+      false,
+      "packaged MCP inferred observe persisted flag"
+    );
+    assertTextIncludes(
+      inferredObserve.result?.structuredContent?.summary?.agentHint ?? "",
+      "not declared architecture intent",
+      "packaged MCP inferred observe agent hint"
+    );
+    assertEqual(
+      inferredObserve.result?.structuredContent?.payload?.inference?.starterContract?.kind,
+      "current_graph_snapshot",
+      "packaged MCP inferred observe starter contract"
+    );
+    assertEqual(
+      inferredObserve.result?.structuredContent?.payload?.observe?.architectureSummary?.gate?.currentCommandIsGate,
+      false,
+      "packaged MCP inferred observe payload gate"
+    );
+
     writeFile(
-      pythonPackageRoot,
+      allowedRoots.pythonPackageRoot,
       "app/ui/presenter.py",
       [
         "from ..domain import Order",
@@ -189,7 +246,7 @@ async function verifyPackagedMcpPythonGate(mcpPath, pythonPackageRoot, packageRo
     );
 
     const failedCheck = await callMcpTool(server, "axiom_check", {
-      root: pythonPackageRoot
+      root: allowedRoots.pythonPackageRoot
     });
     assertNoJsonRpcError(failedCheck, "packaged MCP failing Python check");
     assertEqual(failedCheck.result?.structuredContent?.exitCode, 1, "packaged MCP failing Python check exit code");

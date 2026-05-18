@@ -31,6 +31,7 @@ Expected result:
 - Python static imports produce the same observed dependency evidence as TS/JS imports.
 - Literal Python `importlib.import_module("...")` calls can produce observed dynamic-import edges when they resolve to repo-local source.
 - Non-literal Python importlib-style calls stay opt-in graph-completeness warnings under `--warn-dynamic-imports`.
+- Literal importlib-style calls to external or stdlib modules, such as `__import__("random")`, stay outside the repo architecture graph and should not create unresolved-import noise.
 - `axi observe` and `axi diff` stay advisory review surfaces.
 
 The repeatable smoke harness copies this example to a temporary directory, then edits `src/ui/trade_modals.py` to import `order_engine`. That creates `Ui -> Market` drift and must fail as `undeclared_dependency`.

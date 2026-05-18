@@ -13,3 +13,7 @@ def load_default_cog() -> object:
 
 def load_named_cog(module_name: str) -> object:
     return importlib.import_module(module_name)
+
+
+def load_stdlib_random() -> object:
+    return __import__("random").Random()

@@ -302,6 +302,7 @@ test("scanner records Python literal and non-literal dynamic import evidence", (
         "literal = importlib.import_module('market.order_engine')",
         "runtime = importlib.import_module(module_name)",
         "direct = __import__('common.utils')",
+        'stdlib = __import__("random")',
         "templated = __import__(f'plugins.{module_name}')",
         "ignored = loader.__import__(module_name)"
       ].join("\n")
@@ -338,6 +339,12 @@ test("scanner records Python literal and non-literal dynamic import evidence", (
           kind: "dynamic_import",
           specifier: "common.utils",
           resolvedPath: "src/common/utils.py"
+        },
+        {
+          line: 6,
+          kind: "dynamic_import",
+          specifier: "random",
+          resolvedPath: undefined
         }
       ]
     );
@@ -356,7 +363,7 @@ test("scanner records Python literal and non-literal dynamic import evidence", (
           expressionPreview: "module_name"
         },
         {
-          line: 6,
+          line: 7,
           kind: "python_import_expression",
           expressionKind: "__import__",
           expressionPreview: "f'plugins.{module_name}'"

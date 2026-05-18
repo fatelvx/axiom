@@ -275,10 +275,18 @@ function runPythonBoundaryPilot() {
     "AppEntry->Cogs:dynamic_import:cogs.trading",
     "Python boundary literal dynamic import evidence"
   );
+  assertExcludes(
+    new Set((checkPayload.observedDependencies ?? []).map((dependency) => dependency.import?.specifier).filter(Boolean)),
+    "random",
+    "Python boundary stdlib dynamic import stays outside observed repo edges"
+  );
 
-  const dynamicWarningCheck = runAxi(["check", "--root", cleanRoot, "--warn-dynamic-imports", "--json"], 0);
+  const dynamicWarningCheck = runAxi(
+    ["check", "--root", cleanRoot, "--warn-dynamic-imports", "--warn-unresolved-imports", "--json"],
+    0
+  );
   const dynamicWarningPayload = parseJson(dynamicWarningCheck.stdout, "Python dynamic warning check output");
-  assertEqual(dynamicWarningPayload.summary?.warnings, 1, "Python dynamic warning count");
+  assertEqual(dynamicWarningPayload.summary?.warnings, 1, "Python dynamic warning count without stdlib noise");
   assertEqual(
     dynamicWarningPayload.warnings?.[0]?.code,
     "dynamic_dependency_expression",
@@ -564,6 +572,12 @@ function assertMin(actual, minimum, label) {
 function assertIncludes(values, expected, label) {
   if (!values.has(expected)) {
     throw new Error(`Expected ${label} to include ${JSON.stringify(expected)}.`);
+  }
+}
+
+function assertExcludes(values, unexpected, label) {
+  if (values.has(unexpected)) {
+    throw new Error(`Expected ${label} to exclude ${JSON.stringify(unexpected)}.`);
   }
 }
 

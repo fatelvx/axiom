@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Added a no-install Vite package-source dynamic-import calibration artifact as a second dynamic-heavy comparison against Nitro, still without changing scanner, resolver, or gate behavior.
 - Added a no-install Nitro source-scoped dynamic-import calibration artifact that records focused dynamic dependency expression evidence without changing scanner, resolver, or gate behavior.
 - Added `dynamic` to the real-project version and diff smoke warning selector so calibration runs can exercise opt-in dynamic dependency evidence without changing validator behavior.
 - Added a no-install npm/cli workspace calibration artifact for npm workspaces coverage without changing resolver, scanner, or dynamic behavior.

@@ -39,6 +39,7 @@ Each smoke should answer two questions before any implementation change:
 | node-glob source-scoped diff smoke | small TypeScript Node package with dual CJS/ESM package surface | `src/**` runtime graph stayed quiet across `v13.0.0 -> v13.0.6`: 7 source files, 37 imports, 1 inferred module, 0 module-edge drift, 0 warnings | quiet-control / scan-scope | Record as mixed package-surface quiet control; do not add resolver behavior from one quiet source-scoped run |
 | npm/cli workspaces diff smoke | npm workspaces package-manager monorepo with root CLI source and workspace package libs | `lib/**` plus `workspaces/*/lib/**` scanned 205 source files and 943 imports across `v11.14.0 -> v11.14.1`, inferred 13 modules, saw 48 observed dependency sites, 0 edge drift, and 2 coupling advisories | quiet-control / advisory-signal-calibration | Record as the first non-pnpm workspace calibration; do not change resolver, scanner, or dynamic behavior from this quiet patch-range result |
 | Nitro source dynamic diff smoke | TypeScript server framework/build tool with runtime presets, CLI lazy commands, and dynamic-require helpers | `src/**` scanned 158 source files and 738 imports across `v2.9.6 -> v2.9.7`, inferred 2 modules with 1 collapsed cycle, saw 0 edge drift, and surfaced 4 focused `dynamic_dependency_expression` advisories with expression previews | static-blind-spot / advisory-signal-calibration | Keep dynamic warnings opt-in review evidence for runtime loading blind spots; do not change scanner, resolver, or gate behavior from this run |
+| Vite package dynamic diff smoke | TypeScript build tool/framework monorepo package sources with CLI lazy loading, config-file loading, module-runner imports, CSS preprocessor loaders, and optional legacy-plugin dependencies | `packages/vite/src/**` plus `packages/plugin-legacy/src/**` scanned 125 source files and 1,255 imports across `v7.2.6 -> v7.2.7`, inferred 5 modules, saw 78 observed dependency sites, 0 edge drift, and surfaced 10 focused `dynamic_dependency_expression` advisories | static-blind-spot / advisory-signal-calibration | Treat Nitro plus Vite as evidence that dynamic warnings are useful opt-in graph-completeness review signals; still do not change defaults, scanner, resolver, or gate behavior |
 
 ## Missing Coverage
 
@@ -50,7 +51,7 @@ The current portfolio is still too infrastructure- and library-heavy. Before bro
 - generated-code-heavy repo where source scope matters
 - additional non-pnpm workspace variants, such as Yarn workspaces or Lerna-style packages
 - UI component library with barrel exports and design-system entry points beyond the first Headless UI React probe
-- one more dynamic-heavy repo to compare against Nitro before making dynamic warnings more prominent in onboarding or release notes
+- dynamic-heavy app/runtime-plugin repo or Python dynamic pilot before changing dynamic warning defaults or positioning
 
 ## New Smoke Record Template
 

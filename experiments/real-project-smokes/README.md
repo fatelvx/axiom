@@ -152,3 +152,4 @@ npm run real-project:diff-smoke -- \
 - [node-glob source-scoped diff smoke, 2026-05-18](results/glob-src-diff-smoke-2026-05-18.md)
 - [npm/cli workspaces diff smoke, 2026-05-19](results/npm-cli-workspaces-diff-smoke-2026-05-19.md)
 - [Nitro source dynamic diff smoke, 2026-05-19](results/nitro-src-dynamic-diff-smoke-2026-05-19.md)
+- [Vite package dynamic diff smoke, 2026-05-19](results/vite-packages-dynamic-diff-smoke-2026-05-19.md)

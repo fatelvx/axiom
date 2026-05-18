@@ -100,6 +100,11 @@ try {
   );
   const inferPayload = JSON.parse(infer.stdout);
   assertEqual(inferPayload.schemaVersion, "axiom.infer.v8", "packaged infer schema");
+  assertArrayTextIncludes(
+    inferPayload.starterContract?.reviewPass ?? [],
+    "desired architecture",
+    "packaged infer review pass"
+  );
   assertTextIncludes(inferPayload.axi ?? "", "module", "packaged infer contract text");
 
   const vueCheck = timeStep("packaged Vue SFC check", () =>
@@ -146,7 +151,7 @@ try {
   console.log("- verified package contents and bin aliases");
   console.log("- ran packaged CLI against spec-first and failing examples");
   console.log("- verified packaged Python package-layout example");
-  console.log("- ran packaged infer JSON from the extracted tarball");
+  console.log("- ran packaged infer JSON from the extracted tarball with review-pass guidance");
   console.log("- verified packaged Vue SFC and monorepo path coverage");
   console.log("- verified packaged MCP server entry point, temporary inferred review, and Python package hard gate");
   console.log("- release smoke timings:");
@@ -249,6 +254,11 @@ async function verifyPackagedMcpWorkflow(mcpPath, allowedRoots, packageRoot) {
       inferredObserve.result?.structuredContent?.payload?.inference?.starterContract?.kind,
       "current_graph_snapshot",
       "packaged MCP inferred observe starter contract"
+    );
+    assertArrayTextIncludes(
+      inferredObserve.result?.structuredContent?.payload?.inference?.starterContract?.reviewPass ?? [],
+      "desired architecture",
+      "packaged MCP inferred observe review pass"
     );
     assertEqual(
       inferredObserve.result?.structuredContent?.payload?.observe?.architectureSummary?.gate?.currentCommandIsGate,
@@ -417,6 +427,12 @@ function assertDeepEqual(actual, expected, label) {
 function assertArrayIncludes(values, expected, label) {
   if (!Array.isArray(values) || !values.includes(expected)) {
     throw new Error(`Expected ${label} to include ${JSON.stringify(expected)}.\nActual values:\n${JSON.stringify(values)}`);
+  }
+}
+
+function assertArrayTextIncludes(values, expected, label) {
+  if (!Array.isArray(values) || !values.some((value) => typeof value === "string" && value.includes(expected))) {
+    throw new Error(`Expected ${label} to include text ${JSON.stringify(expected)}.\nActual values:\n${JSON.stringify(values)}`);
   }
 }
 

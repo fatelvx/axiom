@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Extended release-candidate smoke coverage so packaged `axi infer --json` and packaged MCP inferred-observe evidence must preserve `starterContract.reviewPass[]`.
 - Extended MCP conformance to verify `axiom_infer_contract` and `axiom_observe_inferred_contract` expose `starterContract.reviewPass[]` so fresh agents preserve first-contract review guidance.
 - Clarified `starterContract.reviewPass[]` in the JSON consumer guide, MCP conformance guide, and CLI JSON regression coverage so agents and integrations present first-contract review before promotion.
 - Added an `axi infer` review pass in text and JSON starter-contract output so first drafts guide users to keep, change, or remove inferred edges before promoting a contract to `axi check`.

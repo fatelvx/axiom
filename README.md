@@ -63,7 +63,7 @@ npx --no-install axi infer --root . --include "src/**"
 
 `--no-install` makes npm use the exact local package you just installed instead of fetching a different command from the registry.
 
-`axi infer` is read-only starter evidence. It mirrors the graph Axiom can currently see; review it before turning it into a contract.
+`axi infer` is read-only starter evidence. It mirrors the graph Axiom can currently see; use the generated `review pass` comments to keep, change, or remove draft edges before treating it as a contract.
 
 To try the hard gate, add a small `axiom/main.axi` contract like the one below, then run:
 

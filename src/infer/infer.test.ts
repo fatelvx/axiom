@@ -27,6 +27,8 @@ test("infer creates a starter contract from source folders", () => {
   assert.match(output, /# inference review story:/);
   assert.match(output, /# summary: Starter contract inferred 3 modules and 1 observed module edge from 3 source files\./);
   assert.match(output, /# pressure: Review inferred dependencies - 1 observed module edge became `depends on` lines/);
+  assert.match(output, /# review pass:/);
+  assert.match(output, /# 1\. Keep module names, paths, and `depends on` edges only when you can explain them as desired architecture/);
   assert.match(output, /# authoring checklist:/);
   assert.match(output, /# 1\. Rename modules so they match the team's architecture vocabulary/);
   assert.match(output, /# next commands:/);
@@ -210,6 +212,12 @@ test("infer JSON includes the generated .axi draft", () => {
       "This starter contract mirrors the current dependency graph; it is not a recommended architecture.",
       "Review module names, collapsed cycles, visibility suggestions, and dependencies before treating it as intent.",
       "Use `axi check` only after the contract describes the architecture you want to protect."
+    ],
+    reviewPass: [
+      "Keep module names, paths, and `depends on` edges only when you can explain them as desired architecture.",
+      "Change broad folder-shaped modules, collapsed cycles, and commented visibility suggestions into the boundary you want reviewers to protect.",
+      "Remove accidental dependency edges from the draft unless the team intends to keep that relationship; use visible intentional debt only for reviewed migrations.",
+      "Observe the reviewed draft first, then use `axi check` as a gate only after the contract is small, explainable, and low-noise."
     ],
     authoringChecklist: [
       "Rename modules so they match the team's architecture vocabulary, not only folder names.",

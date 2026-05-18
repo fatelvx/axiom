@@ -8,6 +8,7 @@ import type {
 export interface InferStarterContract {
   kind: "current_graph_snapshot";
   notice: string[];
+  reviewPass: string[];
   authoringChecklist: string[];
   nextCommands: string[];
 }
@@ -43,6 +44,13 @@ export const inferStarterContractNotice = [
   "This starter contract mirrors the current dependency graph; it is not a recommended architecture.",
   "Review module names, collapsed cycles, visibility suggestions, and dependencies before treating it as intent.",
   "Use `axi check` only after the contract describes the architecture you want to protect."
+];
+
+export const inferStarterContractReviewPass = [
+  "Keep module names, paths, and `depends on` edges only when you can explain them as desired architecture.",
+  "Change broad folder-shaped modules, collapsed cycles, and commented visibility suggestions into the boundary you want reviewers to protect.",
+  "Remove accidental dependency edges from the draft unless the team intends to keep that relationship; use visible intentional debt only for reviewed migrations.",
+  "Observe the reviewed draft first, then use `axi check` as a gate only after the contract is small, explainable, and low-noise."
 ];
 
 export const inferStarterContractAuthoringChecklist = [
@@ -91,6 +99,7 @@ export function buildStarterContract(
   return {
     kind: "current_graph_snapshot",
     notice: [...inferStarterContractNotice],
+    reviewPass: [...inferStarterContractReviewPass],
     authoringChecklist,
     nextCommands: [...inferStarterContractNextCommands]
   };

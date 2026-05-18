@@ -64,6 +64,12 @@ export function formatInferResult(result: InferResult): string {
   lines.push(`# caveat: ${result.reviewStory.caveat}`);
   lines.push("");
 
+  lines.push("# review pass:");
+  result.starterContract.reviewPass.forEach((item, index) => {
+    lines.push(`# ${index + 1}. ${item}`);
+  });
+  lines.push("");
+
   lines.push("# authoring checklist:");
   result.starterContract.authoringChecklist.forEach((item, index) => {
     lines.push(`# ${index + 1}. ${item}`);

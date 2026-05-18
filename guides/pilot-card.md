@@ -42,7 +42,14 @@ axi graph --root ../target-app \
 
 The inferred contract mirrors the current graph. It is not maintainer-declared architecture. Before using it as intent, rename modules, inspect inferred dependency evidence comments, and delete or split anything that does not match how the project should evolve.
 
-Before reading individual `depends on` edges, read the first comments in the generated draft. `axi infer` prints a snapshot notice, an inference review story, an authoring checklist, and suggested next commands at the top of the file because that draft is evidence for review, not a contract to commit unchanged.
+Before reading individual `depends on` edges, read the first comments in the generated draft. `axi infer` prints a snapshot notice, an inference review story, a `review pass`, an authoring checklist, and suggested next commands at the top of the file because that draft is evidence for review, not a contract to commit unchanged.
+
+Use the review pass as the first contract decision loop:
+
+- Keep edges you can explain as intended architecture.
+- Change broad modules, collapsed cycles, and commented visibility suggestions into the boundary you want to protect.
+- Remove accidental current-graph edges instead of quietly accepting them.
+- Observe the reviewed draft before using `axi check` as a gate.
 
 If inference collapses a cycle, keep that section with the pilot notes. Once the groups are merged into one starter module, graph and diff output will not show the internal edges anymore; the cycle path samples and cycle-breaking candidates are the review evidence.
 

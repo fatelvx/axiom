@@ -8,6 +8,7 @@ test("starter contract guidance preserves inferred-contract caveats", () => {
 
   assert.equal(starter.kind, "current_graph_snapshot");
   assert.match(starter.notice[0] ?? "", /not a recommended architecture/);
+  assert.ok(starter.reviewPass.some((item) => item.includes("desired architecture")));
   assert.ok(starter.authoringChecklist.some((item) => item.includes("--group-depth")));
   assert.deepEqual(starter.nextCommands, [
     "axi observe --root . --spec <draft.axi> --markdown",

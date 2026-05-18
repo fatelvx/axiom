@@ -14,6 +14,7 @@ import {
   inferStarterContractAuthoringChecklist,
   inferStarterContractNextCommands,
   inferStarterContractNotice,
+  inferStarterContractReviewPass,
   type InferReviewPressure,
   type InferReviewStory,
   type InferStarterContract
@@ -32,7 +33,8 @@ import { buildInferVisibilitySuggestions } from "./inferVisibility.js";
 export {
   inferStarterContractAuthoringChecklist,
   inferStarterContractNextCommands,
-  inferStarterContractNotice
+  inferStarterContractNotice,
+  inferStarterContractReviewPass
 };
 export type { InferReviewPressure, InferReviewStory, InferStarterContract };
 

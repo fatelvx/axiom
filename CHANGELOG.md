@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Added an `axi infer` review pass in text and JSON starter-contract output so first drafts guide users to keep, change, or remove inferred edges before promoting a contract to `axi check`.
 - Added public regression coverage that keeps literal Python stdlib/external `__import__("...")` calls outside observed repo edges and unresolved-import noise while preserving repo-local dynamic-import evidence.
 - Added a no-install Vite package-source dynamic-import calibration artifact as a second dynamic-heavy comparison against Nitro, still without changing scanner, resolver, or gate behavior.
 - Added a no-install Nitro source-scoped dynamic-import calibration artifact that records focused dynamic dependency expression evidence without changing scanner, resolver, or gate behavior.

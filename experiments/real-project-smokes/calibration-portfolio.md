@@ -37,6 +37,7 @@ Each smoke should answer two questions before any implementation change:
 | Express / Fastify / ESLint / SvelteKit / UUID batch | framework libs, large tooling source, framework package source, and small mixed package surface | three quiet controls, one low-noise CJS framework advisory, and one larger tooling pressure case; source-tree tests/specs required explicit scope exclusions | quiet-control / advisory-signal-calibration / scan-scope | Do not change validator behavior; keep warnings opt-in, treat scope as pilot design, and retry package-manager workspace coverage with a short workdir |
 | Private Python bot infer-scope calibration | Python app with root entry code, command/cog modules, and multiple `src/*` import roots | explicit include scope was silently narrowed by `axi infer` to `src/**`, hiding AppEntry/Cogs from the starter contract | general-resolver-scanner / scan-scope | Fixed infer source selection so explicit includes override the automatic `src/**` preference; keep Python runtime modelling out of scope |
 | node-glob source-scoped diff smoke | small TypeScript Node package with dual CJS/ESM package surface | `src/**` runtime graph stayed quiet across `v13.0.0 -> v13.0.6`: 7 source files, 37 imports, 1 inferred module, 0 module-edge drift, 0 warnings | quiet-control / scan-scope | Record as mixed package-surface quiet control; do not add resolver behavior from one quiet source-scoped run |
+| npm/cli workspaces diff smoke | npm workspaces package-manager monorepo with root CLI source and workspace package libs | `lib/**` plus `workspaces/*/lib/**` scanned 205 source files and 943 imports across `v11.14.0 -> v11.14.1`, inferred 13 modules, saw 48 observed dependency sites, 0 edge drift, and 2 coupling advisories | quiet-control / advisory-signal-calibration | Record as the first non-pnpm workspace calibration; do not change resolver, scanner, or dynamic behavior from this quiet patch-range result |
 
 ## Missing Coverage
 
@@ -46,7 +47,7 @@ The current portfolio is still too infrastructure- and library-heavy. Before bro
 - additional CLI tool repo with command modules, preferably one that does not import clone-missing build output
 - package with mixed CJS and ESM entry points beyond the node-glob source-scoped quiet control, preferably one where source imports package subpaths or generated dual outputs are part of the actual scan question
 - generated-code-heavy repo where source scope matters
-- non-pnpm workspace, such as npm workspaces, Yarn workspaces, or Lerna-style packages
+- additional non-pnpm workspace variants, such as Yarn workspaces or Lerna-style packages
 - UI component library with barrel exports and design-system entry points beyond the first Headless UI React probe
 
 ## New Smoke Record Template

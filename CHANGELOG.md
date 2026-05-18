@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Added a no-install npm/cli workspace calibration artifact for npm workspaces coverage without changing resolver, scanner, or dynamic behavior.
 - Added a no-install node-glob source-scoped calibration artifact for mixed CJS/ESM package-surface coverage without changing resolver behavior.
 - Added spec-first smoke step timings so slow artifact-loop, drift, services, or Python pilot checks can be diagnosed without changing validator or release semantics.
 - Added release-candidate smoke step timings so slow packaged CLI or MCP checks can be diagnosed without changing release semantics.

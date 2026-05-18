@@ -1,0 +1,272 @@
+{
+  "kind": "axiom.real-project-diff-smoke.v4",
+  "generatedAt": "2026-05-18T16:17:39.386Z",
+  "repo": "https://github.com/npm/cli.git",
+  "name": "npm-cli-workspaces",
+  "baselineRef": "v11.14.0",
+  "currentRef": "v11.14.1",
+  "groupBy": "workspace",
+  "sourceScope": {
+    "include": [
+      "lib/**",
+      "workspaces/*/lib/**"
+    ],
+    "exclude": [
+      "test/**",
+      "**/test/**",
+      "**/*.test.js",
+      "**/*.spec.js",
+      "docs/**",
+      "tap-snapshots/**",
+      "**/tap-snapshots/**",
+      "node_modules/**",
+      "**/node_modules/**"
+    ]
+  },
+  "warningFlags": [
+    "--warn-coupling-concentration",
+    "--warn-deep-internal-imports",
+    "--warn-unresolved-imports"
+  ],
+  "node": "v24.14.1",
+  "platform": "win32 x64",
+  "calibration": {
+    "repoShape": "npm workspaces package-manager monorepo with root CLI source and workspace package lib folders",
+    "safetyPosture": "Clone-only source scan; no target installs, package-manager scripts, target tests, target builds, submodules, or npx were run.",
+    "scopeQuestion": "Can a package-json workspace inferred baseline make patch-version source drift reviewable without target installs?",
+    "commandSurface": "axi infer --json + axi graph --json + axi diff + axi observe --baseline",
+    "mainSignal": "Workspace inference handled the root CLI lib plus 12 workspace package lib folders across a patch range with 0 observed edge drift; only Arborist fan-in and Lib fan-out remained as coupling advisories.",
+    "gapClass": "quiet-control / advisory-signal-calibration",
+    "decision": "Record as the first non-pnpm workspace calibration; do not change resolver, scanner, or dynamic behavior from this quiet patch-range result.",
+    "codeChanged": "No Axiom code changed; this is a no-install calibration run.",
+    "followUp": "If npm/cli is scanned again on Windows, use a short workdir because checked-in fixture paths can exceed default path limits; compare a larger minor range only if portfolio coverage needs a noisier npm-workspaces case."
+  },
+  "baselineInference": {
+    "schemaVersion": "axiom.infer.v8",
+    "reviewStory": {
+      "summary": "Starter contract inferred 13 modules and 16 observed module edges from 205 source files.",
+      "setup": "Scanned 205 source files and 943 imports; 13 candidate groups became 13 starter modules. This is a current-graph snapshot, not declared architecture intent yet.",
+      "pressures": [
+        {
+          "kind": "large_source_file",
+          "title": "Large-file pressure in inferred scope",
+          "description": "7 large source files may hide responsibilities that folder and import inference cannot split. Inspect these files before judging the starter module map as complete.",
+          "severity": "warning",
+          "modules": [],
+          "files": [
+            "workspaces/config/lib/definitions/definitions.js",
+            "workspaces/arborist/lib/arborist/reify.js",
+            "workspaces/arborist/lib/node.js",
+            "workspaces/arborist/lib/arborist/build-ideal-tree.js",
+            "workspaces/arborist/lib/shrinkwrap.js",
+            "workspaces/config/lib/index.js",
+            "workspaces/arborist/lib/query-selector-all.js"
+          ]
+        },
+        {
+          "kind": "dependency_evidence",
+          "title": "Review inferred dependencies",
+          "description": "16 observed module edges became `depends on` lines with sample import evidence. Confirm each edge is intended before using this draft as a gate.",
+          "severity": "info",
+          "modules": [
+            "Arborist",
+            "Config",
+            "Lib",
+            "Libnpmaccess",
+            "Libnpmdiff",
+            "Libnpmexec",
+            "Libnpmfund",
+            "Libnpmorg",
+            "Libnpmpack",
+            "Libnpmpublish",
+            "Libnpmsearch",
+            "Libnpmteam",
+            "Libnpmversion"
+          ],
+          "files": []
+        }
+      ],
+      "nextStep": "Inspect large-file pressure notes, adjust module boundaries if needed, then run `axi observe --root . --spec <draft.axi> --markdown`.",
+      "caveat": "Inference reads static imports and folder/package shape. It can lower authoring cost, but humans still decide module names, visibility, layers, accepted debt, and which edges are real architecture intent."
+    },
+    "summary": {
+      "sourceFiles": 205,
+      "importsScanned": 943,
+      "candidateModules": 13,
+      "modules": 13,
+      "observedDependencies": 16,
+      "observedModuleEdges": 16,
+      "observedImportSites": 48,
+      "collapsedCycles": 0,
+      "architecturePressureNotes": 7
+    },
+    "collapsedCycles": [],
+    "architecturePressureNotes": [
+      {
+        "kind": "large_source_file",
+        "filePath": "workspaces/config/lib/definitions/definitions.js",
+        "lineCount": 2518,
+        "functionLikeCount": 62,
+        "importsScanned": 7,
+        "exportsScanned": 0,
+        "classCount": 0,
+        "message": "workspaces/config/lib/definitions/definitions.js has 2518 lines; inferred module boundaries may miss responsibilities concentrated inside this file."
+      },
+      {
+        "kind": "large_source_file",
+        "filePath": "workspaces/arborist/lib/arborist/reify.js",
+        "lineCount": 1772,
+        "functionLikeCount": 107,
+        "importsScanned": 28,
+        "exportsScanned": 0,
+        "classCount": 1,
+        "message": "workspaces/arborist/lib/arborist/reify.js has 1772 lines; inferred module boundaries may miss responsibilities concentrated inside this file."
+      },
+      {
+        "kind": "large_source_file",
+        "filePath": "workspaces/arborist/lib/node.js",
+        "lineCount": 1632,
+        "functionLikeCount": 83,
+        "importsScanned": 20,
+        "exportsScanned": 0,
+        "classCount": 1,
+        "message": "workspaces/arborist/lib/node.js has 1632 lines; inferred module boundaries may miss responsibilities concentrated inside this file."
+      },
+      {
+        "kind": "large_source_file",
+        "filePath": "workspaces/arborist/lib/arborist/build-ideal-tree.js",
+        "lineCount": 1589,
+        "functionLikeCount": 61,
+        "importsScanned": 27,
+        "exportsScanned": 0,
+        "classCount": 2,
+        "message": "workspaces/arborist/lib/arborist/build-ideal-tree.js has 1589 lines; inferred module boundaries may miss responsibilities concentrated inside this file."
+      },
+      {
+        "kind": "large_source_file",
+        "filePath": "workspaces/arborist/lib/shrinkwrap.js",
+        "lineCount": 1183,
+        "functionLikeCount": 47,
+        "importsScanned": 15,
+        "exportsScanned": 0,
+        "classCount": 1,
+        "message": "workspaces/arborist/lib/shrinkwrap.js has 1183 lines; inferred module boundaries may miss responsibilities concentrated inside this file."
+      },
+      {
+        "kind": "large_source_file",
+        "filePath": "workspaces/config/lib/index.js",
+        "lineCount": 1035,
+        "functionLikeCount": 79,
+        "importsScanned": 16,
+        "exportsScanned": 0,
+        "classCount": 2,
+        "message": "workspaces/config/lib/index.js has 1035 lines; inferred module boundaries may miss responsibilities concentrated inside this file."
+      },
+      {
+        "kind": "large_source_file",
+        "filePath": "workspaces/arborist/lib/query-selector-all.js",
+        "lineCount": 959,
+        "functionLikeCount": 98,
+        "importsScanned": 9,
+        "exportsScanned": 0,
+        "classCount": 1,
+        "message": "workspaces/arborist/lib/query-selector-all.js has 959 lines; inferred module boundaries may miss responsibilities concentrated inside this file."
+      }
+    ]
+  },
+  "baseline": {
+    "ref": "v11.14.0",
+    "commit": "409a717",
+    "packageVersion": "11.14.0",
+    "summary": {
+      "modules": 13,
+      "declaredDependencies": 16,
+      "forbiddenDependencies": 0,
+      "exposedPaths": 0,
+      "hiddenPaths": 0,
+      "observedDependencies": 48,
+      "shownObservedDependencies": 48,
+      "violations": 0,
+      "intentionalViolations": 0,
+      "warnings": 2
+    }
+  },
+  "current": {
+    "ref": "v11.14.1",
+    "commit": "0fc09e8",
+    "packageVersion": "11.14.1",
+    "summary": {
+      "modules": 13,
+      "declaredDependencies": 16,
+      "forbiddenDependencies": 0,
+      "exposedPaths": 0,
+      "hiddenPaths": 0,
+      "observedDependencies": 48,
+      "shownObservedDependencies": 48,
+      "violations": 0,
+      "intentionalViolations": 0,
+      "warnings": 2
+    }
+  },
+  "drift": {
+    "kind": "advisory_observed_edge_drift",
+    "baseline": {
+      "schemaVersion": "axiom.graph.v12",
+      "observedDependencies": 48
+    },
+    "newObservedEdges": [],
+    "removedObservedEdges": []
+  },
+  "warnings": {
+    "byCode": {
+      "coupling_concentration": 2
+    },
+    "details": [
+      {
+        "code": "coupling_concentration",
+        "message": "Arborist has concentrated fan-in from 5 modules.",
+        "observed": "Arborist fan-in from 5 modules",
+        "module": "Arborist",
+        "incomingModules": [
+          "Lib",
+          "Libnpmdiff",
+          "Libnpmexec",
+          "Libnpmfund",
+          "Libnpmpack"
+        ],
+        "outgoingModules": []
+      },
+      {
+        "code": "coupling_concentration",
+        "message": "Lib has concentrated fan-out to 12 modules.",
+        "observed": "Lib fan-out to 12 modules",
+        "module": "Lib",
+        "incomingModules": [],
+        "outgoingModules": [
+          "Arborist",
+          "Config",
+          "Libnpmaccess",
+          "Libnpmdiff",
+          "Libnpmexec",
+          "Libnpmfund",
+          "Libnpmorg",
+          "Libnpmpack",
+          "Libnpmpublish",
+          "Libnpmsearch",
+          "Libnpmteam",
+          "Libnpmversion"
+        ]
+      }
+    ]
+  },
+  "timingsMs": {
+    "cloneBaseline": 247629.3,
+    "cloneCurrent": 66465.5,
+    "infer": 2117.1,
+    "baselineGraph": 7286.1,
+    "diffJson": 39559.4,
+    "diffMarkdown": 26643.1,
+    "observeMarkdown": 18583.1,
+    "diffMermaid": 19343.9
+  }
+}

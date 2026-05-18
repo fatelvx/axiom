@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Added a no-install node-glob source-scoped calibration artifact for mixed CJS/ESM package-surface coverage without changing resolver behavior.
 - Added spec-first smoke step timings so slow artifact-loop, drift, services, or Python pilot checks can be diagnosed without changing validator or release semantics.
 - Added release-candidate smoke step timings so slow packaged CLI or MCP checks can be diagnosed without changing release semantics.
 - Extended release-candidate smoke so the packed MCP server verifies the temporary inferred-contract review workflow in addition to the Python package hard gate.

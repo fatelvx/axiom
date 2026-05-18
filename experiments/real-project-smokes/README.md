@@ -147,3 +147,4 @@ npm run real-project:diff-smoke -- \
 - [SvelteKit source diff smoke, 2026-05-14](results/sveltekit-src-diff-smoke-2026-05-14.md)
 - [UUID source diff smoke, 2026-05-14](results/uuid-src-diff-smoke-2026-05-14.md)
 - [Private Python bot infer-scope calibration, 2026-05-17](results/2026-05-17-private-python-bot-infer-scope.md)
+- [node-glob source-scoped diff smoke, 2026-05-18](results/glob-src-diff-smoke-2026-05-18.md)

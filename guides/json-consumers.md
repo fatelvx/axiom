@@ -158,6 +158,7 @@ Treat `drift.newObservedEdges[]` and `drift.removedObservedEdges[]` as review co
 
 - `starterContract.kind: "current_graph_snapshot"` to mark the output as a mirror of today's dependency graph.
 - `starterContract.notice[]` with the same human-facing warning printed in `.axi` comments.
+- `starterContract.reviewPass[]` with the keep / change / remove / observe loop that turns current-graph evidence into reviewed intent.
 - `starterContract.authoringChecklist[]` and `starterContract.nextCommands[]` for tools that want to guide first-contract review.
 - `reviewStory` with the inferred setup, top authoring pressures, next step, and caveat.
 - `modules[].dependencyEvidence[]` with the target module, observed import-site count, and sample import sites for each inferred dependency.
@@ -168,7 +169,7 @@ Treat `drift.newObservedEdges[]` and `drift.removedObservedEdges[]` as review co
 - `architecturePressureNotes[]` with advisory context such as large source files that may hide responsibilities outside the import graph.
 - `axi` containing the generated starter contract text.
 
-Do not treat inferred modules, collapsed cycles, or dependencies as maintainer intent until a human reviews and edits the contract. They are onboarding material for authoring a real `.axi` contract.
+Do not treat inferred modules, collapsed cycles, or dependencies as maintainer intent until a human reviews and edits the contract. Show `starterContract.reviewPass[]` before saving or gating the draft so the first contract decision stays explicit.
 
 `reviewStory` is a shortcut for presentation, not a substitute for evidence. It can tell an agent or UI to show collapsed cycles or large-file pressure first, but exact decisions should still read `collapsedCycles[]`, `architecturePressureNotes[]`, and `modules[].dependencyEvidence[]`.
 

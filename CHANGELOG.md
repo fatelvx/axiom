@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Clarified `starterContract.reviewPass[]` in the v0 spec, JSON consumer guide, MCP conformance guide, and CLI JSON regression coverage so agents and integrations present first-contract review before promotion.
 - Added an `axi infer` review pass in text and JSON starter-contract output so first drafts guide users to keep, change, or remove inferred edges before promoting a contract to `axi check`.
 - Added public regression coverage that keeps literal Python stdlib/external `__import__("...")` calls outside observed repo edges and unresolved-import noise while preserving repo-local dynamic-import evidence.
 - Added a no-install Vite package-source dynamic-import calibration artifact as a second dynamic-heavy comparison against Nitro, still without changing scanner, resolver, or gate behavior.

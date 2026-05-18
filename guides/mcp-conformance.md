@@ -99,8 +99,8 @@ Pass criteria:
 - Missing roots are reported as a registration issue, not solved by broadening to a parent path.
 - `axiom_check` is described as the hard gate.
 - `axiom_observe`, `axiom_graph`, and `axiom_diff` are described as review context.
-- `axiom_infer_contract` is described as authoring evidence, not intent.
-- `axiom_observe_inferred_contract` is described as temporary inferred review evidence, not an approved contract.
+- `axiom_infer_contract` is described as authoring evidence, not intent, and exposes `starterContract.reviewPass[]`.
+- `axiom_observe_inferred_contract` is described as temporary inferred review evidence, not an approved contract, and exposes nested `inference.starterContract.reviewPass[]`.
 - Infer `observedModuleEdges` and `observedImportSites` are described separately, and infer `observedDependencies` is not compared directly with check/observe import-site counts.
 - Observed `import.kind` values are described as evidence about how imports were found, not as policy intent, new contract syntax, or proof of runtime behavior.
 - The agent does not edit files, update baselines, accept debt, commit, or push.

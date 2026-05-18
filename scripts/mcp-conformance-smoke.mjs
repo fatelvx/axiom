@@ -83,6 +83,7 @@ async function main() {
     console.log("- treated axiom_check as the hard gate");
     console.log("- treated observe, graph, and diff as advisory review evidence");
     console.log("- treated infer output as authoring evidence, not declared intent");
+    console.log("- verified inferred starter review-pass guidance is exposed to MCP agents");
     console.log("- verified infer module-edge counts stay distinct from import-site evidence");
     console.log("- treated infer-to-observe output as temporary inferred review evidence");
     console.log("- verified literal dynamic imports as observed import-kind evidence, not dynamic warnings or rules");
@@ -415,6 +416,11 @@ async function verifyInferenceIsAuthoringEvidence(server, projectRoot) {
     "not a recommended architecture",
     "infer starter notice"
   );
+  assertArrayTextIncludes(
+    infer.result?.structuredContent?.payload?.starterContract?.reviewPass ?? [],
+    "desired architecture",
+    "infer starter review pass"
+  );
   assertTextIncludes(
     infer.result?.structuredContent?.summary?.agentHint ?? "",
     "not declared architecture intent",
@@ -491,6 +497,11 @@ async function verifyInferredObserveIsTemporaryReviewEvidence(server, projectRoo
     inferredObserve.result?.structuredContent?.payload?.inference?.starterContract?.kind,
     "current_graph_snapshot",
     "inferred observe starter contract kind"
+  );
+  assertArrayTextIncludes(
+    inferredObserve.result?.structuredContent?.payload?.inference?.starterContract?.reviewPass ?? [],
+    "desired architecture",
+    "inferred observe starter review pass"
   );
   assertInferenceCountSemantics(
     inferredObserve.result?.structuredContent?.payload?.inference,

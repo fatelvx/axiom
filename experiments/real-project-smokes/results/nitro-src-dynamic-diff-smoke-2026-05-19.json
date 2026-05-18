@@ -1,0 +1,339 @@
+{
+  "kind": "axiom.real-project-diff-smoke.v4",
+  "generatedAt": "2026-05-18T18:02:44.604Z",
+  "repo": "https://github.com/unjs/nitro.git",
+  "name": "nitro-src-dynamic",
+  "baselineRef": "v2.9.6",
+  "currentRef": "v2.9.7",
+  "groupBy": "folder",
+  "sourceScope": {
+    "include": [
+      "src/**"
+    ],
+    "exclude": [
+      "test/**",
+      "docs/**",
+      "examples/**",
+      "playground/**",
+      "**/*.test.ts",
+      "**/*.spec.ts"
+    ]
+  },
+  "warningFlags": [
+    "--warn-dynamic-imports"
+  ],
+  "node": "v24.14.1",
+  "platform": "win32 x64",
+  "calibration": {
+    "repoShape": "TypeScript server framework/build tool with runtime presets, CLI lazy commands, and rollup dynamic-require helpers",
+    "safetyPosture": "Clone-only source scan; no target installs, package-manager scripts, target tests, target builds, submodules, or npx were run.",
+    "scopeQuestion": "Can Axiom's opt-in dynamic warning family identify non-literal runtime loading in production source without turning literal dynamic imports into warnings?",
+    "commandSurface": "axi infer --json + axi graph --json + axi diff + axi observe --baseline",
+    "mainSignal": "Nitro source produced four focused dynamic dependency expressions for runtime/server entry loading and dynamic-require helper code, while literal dynamic imports stayed graph evidence rather than advisory warnings.",
+    "gapClass": "static-blind-spot / advisory-signal-calibration",
+    "decision": "Record dynamic dependency warnings as useful review evidence for runtime loading blind spots; do not change scanner, resolver, or gate behavior from this run.",
+    "codeChanged": "No Axiom validator code changed; this is a no-install dynamic calibration run.",
+    "followUp": "Compare with one more dynamic-heavy repo before making dynamic warnings more prominent in onboarding or release notes."
+  },
+  "baselineInference": {
+    "schemaVersion": "axiom.infer.v8",
+    "reviewStory": {
+      "summary": "Starter contract inferred 2 modules and 1 observed module edge from 158 source files.",
+      "setup": "Scanned 158 source files and 738 imports; 8 candidate groups became 2 starter modules. This is a current-graph snapshot, not declared architecture intent yet.",
+      "pressures": [
+        {
+          "kind": "collapsed_cycle",
+          "title": "Collapsed cycle: MixedCycle",
+          "description": "1 cycle was merged so the starter contract mirrors current code without immediately failing on declared dependency cycles. Review cycle-breaking candidates before treating the merged module as intended architecture.",
+          "severity": "warning",
+          "modules": [
+            "MixedCycle"
+          ],
+          "files": []
+        },
+        {
+          "kind": "dependency_evidence",
+          "title": "Review inferred dependencies",
+          "description": "1 observed module edge became `depends on` lines with sample import evidence. Confirm each edge is intended before using this draft as a gate.",
+          "severity": "info",
+          "modules": [
+            "Cli",
+            "MixedCycle"
+          ],
+          "files": []
+        }
+      ],
+      "nextStep": "Review collapsed-cycle candidates, rename or split merged modules if needed, then run `axi observe --root . --spec <draft.axi> --markdown`.",
+      "caveat": "Inference reads static imports and folder/package shape. It can lower authoring cost, but humans still decide module names, visibility, layers, accepted debt, and which edges are real architecture intent."
+    },
+    "summary": {
+      "sourceFiles": 158,
+      "importsScanned": 738,
+      "candidateModules": 8,
+      "modules": 2,
+      "observedDependencies": 1,
+      "observedModuleEdges": 1,
+      "observedImportSites": 11,
+      "collapsedCycles": 1,
+      "architecturePressureNotes": 0
+    },
+    "collapsedCycles": [
+      {
+        "module": "MixedCycle",
+        "sourceGroups": [
+          "AppEntry",
+          "Dev",
+          "Presets",
+          "Rollup",
+          "Runtime",
+          "Types",
+          "Utils"
+        ],
+        "cyclePathSamples": [
+          {
+            "groups": [
+              "AppEntry",
+              "Dev",
+              "Types",
+              "Presets",
+              "AppEntry"
+            ]
+          }
+        ],
+        "internalDependencyCount": 21,
+        "topInternalDependencies": [
+          {
+            "fromGroup": "AppEntry",
+            "toGroup": "Dev",
+            "count": 1,
+            "firstSample": {
+              "filePath": "src/index.ts",
+              "line": 4,
+              "specifier": "./dev/server",
+              "resolvedPath": "src/dev/server.ts"
+            }
+          },
+          {
+            "fromGroup": "AppEntry",
+            "toGroup": "Presets",
+            "count": 1,
+            "firstSample": {
+              "filePath": "src/options.ts",
+              "line": 27,
+              "specifier": "./presets",
+              "resolvedPath": "src/presets/index.ts"
+            }
+          },
+          {
+            "fromGroup": "AppEntry",
+            "toGroup": "Rollup",
+            "count": 1,
+            "firstSample": {
+              "filePath": "src/build.ts",
+              "line": 21,
+              "specifier": "./rollup/config",
+              "resolvedPath": "src/rollup/config.ts"
+            }
+          },
+          {
+            "fromGroup": "AppEntry",
+            "toGroup": "Runtime",
+            "count": 1,
+            "firstSample": {
+              "filePath": "src/task.ts",
+              "line": 5,
+              "specifier": "./runtime",
+              "resolvedPath": "src/runtime/index.ts"
+            }
+          },
+          {
+            "fromGroup": "AppEntry",
+            "toGroup": "Types",
+            "count": 11,
+            "firstSample": {
+              "filePath": "src/build.ts",
+              "line": 30,
+              "specifier": "./types",
+              "resolvedPath": "src/types/index.ts"
+            }
+          }
+        ],
+        "cycleBreakingCandidates": [
+          {
+            "fromGroup": "Presets",
+            "toGroup": "AppEntry",
+            "count": 35,
+            "firstSample": {
+              "filePath": "src/presets/alwaysdata.ts",
+              "line": 1,
+              "specifier": "../preset",
+              "resolvedPath": "src/preset.ts"
+            },
+            "rationale": "Presets -> AppEntry participates in the collapsed cycle with 35 import sites; inspect whether this edge should become an explicit boundary, interface, event, or accepted merged responsibility."
+          },
+          {
+            "fromGroup": "Presets",
+            "toGroup": "Types",
+            "count": 15,
+            "firstSample": {
+              "filePath": "src/presets/aws-amplify.ts",
+              "line": 5,
+              "specifier": "../types",
+              "resolvedPath": "src/types/index.ts"
+            },
+            "rationale": "Presets -> Types participates in the collapsed cycle with 15 import sites; inspect whether this edge should become an explicit boundary, interface, event, or accepted merged responsibility."
+          },
+          {
+            "fromGroup": "AppEntry",
+            "toGroup": "Types",
+            "count": 11,
+            "firstSample": {
+              "filePath": "src/build.ts",
+              "line": 30,
+              "specifier": "./types",
+              "resolvedPath": "src/types/index.ts"
+            },
+            "rationale": "AppEntry -> Types participates in the collapsed cycle with 11 import sites; inspect whether this edge should become an explicit boundary, interface, event, or accepted merged responsibility."
+          },
+          {
+            "fromGroup": "Presets",
+            "toGroup": "Utils",
+            "count": 9,
+            "firstSample": {
+              "filePath": "src/presets/azure-functions.ts",
+              "line": 4,
+              "specifier": "../utils",
+              "resolvedPath": "src/utils/index.ts"
+            },
+            "rationale": "Presets -> Utils participates in the collapsed cycle with 9 import sites; inspect whether this edge should become an explicit boundary, interface, event, or accepted merged responsibility."
+          },
+          {
+            "fromGroup": "Rollup",
+            "toGroup": "Types",
+            "count": 8,
+            "firstSample": {
+              "filePath": "src/rollup/config.ts",
+              "line": 20,
+              "specifier": "../types",
+              "resolvedPath": "src/types/index.ts"
+            },
+            "rationale": "Rollup -> Types participates in the collapsed cycle with 8 import sites; inspect whether this edge should become an explicit boundary, interface, event, or accepted merged responsibility."
+          }
+        ]
+      }
+    ],
+    "architecturePressureNotes": []
+  },
+  "baseline": {
+    "ref": "v2.9.6",
+    "commit": "3cb566e",
+    "packageVersion": "2.9.5",
+    "summary": {
+      "modules": 2,
+      "declaredDependencies": 1,
+      "forbiddenDependencies": 0,
+      "exposedPaths": 0,
+      "hiddenPaths": 0,
+      "observedDependencies": 11,
+      "shownObservedDependencies": 11,
+      "violations": 0,
+      "intentionalViolations": 0,
+      "warnings": 4
+    }
+  },
+  "current": {
+    "ref": "v2.9.7",
+    "commit": "46b5a05",
+    "packageVersion": "2.9.5",
+    "summary": {
+      "modules": 2,
+      "declaredDependencies": 1,
+      "forbiddenDependencies": 0,
+      "exposedPaths": 0,
+      "hiddenPaths": 0,
+      "observedDependencies": 11,
+      "shownObservedDependencies": 11,
+      "violations": 0,
+      "intentionalViolations": 0,
+      "warnings": 4
+    }
+  },
+  "drift": {
+    "kind": "advisory_observed_edge_drift",
+    "baseline": {
+      "schemaVersion": "axiom.graph.v12",
+      "observedDependencies": 11
+    },
+    "newObservedEdges": [],
+    "removedObservedEdges": []
+  },
+  "warnings": {
+    "byCode": {
+      "dynamic_dependency_expression": 4
+    },
+    "details": [
+      {
+        "code": "dynamic_dependency_expression",
+        "message": "MixedCycle has a non-literal import() expression that Axiom cannot resolve into the observed graph.",
+        "location": {
+          "filePath": "src/prerender.ts",
+          "line": 89
+        },
+        "observed": "MixedCycle dynamic dependency expression",
+        "module": "MixedCycle",
+        "expressionPreview": "pathToFileURL(serverEntrypoint).href",
+        "incomingModules": [],
+        "outgoingModules": []
+      },
+      {
+        "code": "dynamic_dependency_expression",
+        "message": "MixedCycle has a non-literal import() expression that Axiom cannot resolve into the observed graph.",
+        "location": {
+          "filePath": "src/rollup/plugins/dynamic-require.ts",
+          "line": 64
+        },
+        "observed": "MixedCycle dynamic dependency expression",
+        "module": "MixedCycle",
+        "expressionPreview": "pathToFileURL(wpManifest).href",
+        "incomingModules": [],
+        "outgoingModules": []
+      },
+      {
+        "code": "dynamic_dependency_expression",
+        "message": "MixedCycle has a non-literal import() expression that Axiom cannot resolve into the observed graph.",
+        "location": {
+          "filePath": "src/rollup/plugins/dynamic-require.ts",
+          "line": 92
+        },
+        "observed": "MixedCycle dynamic dependency expression",
+        "module": "MixedCycle",
+        "expressionPreview": "pathToFileURL(src).href",
+        "incomingModules": [],
+        "outgoingModules": []
+      },
+      {
+        "code": "dynamic_dependency_expression",
+        "message": "MixedCycle has a non-literal import() expression that Axiom cannot resolve into the observed graph.",
+        "location": {
+          "filePath": "src/storage.ts",
+          "line": 14
+        },
+        "observed": "MixedCycle dynamic dependency expression",
+        "module": "MixedCycle",
+        "expressionPreview": "builtinDrivers[opts.driver] || opts.driver",
+        "incomingModules": [],
+        "outgoingModules": []
+      }
+    ]
+  },
+  "timingsMs": {
+    "cloneBaseline": 7941.9,
+    "cloneCurrent": 6271.8,
+    "infer": 3907.7,
+    "baselineGraph": 3212.2,
+    "diffJson": 5359.1,
+    "diffMarkdown": 11442.8,
+    "observeMarkdown": 2903.8,
+    "diffMermaid": 3477.8
+  }
+}

@@ -7,9 +7,12 @@ const repoRoot = process.cwd();
 const tempRoot = mkdtempSync(path.join(repoRoot, ".axiom-release-smoke-"));
 const expectedPackage = JSON.parse(readFileSync(path.join(repoRoot, "package.json"), "utf8"));
 const mcpToolTimeoutMs = 60_000;
+const stepTimings = [];
 
 try {
-  const pack = run("npm", ["pack", "--json", "--pack-destination", tempRoot], { cwd: repoRoot });
+  const pack = timeStep("npm pack", () =>
+    run("npm", ["pack", "--json", "--pack-destination", tempRoot], { cwd: repoRoot })
+  );
   const packEntries = JSON.parse(pack.stdout);
   const filename = packEntries[0]?.filename;
   if (typeof filename !== "string" || filename.length === 0) {
@@ -18,7 +21,9 @@ try {
 
   const tarballPath = path.join(tempRoot, filename);
   assertFile(tarballPath, "packed tarball");
-  run("tar", ["-xzf", tarballPath, "-C", tempRoot], { cwd: repoRoot });
+  timeStep("extract package tarball", () =>
+    run("tar", ["-xzf", tarballPath, "-C", tempRoot], { cwd: repoRoot })
+  );
 
   const packageRoot = path.join(tempRoot, "package");
   const packageJsonPath = path.join(packageRoot, "package.json");
@@ -60,22 +65,28 @@ try {
   const monorepoRoot = path.join(packageRoot, "examples", "monorepo-workspace");
   const vueRoot = createVueSfcFixture(tempRoot);
 
-  const passingCheck = run(process.execPath, [cliPath, "check", "--root", specFirstRoot, "--json"], { cwd: repoRoot });
+  const passingCheck = timeStep("packaged spec-first check", () =>
+    run(process.execPath, [cliPath, "check", "--root", specFirstRoot, "--json"], { cwd: repoRoot })
+  );
   const passingPayload = JSON.parse(passingCheck.stdout);
   assertEqual(passingPayload.ok, true, "packaged spec-first check ok");
   assertEqual(passingPayload.summary?.violations, 0, "packaged spec-first violation count");
 
-  const pythonPackageCheck = run(process.execPath, [cliPath, "check", "--root", pythonPackageRoot, "--json"], {
-    cwd: repoRoot
-  });
+  const pythonPackageCheck = timeStep("packaged Python package check", () =>
+    run(process.execPath, [cliPath, "check", "--root", pythonPackageRoot, "--json"], {
+      cwd: repoRoot
+    })
+  );
   const pythonPackagePayload = JSON.parse(pythonPackageCheck.stdout);
   assertEqual(pythonPackagePayload.ok, true, "packaged Python package-layout check ok");
   assertEqual(pythonPackagePayload.summary?.violations, 0, "packaged Python package-layout violation count");
 
-  const failingCheck = run(process.execPath, [cliPath, "check", "--root", basicRoot, "--json"], {
-    acceptedExitCodes: [1],
-    cwd: repoRoot
-  });
+  const failingCheck = timeStep("packaged basic-app failing check", () =>
+    run(process.execPath, [cliPath, "check", "--root", basicRoot, "--json"], {
+      acceptedExitCodes: [1],
+      cwd: repoRoot
+    })
+  );
   const failingPayload = JSON.parse(failingCheck.stdout);
   assertEqual(failingPayload.ok, false, "packaged basic-app check fails");
   assertArrayIncludes(
@@ -84,15 +95,19 @@ try {
     "packaged basic-app hidden import"
   );
 
-  const infer = run(process.execPath, [cliPath, "infer", "--root", specFirstRoot, "--json"], { cwd: repoRoot });
+  const infer = timeStep("packaged infer JSON", () =>
+    run(process.execPath, [cliPath, "infer", "--root", specFirstRoot, "--json"], { cwd: repoRoot })
+  );
   const inferPayload = JSON.parse(infer.stdout);
   assertEqual(inferPayload.schemaVersion, "axiom.infer.v8", "packaged infer schema");
   assertTextIncludes(inferPayload.axi ?? "", "module", "packaged infer contract text");
 
-  const vueCheck = run(process.execPath, [cliPath, "check", "--root", vueRoot, "--json"], {
-    acceptedExitCodes: [1],
-    cwd: repoRoot
-  });
+  const vueCheck = timeStep("packaged Vue SFC check", () =>
+    run(process.execPath, [cliPath, "check", "--root", vueRoot, "--json"], {
+      acceptedExitCodes: [1],
+      cwd: repoRoot
+    })
+  );
   const vuePayload = JSON.parse(vueCheck.stdout);
   assertEqual(vuePayload.summary?.sourceFiles, 4, "packaged Vue SFC source file count");
   assertEqual(vuePayload.summary?.importsScanned, 3, "packaged Vue SFC import count");
@@ -103,10 +118,12 @@ try {
     "packaged Vue SFC hidden import"
   );
 
-  const monorepoCheck = run(process.execPath, [cliPath, "check", "--root", monorepoRoot, "--json"], {
-    acceptedExitCodes: [1],
-    cwd: repoRoot
-  });
+  const monorepoCheck = timeStep("packaged monorepo check", () =>
+    run(process.execPath, [cliPath, "check", "--root", monorepoRoot, "--json"], {
+      acceptedExitCodes: [1],
+      cwd: repoRoot
+    })
+  );
   const monorepoPayload = JSON.parse(monorepoCheck.stdout);
   assertEqual(monorepoPayload.summary?.specFiles, 2, "packaged monorepo spec count");
   assertEqual(monorepoPayload.summary?.sourceFiles, 3, "packaged monorepo source count");
@@ -116,9 +133,13 @@ try {
     "packaged monorepo hidden import"
   );
 
-  const mcpHelp = run(process.execPath, [mcpPath, "--help"], { cwd: repoRoot });
+  const mcpHelp = timeStep("packaged MCP help", () =>
+    run(process.execPath, [mcpPath, "--help"], { cwd: repoRoot })
+  );
   assertTextIncludes(`${mcpHelp.stdout}\n${mcpHelp.stderr}`, "Axiom MCP stdio server", "packaged MCP help");
-  await verifyPackagedMcpWorkflow(mcpPath, { pythonPackageRoot, specFirstRoot }, repoRoot);
+  await timeAsyncStep("packaged MCP workflow", () =>
+    verifyPackagedMcpWorkflow(mcpPath, { pythonPackageRoot, specFirstRoot }, repoRoot)
+  );
 
   console.log("Release candidate smoke passed.");
   console.log("- packed the local package without publishing");
@@ -128,6 +149,10 @@ try {
   console.log("- ran packaged infer JSON from the extracted tarball");
   console.log("- verified packaged Vue SFC and monorepo path coverage");
   console.log("- verified packaged MCP server entry point, temporary inferred review, and Python package hard gate");
+  console.log("- release smoke timings:");
+  for (const timing of stepTimings) {
+    console.log(`  - ${timing.label}: ${formatDuration(timing.milliseconds)}`);
+  }
 } finally {
   await sleep(2_000);
   rmSync(tempRoot, { force: true, maxRetries: 20, recursive: true, retryDelay: 500 });
@@ -329,6 +354,29 @@ function run(command, args, options = {}) {
   }
 
   return result;
+}
+
+function timeStep(label, callback) {
+  const start = Date.now();
+  try {
+    return callback();
+  } finally {
+    stepTimings.push({ label, milliseconds: Date.now() - start });
+  }
+}
+
+async function timeAsyncStep(label, callback) {
+  const start = Date.now();
+  try {
+    return await callback();
+  } finally {
+    stepTimings.push({ label, milliseconds: Date.now() - start });
+  }
+}
+
+function formatDuration(milliseconds) {
+  const seconds = milliseconds / 1000;
+  return `${seconds.toFixed(seconds >= 10 ? 1 : 2)}s`;
 }
 
 function normalizeInvocation(command, args) {

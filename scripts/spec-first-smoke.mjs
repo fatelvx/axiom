@@ -18,6 +18,7 @@ const exampleRoot = path.join(repoRoot, "examples/spec-first-pilot");
 const servicesExampleRoot = path.join(repoRoot, "examples/spec-first-services-pilot");
 const pythonPackageExampleRoot = path.join(repoRoot, "examples/spec-first-python-package-pilot");
 const pythonExampleRoot = path.join(repoRoot, "examples/spec-first-python-pilot");
+const stepTimings = [];
 
 if (!existsSync(cliPath)) {
   console.error("dist/cli.js was not found. Run npm run build before spec-first smoke.");
@@ -28,17 +29,19 @@ const tempDirectory = mkdtempSync(path.join(tmpdir(), "axiom-spec-first-smoke-")
 
 try {
   const cleanRoot = copyExample("clean");
-  const cleanCheck = runAxi(["check", "--root", cleanRoot, "--json"], 0);
+  const cleanCheck = timeStep("clean contract check", () => runAxi(["check", "--root", cleanRoot, "--json"], 0));
   const cleanPayload = parseJson(cleanCheck.stdout, "clean check output");
   assertEqual(cleanPayload.schemaVersion, "axiom.check.v4", "clean check schema version");
   assertEqual(cleanPayload.summary?.violations, 0, "clean hard violation count");
 
-  const cleanBaseline = createBaseline(cleanRoot);
+  const cleanBaseline = timeStep("clean portable baseline", () => createBaseline(cleanRoot));
   const cleanGraphPayload = cleanBaseline.payload;
   assertEqual(cleanGraphPayload.architectureSummary?.status, "clear", "clean graph status");
   assertEqual(cleanGraphPayload.summary?.violations, 0, "clean graph hard violation count");
 
-  const cleanObserve = runAxi(["observe", "--root", cleanRoot, "--baseline", cleanBaseline.path, "--json"], 0);
+  const cleanObserve = timeStep("clean observe review", () =>
+    runAxi(["observe", "--root", cleanRoot, "--baseline", cleanBaseline.path, "--json"], 0)
+  );
   const cleanObservePayload = parseJson(cleanObserve.stdout, "clean observe output");
   assertEqual(cleanObservePayload.architectureSummary?.gate?.currentCommandIsGate, false, "clean observe is not a gate");
   assertEqual(cleanObservePayload.architectureSummary?.status, "clear", "clean observe status");
@@ -49,15 +52,17 @@ try {
   );
   assertEqual(readDriftCount(cleanObservePayload), 0, "clean observe baseline drift count");
 
-  const cleanDiff = runAxi(["diff", cleanBaseline.path, "--root", cleanRoot, "--json"], 0);
+  const cleanDiff = timeStep("clean diff review", () =>
+    runAxi(["diff", cleanBaseline.path, "--root", cleanRoot, "--json"], 0)
+  );
   const cleanDiffPayload = parseJson(cleanDiff.stdout, "clean diff output");
   assertEqual(cleanDiffPayload.architectureSummary?.gate?.currentCommandIsGate, false, "clean diff is not a gate");
   assertEqual(readDriftCount(cleanDiffPayload), 0, "clean diff drift count");
   assertEqual(hashFile(cleanBaseline.path), cleanBaseline.hash, "clean baseline is not rewritten");
 
-  runIntentionalDebtScenario();
+  timeStep("visible intentional debt scenario", () => runIntentionalDebtScenario());
 
-  runDriftScenario({
+  timeStep("hidden internal bypass drift scenario", () => runDriftScenario({
     name: "hidden-internal-bypass",
     filePath: "src/ui/debugPanel.ts",
     contents: [
@@ -70,9 +75,9 @@ try {
     ].join("\n"),
     expectedCodes: ["hidden_import"],
     expectedMinimumDrift: 0
-  });
+  }));
 
-  runDriftScenario({
+  timeStep("domain UI layer breach drift scenario", () => runDriftScenario({
     name: "domain-ui-layer-breach",
     filePath: "src/domain/renderLeak.ts",
     contents: [
@@ -83,11 +88,11 @@ try {
     ].join("\n"),
     expectedCodes: ["layer_breach"],
     expectedMinimumDrift: 1
-  });
+  }));
 
-  runServicesBoundaryPilot();
-  runPythonBoundaryPilot();
-  runPythonPackageBoundaryPilot();
+  timeStep("services boundary pilot", () => runServicesBoundaryPilot());
+  timeStep("Python spec-first pilot", () => runPythonBoundaryPilot());
+  timeStep("Python package-layout pilot", () => runPythonPackageBoundaryPilot());
 
   console.log("Spec-first validator smoke passed.");
   console.log("- reviewed example contract passed axi check");
@@ -98,6 +103,10 @@ try {
   console.log("- services-boundary pilot caught new deep service bypass and Services <-> Store drift");
   console.log("- Python spec-first pilot verified dynamic import evidence and caught UI-to-market boundary drift");
   console.log("- Python package-layout pilot verified relative package imports and caught UI-to-services drift");
+  console.log("- spec-first smoke timings:");
+  for (const timing of stepTimings) {
+    console.log(`  - ${timing.label}: ${formatDuration(timing.milliseconds)}`);
+  }
 } finally {
   rmSync(tempDirectory, { recursive: true, force: true });
 }
@@ -516,6 +525,20 @@ function runAxi(args, expectedStatus) {
   }
 
   return result;
+}
+
+function timeStep(label, callback) {
+  const start = Date.now();
+  try {
+    return callback();
+  } finally {
+    stepTimings.push({ label, milliseconds: Date.now() - start });
+  }
+}
+
+function formatDuration(milliseconds) {
+  const seconds = milliseconds / 1000;
+  return `${seconds.toFixed(seconds >= 10 ? 1 : 2)}s`;
 }
 
 function parseJson(text, label) {

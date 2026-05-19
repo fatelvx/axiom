@@ -54,7 +54,7 @@
     "access": "public"
   },
   "scripts": {
-    "alpha:check": "npm run ci && npm run axiom:self:artifact && npm run spec-first:smoke && npm run mcp:smoke && npm run mcp:agent-loop:smoke && npm run mcp:conformance:smoke && npm run github-actions:smoke && npm run release:candidate:smoke && npm run pack:dry-run",
+    "alpha:check": "npm run release:readiness && npm run ci && npm run axiom:self:artifact && npm run spec-first:smoke && npm run mcp:smoke && npm run mcp:agent-loop:smoke && npm run mcp:conformance:smoke && npm run github-actions:smoke && npm run release:candidate:smoke && npm run pack:dry-run",
     "build": "tsc -p tsconfig.json",
     "axiom:self:artifact": "npm run build && node scripts/axiom-self-artifact-smoke.mjs",
     "axiom:self": "npm run build && node dist/cli.js check --root . --strict",
@@ -70,6 +70,7 @@
     "real-project:diff-smoke": "npm run build && node scripts/real-project-diff-smoke.mjs",
     "real-project:version-smoke": "npm run build && node scripts/real-project-version-smoke.mjs",
     "release:candidate:smoke": "npm run build && node scripts/release-candidate-smoke.mjs",
+    "release:readiness": "node scripts/release-readiness-smoke.mjs",
     "spec-first:smoke": "npm run build && node scripts/spec-first-smoke.mjs",
     "test": "npm run build && node scripts/run-tests.mjs"
   },

@@ -8,6 +8,7 @@ import type {
 import type { ImportResolver } from "./importResolver.js";
 
 interface PythonLogicalLine {
+  indent: number;
   line: number;
   text: string;
 }
@@ -21,6 +22,7 @@ export function scanPythonSourceFile(filePath: string, text: string, resolver: I
   const imports: ImportRecord[] = [];
   const dynamicDependencyExpressions: DynamicDependencyExpressionRecord[] = [];
   const declarationNames: string[] = [];
+  const typeCheckingBlockIndents: number[] = [];
   let functionLikeCount = 0;
   let classCount = 0;
 
@@ -59,6 +61,10 @@ export function scanPythonSourceFile(filePath: string, text: string, resolver: I
   }
 
   for (const logicalLine of buildPythonLogicalLines(text)) {
+    closeEndedTypeCheckingBlocks(typeCheckingBlockIndents, logicalLine.indent);
+    const staticImportKind: ImportRecord["kind"] =
+      typeCheckingBlockIndents.length > 0 ? "import_type" : "import";
+
     const functionName = readPythonFunctionName(logicalLine.text);
     if (functionName) {
       functionLikeCount += 1;
@@ -74,7 +80,7 @@ export function scanPythonSourceFile(filePath: string, text: string, resolver: I
     const importList = readPythonImportStatement(logicalLine.text);
     if (importList) {
       for (const alias of importList) {
-        recordImport(logicalLine.line, alias.name, [pythonImportAliasBinding(alias)]);
+        recordImport(logicalLine.line, alias.name, [pythonImportAliasBinding(alias)], staticImportKind);
       }
       continue;
     }
@@ -87,14 +93,14 @@ export function scanPythonSourceFile(filePath: string, text: string, resolver: I
         const binding = pythonFromImportAliasBinding(alias);
         const submoduleSpecifier = alias.name === "*" ? undefined : appendPythonImportName(fromImport.module, alias.name);
         if (submoduleSpecifier && resolve(submoduleSpecifier)) {
-          recordImport(logicalLine.line, submoduleSpecifier, [binding]);
+          recordImport(logicalLine.line, submoduleSpecifier, [binding], staticImportKind);
         } else {
           unresolvedBindings.push(binding);
         }
       }
 
       if (unresolvedBindings.length > 0) {
-        recordImport(logicalLine.line, fromImport.module, unresolvedBindings);
+        recordImport(logicalLine.line, fromImport.module, unresolvedBindings, staticImportKind);
       }
     }
 
@@ -104,6 +110,10 @@ export function scanPythonSourceFile(filePath: string, text: string, resolver: I
       } else {
         recordDynamicDependencyExpression(logicalLine.line, dynamicImport.callee, dynamicImport.argument);
       }
+    }
+
+    if (isPythonTypeCheckingBlockHeader(logicalLine.text)) {
+      typeCheckingBlockIndents.push(logicalLine.indent);
     }
   }
 
@@ -160,16 +170,46 @@ function buildPythonLogicalLines(text: string): PythonLogicalLine[] {
     continued = trimmed.endsWith("\\") || parenDepth > 0;
 
     if (!continued) {
-      logicalLines.push({ line: startLine, text: buffer.replace(/\s+/g, " ").trim() });
+      logicalLines.push({
+        indent: countPythonIndent(physicalLines[startLine - 1] ?? ""),
+        line: startLine,
+        text: buffer.replace(/\s+/g, " ").trim()
+      });
       buffer = "";
     }
   }
 
   if (buffer.trim().length > 0) {
-    logicalLines.push({ line: startLine, text: buffer.replace(/\s+/g, " ").trim() });
+    logicalLines.push({
+      indent: countPythonIndent(physicalLines[startLine - 1] ?? ""),
+      line: startLine,
+      text: buffer.replace(/\s+/g, " ").trim()
+    });
   }
 
   return logicalLines;
+}
+
+function closeEndedTypeCheckingBlocks(blockIndents: number[], currentIndent: number): void {
+  while (blockIndents.length > 0 && currentIndent <= (blockIndents[blockIndents.length - 1] ?? 0)) {
+    blockIndents.pop();
+  }
+}
+
+function countPythonIndent(line: string): number {
+  let indent = 0;
+
+  for (const char of line) {
+    if (char === " ") {
+      indent += 1;
+    } else if (char === "\t") {
+      indent += 4;
+    } else {
+      break;
+    }
+  }
+
+  return indent;
 }
 
 function stripTripleQuotedText(
@@ -340,6 +380,10 @@ function readPythonDynamicImportCalls(
   }
 
   return calls;
+}
+
+function isPythonTypeCheckingBlockHeader(text: string): boolean {
+  return /^if\s+(?:typing\.)?TYPE_CHECKING\s*:/.test(text);
 }
 
 function readFirstPythonCallArgument(text: string, openParenIndex: number): string | undefined {

@@ -354,6 +354,88 @@ test("scanner keeps Python package re-export imports on package entrypoints", ()
   }
 });
 
+test("scanner marks imports inside Python TYPE_CHECKING blocks as type-only evidence", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "axi-imports-python-type-checking-"));
+
+  try {
+    writeFile(
+      root,
+      "app/main.py",
+      [
+        "from typing import TYPE_CHECKING",
+        "",
+        "if TYPE_CHECKING:",
+        "    from app.services import registry",
+        "    import app.ui.presenter as presenter",
+        "    if typing.TYPE_CHECKING:",
+        "        from app.domain import Order",
+        "",
+        "from app.runtime import run"
+      ].join("\n")
+    );
+    writeFile(root, "app/__init__.py", "");
+    writeFile(root, "app/domain/__init__.py", "class Order: pass\n");
+    writeFile(root, "app/runtime.py", "def run(): pass\n");
+    writeFile(root, "app/services/__init__.py", "");
+    writeFile(root, "app/services/registry.py", "registry = {}\n");
+    writeFile(root, "app/ui/__init__.py", "");
+    writeFile(root, "app/ui/presenter.py", "def render(): pass\n");
+
+    const scan = scanSourceFile(path.join(root, "app/main.py"), {
+      resolver: createImportResolver({ root })
+    });
+
+    assert.deepEqual(
+      scan.imports.map((record) => ({
+        line: record.line,
+        kind: record.kind,
+        specifier: record.specifier,
+        resolvedPath: normalize(root, record.resolvedPath),
+        importedBindings: record.importedBindings
+      })),
+      [
+        {
+          line: 1,
+          kind: "import",
+          specifier: "typing",
+          resolvedPath: undefined,
+          importedBindings: [{ localName: "TYPE_CHECKING", importedName: "TYPE_CHECKING" }]
+        },
+        {
+          line: 4,
+          kind: "import_type",
+          specifier: "app.services.registry",
+          resolvedPath: "app/services/registry.py",
+          importedBindings: [{ localName: "registry", importedName: "registry" }]
+        },
+        {
+          line: 5,
+          kind: "import_type",
+          specifier: "app.ui.presenter",
+          resolvedPath: "app/ui/presenter.py",
+          importedBindings: [{ localName: "presenter", importedName: "app.ui.presenter" }]
+        },
+        {
+          line: 7,
+          kind: "import_type",
+          specifier: "app.domain",
+          resolvedPath: "app/domain/__init__.py",
+          importedBindings: [{ localName: "Order", importedName: "Order" }]
+        },
+        {
+          line: 9,
+          kind: "import",
+          specifier: "app.runtime",
+          resolvedPath: "app/runtime.py",
+          importedBindings: [{ localName: "run", importedName: "run" }]
+        }
+      ]
+    );
+  } finally {
+    fs.rmSync(root, { force: true, recursive: true });
+  }
+});
+
 test("scanner records Python literal and non-literal dynamic import evidence", () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "axi-imports-python-dynamic-"));
 

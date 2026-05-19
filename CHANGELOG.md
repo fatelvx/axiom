@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Marked imports inside clear Python `TYPE_CHECKING` blocks as `import_type` evidence.
 - Added regression coverage for parenthesized Python `from ... import (...)` lists with inline comments.
 - Added regression coverage that keeps Python package re-export imports on package entry points while still resolving concrete imported submodules.
 - Extended the spec-first smoke to verify clean, services-boundary, and Python package-layout Markdown review artifacts preserve review stories, visible debt, drift, and advisory guardrails.

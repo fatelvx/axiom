@@ -289,6 +289,71 @@ test("scanner reads Python static imports and repo-local resolution", () => {
   }
 });
 
+test("scanner keeps Python package re-export imports on package entrypoints", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "axi-imports-python-package-api-"));
+
+  try {
+    writeFile(
+      root,
+      "app/main.py",
+      [
+        "from app.domain import Order, make_order",
+        "from app.services import pricing",
+        "from app.ui import render_order as render"
+      ].join("\n")
+    );
+    writeFile(root, "app/__init__.py", "");
+    writeFile(root, "app/domain/__init__.py", "from .orders import Order, make_order\n");
+    writeFile(root, "app/domain/orders.py", "class Order: pass\ndef make_order(): pass\n");
+    writeFile(root, "app/services/__init__.py", "");
+    writeFile(root, "app/services/pricing.py", "def quote_order(): pass\n");
+    writeFile(root, "app/ui/__init__.py", "from .presenter import render_order\n");
+    writeFile(root, "app/ui/presenter.py", "def render_order(): pass\n");
+
+    const scan = scanSourceFile(path.join(root, "app/main.py"), {
+      resolver: createImportResolver({ root })
+    });
+
+    assert.deepEqual(
+      scan.imports.map((record) => ({
+        line: record.line,
+        kind: record.kind,
+        specifier: record.specifier,
+        resolvedPath: normalize(root, record.resolvedPath),
+        importedBindings: record.importedBindings
+      })),
+      [
+        {
+          line: 1,
+          kind: "import",
+          specifier: "app.domain",
+          resolvedPath: "app/domain/__init__.py",
+          importedBindings: [
+            { localName: "Order", importedName: "Order" },
+            { localName: "make_order", importedName: "make_order" }
+          ]
+        },
+        {
+          line: 2,
+          kind: "import",
+          specifier: "app.services.pricing",
+          resolvedPath: "app/services/pricing.py",
+          importedBindings: [{ localName: "pricing", importedName: "pricing" }]
+        },
+        {
+          line: 3,
+          kind: "import",
+          specifier: "app.ui",
+          resolvedPath: "app/ui/__init__.py",
+          importedBindings: [{ localName: "render", importedName: "render_order" }]
+        }
+      ]
+    );
+  } finally {
+    fs.rmSync(root, { force: true, recursive: true });
+  }
+});
+
 test("scanner records Python literal and non-literal dynamic import evidence", () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "axi-imports-python-dynamic-"));
 

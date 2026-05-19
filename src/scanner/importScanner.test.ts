@@ -452,8 +452,8 @@ test("scanner reads multiline Python from imports and skips triple-quoted exampl
         "from pkg.fake import nope",
         '"""',
         "from pkg import (",
-        "    alpha,",
-        "    beta as renamed_beta,",
+        "    alpha,  # public alpha module",
+        "    beta as renamed_beta,  # aliased public beta module",
         ")"
       ].join("\n")
     );

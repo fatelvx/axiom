@@ -147,6 +147,6 @@ function canDirectoryContainIncludedPath(root: string, directoryPath: string, in
 
 function fixedPrefixFromGlob(pattern: string): string {
   const normalized = normalizePathForMatch(pattern.trim());
-  const wildcardIndex = normalized.search(/[*]/);
+  const wildcardIndex = normalized.search(/[*{]/);
   return wildcardIndex === -1 ? normalized : normalized.slice(0, wildcardIndex);
 }

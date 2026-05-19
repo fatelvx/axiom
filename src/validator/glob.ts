@@ -6,6 +6,19 @@ export function globToRegExp(pattern: string): RegExp {
     const char = normalized[index] ?? "";
     const next = normalized[index + 1];
 
+    if (char === "{") {
+      const braceEnd = findBraceEnd(normalized, index + 1);
+      if (braceEnd !== -1) {
+        const alternatives = parseBraceAlternatives(normalized.slice(index + 1, braceEnd));
+
+        if (alternatives.length > 1) {
+          output += `(?:${alternatives.map(escapeRegExp).join("|")})`;
+          index = braceEnd;
+          continue;
+        }
+      }
+    }
+
     if (char === "*" && next === "*" && normalized[index + 2] === "/") {
       output += "(?:.*/)?";
       index += 2;
@@ -37,6 +50,29 @@ function normalizePattern(value: string): string {
   return normalizePathForMatch(value.trim());
 }
 
+function findBraceEnd(pattern: string, startIndex: number): number {
+  for (let index = startIndex; index < pattern.length; index += 1) {
+    if (pattern[index] === "}") {
+      return index;
+    }
+
+    if (pattern[index] === "{") {
+      return -1;
+    }
+  }
+
+  return -1;
+}
+
+function parseBraceAlternatives(value: string): string[] {
+  const alternatives = value.split(",");
+  if (alternatives.length < 2 || alternatives.some((alternative) => alternative.length === 0)) {
+    return [];
+  }
+
+  return alternatives;
+}
+
 function escapeRegExp(value: string): string {
-  return /[\\^$+?.()|{}[\]]/.test(value) ? `\\${value}` : value;
+  return value.replace(/[\\^$.*+?()[\]{}|]/g, "\\$&");
 }

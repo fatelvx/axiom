@@ -1,6 +1,6 @@
 {
   "name": "@fatelvx/axiom",
-  "version": "0.6.0-alpha.4",
+  "version": "0.6.0-alpha.5",
   "description": "Architecture observability and explicit contracts for AI-era codebases.",
   "license": "Apache-2.0",
   "type": "module",

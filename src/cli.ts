@@ -499,8 +499,7 @@ function hasPresentationOutput(options: Pick<CliOptions, "json" | "markdown" | "
 }
 
 function parsePatternList(value: string): string[] {
-  const patterns = value
-    .split(",")
+  const patterns = splitPatternList(value)
     .map((pattern) => pattern.trim())
     .filter((pattern) => pattern.length > 0);
 
@@ -509,6 +508,31 @@ function parsePatternList(value: string): string[] {
     process.exit(1);
   }
 
+  return patterns;
+}
+
+function splitPatternList(value: string): string[] {
+  const patterns: string[] = [];
+  let current = "";
+  let braceDepth = 0;
+
+  for (const char of value) {
+    if (char === "{") {
+      braceDepth += 1;
+    } else if (char === "}" && braceDepth > 0) {
+      braceDepth -= 1;
+    }
+
+    if (char === "," && braceDepth === 0) {
+      patterns.push(current);
+      current = "";
+      continue;
+    }
+
+    current += char;
+  }
+
+  patterns.push(current);
   return patterns;
 }
 

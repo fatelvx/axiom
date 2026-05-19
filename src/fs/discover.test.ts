@@ -127,6 +127,24 @@ test("source and spec discovery respect include, exclude, and specs config", () 
   }
 });
 
+test("source discovery supports brace include globs", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "axi-discover-brace-"));
+
+  try {
+    writeFile(root, "src/app.ts", "export const app = true;\n");
+    writeFile(root, "src/view.tsx", "export const view = true;\n");
+    writeFile(root, "src/feature.js", "export const feature = true;\n");
+    writeFile(root, "lib/app.ts", "export const lib = true;\n");
+
+    assert.deepEqual(findSourceFiles(root, { include: ["src/**/*.{ts,tsx}"] }).map((filePath) => normalize(root, filePath)), [
+      "src/app.ts",
+      "src/view.tsx"
+    ]);
+  } finally {
+    fs.rmSync(root, { force: true, recursive: true });
+  }
+});
+
 test("default spec discovery includes common monorepo package contract locations", () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "axi-discover-monorepo-specs-"));
 
@@ -144,6 +162,23 @@ test("default spec discovery includes common monorepo package contract locations
       "axiom/main.axi",
       "packages/core/.axi",
       "packages/shared/axiom/main.axi"
+    ]);
+  } finally {
+    fs.rmSync(root, { force: true, recursive: true });
+  }
+});
+
+test("source discovery keeps include pruning conservative for brace directories", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "axi-discover-brace-dir-"));
+
+  try {
+    writeFile(root, "src/app/main.ts", "export const app = true;\n");
+    writeFile(root, "src/lib/main.ts", "export const lib = true;\n");
+    writeFile(root, "src/other/main.ts", "export const other = true;\n");
+
+    assert.deepEqual(findSourceFiles(root, { include: ["src/{app,lib}/**"] }).map((filePath) => normalize(root, filePath)), [
+      "src/app/main.ts",
+      "src/lib/main.ts"
     ]);
   } finally {
     fs.rmSync(root, { force: true, recursive: true });

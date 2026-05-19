@@ -99,6 +99,7 @@ Use `axiom.config.json` to keep source discovery focused:
 ```
 
 `include` and `exclude` control source scanning. `specs` controls `.axi` discovery.
+Source scope patterns support simple brace alternatives such as `src/**/*.{ts,tsx}`. Comma-separated pattern lists are split only outside braces, so `--include "src/**/*.{ts,tsx},scripts/**/*.ts"` keeps the extension brace intact.
 `intentionalViolationExpiryWarningDays` controls how early active intentional violations become warnings before their expiration date. `warnUnresolvedImports`, `warnDynamicImports`, `warnPublicApiSurface`, `warnCouplingConcentration`, `warnDeepInternalImports`, and `warnLargeFiles` enable advisory signals without turning them into gates.
 
 For a one-off pilot, you can pass source scope directly on the CLI before writing config:
@@ -209,7 +210,7 @@ This keeps the debt visible without pretending Axiom can prove full symbol-level
 Install the scoped package:
 
 ```bash
-npm install --ignore-scripts -D @fatelvx/axiom@0.6.0-alpha.4 --save-exact
+npm install --ignore-scripts -D @fatelvx/axiom@0.6.0-alpha.5 --save-exact
 ```
 
 Then add a script:

@@ -1,6 +1,6 @@
 # Alpha Notes
 
-Axiom `v0.6.0-alpha.4` is the current Static Contract Loop alpha.
+Axiom `v0.6.0-alpha.5` is the current Static Contract Loop alpha.
 
 It is an alpha because the core loop is real, but the public API and surrounding ecosystem are still intentionally small:
 
@@ -10,11 +10,11 @@ It is an alpha because the core loop is real, but the public API and surrounding
 -> hard violations, advisory review, baseline drift, visible intentional debt
 ```
 
-This alpha is a trust-loop hardening release over the first public package. It keeps the validator scope static and focused, while polishing dynamic dependency warnings, composition-root review labels, and the repeatable spec-first artifact smoke.
+This alpha is a trust-loop hardening release over the first public package. It keeps the validator scope static and focused, while packaging repo-local Python static evidence, dynamic graph-completeness evidence, and the repeatable spec-first / MCP artifact loop.
 
 ## What This Alpha Is For
 
-Use this alpha to test whether Axiom can protect explicit architecture boundaries in a real TypeScript, JavaScript, or Vue codebase.
+Use this alpha to test whether Axiom can protect explicit architecture boundaries in a real TypeScript, JavaScript, Vue, or repo-local Python codebase.
 
 Good alpha targets:
 
@@ -32,7 +32,8 @@ Good alpha targets:
 - JSON, Markdown, and Mermaid outputs for CI, PRs, dashboards, and agents.
 - GitHub Actions examples.
 - The read-only MCP preview surface.
-- Static imports in `.ts`, `.tsx`, `.js`, `.jsx`, `.mts`, `.cts`, and Vue SFC `<script>` blocks.
+- Static imports in `.ts`, `.tsx`, `.js`, `.jsx`, `.mts`, `.cts`, Vue SFC `<script>` blocks, and repo-local `.py` files.
+- Static Python evidence for package `__init__.py` entry points, ordered `pythonImportRoots`, literal `importlib.import_module("...")` / `__import__("...")` calls, and `TYPE_CHECKING` imports as `import_type` evidence.
 
 ## Known Alpha Limits
 
@@ -41,7 +42,7 @@ Good alpha targets:
 - Inferred contracts mirror the current graph; they are not maintainer-declared intent.
 - Advisory signals and baseline drift are not CI gates unless your workflow explicitly promotes them.
 - Axiom does not prove symbol-level API health. Broad barrels, facades, and shared types can still hide coupling even when import paths obey the contract.
-- Python support is intentionally not part of this alpha.
+- Python support is static-only and repo-local. Axiom does not execute Python, inspect virtualenvs or site-packages, model runtime `sys.path` mutation, or discover framework/plugin loaders.
 
 ## MiroFish Backtests
 
@@ -65,4 +66,4 @@ npm run release:candidate:smoke
 npm run pack:dry-run
 ```
 
-The release candidate smoke packs the local package without publishing, extracts the tarball, then verifies packaged CLI examples, Vue SFC scanning, monorepo path coverage, inference JSON, bin aliases, and the MCP entry point.
+The release candidate smoke packs the local package without publishing, extracts the tarball, then verifies packaged CLI examples, Vue SFC scanning, Python package-layout evidence, monorepo path coverage, inference JSON, bin aliases, and the MCP entry point.

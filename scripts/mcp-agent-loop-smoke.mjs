@@ -21,7 +21,7 @@ if (!existsSync(serverPath)) {
 }
 
 const protocolVersion = "2025-11-25";
-const mcpToolTimeoutMs = 20_000;
+const mcpToolTimeoutMs = 60_000;
 
 async function main() {
   const tempRoot = mkdtempSync(path.join(tmpdir(), "axiom-mcp-agent-loop-"));
@@ -33,7 +33,7 @@ async function main() {
     const baselinePath = path.join(projectRoot, ".axi", "baselines", "current.graph.json");
     mkdirSync(path.dirname(baselinePath), { recursive: true });
 
-    const server = startServer(["--allow-root", projectRoot, "--timeout-ms", "20000"]);
+    const server = startServer(["--allow-root", projectRoot, "--timeout-ms", String(mcpToolTimeoutMs)]);
 
     try {
       await initializeServer(server);

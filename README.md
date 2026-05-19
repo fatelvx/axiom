@@ -15,7 +15,7 @@ Use it to:
 - keep intentional debt visible,
 - give agents the same evidence humans and CI see.
 
-`Static Contract Loop` milestone: the npm alpha is usable today for static TS/JS import graphs; current `main` also carries unreleased repo-local Python evidence. VS Code and contract sharing are still later surfaces over the same loop.
+`Static Contract Loop` milestone: the npm alpha is usable today for static TS/JS import graphs and repo-local static Python evidence. VS Code and contract sharing are still later surfaces over the same loop.
 
 [Quick Start](#quick-start) | [Example Contract](#example-contract) | [Commands](#commands) | [Integrations](#integrations) | [Limits](#limits) | [Guides](#guides)
 
@@ -57,11 +57,13 @@ It is not a prompt wrapper and not a style linter. It is an architecture observa
 Install the public alpha:
 
 ```bash
-npm install --ignore-scripts -D @fatelvx/axiom@0.6.0-alpha.4 --save-exact
+npm install --ignore-scripts -D @fatelvx/axiom@0.6.0-alpha.5 --save-exact
 npx --no-install axi infer --root . --include "src/**"
 ```
 
 `--no-install` makes npm use the exact local package you just installed instead of fetching a different command from the registry.
+
+Source scope patterns support simple brace alternatives such as `--include "src/**/*.{ts,tsx}"`. Comma-separated pattern lists still work outside braces, for example `--exclude "src/**/*.test.ts,src/**/*.spec.ts"`.
 
 `axi infer` is read-only starter evidence. It mirrors the graph Axiom can currently see; use the generated `review pass` comments to keep, change, or remove draft edges before treating it as a contract.
 
@@ -139,20 +141,20 @@ The hidden internal import becomes an explicit contract violation when `hides` s
 
 ## Static v0 Coverage
 
-Axiom v0.6.0-alpha.4 is focused on static TypeScript and JavaScript architecture evidence, including Vue single-file component script imports. Current `main` also includes unreleased static Python import scanning.
+Axiom v0.6.0-alpha.5 is focused on static TypeScript, JavaScript, Vue, and repo-local Python architecture evidence.
 
 | Area | Supported |
 | --- | --- |
 | Contract model | `module`, `path`, `depends on`, `forbids module`, `layers`, `exposes`, `hides`, `purpose` |
 | Hard violations | dependency drift, layer breaches, hidden imports, hidden re-exports, ambiguous owners, broken specs |
 | Advisory review | deep internal imports, public API surface pressure, coupling concentration, unresolved imports, dynamic dependency expressions, large files |
-| Scanner | TS/JS parser imports, Vue SFC `<script>` imports, `require`, literal dynamic imports, multiline imports, barrel `index.*` files |
-| Resolver | relative paths, `.vue` components, tsconfig `paths`, package `imports`, workspace `exports` / `main`, pnpm workspaces |
+| Scanner | TS/JS parser imports, Vue SFC `<script>` imports, Python `.py` imports, `require`, literal dynamic imports, Python literal `importlib` / `__import__`, multiline imports, barrel `index.*` files |
+| Resolver | relative paths, `.vue` components, Python repo-local module/package roots, tsconfig `paths`, package `imports`, workspace `exports` / `main`, pnpm workspaces |
 | Adoption | loose mode, `--warn-unowned`, `--strict`, time-bounded intentional violations |
 | Outputs | human, JSON, Markdown, Mermaid, review stories, `topSignals`, baseline drift |
 | Agent surfaces | GitHub Actions examples, JSON consumer guide, read-only MCP server |
 
-Unreleased on `main`: conservative Python `.py` import scanning for repo-local static imports, ordered `pythonImportRoots` config for ambiguous source-root layouts, `TYPE_CHECKING` imports as type-only evidence, literal Python dynamic import call evidence, and opt-in advisory warnings for non-literal Python dynamic import expressions.
+Python support is static-only in this alpha: Axiom reads repo-local `.py` imports, ordered `pythonImportRoots`, package `__init__.py` entry points, `TYPE_CHECKING` imports as type-only evidence, literal Python dynamic import calls as observed edges when they resolve locally, and opt-in advisory warnings for non-literal Python dynamic import expressions. It does not execute Python, inspect virtual environments, or model framework plugin loading.
 
 ## How To Read A Graph
 
@@ -197,7 +199,7 @@ Axiom's npm package target is `@fatelvx/axiom`. The unscoped `axiom` package nam
 Project install:
 
 ```bash
-npm install --ignore-scripts -D @fatelvx/axiom@0.6.0-alpha.4 --save-exact
+npm install --ignore-scripts -D @fatelvx/axiom@0.6.0-alpha.5 --save-exact
 npx --no-install axi check --root .
 npx --no-install axiom check --root .
 ```
@@ -436,7 +438,8 @@ Questions, contract-design discussions, and rough ideas are welcome. Use [GitHub
 
 Current milestone:
 
-- `v0.6.0-alpha.4`: Static Contract Loop. The static TS/JS validator, review surfaces, GitHub Actions examples, read-only MCP evidence loop, spec-first artifact smoke, and hardened safe-install docs are packaged as the current public alpha milestone.
+- `v0.6.0-alpha.5`: Python Static Evidence And Artifact Hardening. The static TS/JS/Vue validator now also packages repo-local static Python import evidence, Python dynamic/static graph-completeness evidence, Python package-layout pilots, and MCP/spec-first artifact coverage for type-only imports.
+- `v0.6.0-alpha.4`: Install Safety Docs. The safe-install README and CI examples were aligned around exact package versions, `--ignore-scripts`, and `npx --no-install`.
 
 Next:
 

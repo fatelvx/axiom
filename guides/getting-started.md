@@ -19,7 +19,7 @@ Axiom's npm package target is `@fatelvx/axiom`. The unscoped `axiom` package nam
 In a project:
 
 ```bash
-npm install --ignore-scripts -D @fatelvx/axiom@0.6.0-alpha.4 --save-exact
+npm install --ignore-scripts -D @fatelvx/axiom@0.6.0-alpha.5 --save-exact
 npx --no-install axi --help
 ```
 

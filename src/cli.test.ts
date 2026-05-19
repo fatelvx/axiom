@@ -858,6 +858,20 @@ test("cli check supports inline source include scope", () => {
   assert.equal(payload.summary.sourceFiles, 2);
 });
 
+test("cli check supports brace source include scope", () => {
+  const result = spawnSync(
+    process.execPath,
+    [cliPath, "check", "--root", "fixtures/basic-ts-valid", "--include", "src/**/*.{ts,tsx}", "--json"],
+    { cwd: repoRoot, encoding: "utf8" }
+  );
+
+  assert.equal(result.status, 0);
+
+  const payload = JSON.parse(result.stdout);
+  assert.deepEqual(payload.sourceFiles, ["src/physics/math.ts", "src/rendering/draw.ts", "src/simulation/step.ts"]);
+  assert.equal(payload.summary.sourceFiles, 3);
+});
+
 test("cli check supports inline source exclude scope", () => {
   const result = spawnSync(
     process.execPath,

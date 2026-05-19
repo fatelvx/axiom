@@ -429,10 +429,34 @@ function parsePatternList(value) {
     return [];
   }
 
-  return value
-    .split(",")
+  return splitPatternList(value)
     .map((item) => item.trim())
     .filter(Boolean);
+}
+
+function splitPatternList(value) {
+  const patterns = [];
+  let current = "";
+  let braceDepth = 0;
+
+  for (const char of value) {
+    if (char === "{") {
+      braceDepth += 1;
+    } else if (char === "}" && braceDepth > 0) {
+      braceDepth -= 1;
+    }
+
+    if (char === "," && braceDepth === 0) {
+      patterns.push(current);
+      current = "";
+      continue;
+    }
+
+    current += char;
+  }
+
+  patterns.push(current);
+  return patterns;
 }
 
 function warningFlags(warnings) {

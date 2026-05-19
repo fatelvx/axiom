@@ -53,7 +53,7 @@ npm publish --access public --tag alpha
 After publishing, users should be able to run:
 
 ```bash
-npm install --ignore-scripts -D @fatelvx/axiom@0.6.0-alpha.4 --save-exact
+npm install --ignore-scripts -D @fatelvx/axiom@0.6.0-alpha.5 --save-exact
 npx --no-install axi check --root .
 npx --no-install axiom check --root .
 ```

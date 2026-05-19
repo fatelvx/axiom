@@ -59,7 +59,7 @@ The smoke uses temporary copies of `examples/spec-first-pilot` and `examples/spe
 - a request outside `--allow-root` is rejected,
 - clean `axiom_check` is a passing hard gate,
 - literal dynamic imports are exposed as observed `import.kind` evidence without becoming dynamic warnings or `.axi` rules,
-- Python package-layout imports flow through `axiom_check` as hard-gate evidence, including a deliberate `Ui -> Services` drift failure,
+- Python package-layout imports flow through `axiom_check` as hard-gate evidence, including Python `TYPE_CHECKING` / `import_type` evidence and a deliberate `Ui -> Services` drift failure,
 - deliberate hidden-import and layer drift make `axiom_check` fail with hard violations,
 - `axiom_observe` and `axiom_diff` remain advisory review evidence,
 - `axiom_graph` can return portable full-graph baseline evidence without writing the baseline itself,

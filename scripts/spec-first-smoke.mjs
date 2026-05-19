@@ -107,7 +107,7 @@ try {
   console.log("- outward domain-to-UI import failed as a hard layer violation");
   console.log("- services-boundary pilot caught new deep service bypass and Services <-> Store drift");
   console.log("- Python spec-first pilot verified dynamic import evidence and caught UI-to-market boundary drift");
-  console.log("- Python package-layout pilot verified relative package imports and caught UI-to-services drift");
+  console.log("- Python package-layout pilot verified relative imports, type-only import evidence, and caught UI-to-services drift");
   console.log("- spec-first smoke timings:");
   for (const timing of stepTimings) {
     console.log(`  - ${timing.label}: ${formatDuration(timing.milliseconds)}`);
@@ -352,34 +352,44 @@ function runPythonPackageBoundaryPilot() {
   assertEqual(checkPayload.summary?.violations, 0, "Python package boundary hard violation count");
 
   const observedEdges = new Set(
-    (checkPayload.observedDependencies ?? []).map(
+    readObservedDependencies(checkPayload).map(
       (dependency) =>
-        `${dependency.fromModule}->${dependency.toModule}:${dependency.import?.specifier}:${dependency.import?.filePath}`
+        `${dependency.fromModule}->${dependency.toModule}:${dependency.import?.kind}:${dependency.import?.specifier}:${dependency.import?.filePath}`
     )
   );
   assertIncludes(
     observedEdges,
-    "AppEntry->Services:.services.pricing:app/main.py",
+    "AppEntry->Services:import:.services.pricing:app/main.py",
     "Python package entry-to-services relative import"
   );
   assertIncludes(
     observedEdges,
-    "AppEntry->Ui:.ui.presenter:app/main.py",
+    "AppEntry->Ui:import:.ui.presenter:app/main.py",
     "Python package entry-to-ui relative import"
   );
   assertIncludes(
     observedEdges,
-    "Services->Domain:..domain:app/services/pricing.py",
+    "Services->Domain:import:..domain:app/services/pricing.py",
     "Python package services-to-domain relative import"
   );
   assertIncludes(
     observedEdges,
-    "Ui->Domain:..domain:app/ui/presenter.py",
-    "Python package ui-to-domain relative import"
+    "Ui->Domain:import_type:..domain:app/ui/presenter.py",
+    "Python package ui-to-domain type-only import"
   );
 
   const baseline = createBaseline(cleanRoot);
   assertEqual(baseline.payload.summary?.violations, 0, "Python package boundary baseline hard violation count");
+  assertIncludes(
+    new Set(
+      readObservedDependencies(baseline.payload).map(
+        (dependency) =>
+          `${dependency.fromModule}->${dependency.toModule}:${dependency.import?.kind}:${dependency.import?.specifier}:${dependency.import?.filePath}`
+      )
+    ),
+    "Ui->Domain:import_type:..domain:app/ui/presenter.py",
+    "Python package portable baseline preserves type-only import evidence"
+  );
 
   const observe = runAxi(["observe", "--root", cleanRoot, "--baseline", baseline.path, "--json"], 0);
   const observePayload = parseJson(observe.stdout, "Python package boundary observe output");
@@ -389,6 +399,16 @@ function runPythonPackageBoundaryPilot() {
     "Python package boundary observe is not a gate"
   );
   assertEqual(readDriftCount(observePayload), 0, "Python package boundary clean drift count");
+  assertIncludes(
+    new Set(
+      readObservedDependencies(observePayload).map(
+        (dependency) =>
+          `${dependency.fromModule}->${dependency.toModule}:${dependency.import?.kind}:${dependency.import?.specifier}:${dependency.import?.filePath}`
+      )
+    ),
+    "Ui->Domain:import_type:..domain:app/ui/presenter.py",
+    "Python package observe preserves type-only import evidence"
+  );
   assertCleanMarkdownReviewArtifact(
     runAxi(["observe", "--root", cleanRoot, "--baseline", baseline.path, "--markdown"], 0).stdout,
     "Python package boundary markdown"
@@ -645,6 +665,10 @@ function hashFile(filePath) {
 
 function readDriftCount(payload) {
   return (payload.drift?.newObservedEdges?.length ?? 0) + (payload.drift?.removedObservedEdges?.length ?? 0);
+}
+
+function readObservedDependencies(payload) {
+  return payload.allObservedDependencies ?? payload.observedDependencies ?? [];
 }
 
 function normalizePath(filePath) {

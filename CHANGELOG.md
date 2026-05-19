@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Extended the Python package spec-first and MCP conformance smokes so `TYPE_CHECKING` imports are preserved as `import_type` evidence through CLI, portable baselines, observe JSON, and MCP `axiom_check`.
 - Marked imports inside clear Python `TYPE_CHECKING` blocks as `import_type` evidence.
 - Added regression coverage for parenthesized Python `from ... import (...)` lists with inline comments.
 - Added regression coverage that keeps Python package re-export imports on package entry points while still resolving concrete imported submodules.

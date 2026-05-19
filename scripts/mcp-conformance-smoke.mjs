@@ -87,7 +87,7 @@ async function main() {
     console.log("- verified infer module-edge counts stay distinct from import-site evidence");
     console.log("- treated infer-to-observe output as temporary inferred review evidence");
     console.log("- verified literal dynamic imports as observed import-kind evidence, not dynamic warnings or rules");
-    console.log("- verified Python package-layout evidence flows through the MCP hard gate");
+    console.log("- verified Python package-layout and type-only import evidence flow through the MCP hard gate");
     console.log("- left the explicit graph baseline unchanged during review");
   } finally {
     rmSync(tempRoot, { force: true, recursive: true });
@@ -196,10 +196,11 @@ async function verifyPythonPackageCheckGate(server, pythonPackageRoot) {
     {
       filePath: "app/ui/presenter.py",
       fromModule: "Ui",
+      kind: "import_type",
       toModule: "Domain",
       specifier: "..domain"
     },
-    "MCP Python package ui-to-domain evidence"
+    "MCP Python package ui-to-domain type-only evidence"
   );
 
   writeFileSync(
@@ -594,7 +595,8 @@ function assertObservedDependency(response, expected, label) {
       candidate?.fromModule === expected.fromModule &&
       candidate?.toModule === expected.toModule &&
       candidate?.import?.filePath === expected.filePath &&
-      candidate?.import?.specifier === expected.specifier
+      candidate?.import?.specifier === expected.specifier &&
+      (expected.kind === undefined || candidate?.import?.kind === expected.kind)
   );
 
   if (!dependency) {

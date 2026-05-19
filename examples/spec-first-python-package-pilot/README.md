@@ -16,6 +16,10 @@ from .ui.presenter import render_order
 from ..domain import Order
 ```
 
+It also includes a conservative type-only import inside a `TYPE_CHECKING`
+block so JSON and MCP consumers can see `import.kind: "import_type"` without
+turning that evidence into a new contract rule.
+
 Run:
 
 ```bash

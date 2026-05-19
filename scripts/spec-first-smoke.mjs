@@ -51,6 +51,10 @@ try {
     "clean observe review story"
   );
   assertEqual(readDriftCount(cleanObservePayload), 0, "clean observe baseline drift count");
+  assertCleanMarkdownReviewArtifact(
+    runAxi(["observe", "--root", cleanRoot, "--baseline", cleanBaseline.path, "--markdown"], 0).stdout,
+    "clean observe markdown"
+  );
 
   const cleanDiff = timeStep("clean diff review", () =>
     runAxi(["diff", cleanBaseline.path, "--root", cleanRoot, "--json"], 0)
@@ -97,6 +101,7 @@ try {
   console.log("Spec-first validator smoke passed.");
   console.log("- reviewed example contract passed axi check");
   console.log("- baseline, diff, and observe review story stayed advisory in the clean artifact loop");
+  console.log("- clean, services, and Python package pilots preserved markdown review artifacts");
   console.log("- path-scoped intentional debt stayed visible without becoming a hidden allowlist");
   console.log("- hidden internal bypass failed as a hard visibility violation");
   console.log("- outward domain-to-UI import failed as a hard layer violation");
@@ -182,6 +187,12 @@ function runServicesBoundaryPilot() {
     "services boundary debt review story"
   );
   assertEqual(hashFile(baseline.path), baseline.hash, "services boundary baseline is not rewritten");
+  assertVisibleDebtMarkdownReviewArtifact(
+    runAxi(["observe", "--root", cleanRoot, "--baseline", baseline.path, "--markdown"], 0).stdout,
+    "services boundary markdown",
+    "hidden_import",
+    "src/components/LegacySettingsBridge.ts"
+  );
 
   runMultiFileDriftScenario({
     name: "services-hidden-bypass",
@@ -378,6 +389,10 @@ function runPythonPackageBoundaryPilot() {
     "Python package boundary observe is not a gate"
   );
   assertEqual(readDriftCount(observePayload), 0, "Python package boundary clean drift count");
+  assertCleanMarkdownReviewArtifact(
+    runAxi(["observe", "--root", cleanRoot, "--baseline", baseline.path, "--markdown"], 0).stdout,
+    "Python package boundary markdown"
+  );
 
   runMultiFileDriftScenario({
     name: "python-package-ui-services-boundary",
@@ -591,6 +606,33 @@ function assertTextExcludes(text, unexpected, label) {
   if (text.includes(unexpected)) {
     throw new Error(`Expected ${label} to exclude ${JSON.stringify(unexpected)}.\nActual output:\n${text}`);
   }
+}
+
+function assertCleanMarkdownReviewArtifact(markdown, label) {
+  assertTextIncludes(markdown, "## Axiom Architecture Review", `${label} heading`);
+  assertTextIncludes(markdown, "Status: clear", `${label} status`);
+  assertTextIncludes(markdown, "Review mode: observe (advisory)", `${label} review mode`);
+  assertTextIncludes(markdown, "### Review Story", `${label} review story section`);
+  assertTextIncludes(markdown, "### Visible Intentional Debt", `${label} visible debt section`);
+  assertTextIncludes(markdown, "- None", `${label} empty visible debt`);
+  assertTextIncludes(
+    markdown,
+    "Advisory signals are review pressure, not a cleanup checklist",
+    `${label} advisory guardrail`
+  );
+  assertTextIncludes(markdown, "### Architecture Drift (Advisory)", `${label} drift section`);
+}
+
+function assertVisibleDebtMarkdownReviewArtifact(markdown, label, expectedCode, expectedPath) {
+  assertTextIncludes(markdown, "## Axiom Architecture Review", `${label} heading`);
+  assertTextIncludes(markdown, "Review mode: observe (advisory)", `${label} review mode`);
+  assertTextIncludes(markdown, "### Review Story", `${label} review story section`);
+  assertTextIncludes(markdown, "### Visible Intentional Debt", `${label} visible debt section`);
+  assertTextIncludes(markdown, expectedCode, `${label} debt code`);
+  assertTextIncludes(markdown, expectedPath, `${label} debt path`);
+  assertTextIncludes(markdown, "Accepted until", `${label} debt expiration`);
+  assertTextIncludes(markdown, "Reason:", `${label} debt reason`);
+  assertTextIncludes(markdown, "### Architecture Drift (Advisory)", `${label} drift section`);
 }
 
 function safeSegment(value) {

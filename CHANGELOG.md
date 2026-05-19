@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Extended the spec-first smoke to verify clean, services-boundary, and Python package-layout Markdown review artifacts preserve review stories, visible debt, drift, and advisory guardrails.
 - Added a release-readiness smoke to keep public install snippets pinned, scriptless, local-bin safe, and aligned with package files before alpha checks.
 - Extended release-candidate smoke coverage so packaged `axi infer --json` and packaged MCP inferred-observe evidence must preserve `starterContract.reviewPass[]`.
 - Extended MCP conformance to verify `axiom_infer_contract` and `axiom_observe_inferred_contract` expose `starterContract.reviewPass[]` so fresh agents preserve first-contract review guidance.

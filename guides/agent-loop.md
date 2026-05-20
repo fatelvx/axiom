@@ -89,7 +89,7 @@ Use the summary first:
 
 - `summary.kind`: choose the workflow: roots policy, hard check, advisory review, inference authoring, or tool error.
 - `summary.gate.currentCommandIsGate`: decide whether the result can block a change.
-- `summary.counts`: read hard violations, warnings, visible debt, drift, and scan size without walking the whole payload.
+- `summary.counts`: read hard violations, setup issues, warnings, visible debt, drift, and scan size without walking the whole payload.
 - `summary.advisorySignalCoverage`: see compact checked-no-findings and not-evaluated advisory families before opening the full payload.
 - `summary.reviewStory`: show the first narrative summary and next step.
 - `summary.topSignals`: choose the first payload objects to inspect, such as hard violation groups, collapsed cycles, warning roots, large files, drift, or dependency pressure.
@@ -107,6 +107,8 @@ Then use the payload for exact evidence:
 - `payload.inference` and `payload.observe` from `axiom_observe_inferred_contract` when a no-contract project needs temporary inferred review evidence without saving `.axi`.
 
 Do not make decisions from `summary` alone. `topSignals[]` is only an ordered index over the same evidence, not a replacement for the evidence and not a semantic health score.
+
+When MCP reports `summary.counts.setupIssues > 0` and `summary.counts.hardViolations === 0`, treat the result as scan setup evidence first. Examples include missing `.axi` specs and empty explicit source scopes. Fix the root/spec/source-scope question before proposing source rewrites or accepted debt.
 
 ## Thin MCP v0 Shape
 

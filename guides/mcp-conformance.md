@@ -35,7 +35,7 @@ That constraint is intentional. Axiom MCP should be understandable from shipped 
 | MCP tool | Agent handling |
 | --- | --- |
 | `axiom_roots` | Call this first. Use only listed roots. If the desired target is missing, ask the user to re-register the server with a narrow `--allow-root`; do not guess a parent directory. |
-| `axiom_check` | Treat this as the hard gate. Valid exit code `1` with Axiom JSON is architecture evidence, not a tool crash. Repair hard `payload.violations[]` only when repair is in scope. |
+| `axiom_check` | Treat this as the hard gate. Valid exit code `1` with Axiom JSON is architecture evidence, not a tool crash. If `summary.counts.setupIssues > 0` and `summary.counts.hardViolations === 0`, fix scan/spec setup before treating the result as code drift. Repair hard `payload.violations[]` only when repair is in scope. |
 | `axiom_observe` | Treat this as advisory review evidence. It may show warnings, visible debt, review story, and baseline drift, but it is not the gate. |
 | `axiom_graph` | Treat this as graph evidence for review, baselines, and diagrams. `portable: true` may return shared-baseline metadata for the full graph, but it still does not save or update a baseline. It is not a gate. |
 | `axiom_diff` | Treat drift as advisory observed-edge change against an existing baseline. Do not update the baseline during the same review. |
@@ -58,6 +58,7 @@ The smoke uses temporary copies of `examples/spec-first-pilot` and `examples/spe
 - `axiom_roots` reports the configured root before scanning,
 - a request outside `--allow-root` is rejected,
 - clean `axiom_check` is a passing hard gate,
+- empty explicit source scopes are reported as setup evidence, with `setupIssues` separated from `hardViolations`,
 - literal dynamic imports are exposed as observed `import.kind` evidence without becoming dynamic warnings or `.axi` rules,
 - Python package-layout imports flow through `axiom_check` as hard-gate evidence, including Python `TYPE_CHECKING` / `import_type` evidence and a deliberate `Ui -> Services` drift failure,
 - deliberate hidden-import and layer drift make `axiom_check` fail with hard violations,
@@ -87,7 +88,7 @@ Read guides/mcp-conformance.md, guides/mcp-client-setup.md, and guides/mcp-previ
 Then use the available Axiom MCP tools directly if the client exposes them.
 
 First call axiom_roots. If the requested scan root is not listed, report that the server must be re-registered with a narrow --allow-root and stop.
-If the root is listed, run axiom_check on the current repository and summarize structuredContent.summary plus the exact hard-violation count from structuredContent.payload.
+If the root is listed, run axiom_check on the current repository and summarize structuredContent.summary plus whether payload.violations contains setup issues such as no_spec_files or no_source_files.
 Optionally run axiom_observe for advisory review context.
 
 Report whether the MCP surface is conforming. Do not continue into implementation.
@@ -98,6 +99,7 @@ Pass criteria:
 - The agent calls or otherwise verifies `axiom_roots` before scanning.
 - Missing roots are reported as a registration issue, not solved by broadening to a parent path.
 - `axiom_check` is described as the hard gate.
+- Setup-only `axiom_check` failures are described as scan/spec setup issues, not source-code architecture repairs.
 - `axiom_observe`, `axiom_graph`, and `axiom_diff` are described as review context.
 - `axiom_infer_contract` is described as authoring evidence, not intent, and exposes `starterContract.reviewPass[]`.
 - `axiom_observe_inferred_contract` is described as temporary inferred review evidence, not an approved contract, and exposes nested `inference.starterContract.reviewPass[]`.
@@ -109,6 +111,7 @@ Fail criteria:
 
 - The agent reads internal memory during the drill.
 - The agent treats advisory signals or drift as hard gate failures.
+- The agent treats `no_spec_files` or `no_source_files` setup issues as code architecture drift to repair.
 - The agent treats inferred contracts as approved architecture.
 - The agent treats infer `summary.observedDependencies` as the same metric as check/observe observed dependency counts.
 - The agent treats `import.kind` as a hard rule, declared intent, or a reason to rewrite dynamic imports without user approval.

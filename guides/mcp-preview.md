@@ -77,13 +77,15 @@ For fast routing, the wrapper also includes `structuredContent.summary`:
 | `kind` | `roots`, `check`, `review`, `inference`, or `tool_error`. `axiom_observe_inferred_contract` is still `review` because its output is advisory. |
 | `gate` | Whether this command is the hard gate. `axiom_check` is the gate; graph, observe, and diff are review context. |
 | `ok` | The `axi check` pass/fail boolean when available. |
-| `counts` | Common counts copied from CLI summaries, plus drift counts when present. |
+| `counts` | Common counts copied from CLI summaries, plus drift counts when present. When a payload has `violations[]`, this can also include `setupIssues` and `hardViolations` for routing. |
 | `reviewStory` | A compact copy of the review story summary, next step, caveat, and first pressure when present. |
 | `topSignals` | A compact ordered list of the first evidence to inspect: hard violation groups, collapsed cycles, warning roots, large files, drift, or dependency pressure. |
 | `drift` | Advisory new/removed observed-edge counts from diff-capable payloads. |
 | `agentHint` | A short instruction for how an agent should treat the result. |
 
 The summary is not a second validation model and not a health score. `topSignals[]` does not hide or truncate the source evidence; it only points at objects that still live in `payload.violations[]`, `payload.warnings[]`, `payload.drift`, `payload.inference`, or the observed dependency arrays. Use it as an index card so agents can decide where to look first without parsing Markdown or scanning the full payload on every turn.
+
+Setup issues are not code architecture drift. If `axiom_check` returns `ok: false` and `summary.counts.setupIssues > 0` while `summary.counts.hardViolations === 0`, fix scan setup first: missing `.axi` files, empty explicit source scopes, or other setup evidence in `payload.violations[]`. Do not rewrite source imports, save inferred contracts, or accept debt to clear a setup-only result.
 
 ## Guardrails
 

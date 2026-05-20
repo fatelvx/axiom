@@ -6,6 +6,8 @@ The project is still in public alpha, so JSON schemas can evolve before 1.0. Con
 
 For a copyable GitHub Actions workflow that annotates hard violations and writes an architecture summary, see [GitHub Actions And PR Summaries](github-actions.md). For agent and MCP usage, read [Agent And MCP Integration](agent-loop.md) and [MCP Preview](mcp-preview.md). For the shared repository convention behind both surfaces, read [Evidence Artifact Loop](evidence-artifact.md).
 
+MCP `structuredContent.summary` is a routing aid over the same JSON payload, not a separate schema or validation model. If an MCP result includes `summary.counts.setupIssues` and `summary.counts.hardViolations`, use those counts to decide whether a failed check is missing setup evidence or real architecture drift, then inspect `payload.violations[]` for the exact codes and locations.
+
 ## Command Families
 
 Each JSON payload starts with a `schemaVersion`:

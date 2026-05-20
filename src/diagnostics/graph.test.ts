@@ -524,6 +524,29 @@ test("markdown observe treats missing contracts as setup issues", () => {
   assert.doesNotMatch(output, /Status: failing contract/);
 });
 
+test("markdown observe treats empty explicit source scopes as setup issues", () => {
+  const result = runCheck({
+    root: path.join(repoRoot, "fixtures/basic-ts-valid"),
+    include: ["src/**/*.{mts,mtsx}"]
+  });
+  const payload = toGraphJson(result, { violationsOnly: true, attention: true, observe: true });
+  const output = formatGraphMarkdown(result, { violationsOnly: true, attention: true, observe: true });
+
+  assert.equal(payload.architectureSummary.status, "needs_review");
+  assert.equal(payload.architectureSummary.reviewStory.pressures[0]?.kind, "setup_issue");
+  assert.equal(payload.architectureSummary.reviewStory.pressures[0]?.code, "no_source_files");
+  assert.equal(result.sourceFiles.length, 0);
+  assert.equal(payload.summary.violations, 1);
+  assert.equal(payload.observedDependencies.length, 0);
+  assert.match(output, /Status: needs review/);
+  assert.match(output, /- Setup issues: 1/);
+  assert.match(output, /- Hard violations: 0/);
+  assert.match(output, /### Setup Issues/);
+  assert.match(output, /`no_source_files`: No source files matched Axiom source discovery/);
+  assert.match(output, /### Hard Violations\n- None/);
+  assert.doesNotMatch(output, /Status: failing contract/);
+});
+
 test("markdown warnings include large-file function counts", () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "axiom-markdown-large-file-"));
 

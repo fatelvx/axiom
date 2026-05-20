@@ -61,6 +61,7 @@ async function main() {
       await verifyToolSurface(server);
       await verifyRootsFirstPolicy(server, [projectRoot, pythonPackageRoot], outsideRoot);
       await verifyCleanCheckGate(server, projectRoot);
+      await verifyBraceSourceScopeEvidence(server, projectRoot);
       await verifyEmptySourceScopeSetupEvidence(server, projectRoot);
       await verifyObservedImportKindEvidence(server, projectRoot);
       await verifyPythonPackageCheckGate(server, pythonPackageRoot);
@@ -82,6 +83,7 @@ async function main() {
     console.log("- exposed the expected seven read-only Axiom MCP tools");
     console.log("- enforced roots-first handling and outside-root rejection");
     console.log("- treated axiom_check as the hard gate");
+    console.log("- verified brace source scopes stay non-empty through MCP axiom_check");
     console.log("- distinguished setup-only source-scope failures from hard architecture violations");
     console.log("- treated observe, graph, and diff as advisory review evidence");
     console.log("- treated infer output as authoring evidence, not declared intent");
@@ -253,6 +255,37 @@ async function verifyCleanCheckGate(server, projectRoot) {
     "src/ui/lazyApplication.ts",
     "dynamic_import",
     "clean check literal dynamic import evidence"
+  );
+}
+
+async function verifyBraceSourceScopeEvidence(server, projectRoot) {
+  const braceInclude = ["src/**/*.{ts,tsx}"];
+  const scopedCheck = await callTool(server, "axiom_check", {
+    include: braceInclude,
+    root: projectRoot
+  });
+
+  assertNoJsonRpcError(scopedCheck, "brace-scope axiom_check");
+  assertEqual(scopedCheck.result?.isError, undefined, "brace-scope check tool error");
+  assertEqual(scopedCheck.result?.structuredContent?.exitCode, 0, "brace-scope check exit code");
+  assertEqual(scopedCheck.result?.structuredContent?.summary?.kind, "check", "brace-scope check summary kind");
+  assertEqual(
+    scopedCheck.result?.structuredContent?.summary?.gate?.currentCommandIsGate,
+    true,
+    "brace-scope check is gate"
+  );
+  assertMin(scopedCheck.result?.structuredContent?.summary?.counts?.sourceFiles ?? 0, 1, "brace-scope source files");
+  assertEqual(
+    scopedCheck.result?.structuredContent?.summary?.counts?.setupIssues,
+    undefined,
+    "brace-scope setup issues"
+  );
+  assertEqual(scopedCheck.result?.structuredContent?.payload?.ok, true, "brace-scope payload ok");
+  assertObservedImportKind(
+    scopedCheck,
+    "src/ui/lazyApplication.ts",
+    "dynamic_import",
+    "brace-scope literal dynamic import evidence"
   );
 }
 

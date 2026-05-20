@@ -59,7 +59,7 @@ test("mcp check invocation wraps axi check json and accepts hard gate exit codes
     {
       root: "fixtures/basic-ts-valid",
       adoptionMode: "strict",
-      include: ["src/**"],
+      include: ["src/**/*.{ts,tsx}"],
       specPaths: ["axiom/main.axi"],
       warnings: {
         deepInternalImports: true,
@@ -83,7 +83,7 @@ test("mcp check invocation wraps axi check json and accepts hard gate exit codes
     "fixtures/basic-ts-valid",
     "--json",
     "--include",
-    "src/**",
+    "src/**/*.{ts,tsx}",
     "--spec",
     "axiom/main.axi",
     "--strict",

@@ -123,6 +123,9 @@ export function runCheck(options: CheckOptions): CheckResult {
   if (specFiles.length === 0) {
     violations.push(buildNoSpecFilesViolation(root, sourceFiles, imports.length, sourceFileMetrics));
   }
+  if (sourceFiles.length === 0 && hasExplicitSourceScope(config)) {
+    violations.push(buildNoSourceFilesViolation(root, config.include, config.exclude));
+  }
 
   const ownership = createOwnershipIndex(root, spec.modules);
   violations.push(...validateOwnership(sourceFiles, ownership));
@@ -196,6 +199,10 @@ export function runCheck(options: CheckOptions): CheckResult {
   };
 }
 
+function hasExplicitSourceScope(config: { include?: string[]; exclude?: string[] }): boolean {
+  return (config.include?.length ?? 0) > 0 || (config.exclude?.length ?? 0) > 0;
+}
+
 function buildNoSpecFilesViolation(
   root: string,
   sourceFiles: string[],
@@ -217,6 +224,21 @@ function buildNoSpecFilesViolation(
         "Axiom can scan imports before a contract, but it cannot compare declared-vs-observed architecture intent yet. A quiet import graph can still hide intra-file responsibility concentration.",
       suggestion:
         "Run `axi infer --root . > axiom/main.axi` from the project root to create a starter contract, or pass an external pilot contract with `--spec <path-to-contract.axi>`."
+    }
+  };
+}
+
+function buildNoSourceFilesViolation(root: string, includePatterns: string[], excludePatterns: string[]): Violation {
+  return {
+    code: "no_source_files",
+    message: "No source files matched Axiom source discovery.",
+    details: {
+      include: includePatterns,
+      exclude: excludePatterns,
+      note:
+        "Axiom did not scan any supported source files after applying include/exclude scope, so the graph is not evidence that the project is clean.",
+      suggestion:
+        'Check the source-scope patterns, or expand them explicitly, for example `--include "src/**/*.ts" --include "src/**/*.tsx"`.'
     }
   };
 }

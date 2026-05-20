@@ -15,6 +15,19 @@ test("valid fixture passes", () => {
   assert.equal(result.observedDependencies.length, 1);
 });
 
+test("explicit source scope that matches no files is a setup issue", () => {
+  const result = runCheck({
+    root: path.join(repoRoot, "fixtures/basic-ts-valid"),
+    include: ["src/**/*.{mts,mtsx}"]
+  });
+  const noSourceViolation = result.violations.find((violation) => violation.code === "no_source_files");
+
+  assert.equal(result.sourceFiles.length, 0);
+  assert.equal(noSourceViolation?.code, "no_source_files");
+  assert.deepEqual(noSourceViolation?.details?.include, ["src/**/*.{mts,mtsx}"]);
+  assert.match(String(noSourceViolation?.details?.suggestion), /src\/\*\*\/\*\.tsx/);
+});
+
 test("invalid fixture reports forbidden dependency", () => {
   const result = runCheck({ root: path.join(repoRoot, "fixtures/basic-ts-invalid") });
   const codes = result.violations.map((violation) => violation.code);

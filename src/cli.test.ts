@@ -872,6 +872,20 @@ test("cli check supports brace source include scope", () => {
   assert.equal(payload.summary.sourceFiles, 3);
 });
 
+test("cli check reports explicit source scope that matches no files", () => {
+  const result = spawnSync(
+    process.execPath,
+    [cliPath, "check", "--root", "fixtures/basic-ts-valid", "--include", "src/**/*.{mts,mtsx}", "--json"],
+    { cwd: repoRoot, encoding: "utf8" }
+  );
+
+  assert.equal(result.status, 1);
+
+  const payload = JSON.parse(result.stdout);
+  assert.equal(payload.summary.sourceFiles, 0);
+  assert.equal(payload.violations[0]?.code, "no_source_files");
+});
+
 test("cli check supports inline source exclude scope", () => {
   const result = spawnSync(
     process.execPath,

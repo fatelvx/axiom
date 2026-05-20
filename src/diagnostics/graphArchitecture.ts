@@ -165,7 +165,7 @@ export function formatCentralModuleMetrics(module: GraphJsonArchitectureCentralM
 }
 
 export function isSetupIssue(violation: GraphJsonViolation): boolean {
-  return violation.code === "no_spec_files";
+  return violation.code === "no_spec_files" || violation.code === "no_source_files";
 }
 
 function formatAttentionFocus(graph: GraphJsonResult): string {
@@ -210,6 +210,10 @@ function formatArchitectureSummaryStatus(input: {
 }): GraphJsonArchitectureSummary["status"] {
   if (input.violations.some((violation) => violation.code === "no_spec_files")) {
     return "needs_contract";
+  }
+
+  if (input.violations.some(isSetupIssue)) {
+    return "needs_review";
   }
 
   if (input.violations.length > 0) {
@@ -284,7 +288,8 @@ function buildArchitectureReviewStory(input: {
   const centralModules = findCentralModules(input.allObservedDependencies);
   const pressures: GraphJsonArchitecturePressure[] = [];
   const noSpecViolations = input.violations.filter((violation) => violation.code === "no_spec_files");
-  const otherViolations = input.violations.filter((violation) => violation.code !== "no_spec_files");
+  const noSourceViolations = input.violations.filter((violation) => violation.code === "no_source_files");
+  const otherViolations = input.violations.filter((violation) => !isSetupIssue(violation));
 
   if (noSpecViolations.length > 0) {
     pressures.push({
@@ -295,6 +300,18 @@ function buildArchitectureReviewStory(input: {
       severity: "review",
       count: noSpecViolations.length,
       code: "no_spec_files"
+    });
+  }
+
+  if (noSourceViolations.length > 0) {
+    pressures.push({
+      kind: "setup_issue",
+      title: "Setup issue: no source files matched",
+      description:
+        "Axiom did not scan any supported source files after applying include/exclude scope, so the graph is not evidence that the project is clean.",
+      severity: "review",
+      count: noSourceViolations.length,
+      code: "no_source_files"
     });
   }
 

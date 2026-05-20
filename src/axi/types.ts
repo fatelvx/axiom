@@ -1,6 +1,7 @@
 export type ViolationCode =
   | "parse_error"
   | "no_spec_files"
+  | "no_source_files"
   | "duplicate_module"
   | "duplicate_layer_order"
   | "invalid_suppression"

@@ -154,7 +154,7 @@ function pickImportLocation(importSite: GraphJsonImportSite): GraphJsonLocation 
 }
 
 function isSetupIssue(violation: GraphJsonViolation): boolean {
-  return violation.code === "no_spec_files";
+  return violation.code === "no_spec_files" || violation.code === "no_source_files";
 }
 
 function readString(value: unknown): string | undefined {

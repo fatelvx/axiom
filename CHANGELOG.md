@@ -5,6 +5,7 @@
 ## 0.6.0-alpha.5 - Python Static Evidence And Artifact Hardening
 
 - Added simple brace-glob source-scope support such as `src/**/*.{ts,tsx}`, including CLI/MCP comma-list parsing that does not split commas inside braces.
+- Added a `no_source_files` setup issue when explicit include/exclude source scope matches no supported files, preventing empty scans from looking clean.
 - Raised the MCP agent-loop smoke timeout to match the slower composed MCP release smokes on Windows, reducing false release-gate failures without changing MCP server behavior.
 - Extended the Python package spec-first and MCP conformance smokes so `TYPE_CHECKING` imports are preserved as `import_type` evidence through CLI, portable baselines, observe JSON, and MCP `axiom_check`.
 - Marked imports inside clear Python `TYPE_CHECKING` blocks as `import_type` evidence.

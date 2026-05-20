@@ -52,6 +52,7 @@ assertEqual(packageJson.bin?.["axi-mcp"], "dist/mcp/server.js", "axi-mcp bin");
 assertEqual(packageJson.bin?.["axiom-mcp"], "dist/mcp/server.js", "axiom-mcp bin");
 assertArrayIncludesAll(packageJson.files ?? [], requiredPackageFiles, "package files");
 assertScriptIncludes("alpha:check", requiredAlphaChecks);
+assertPublishAlphaWorkflowSafety();
 
 for (const relativePath of publicTextFiles) {
   const text = readText(relativePath);
@@ -72,6 +73,7 @@ console.log("- public install snippets keep --ignore-scripts and --save-exact");
 console.log("- public npx snippets use --no-install for Axiom bins");
 console.log("- package files include the release guides, assets, and examples");
 console.log("- alpha:check includes the expected readiness, validation, MCP, release, and pack gates");
+console.log("- publish-alpha workflow preserves OIDC, safe install, alpha gate, and safe publish steps");
 console.log("- MCP guides preserve setupIssues/hardViolations routing guidance");
 
 function readJson(relativePath) {
@@ -200,6 +202,23 @@ function assertMcpSetupIssueRoutingDocs() {
     "summary.counts.hardViolations",
     "payload.violations[]"
   ]);
+}
+
+function assertPublishAlphaWorkflowSafety() {
+  assertTextIncludesAll(".github/workflows/publish-alpha.yml", [
+    "workflow_dispatch:",
+    "contents: read",
+    "id-token: write",
+    "package-manager-cache: false",
+    "npm ci --ignore-scripts",
+    "npm run alpha:check",
+    "npm publish --access public --tag alpha --ignore-scripts"
+  ]);
+
+  const workflowText = readText(".github/workflows/publish-alpha.yml");
+  if (workflowText.includes("NPM_TOKEN") || workflowText.includes("NODE_AUTH_TOKEN")) {
+    failures.push(".github/workflows/publish-alpha.yml must use OIDC Trusted Publishing, not long-lived npm tokens.");
+  }
 }
 
 function assertTextIncludesAll(relativePath, expectedParts) {

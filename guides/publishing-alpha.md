@@ -43,11 +43,20 @@ npx --no-install axiom --help
 
 ## Publish
 
-Only publish after the repository CI is green:
+Preferred path: use the manual GitHub Actions workflow in `.github/workflows/publish-alpha.yml` after npm trusted publishing is configured for:
+
+```text
+owner/repo: fatelvx/axiom
+workflow: publish-alpha.yml
+```
+
+The workflow uses GitHub OIDC trusted publishing, runs `npm ci --ignore-scripts`, runs `npm run alpha:check`, and publishes with `npm publish --access public --tag alpha --ignore-scripts`. This avoids long-lived npm publish tokens.
+
+Manual local publish is the fallback only when you have an npm OTP or a granular access token with bypass 2FA enabled:
 
 ```bash
 npm login
-npm publish --access public --tag alpha
+npm publish --access public --tag alpha --ignore-scripts
 ```
 
 After publishing, users should be able to run:

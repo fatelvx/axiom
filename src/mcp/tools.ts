@@ -85,6 +85,7 @@ export interface AxiomMcpResultSummary {
     allowedRoots?: number;
     architecturePressureNotes?: number;
     collapsedCycles?: number;
+    hardViolations?: number;
     importsScanned?: number;
     intentionalDebt?: number;
     modules?: number;
@@ -95,6 +96,7 @@ export interface AxiomMcpResultSummary {
     removedObservedEdges?: number;
     shownObservedDependencies?: number;
     sourceFiles?: number;
+    setupIssues?: number;
     violations?: number;
     warnings?: number;
   };
@@ -312,10 +314,11 @@ function createResultSummary(invocation: AxiomMcpCliInvocation, payload: unknown
   const drift = buildDriftSummary(readRecordProperty(payloadRecord, "drift"));
   const gate = buildGateSummary(invocation, architectureSummary);
   const advisorySignalCoverage = buildAdvisorySignalCoverageSummary(architectureSummary);
+  const setupIssueCounts = countSetupAndHardViolations(payloadRecord);
   const topSignals = buildPayloadTopSignals(payloadRecord);
 
   return {
-    agentHint: buildAgentHint(invocation, ok),
+    agentHint: buildAgentHint(invocation, ok, setupIssueCounts),
     ...(Object.keys(counts).length > 0 ? { counts } : {}),
     ...(drift ? { drift } : {}),
     ...(advisorySignalCoverage ? { advisorySignalCoverage } : {}),
@@ -391,10 +394,18 @@ function resultSummaryKind(command: AxiomMcpCommand): AxiomMcpResultSummary["kin
   return "review";
 }
 
-function buildAgentHint(invocation: AxiomMcpCliInvocation, ok: boolean | undefined): string {
+function buildAgentHint(
+  invocation: AxiomMcpCliInvocation,
+  ok: boolean | undefined,
+  setupIssueCounts?: { hardViolations: number; setupIssues: number }
+): string {
   const command = invocation.command;
 
   if (command === "check") {
+    if (ok === false && setupIssueCounts && setupIssueCounts.setupIssues > 0 && setupIssueCounts.hardViolations === 0) {
+      return "This check failed because setup evidence is missing or invalid. Fix source/spec scope from payload.violations before treating this as code architecture drift; do not edit contracts or accepted debt unless the user approves.";
+    }
+
     return ok === false
       ? "Repair hard violations from payload.violations; do not edit contracts or accepted debt unless the user approves."
       : "This is the hard gate result. Use observe, graph, or diff for advisory context when needed.";
@@ -439,6 +450,24 @@ function buildGateSummary(
   };
 }
 
+function countSetupAndHardViolations(payload: Record<string, unknown>): { hardViolations: number; setupIssues: number } | undefined {
+  const violations = readRecordArrayProperty(payload, "violations");
+  if (violations.length === 0) {
+    return undefined;
+  }
+
+  const setupIssues = violations.filter(isSetupIssueCode).length;
+  return {
+    hardViolations: violations.length - setupIssues,
+    setupIssues
+  };
+}
+
+function isSetupIssueCode(violation: Record<string, unknown>): boolean {
+  const code = readStringProperty(violation, "code");
+  return code === "no_spec_files" || code === "no_source_files";
+}
+
 function buildCounts(
   payload: Record<string, unknown>,
   payloadSummary: Record<string, unknown> | undefined
@@ -456,6 +485,12 @@ function buildCounts(
   addCount(counts, "sourceFiles", readNumberProperty(payloadSummary, "sourceFiles"));
   addCount(counts, "violations", readNumberProperty(payloadSummary, "violations"));
   addCount(counts, "warnings", readNumberProperty(payloadSummary, "warnings"));
+
+  const setupIssueCounts = countSetupAndHardViolations(payload);
+  if (setupIssueCounts) {
+    addCount(counts, "setupIssues", setupIssueCounts.setupIssues);
+    addCount(counts, "hardViolations", setupIssueCounts.hardViolations);
+  }
 
   if (counts.intentionalDebt === undefined) {
     const intentionalDebtCount = readArrayCount(payload, "intentionalDebt") ?? readArrayCount(payload, "intentionalViolations");

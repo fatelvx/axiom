@@ -319,6 +319,31 @@ test("mcp tool result treats check violations as structured evidence, not tool e
   assert.match(result.content[0]?.text ?? "", /hidden_import/);
 });
 
+test("mcp check summary distinguishes setup-only failures from hard violations", () => {
+  const invocation = buildAxiomMcpCliInvocation("axiom_check", { root: "." }, { cliPath: "dist/cli.js", nodeExecutable: "node" });
+  const result = createAxiomMcpToolResult(invocation, {
+    exitCode: 1,
+    stderr: "",
+    stdout: JSON.stringify({
+      schemaVersion: "axiom.check.v4",
+      ok: false,
+      summary: { sourceFiles: 0, violations: 1 },
+      violations: [{ code: "no_source_files", message: "No source files matched Axiom source discovery." }]
+    })
+  });
+
+  assert.equal(result.isError, undefined);
+  assert.equal(result.structuredContent.summary.kind, "check");
+  assert.equal(result.structuredContent.summary.ok, false);
+  assert.equal(result.structuredContent.summary.counts?.sourceFiles, 0);
+  assert.equal(result.structuredContent.summary.counts?.violations, 1);
+  assert.equal(result.structuredContent.summary.counts?.setupIssues, 1);
+  assert.equal(result.structuredContent.summary.counts?.hardViolations, 0);
+  assert.match(result.structuredContent.summary.agentHint, /setup evidence is missing or invalid/);
+  assert.match(result.structuredContent.summary.agentHint, /source\/spec scope/);
+  assert.doesNotMatch(result.structuredContent.summary.agentHint, /Repair hard violations/);
+});
+
 test("mcp tool result summarizes review and inference evidence for agents", () => {
   const graphInvocation = buildAxiomMcpCliInvocation("axiom_observe", { root: "." }, { cliPath: "dist/cli.js", nodeExecutable: "node" });
   const graphResult = createAxiomMcpToolResult(graphInvocation, {

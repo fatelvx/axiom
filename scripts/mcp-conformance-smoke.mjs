@@ -61,6 +61,7 @@ async function main() {
       await verifyToolSurface(server);
       await verifyRootsFirstPolicy(server, [projectRoot, pythonPackageRoot], outsideRoot);
       await verifyCleanCheckGate(server, projectRoot);
+      await verifyEmptySourceScopeSetupEvidence(server, projectRoot);
       await verifyObservedImportKindEvidence(server, projectRoot);
       await verifyPythonPackageCheckGate(server, pythonPackageRoot);
 
@@ -81,6 +82,7 @@ async function main() {
     console.log("- exposed the expected seven read-only Axiom MCP tools");
     console.log("- enforced roots-first handling and outside-root rejection");
     console.log("- treated axiom_check as the hard gate");
+    console.log("- distinguished setup-only source-scope failures from hard architecture violations");
     console.log("- treated observe, graph, and diff as advisory review evidence");
     console.log("- treated infer output as authoring evidence, not declared intent");
     console.log("- verified inferred starter review-pass guidance is exposed to MCP agents");
@@ -251,6 +253,60 @@ async function verifyCleanCheckGate(server, projectRoot) {
     "src/ui/lazyApplication.ts",
     "dynamic_import",
     "clean check literal dynamic import evidence"
+  );
+}
+
+async function verifyEmptySourceScopeSetupEvidence(server, projectRoot) {
+  const emptyInclude = ["src/**/*.definitely-empty.ts"];
+  const emptyCheck = await callTool(server, "axiom_check", {
+    include: emptyInclude,
+    root: projectRoot
+  });
+  assertNoJsonRpcError(emptyCheck, "empty-scope axiom_check");
+  assertEqual(emptyCheck.result?.isError, undefined, "empty-scope check tool error");
+  assertEqual(emptyCheck.result?.structuredContent?.exitCode, 1, "empty-scope check exit code");
+  assertEqual(emptyCheck.result?.structuredContent?.summary?.kind, "check", "empty-scope check summary kind");
+  assertEqual(
+    emptyCheck.result?.structuredContent?.summary?.gate?.currentCommandIsGate,
+    true,
+    "empty-scope check is gate"
+  );
+  assertEqual(emptyCheck.result?.structuredContent?.summary?.counts?.sourceFiles, 0, "empty-scope source files");
+  assertEqual(emptyCheck.result?.structuredContent?.summary?.counts?.setupIssues, 1, "empty-scope setup issues");
+  assertEqual(emptyCheck.result?.structuredContent?.summary?.counts?.hardViolations, 0, "empty-scope hard violations");
+  assertSetIncludes(violationCodes(emptyCheck), "no_source_files", "empty-scope setup violation");
+  assertTextIncludes(
+    emptyCheck.result?.structuredContent?.summary?.agentHint ?? "",
+    "setup evidence is missing or invalid",
+    "empty-scope check agent hint"
+  );
+
+  const emptyObserve = await callTool(server, "axiom_observe", {
+    include: emptyInclude,
+    root: projectRoot
+  });
+  assertNoJsonRpcError(emptyObserve, "empty-scope axiom_observe");
+  assertEqual(emptyObserve.result?.isError, undefined, "empty-scope observe tool error");
+  assertEqual(emptyObserve.result?.structuredContent?.exitCode, 0, "empty-scope observe exit code");
+  assertEqual(emptyObserve.result?.structuredContent?.summary?.kind, "review", "empty-scope observe summary kind");
+  assertEqual(
+    emptyObserve.result?.structuredContent?.summary?.gate?.currentCommandIsGate,
+    false,
+    "empty-scope observe is not gate"
+  );
+  assertEqual(emptyObserve.result?.structuredContent?.summary?.status, "needs_review", "empty-scope observe status");
+  assertEqual(emptyObserve.result?.structuredContent?.summary?.counts?.setupIssues, 1, "empty-scope observe setup issues");
+  assertEqual(emptyObserve.result?.structuredContent?.summary?.counts?.hardViolations, 0, "empty-scope observe hard violations");
+  assertEqual(
+    emptyObserve.result?.structuredContent?.summary?.reviewStory?.firstPressure?.kind,
+    "setup_issue",
+    "empty-scope observe first pressure"
+  );
+  assertSetIncludes(violationCodes(emptyObserve), "no_source_files", "empty-scope observe setup violation");
+  assertTextIncludes(
+    emptyObserve.result?.structuredContent?.summary?.agentHint ?? "",
+    "advisory review evidence",
+    "empty-scope observe agent hint"
   );
 }
 

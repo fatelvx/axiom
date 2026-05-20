@@ -872,6 +872,24 @@ test("cli check supports brace source include scope", () => {
   assert.equal(payload.summary.sourceFiles, 3);
 });
 
+test("cli infer supports brace source include scope", () => {
+  const result = spawnSync(
+    process.execPath,
+    [cliPath, "infer", "--root", "fixtures/basic-ts-valid", "--include", "src/**/*.{ts,tsx}", "--json"],
+    { cwd: repoRoot, encoding: "utf8" }
+  );
+
+  assert.equal(result.status, 0);
+
+  const payload = JSON.parse(result.stdout);
+  assert.equal(payload.summary.sourceFiles, 3);
+  assert.equal(payload.summary.observedImportSites, 1);
+  assert.deepEqual(
+    payload.modules.map((module: { name: string }) => module.name),
+    ["Physics", "Rendering", "Simulation"]
+  );
+});
+
 test("cli check reports explicit source scope that matches no files", () => {
   const result = spawnSync(
     process.execPath,

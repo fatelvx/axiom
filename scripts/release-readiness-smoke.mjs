@@ -60,6 +60,8 @@ for (const relativePath of publicTextFiles) {
   assertPinnedAxiomVersions(relativePath, text);
 }
 
+assertMcpSetupIssueRoutingDocs();
+
 if (failures.length > 0) {
   throw new Error(`Release readiness smoke failed:\n${failures.map((failure) => `- ${failure}`).join("\n")}`);
 }
@@ -70,6 +72,7 @@ console.log("- public install snippets keep --ignore-scripts and --save-exact");
 console.log("- public npx snippets use --no-install for Axiom bins");
 console.log("- package files include the release guides, assets, and examples");
 console.log("- alpha:check includes the expected readiness, validation, MCP, release, and pack gates");
+console.log("- MCP guides preserve setupIssues/hardViolations routing guidance");
 
 function readJson(relativePath) {
   return JSON.parse(readText(relativePath));
@@ -171,6 +174,39 @@ function assertScriptIncludes(scriptName, expectedParts) {
   for (const expectedPart of expectedParts) {
     if (!script.includes(expectedPart)) {
       failures.push(`package.json scripts.${scriptName} must include ${JSON.stringify(expectedPart)}.`);
+    }
+  }
+}
+
+function assertMcpSetupIssueRoutingDocs() {
+  assertTextIncludesAll("guides/mcp-preview.md", [
+    "summary.counts.setupIssues",
+    "summary.counts.hardViolations",
+    "Setup issues are not code architecture drift"
+  ]);
+  assertTextIncludesAll("guides/mcp-conformance.md", [
+    "summary.counts.setupIssues",
+    "summary.counts.hardViolations",
+    "no_spec_files",
+    "no_source_files"
+  ]);
+  assertTextIncludesAll("guides/agent-loop.md", [
+    "summary.counts.setupIssues",
+    "summary.counts.hardViolations",
+    "scan setup evidence"
+  ]);
+  assertTextIncludesAll("guides/json-consumers.md", [
+    "summary.counts.setupIssues",
+    "summary.counts.hardViolations",
+    "payload.violations[]"
+  ]);
+}
+
+function assertTextIncludesAll(relativePath, expectedParts) {
+  const text = readText(relativePath);
+  for (const expectedPart of expectedParts) {
+    if (!text.includes(expectedPart)) {
+      failures.push(`${relativePath} must include ${JSON.stringify(expectedPart)}.`);
     }
   }
 }

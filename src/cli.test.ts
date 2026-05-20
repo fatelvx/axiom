@@ -574,6 +574,59 @@ test("cli diff --json exposes the same advisory drift payload as graph JSON", ()
   );
 });
 
+test("cli diff supports brace source include scope", () => {
+  const directory = mkdtempSync(path.join(tmpdir(), "axiom-diff-brace-baseline-"));
+  const baselinePath = path.join(directory, "current.graph.json");
+
+  try {
+    const graph = spawnSync(
+      process.execPath,
+      [
+        cliPath,
+        "graph",
+        "--root",
+        "fixtures/basic-ts-valid",
+        "--include",
+        "src/**/*.{ts,tsx}",
+        "--json",
+        "--portable"
+      ],
+      { cwd: repoRoot, encoding: "utf8" }
+    );
+
+    assert.equal(graph.status, 0, graph.stderr);
+    writeFileSync(baselinePath, graph.stdout, "utf8");
+
+    const result = spawnSync(
+      process.execPath,
+      [
+        cliPath,
+        "diff",
+        baselinePath,
+        "--root",
+        "fixtures/basic-ts-valid",
+        "--include",
+        "src/**/*.{ts,tsx}",
+        "--json"
+      ],
+      { cwd: repoRoot, encoding: "utf8" }
+    );
+
+    assert.equal(result.status, 0, result.stderr);
+
+    const payload = JSON.parse(result.stdout);
+    assert.equal(payload.schemaVersion, "axiom.graph.v12");
+    assert.equal(payload.summary.observedDependencies, 1);
+    assert.equal(payload.allObservedDependencies.length, 1);
+    assert.equal(
+      (payload.drift?.newObservedEdges?.length ?? 0) + (payload.drift?.removedObservedEdges?.length ?? 0),
+      0
+    );
+  } finally {
+    rmSync(directory, { recursive: true, force: true });
+  }
+});
+
 test("cli diff accepts PowerShell UTF-16LE redirected graph baselines", () => {
   const directory = mkdtempSync(path.join(tmpdir(), "axiom-diff-baseline-"));
   const baselinePath = path.join(directory, "axiom-baseline.json");
